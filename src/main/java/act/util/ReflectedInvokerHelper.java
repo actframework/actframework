@@ -31,6 +31,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
 import java.lang.reflect.*;
 import java.util.*;
 import javax.inject.Singleton;
@@ -115,6 +116,33 @@ public class ReflectedInvokerHelper {
 
     public static boolean isGlobalOrStateless(Field field) {
         return isGlobalOrStateless(field, new HashSet<Class>());
+    }
+
+    public static <T extends Annotation> boolean isAnnotationPresent(Class<T> annotationClass, Method method) {
+        return null != getAnnotation(annotationClass, method);
+    }
+
+    public static <T extends Annotation> T getAnnotation(Class<T> annotationClass, Method method) {
+        T anno = method.getAnnotation(annotationClass);
+        if (null != anno) {
+            return anno;
+        }
+        if (!annotationClass.isAnnotationPresent(Inherited.class)) {
+            return null;
+        }
+        Method overridenMethod = getOverridenMethod(method);
+        return null == overridenMethod ? null : getAnnotation(annotationClass, overridenMethod);
+    }
+
+    private static Method getOverridenMethod(Method method) {
+        Class<?> host = method.getDeclaringClass();
+        host = host.getSuperclass();
+        if (null == host || Object.class == host) {
+            return null;
+        }
+        String name = method.getName();
+        Class<?>[] params = method.getParameterTypes();
+        return $.getMethod(host, name, params);
     }
 
     private static boolean isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {

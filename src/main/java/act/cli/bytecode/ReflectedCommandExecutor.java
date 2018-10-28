@@ -79,13 +79,13 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
         try {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
-            this.async = null != method.getAnnotation(Async.class);
-            this.reportProgress = method.getAnnotation(ReportProgress.class);
-            FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+            this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
+            this.reportProgress = ReflectedInvokerHelper.getAnnotation(ReportProgress.class, method);
+            FastJsonFilter filterAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFilter.class, method);
             if (null != filterAnno) {
                 filters = filterAnno.value();
             }
-            FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+            FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
             if (null != featureAnno) {
                 features = featureAnno.value();
             }
@@ -98,11 +98,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         } else {
             method.setAccessible(true);
         }
-        DateFormatPattern dfp = method.getAnnotation(DateFormatPattern.class);
+        DateFormatPattern dfp = ReflectedInvokerHelper.getAnnotation(DateFormatPattern.class, method);
         if (null != dfp) {
             this.dateFormatPattern = dfp.value();
         } else {
-            Pattern pattern = method.getAnnotation(Pattern.class);
+            Pattern pattern = ReflectedInvokerHelper.getAnnotation(Pattern.class, method);
             if (null != pattern) {
                 this.dateFormatPattern = pattern.value();
             }

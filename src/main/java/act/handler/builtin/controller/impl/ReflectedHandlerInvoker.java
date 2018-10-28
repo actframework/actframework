@@ -179,7 +179,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (null != priority) {
             this.order = priority;
         } else {
-            Order order = method.getAnnotation(Order.class);
+            Order order = ReflectedInvokerHelper.getAnnotation(Order.class, method);
             this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
         }
         final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
@@ -215,8 +215,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
         this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
-        this.forceDataBinding = method.isAnnotationPresent(RequireDataBind.class);
-        this.async = null != method.getAnnotation(Async.class);
+        this.forceDataBinding = ReflectedInvokerHelper.isAnnotationPresent(RequireDataBind.class, method);
+        this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
         if (this.async && (handlerMetaInfo.hasReturnOrThrowResult())) {
             logger.warn("handler return result will be ignored for async method: " + method);
         }
@@ -229,7 +229,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             method.setAccessible(true);
         }
 
-        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
+        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == ReflectedInvokerHelper.getAnnotation(NoReturnValueAdvice.class, method)) {
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
             if (null != advisor) {
                 returnValueAdvice = app.getInstance(advisor.value());
@@ -244,7 +244,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         this.suppressJsonDateFormat = shouldSuppressJsonDateFormat();
 
-        Throttled throttleControl = method.getAnnotation(Throttled.class);
+        Throttled throttleControl = ReflectedInvokerHelper.getAnnotation(Throttled.class, method);
         if (null != throttleControl) {
             int throttle = throttleControl.value();
             if (throttle < 1) {
@@ -254,28 +254,28 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throttleFilter = new ThrottleFilter(throttle, expireScale.enabled());
         }
 
-        this.isLargeResponse = method.getAnnotation(LargeResponse.class) != null;
-        this.forceSmallResponse = method.getAnnotation(SmallResponse.class) != null;
+        this.isLargeResponse = ReflectedInvokerHelper.getAnnotation(LargeResponse.class, method) != null;
+        this.forceSmallResponse = ReflectedInvokerHelper.getAnnotation(SmallResponse.class, method) != null;
         if (isLargeResponse && forceSmallResponse) {
             warn("found both @LargeResponse and @SmallResponse, will ignore @SmallResponse");
             forceSmallResponse = false;
         }
 
-        FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+        FastJsonFilter filterAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFilter.class, method);
         if (null != filterAnno) {
             filters = filterAnno.value();
         }
-        FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+        FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
         if (null != featureAnno) {
             features = featureAnno.value();
         }
         enableCircularReferenceDetect = hasAnnotation(EnableCircularReferenceDetect.class);
 
-        DateFormatPattern pattern = method.getAnnotation(DateFormatPattern.class);
+        DateFormatPattern pattern = ReflectedInvokerHelper.getAnnotation(DateFormatPattern.class, method);
         if (null != pattern) {
             this.dateFormatPattern = pattern.value();
         } else {
-            Pattern patternLegacy = method.getAnnotation(Pattern.class);
+            Pattern patternLegacy = ReflectedInvokerHelper.getAnnotation(Pattern.class, method);
             if (null != patternLegacy) {
                 this.dateFormatPattern = patternLegacy.value();
             }
@@ -344,29 +344,29 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             forceResponseContentType = contentType.value().format();
         }
 
-        DownloadFilename downloadFilename = method.getAnnotation(DownloadFilename.class);
+        DownloadFilename downloadFilename = ReflectedInvokerHelper.getAnnotation(DownloadFilename.class, method);
         if (null != downloadFilename) {
             this.downloadFilename = downloadFilename.value();
         }
 
         // method annotation takes priority of class annotation
-        if (null != method.getAnnotation(JsonView.class)) {
+        if (null != ReflectedInvokerHelper.getAnnotation(JsonView.class, method)) {
             forceResponseContentType = H.MediaType.JSON.format();
         }
-        if (null != method.getAnnotation(CsvView.class)) {
+        if (null != ReflectedInvokerHelper.getAnnotation(CsvView.class, method)) {
             forceResponseContentType = H.MediaType.CSV.format();
         }
-        contentType = method.getAnnotation(ResponseContentType.class);
+        contentType = ReflectedInvokerHelper.getAnnotation(ResponseContentType.class, method);
         if (null != contentType) {
             forceResponseContentType = contentType.value().format();
         }
 
-        ResponseStatus status = method.getAnnotation(ResponseStatus.class);
+        ResponseStatus status = ReflectedInvokerHelper.getAnnotation(ResponseStatus.class, method);
         if (null != status) {
             forceResponseStatus = H.Status.of(status.value());
         }
 
-        PreventDoubleSubmission dsp = method.getAnnotation(PreventDoubleSubmission.class);
+        PreventDoubleSubmission dsp = ReflectedInvokerHelper.getAnnotation(PreventDoubleSubmission.class, method);
         if (null != dsp) {
             dspToken = dsp.value();
             if (PreventDoubleSubmission.DEFAULT.equals(dspToken)) {
@@ -375,7 +375,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
 
         byPassImplicityTemplateVariable = (controllerClass.isAnnotationPresent(NoImplicitTemplateVariable.class) ||
-                method.isAnnotationPresent(NoImplicitTemplateVariable.class));
+                ReflectedInvokerHelper.isAnnotationPresent(NoImplicitTemplateVariable.class, method));
 
         initOutputVariables();
         initCacheParams(app.config());
@@ -813,7 +813,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             cacheSupport = CacheSupportMetaInfo.disabled();
             return;
         }
-        CacheFor cacheFor = method.getAnnotation(CacheFor.class);
+        CacheFor cacheFor = ReflectedInvokerHelper.getAnnotation(CacheFor.class, method);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() : CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.id(),
@@ -888,7 +888,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             if (0 == len) {
                 return;
             }
-            Annotation outputRequestParams = method.getAnnotation(OutputRequestParams.class);
+            Annotation outputRequestParams = ReflectedInvokerHelper.getAnnotation(OutputRequestParams.class, method);
             if (null != outputRequestParams) {
                 DependencyInjector injector = app.injector();
                 for (int i = 0; i < len; ++i) {
@@ -1054,7 +1054,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
 
     public <T extends Annotation> T getAnnotation(Class<T> annoType) {
-        T anno = method.getAnnotation(annoType);
+        T anno = ReflectedInvokerHelper.getAnnotation(annoType, method);
         if (null == anno) {
             anno = controllerClass.getAnnotation(annoType);
         }
@@ -1062,7 +1062,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     public boolean hasAnnotation(Class<? extends Annotation> annoType) {
-        return (null != method.getAnnotation(annoType)) || null != controllerClass.getAnnotation(annoType);
+        return (null != ReflectedInvokerHelper.getAnnotation(annoType, method)) || null != controllerClass.getAnnotation(annoType);
     }
 
     private boolean shouldSuppressJsonDateFormat() {
