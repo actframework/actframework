@@ -627,7 +627,9 @@ public class Scenario implements ScenarioPart {
             String sKey = S.string(key);
             Object test = entry.getValue();
             Object value = null;
-            if ("size".equals(key) || "len".equals(key) || "length".equals(key)) {
+            if ("me".equals(key) || "this".equals(key)) {
+                value = array;
+            } else if ("size".equals(key) || "len".equals(key) || "length".equals(key)) {
                 value = array.size();
             } else if ("toString".equals(key) || "string".equals(key) || "str".equals(key)) {
                 value = JSON.toJSONString(array);
@@ -825,8 +827,8 @@ public class Scenario implements ScenarioPart {
             Object entryValue = entry.getValue();
             if (entryValue instanceof String) {
                 String s = (String) entryValue;
-                String processed = processStringSubstitution(s);
-                if (S.neq(processed, s)) {
+                Object processed = evalStr(s);
+                if (s != processed) {
                     entry.setValue(processed);
                 }
             }
@@ -957,6 +959,33 @@ public class Scenario implements ScenarioPart {
             return evalFunc(key);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    Object evalStr(String s) {
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        if (n > 0) {
+            return processStringSubstitution(s);
+        }
+        int z = s.indexOf("}");
+        if (z < s.length() - 1) {
+            return processStringSubstitution(s);
+        }
+        String part = s.substring(2, z);
+        if (part.contains("(") && part.endsWith(")")) {
+            return evalFunc(part);
+        } else {
+            String key = part;
+            String payload = "";
+            if (part.contains(":")) {
+                S.Binary binary = S.binarySplit(part, ':');
+                key = binary.first();
+                payload = binary.second();
+            }
+            return getVal(key, payload);
         }
     }
 

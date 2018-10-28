@@ -1,4 +1,4 @@
-package act.test.util;
+package act.apidoc.sampledata;
 
 /*-
  * #%L
@@ -20,17 +20,20 @@ package act.test.util;
  * #L%
  */
 
-import act.app.App;
-import org.junit.BeforeClass;
-import org.osgl.$;
-import osgl.ut.TestBase;
+import act.apidoc.*;
+import org.osgl.util.S;
 
-public class TestTestBase extends TestBase {
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-    @BeforeClass
-    public static void clearActMockup() {
-        $.setFieldValue("INST", App.class, null);
-        Thread.currentThread().setContextClassLoader(TestTestBase.class.getClassLoader());
+@Singleton
+@SampleData.Category(SampleDataCategory.URL)
+public class UrlProvider extends SampleDataProvider<String> {
+    @Inject
+    private HostProvider hostProvider;
+
+    @Override
+    public String get() {
+        return S.concat("https://", hostProvider.get(), "/...");
     }
-
 }

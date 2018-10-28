@@ -20,13 +20,17 @@ package act.app.util;
  * #L%
  */
 
-import act.db.DaoBase;
-import act.db.DbBind;
-import act.db.ModelBase;
+import act.Act;
+import act.db.*;
+import act.inject.param.NoBind;
+import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.mvc.annotation.DeleteAction;
-import org.osgl.mvc.annotation.GetAction;
-import org.osgl.mvc.annotation.PostAction;
+import org.osgl.inject.BeanSpec;
+import org.osgl.mvc.annotation.*;
+import org.osgl.util.Generics;
+
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * A class template for simple RESTful service
@@ -34,10 +38,15 @@ import org.osgl.mvc.annotation.PostAction;
 public abstract class
 SimpleRestfulServiceBase<
         ID_TYPE,
-        MODEL_TYPE extends ModelBase<ID_TYPE, MODEL_TYPE>,
+        MODEL_TYPE,
         DAO_TYPE extends DaoBase<ID_TYPE, MODEL_TYPE, ?>> {
 
+    @NoBind
     private DAO_TYPE dao;
+
+    public SimpleRestfulServiceBase() {
+        exploreTypes();
+    }
 
     public SimpleRestfulServiceBase(DAO_TYPE dao) {
         this.dao = $.requireNotNull(dao);
@@ -54,6 +63,7 @@ SimpleRestfulServiceBase<
     }
 
     @PostAction
+    @PropertySpec("id")
     public MODEL_TYPE create(MODEL_TYPE model) {
         return dao.save(model);
     }
@@ -61,6 +71,18 @@ SimpleRestfulServiceBase<
     @DeleteAction("{id}")
     public void delete(ID_TYPE id) {
         dao.deleteById(id);
+    }
+
+    private void exploreTypes() {
+        List<Type> types = Generics.typeParamImplementations(getClass(), SimpleRestfulServiceBase.class);
+        int sz = types.size();
+        if (sz < 3) {
+            throw new IllegalArgumentException("Cannot determine DAO type");
+        }
+        Type daoType = types.get(2);
+        BeanSpec spec = BeanSpec.of(daoType, Act.injector());
+        DaoLoader loader = Act.getInstance(DaoLoader.class);
+        dao = $.cast(loader.load(spec));
     }
 
 }

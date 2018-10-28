@@ -20,18 +20,12 @@ package act.test.util;
  * #L%
  */
 
-import act.plugin.Plugin;
+import act.Act;
 import act.util.LogSupport;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.Keyword;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An `NamedLogic` encapsulate a piece of logic with a name, which can
@@ -43,25 +37,23 @@ import java.util.Map;
  * * Assert - used to verify the data
  * * Modifier - used to modify request
  */
-public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implements Plugin {
-
-    private static Map<Class<? extends NamedLogic>, Map<Keyword, NamedLogic>> registry = new HashMap<>();
+public abstract class NamedLogic<T extends NamedLogic> extends LogSupport {
 
     protected abstract Class<? extends NamedLogic> type();
 
     protected Object initVal;
 
-    @Override
     public void register() {
         register(false);
     }
 
     protected void register(boolean force) {
         Keyword keyword = keyword();
-        register(keyword, force);
+        NamedLogicRegister register = Act.getInstance(NamedLogicRegister.class);
+        register.register(keyword, this, force);
         for (String alias : aliases()) {
             keyword = Keyword.of(alias);
-            register(keyword, force);
+            register.register(keyword, this, force);
         }
     }
 
@@ -124,26 +116,10 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implem
         return Keyword.of(name);
     }
 
-    private void register(Keyword keyword, boolean force) {
-        Class<? extends NamedLogic> type = type();
-        Map<Keyword, NamedLogic> lookup = registry.get(type);
-        if (null == lookup) {
-            lookup = new HashMap<>();
-            registry.put(type, lookup);
-        }
-        NamedLogic existing = lookup.put(keyword, this);
-        E.unexpectedIf(!force && null != existing && this != existing, "Keyword already used: " + keyword.hyphenated());
-    }
-
-    private static <T extends NamedLogic> T get(Class<? extends NamedLogic> logicType, String name) {
-        Map<Keyword, NamedLogic> lookup = registry.get(logicType);
-        if (null == lookup) {
-            return null;
-        }
-        return (T) lookup.get(Keyword.of(name));
-    }
-
     protected static class FromLinkedHashMap<T extends NamedLogic> extends $.TypeConverter<LinkedHashMap, T> {
+
+        private NamedLogicRegister register = Act.getInstance(NamedLogicRegister.class);
+
         public FromLinkedHashMap(Class<T> toType) {
             super(LinkedHashMap.class, toType);
         }
@@ -153,7 +129,7 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implem
             E.illegalStateIfNot(o.size() == 1, "single element map expected");
             Map.Entry entry = (Map.Entry) o.entrySet().iterator().next();
             String key = S.string(entry.getKey());
-            T logic = get(toType, key);
+            T logic = register.get(toType, key);
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
             logic.init(entry.getValue());
@@ -162,6 +138,9 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implem
     }
 
     protected static class FromString<T extends NamedLogic> extends $.TypeConverter<String, T> {
+
+        private NamedLogicRegister register = Act.getInstance(NamedLogicRegister.class);
+
         public FromString(Class<T> toType) {
             super(String.class, toType);
         }
@@ -170,11 +149,12 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implem
         public T convert(String o) {
             E.illegalStateIf(S.blank(o));
             String key = o;
-            T logic = get(toType, key);
+            T logic = register.get(toType, key);
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
             return logic;
         }
     }
+
 
 }

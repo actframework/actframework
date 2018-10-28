@@ -30,14 +30,10 @@ import act.boot.PluginClassProvider;
 import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.boot.app.RunApp;
 import act.conf.*;
-import act.controller.meta.ActionMethodMetaInfo;
-import act.controller.meta.CatchMethodMetaInfo;
-import act.controller.meta.InterceptorMethodMetaInfo;
+import act.controller.meta.*;
 import act.crypto.AppCrypto;
 import act.db.DbManager;
-import act.event.ActEvent;
-import act.event.ActEventListener;
-import act.event.EventBus;
+import act.event.*;
 import act.handler.RequestHandlerBase;
 import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
@@ -47,10 +43,7 @@ import act.internal.util.AppDescriptor;
 import act.job.JobManager;
 import act.metric.MetricPlugin;
 import act.metric.SimpleMetricPlugin;
-import act.plugin.AppServicePluginManager;
-import act.plugin.GenericPluginManager;
-import act.plugin.Plugin;
-import act.plugin.PluginScanner;
+import act.plugin.*;
 import act.route.RouteSource;
 import act.sys.Env;
 import act.util.*;
@@ -58,8 +51,6 @@ import act.view.ViewManager;
 import act.xio.Network;
 import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
-import com.sun.imageio.plugins.gif.GIFImageWriter;
-import com.sun.imageio.plugins.gif.GIFImageWriterSpi;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
 import org.osgl.$;
@@ -67,6 +58,7 @@ import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
+import org.osgl.inject.Genie;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
@@ -74,27 +66,14 @@ import org.osgl.util.converter.TypeConverterRegistry;
 import osgl.version.Version;
 import osgl.version.Versioned;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.URL;
+import java.net.*;
 import java.util.*;
-import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.imageio.IIOImage;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
  * The Act runtime and facade
@@ -191,6 +170,7 @@ public final class Act {
         }
     }
 
+    private static Genie genie;
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
     private static String nodeGroup = "";
@@ -555,7 +535,13 @@ public final class Act {
      * @return the instance of the class
      */
     public static <T> T getInstance(String className) {
-        return app().getInstance(className);
+        App app = app();
+        if (null != app) {
+            return app.getInstance(className);
+        } else {
+            Class<T> type = $.classForName(className);
+            return getInstance(type);
+        }
     }
 
     /**
@@ -567,7 +553,7 @@ public final class Act {
      */
     public static <T> T getInstance(Class<? extends T> clz) {
         App app = app();
-        return null == app ? $.newInstance(clz) : app.getInstance(clz);
+        return null == app ? genie().get(clz) : app.getInstance(clz);
     }
 
     /**
@@ -1220,6 +1206,13 @@ public final class Act {
         };
     }
 
+    private static Genie genie() {
+        if (null == genie) {
+            genie = Genie.create();
+        }
+        return genie;
+    }
+
     // debug javadoc generating.
     // Note if you get `Illegal group reference` issue then make sure
     // you do not have `$` in the `{@link}` tag
@@ -1231,14 +1224,5 @@ public final class Act {
 //    }
 
     public static void main(String[] args) throws Exception {
-        BufferedImage trackPixel = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
-        trackPixel.setRGB(0, 0, new Color(0, 0, 0, 0).getRGB());
-        GIFImageWriterSpi spi = new GIFImageWriterSpi();
-        ImageWriter writer = new GIFImageWriter(spi);
-        ImageWriteParam params = writer.getDefaultWriteParam();
-        IIOImage img = new IIOImage(trackPixel, null, null);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        writer.setOutput(new MemoryCacheImageOutputStream(os));
-        writer.write(null, img, params);
     }
 }

@@ -35,6 +35,7 @@ public enum SampleDataCategory {
     USERNAME("userName", "login", "loginName"),
     DOB("Birthday", "生日", "DateOfBirth", "*date", "date*"),
     EMAIL("mail"),
+    URL("uri"),
     HOST,
     STREET,
     SUBURB("city"),

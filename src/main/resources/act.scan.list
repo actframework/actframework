@@ -14,6 +14,7 @@ act.test.ScenarioDebugHelper
 act.test.ScenarioDebugHelper$LoadFixtures
 act.test.ScenarioDebugHelper$ClearFixtures
 act.test.func.SampleDataProviderAdaptor
+act.test.util.NamedLogicRegister
 act.handler.builtin.controller.RequestHandlerProxy
 act.i18n.TimeZoneResolver
 act.i18n.LocaleResolver
