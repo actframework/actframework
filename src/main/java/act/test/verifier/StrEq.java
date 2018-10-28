@@ -1,10 +1,10 @@
-package act.test.util;
+package act.test.verifier;
 
 /*-
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2018 ActFramework
+ * Copyright (C) 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,20 @@ package act.test.util;
  * #L%
  */
 
-import act.app.App;
-import org.junit.BeforeClass;
-import org.osgl.$;
-import osgl.ut.TestBase;
+import org.osgl.util.C;
+import org.osgl.util.S;
 
-public class TestTestBase extends TestBase {
+import java.util.List;
 
-    @BeforeClass
-    public static void clearActMockup() {
-        $.setFieldValue("INST", App.class, null);
-        Thread.currentThread().setContextClassLoader(TestTestBase.class.getClassLoader());
+public class StrEq extends Verifier<StrEq> {
+
+    @Override
+    public boolean verify(Object value) {
+        return S.eq(S.string(value), S.string(initVal));
     }
 
+    @Override
+    protected List<String> aliases() {
+        return C.list("seq", "stringEquals");
+    }
 }
