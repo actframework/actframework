@@ -279,7 +279,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
                     source = classLoader.source(name0);
                 }
                 if (null == source) {
-                    throw E.unexpected("Cannot locate source file for %s. \nPlease make sure you do not have non-nested classes defined in source file of other class");
+                    throw E.unexpected("Cannot locate source file for %s. \nPlease make sure you do not have non-nested classes defined in source file of other class", name);
                 }
                 if (name != name0) {
                     String innerName = S.afterFirst(name, "$");
