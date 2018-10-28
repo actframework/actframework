@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* JsonView, CsvView etc shall be declared as `@Inherited` #904
 * Test debug page - make failed test display in the beginning of the page #896
 * SimpleRestfulServiceBase - further simplified the usage #898
 * API sample data - add URL category #897
