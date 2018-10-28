@@ -20,9 +20,15 @@ package act.db.util;
  * #L%
  */
 
+import static org.scijava.parse.Operator.Associativity.LEFT;
+import static org.scijava.parse.Operator.Associativity.RIGHT;
+
+import act.db.CriteriaGroupLogic;
 import act.db.CriteriaOperator;
 import org.osgl.$;
 import org.osgl.util.*;
+import org.scijava.parse.Group;
+import org.scijava.parse.Operator;
 import org.yaml.snakeyaml.Yaml;
 
 import java.lang.reflect.Field;
@@ -42,9 +48,12 @@ public class CriteriaOperatorRegistry {
 
     private Map<Keyword, CriteriaOperator> repo = new HashMap<>();
 
+    List<Operator> parsingtonOperators = new ArrayList<>();
+
     public CriteriaOperatorRegistry() {
         INSTANCE = this;
         registerBuiltInOperators();
+        registerOtherParsingtonFacilities();
     }
 
     public synchronized void register(CriteriaOperator operator) {
@@ -65,6 +74,9 @@ public class CriteriaOperatorRegistry {
         Keyword keyword = Keyword.of(name);
         CriteriaOperator existing = repo.put(keyword, operator);
         E.illegalStateIf(null != existing && existing != operator, "operator name already registered: " + name);
+        String opId = keyword.javaVariable();
+        Operator op = new Operator(opId, 2, LEFT, 11);
+        parsingtonOperators.add(op);
     }
 
     private void registerBuiltInOperators() {
@@ -77,6 +89,27 @@ public class CriteriaOperatorRegistry {
                 $.setStaticFieldValue(field, op);
             }
         }
+    }
+
+    private void registerGroupLogic(CriteriaGroupLogic logic) {
+        registerGroupLogic(logic.name(), logic);
+        for (String s : logic.aliases()) {
+            registerGroupLogic(s, logic);
+        }
+    }
+
+    private void registerGroupLogic(String name, CriteriaGroupLogic logic) {
+        Keyword keyword = Keyword.of(name);
+        Operator op = new Operator(keyword.javaVariable(), 2, LEFT, 8);
+        parsingtonOperators.add(op);
+    }
+
+    private void registerOtherParsingtonFacilities() {
+        for (CriteriaGroupLogic logic : CriteriaGroupLogic.values()) {
+            registerGroupLogic(logic);
+        }
+        parsingtonOperators.add(new Group("(", ")", 16));
+        parsingtonOperators.add(new Operator(":", 1, RIGHT, 14));
     }
 
     private Map<Keyword, Field> builtInConstantFields() {

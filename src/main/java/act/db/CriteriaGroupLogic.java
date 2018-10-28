@@ -20,6 +20,10 @@ package act.db;
  * #L%
  */
 
+import org.osgl.util.C;
+
+import java.util.List;
+
 public enum CriteriaGroupLogic {
     AND() {
         @Override
@@ -30,6 +34,11 @@ public enum CriteriaGroupLogic {
         @Override
         public String toString() {
             return " && ";
+        }
+
+        @Override
+        public List<String> aliases() {
+            return C.list("&&");
         }
     },
     OR () {
@@ -42,10 +51,16 @@ public enum CriteriaGroupLogic {
         public String toString() {
             return " || ";
         }
+
+        @Override
+        public List<String> aliases() {
+            return C.list("||");
+        }
     };
 
     public abstract CriteriaGroupLogic negate();
 
+    public abstract List<String> aliases();
 
     public static CriteriaGroupLogic valueOfIgnoreCase(String op) {
         return valueOf(op.toUpperCase());

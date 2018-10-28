@@ -87,7 +87,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, Q
      *
      * @param expression the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
-     * @return the firtst entity matches or {@code null} if not found
+     * @return the first entity matches or {@code null} if not found
      * @throws IllegalArgumentException if value number doesn't match the expression requirement
      * @see #findBy(String, Object...)
      * @see act.db.util.CriteriaUtil#parse(String, Object...)
