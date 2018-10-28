@@ -27,7 +27,7 @@ public class Gh906 {
 
     public abstract static class Super extends BaseController {
         @GetAction
-        @ResponseContentType(H.MediaType.XML)
+        @ResponseContentType(H.MediaType.TXT)
         @PropertySpec("id")
         public Foo getFoo(int id, String name) {
             return new Foo(id, name);

@@ -278,6 +278,9 @@ class AppCompiler extends LogSupportedDestroyableBase {
                     $.nil();
                     source = classLoader.source(name0);
                 }
+                if (null == source) {
+                    throw E.unexpected("Cannot locate source file for %s. \nPlease make sure you do not have non-nested classes defined in source file of other class");
+                }
                 if (name != name0) {
                     String innerName = S.afterFirst(name, "$");
                     source.compiled(innerName, clazzFile.getBytes());
