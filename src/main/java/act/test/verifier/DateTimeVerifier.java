@@ -32,7 +32,7 @@ import org.osgl.util.S;
 import java.text.DateFormat;
 import java.util.Date;
 
-public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
+public abstract class DateTimeVerifier extends Verifier {
 
     protected long timestamp;
 

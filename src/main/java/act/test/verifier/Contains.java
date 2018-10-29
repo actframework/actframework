@@ -26,7 +26,7 @@ import org.osgl.util.S;
 import java.lang.reflect.Array;
 import java.util.Collection;
 
-public class Contains extends Verifier<Contains> {
+public class Contains extends Verifier {
 
     @Override
     public boolean verify(Object value) {

@@ -911,10 +911,19 @@ public class Scenario implements ScenarioPart {
     }
 
     private Verifier tryLoadVerifier(String name) {
+        boolean revert = false;
+        if (name.startsWith("!") || name.startsWith("-")) {
+            revert = true;
+            name = name.substring(1).trim();
+        } else if (name.startsWith("not:")) {
+            revert = true;
+            name = name.substring(4).trim();
+        }
         Class<?> c = tryLoadClass(name);
         if (null != c) {
             if (Verifier.class.isAssignableFrom(c)) {
-                return (Verifier) (null != app ? app.getInstance(c) : $.newInstance(c));
+                final Verifier v = (Verifier) (null != app ? app.getInstance(c) : $.newInstance(c));
+                return v.meOrReversed(revert);
             } else {
                 throw new UnexpectedException("Class not supported: " + name);
             }

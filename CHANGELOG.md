@@ -1,6 +1,11 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `SubClassFinder` and `AnnotatedClassFinder` shall favor `NoAutoRegister` annotation #912
+* Test - enhance ${now()} function #911
+* Test - allow it add `negative` decorator to verifier #910
+* Test - remove generic type parameter from `NamedLogic` #909
+* Test - allow setting precision of ${now()} function #908
 * Interceptor defined in super class now not effective on sub class #907
 * Basic support for xml content-type #905
 * ReflectedHandlerInvoker - try to get Annotation from method in parent class if possible #906

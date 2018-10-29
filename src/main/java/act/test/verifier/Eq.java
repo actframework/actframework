@@ -25,7 +25,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class Eq extends Verifier<Eq> {
+public class Eq extends Verifier {
 
     @Override
     public boolean verify(Object value) {

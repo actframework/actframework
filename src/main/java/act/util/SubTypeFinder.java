@@ -66,7 +66,9 @@ public abstract class SubTypeFinder<T> extends AppServicePlugin {
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
                         final Class<T> c = $.classForName(classNode.name(), app.classLoader());
-                        found(c, app);
+                        if (!c.isAnnotationPresent(NoAutoRegister.class)) {
+                            found(c, app);
+                        }
                     }
                 });
             }

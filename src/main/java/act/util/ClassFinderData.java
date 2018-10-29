@@ -88,6 +88,9 @@ public class ClassFinderData {
                         cl = cl.getParent();
                     }
                     Class<?> targetClass = $.classForName(classNode.name(), app.classLoader());
+                    if (targetClass.isAnnotationPresent(NoAutoRegister.class)) {
+                        return;
+                    }
                     Object param = targetClass;
                     if (data.paramIsInstance) {
                         param = app.getInstance(targetClass);

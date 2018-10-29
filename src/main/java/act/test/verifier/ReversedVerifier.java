@@ -4,7 +4,7 @@ package act.test.verifier;
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2018 ActFramework
+ * Copyright (C) 2014 - 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,24 @@ package act.test.verifier;
  * #L%
  */
 
-import org.osgl.util.C;
-import org.osgl.util.S;
+import act.util.NoAutoRegister;
+import org.osgl.$;
 
-import java.util.List;
+@NoAutoRegister
+public class ReversedVerifier extends Verifier {
+    private Verifier v;
 
-public class Ends extends Verifier {
-
-    @Override
-    public boolean verify(Object value) {
-        return S.string(value).endsWith(S.string(initVal));
+    public ReversedVerifier(Verifier v) {
+        this.v = $.requireNotNull(v);
     }
 
     @Override
-    protected List<String> aliases() {
-        return C.list("endsWith", "end", "endWith");
+    public boolean verify(Object value) {
+        return !v.verify(value);
+    }
+
+    @Override
+    public String toString() {
+        return "!" + v.toString();
     }
 }

@@ -31,7 +31,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-public abstract class Macro<T extends Macro> extends NamedLogic<T> {
+public abstract class Macro extends NamedLogic {
 
     public abstract void run(Scenario scenario);
 
@@ -40,7 +40,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         return Macro.class;
     }
 
-    public static class ClearFixture extends Macro<ClearFixture> {
+    public static class ClearFixture extends Macro {
 
         @Override
         public void run(Scenario scenario) {
@@ -53,7 +53,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
     }
 
-    public static class ClearSession extends Macro<ClearSession> {
+    public static class ClearSession extends Macro {
         @Override
         public void run(Scenario scenario) {
             scenario.clearSession();
@@ -64,7 +64,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
      * Read file content into a string and cache the string
      * with the underscore style of the file name.
      */
-    public static class ReadContent extends Macro<ReadContent> {
+    public static class ReadContent extends Macro {
 
         private String resourcePath;
 
@@ -101,7 +101,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
     }
 
-    public static class Pause extends Macro<Pause> {
+    public static class Pause extends Macro {
 
         long time;
 

@@ -25,7 +25,7 @@ import org.osgl.util.S;
 
 import java.util.List;
 
-public class Starts extends Verifier<Starts> {
+public class Starts extends Verifier {
 
     @Override
     public boolean verify(Object value) {

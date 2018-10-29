@@ -25,7 +25,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class Neq extends Verifier<Neq> {
+public class Neq extends Verifier {
 
     @Override
     public boolean verify(Object value) {

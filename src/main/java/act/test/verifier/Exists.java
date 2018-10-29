@@ -26,7 +26,7 @@ import org.osgl.util.S;
 
 import java.util.List;
 
-public class Exists extends Verifier<Exists> {
+public class Exists extends Verifier {
 
     @Override
     public boolean verify(Object value) {
