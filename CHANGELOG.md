@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Interceptor defined in super class now not effective on sub class #907
 * Basic support for xml content-type #905
 * ReflectedHandlerInvoker - try to get Annotation from method in parent class if possible #906
 * JsonView, CsvView etc shall be declared as `@Inherited` #904

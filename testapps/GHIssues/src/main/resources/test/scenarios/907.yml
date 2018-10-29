@@ -1,0 +1,8 @@
+Scenario(GH907):
+  description: "[907] Interceptor defined in super class now not effective on sub class"
+  interactions:
+  - description: Test
+    request:
+      get: /907
+    response:
+      status: 404

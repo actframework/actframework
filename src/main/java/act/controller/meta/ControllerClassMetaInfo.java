@@ -90,6 +90,11 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
         super.releaseResources();
     }
 
+    @Override
+    public String toString() {
+        return className();
+    }
+
     public String className() {
         return type.getClassName();
     }
@@ -419,6 +424,7 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
                     }
                 }
             }
+            return info;
         }
         return null;
     }
