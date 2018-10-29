@@ -4,7 +4,7 @@ if (typeof String.prototype.contains != 'function') {
     };
 }
 
-function __processCsrfSetup(setup) {
+function __processCsrfSetup(setup, submitMethod) {
     try {
         if (jQuery.csrfConf && jQuery.csrfConf.cookieName && jQuery.csrfConf.headerName && "post" === submitMethod) {
             var token = jQuery.csrfConf.token
@@ -93,7 +93,7 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
             success: callback
         }
 
-        __processCsrfSetup(setup)
+        __processCsrfSetup(setup, submitMethod)
         return jQuery.ajax(setup).always(checkAjaxRedirect);
     };
 });
@@ -127,7 +127,7 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
             data: data,
             success: callback
         }
-        __processCsrfSetup(setup)
+        __processCsrfSetup(setup, submitMethod)
         return jQuery.ajax(setup).always(checkAjaxRedirect);
     };
 });
