@@ -1,0 +1,10 @@
+Scenario(GH918):
+  interactions:
+    - description: "[gh918] Cannot add white space for `session.header.payload.prefix` configuration"
+      request:
+        get: /
+      response:
+        headers:
+          Authorization:
+            - exists: true
+            - startsWith: "Bearer "

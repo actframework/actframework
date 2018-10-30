@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Cannot add white space for `session.header.payload.prefix` configuration #918
 * `App.getResource(String)` behavior different between dev and prod mode #916
 * Make `Dao` by default be stateless #914
 * Optimize Singleton controller instance infer logic #913

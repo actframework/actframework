@@ -2882,7 +2882,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sessionHeaderPayloadPrefix() {
         if (null == sessionHeaderPayloadPrefix) {
-            sessionHeaderPayloadPrefix = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
+            String s = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
+            s = S.strip(s).of(S.DOUBLE_QUOTES);
+            sessionHeaderPayloadPrefix = s;
         }
         return sessionHeaderPayloadPrefix;
     }
