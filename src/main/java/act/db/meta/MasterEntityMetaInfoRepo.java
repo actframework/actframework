@@ -30,15 +30,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 
 @Singleton
 public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {

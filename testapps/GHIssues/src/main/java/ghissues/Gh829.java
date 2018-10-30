@@ -3,8 +3,8 @@ package ghissues;
 import act.annotations.DownloadFilename;
 import act.app.ActionContext;
 import act.controller.annotation.UrlContext;
-import act.inject.param.NoBind;
 import act.job.OnAppStart;
+import act.util.Global;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.S;
 
@@ -18,7 +18,7 @@ public class Gh829 extends BaseController {
         public String name = S.random();
     }
 
-    @NoBind
+    @Global
     private List<Foo> foos;
 
     @OnAppStart

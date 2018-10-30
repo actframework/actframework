@@ -27,20 +27,19 @@ import act.app.DbServiceManager;
 import act.app.event.SysEventId;
 import act.db.Dao;
 import act.db.DbService;
+import act.event.EventBus;
+import act.inject.DefaultValue;
+import act.job.*;
+import act.sys.Env;
 import act.test.func.Func;
 import act.test.macro.Macro;
 import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
-import act.event.EventBus;
-import act.inject.DefaultValue;
-import act.job.*;
-import act.sys.Env;
 import act.util.LogSupport;
+import act.util.Stateless;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.DeleteAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
@@ -53,10 +52,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 
 @Env.RequireMode(Act.Mode.DEV)
+@Stateless
 public class Test extends LogSupport {
-
-
-    static final Logger LOGGER = LogManager.get(Test.class);
 
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
@@ -252,7 +249,7 @@ public class Test extends LogSupport {
             Map<String, Scenario> scenarios = scenarioManager.load();
             List<Scenario> list;
             if (scenarios.isEmpty()) {
-                LOGGER.warn("No scenario defined.");
+                warn("No scenario defined.");
                 list = C.list();
             } else {
                 list = new ArrayList<>();

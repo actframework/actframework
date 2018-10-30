@@ -30,7 +30,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -126,6 +126,22 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     public int libBCSize() {
         return libBC.size();
+    }
+
+    @Override
+    public URL getResource(String name) {
+        if (name.startsWith("/")) {
+            name = name.substring(1);
+        }
+        return super.getResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        if (name.startsWith("/")) {
+            name = name.substring(1);
+        }
+        return super.getResources(name);
     }
 
     protected void preload() {

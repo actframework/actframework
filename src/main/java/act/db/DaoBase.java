@@ -20,10 +20,9 @@ package act.db;
  * #L%
  */
 
-import act.app.security.SecurityContext;
 import act.inject.param.NoBind;
-import act.util.ActContext;
 import act.util.LogSupport;
+import act.util.Stateless;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
@@ -33,15 +32,12 @@ import java.lang.reflect.Type;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 
-// We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
-//@InheritedStateless
 @NoBind
+@Stateless
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         extends LogSupport
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
-    private ActContext appCtx;
-    private SecurityContext secCtx;
     private boolean destroyed;
     protected Type modelType;
     protected Class<MODEL_TYPE> modelClass;
@@ -61,19 +57,11 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         this.modelClass = Generics.classOf(modelType);
     }
 
-
-    @Override
-    public void setAppContext(ActContext context) {
-        appCtx = context;
-    }
-
     @Override
     public void destroy() {
         if (destroyed) return;
         destroyed = true;
         releaseResources();
-        appCtx = null;
-        secCtx = null;
     }
 
     @Override
@@ -96,24 +84,11 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         return destroyed;
     }
 
-    @Override
-    public void setSecurityContext(SecurityContext context) {
-        secCtx = context;
-    }
-
     protected void releaseResources() {}
 
     @Override
     public Class<? extends Annotation> scope() {
         return ApplicationScoped.class;
-    }
-
-    protected final ActContext appContext() {
-        return appCtx;
-    }
-
-    protected final SecurityContext securityContext() {
-        return secCtx;
     }
 
     @Override

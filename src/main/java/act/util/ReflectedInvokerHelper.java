@@ -23,6 +23,7 @@ package act.util;
 import act.Act;
 import act.apidoc.ApiManager;
 import act.app.*;
+import act.inject.util.LoadConfig;
 import act.inject.util.LoadResource;
 import org.osgl.$;
 import org.osgl.inject.annotation.Configuration;
@@ -52,7 +53,7 @@ public class ReflectedInvokerHelper {
     public static Object tryGetSingleton(Class<?> invokerClass, App app) {
         Object singleton = app.singleton(invokerClass);
         if (null == singleton) {
-            if (_isGlobalOrStateless(invokerClass, new HashSet<Class>())) {
+            if (isGlobalOrStateless(invokerClass, new HashSet<Class>())) {
                 singleton = app.getInstance(invokerClass);
             }
         }
@@ -159,8 +160,22 @@ public class ReflectedInvokerHelper {
         return _isGlobalOrStateless(type, circularReferenceDetector);
     }
 
+    private static $.Predicate<Class<?>> STATEFUL_CLASS = new $.Predicate<Class<?>>() {
+        @Override
+        public boolean test(Class<?> aClass) {
+            return !_hasGlobalOrStatelessAnnotations(aClass);
+        }
+    };
+
+    private static $.Predicate<Field> NON_STATIC_FIELD = new $.Predicate<Field>() {
+        @Override
+        public boolean test(Field field) {
+            return !Modifier.isStatic(field.getModifiers());
+        }
+    };
+
     private static boolean _isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
-        List<Field> fields = $.fieldsOf(type);
+        List<Field> fields = $.fieldsOf(type, STATEFUL_CLASS, NON_STATIC_FIELD);
         if (fields.isEmpty()) {
             return true;
         }
@@ -180,10 +195,25 @@ public class ReflectedInvokerHelper {
         return isGlobalOrStateless(fieldType, circularReferenceDetector);
     }
 
-    private final static List<Class<? extends Annotation>> statelessMarkers = C.list(Singleton.class, Stateless.class, Global.class, Configuration.class, LoadResource.class);
+    private final static List<Class<? extends Annotation>> statelessMarkersForClass = C.list(
+            Singleton.class, Stateless.class
+    );
 
-    private static boolean _hasGlobalOrStatelessAnnotations(AnnotatedElement element) {
-        for (Class<? extends Annotation> type : statelessMarkers) {
+    private final static List<Class<? extends Annotation>> statelessMarkersForFields = C.list(
+            Stateless.class, Global.class, Configuration.class,
+            LoadResource.class, LoadConfig.class
+    );
+
+    private static boolean _hasGlobalOrStatelessAnnotations(Class<?> type) {
+        return _hasAnnotations(type, statelessMarkersForClass);
+    }
+
+    private static boolean _hasGlobalOrStatelessAnnotations(Field field) {
+        return _hasAnnotations(field, statelessMarkersForFields);
+    }
+
+    private static boolean _hasAnnotations(AnnotatedElement element, List<Class<? extends Annotation>> annotations) {
+        for (Class<? extends Annotation> type : annotations) {
             if (null != element.getAnnotation(type)) {
                 return true;
             }

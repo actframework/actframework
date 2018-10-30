@@ -47,6 +47,7 @@ import org.jsoup.select.Elements;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
@@ -61,7 +62,7 @@ import java.util.regex.Pattern;
 
 public class Scenario implements ScenarioPart {
 
-    private static final Logger LOGGER = Test.LOGGER;
+    private static final Logger LOGGER = LogManager.get(Test.class);
 
     private static final ThreadLocal<Scenario> current = new ThreadLocal<>();
 

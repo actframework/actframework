@@ -332,7 +332,7 @@ public enum AppConfigKey implements ConfigKey {
     CORS_MAX_AGE("cors.max_age"),
 
     /**
-     * `act.cors.allow_credential` specifies `Access-Control-Allow-Credential`.
+     * `act.cors.allow_credentials` specifies `Access-Control-Allow-Credentials`.
      *
      * Default value: `false`
      */

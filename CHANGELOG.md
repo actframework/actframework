@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `App.getResource(String)` behavior different between dev and prod mode #916
+* Make `Dao` by default be stateless #914
+* Optimize Singleton controller instance infer logic #913
 * `SubClassFinder` and `AnnotatedClassFinder` shall favor `NoAutoRegister` annotation #912
 * Test - enhance ${now()} function #911
 * Test - allow it add `negative` decorator to verifier #910
