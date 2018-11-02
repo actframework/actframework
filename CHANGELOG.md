@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `UnexpectedClassNotFoundException` raised during restoring plugin classes #923
 * `Unable to find the overwritten method of Xxx` issue on 1.8.8 #925
 
 **1.8.8** 30/Oct/2018

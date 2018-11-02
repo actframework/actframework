@@ -94,8 +94,13 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     @Override
     public List<Class<?>> pluginClasses() {
         if (classInfoRepository().isEmpty()) {
-            restoreClassInfoRegistry();
-            restorePluginClasses();
+            try {
+                restoreClassInfoRegistry();
+                restorePluginClasses();
+            } catch (RuntimeException e) {
+                LOGGER.warn(e, "Error restoring class info registry or plugin classes");
+                classInfoRepository.reset();
+            }
             if (classInfoRepository.isEmpty()) {
                 if (LOGGER.isTraceEnabled()) {
                     LOGGER.trace("classInfoRegistry not recovered, start searching through libBC (with total %s classes)", libBCSize());

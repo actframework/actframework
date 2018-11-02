@@ -117,6 +117,10 @@ public class ClassInfoRepository extends LogSupportedDestroyableBase {
         return classes.isEmpty();
     }
 
+    public void reset() {
+        classes.clear();
+    }
+
     @Override
     protected void releaseResources() {
         classes.clear();
