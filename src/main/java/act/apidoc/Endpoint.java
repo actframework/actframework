@@ -766,6 +766,9 @@ public class Endpoint implements Comparable<Endpoint> {
                                 val = $.convert(val).to(fieldClass);
                             }
                             if (null != val) {
+                                if (valType == String.class && fieldSpec.hasAnnotation(Sensitive.class)) {
+                                    val = Act.app().crypto().encrypt((String) val);
+                                }
                                 field.set(obj, val);
                             }
                         }

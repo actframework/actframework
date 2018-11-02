@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* API doc - it shall support `@Sensitive` annotation #919
 * `UnexpectedClassNotFoundException` raised during restoring plugin classes #923
 * `Unable to find the overwritten method of Xxx` issue on 1.8.8 #925
 
