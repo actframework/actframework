@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.8.8-SNAPSHOT</version>
+  <version>1.8.8.8</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.8.7-SNAPSHOT</version>
+    <version>1.8.8.9-SNAPSHOT</version>
   </parent>
 
   <properties>

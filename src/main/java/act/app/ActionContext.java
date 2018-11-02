@@ -35,8 +35,7 @@ import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
-import act.route.Router;
-import act.route.UrlPath;
+import act.route.*;
 import act.security.CORS;
 import act.session.SessionManager;
 import act.util.*;
@@ -65,7 +64,7 @@ import javax.validation.ConstraintViolation;
  * an application session
  */
 @RequestScoped
-public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable {
+public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable, RoutedContext {
 
     private static final Logger LOGGER = LogManager.get(ActionContext.class);
 
@@ -119,6 +118,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean suppressJsonDateFormat;
     private String attachmentName;
     private Class<?> handlerClass;
+    private RouteSource routeSource;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -565,6 +565,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext handler(RequestHandler handler) {
         this.handler = $.requireNotNull(handler);
+        return this;
+    }
+
+    @Override
+    public RouteSource routeSource() {
+        return routeSource;
+    }
+
+    @Override
+    public ActionContext routeSource(RouteSource routeSource) {
+        this.routeSource = routeSource;
         return this;
     }
 

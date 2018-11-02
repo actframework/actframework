@@ -25,6 +25,8 @@ import act.apidoc.ApiManager;
 import act.app.*;
 import act.inject.util.LoadConfig;
 import act.inject.util.LoadResource;
+import act.route.RouteSource;
+import act.route.RoutedContext;
 import org.osgl.$;
 import org.osgl.inject.annotation.Configuration;
 import org.osgl.mvc.annotation.*;
@@ -77,7 +79,9 @@ public class ReflectedInvokerHelper {
         }
         Annotation[][] paramAnnotations = requestHandlerMethodParamAnnotationCache.get(method);
         if (null == paramAnnotations) {
-            if (!hasActionAnnotation(method)) {
+            RoutedContext ctx = RoutedContext.Current.get();
+            E.illegalStateIf(null == ctx, "Unable to detected current RoutedContext");
+            if (RouteSource.ACTION_ANNOTATION == ctx.routeSource() && !hasActionAnnotation(method)) {
                 Method overwrittenMethod = overwrittenMethodOf(method);
                 paramAnnotations = overwrittenMethod == method ? method.getParameterAnnotations() : requestHandlerMethodParamAnnotations(overwrittenMethod);
             } else {
@@ -94,9 +98,6 @@ public class ReflectedInvokerHelper {
         try {
             return base.getMethod(method.getName(), method.getParameterTypes());
         } catch (NoSuchMethodException e) {
-            if (ApiManager.inProgress()) {
-                return method;
-            }
             throw E.unexpected("Unable to find the overwritten method of " + method);
         }
     }

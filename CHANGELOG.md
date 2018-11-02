@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.8**
+* `Unable to find the overwritten method of Xxx` issue on 1.8.8 #925
+
 **1.8.8** 30/Oct/2018
 * Cannot add white space for `session.header.payload.prefix` configuration #918
 * `App.getResource(String)` behavior different between dev and prod mode #916

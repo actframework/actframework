@@ -33,6 +33,7 @@ import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.route.RouteSource;
 import act.route.Router;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -105,15 +106,21 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         Router router = app.router();
         AppConfig config = app.config();
         Set<Class> controllerClasses = new HashSet<>();
-        load(router, null, config, controllerClasses);
-        for (NamedPort port : app.config().namedPorts()) {
-            router = app.router(port);
-            load(router, port, config, controllerClasses);
+        ApiDocCompileContext ctx = new ApiDocCompileContext();
+        ctx.saveCurrent();
+        try {
+            load(router, null, config, controllerClasses, ctx);
+            for (NamedPort port : app.config().namedPorts()) {
+                router = app.router(port);
+                load(router, port, config, controllerClasses, ctx);
+            }
+            if (Act.isDev()) {
+                exploreDescriptions(controllerClasses);
+            }
+            buildModuleLookup();
+        } finally {
+            ctx.destroy();
         }
-        if (Act.isDev()) {
-            exploreDescriptions(controllerClasses);
-        }
-        buildModuleLookup();
         LOGGER.info("API book compiled");
     }
 
@@ -129,13 +136,14 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         }
     }
 
-    private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses) {
+    private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses, final ApiDocCompileContext ctx) {
         final int portNumber = null == port ? config.httpExternalPort() : port.port();
         final boolean isDev = Act.isDev();
         final boolean hideBuiltIn = app().config().isHideBuiltInEndpointsInApiDoc();
         router.accept(new Router.Visitor() {
             @Override
-            public void visit(H.Method method, String path, RequestHandler handler) {
+            public void visit(H.Method method, String path, RouteSource routeSource, RequestHandler handler) {
+                ctx.routeSource(routeSource);
                 if (showEndpoint(path, handler)) {
                     Endpoint endpoint = new Endpoint(portNumber, method, path, handler);
                     endpoints.add(endpoint);

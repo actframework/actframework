@@ -69,10 +69,12 @@ public class Router extends AppHolderBase<Router> {
          *         the HTTP method
          * @param path
          *         the URL path
+         * @param source
+         *         the route source
          * @param handler
          *         the handler
          */
-        void visit(H.Method method, String path, RequestHandler handler);
+        void visit(H.Method method, String path, RouteSource source, RequestHandler handler);
     }
 
     public static final String IGNORE_NOTATION = "...";
@@ -188,7 +190,7 @@ public class Router extends AppHolderBase<Router> {
             if (handler instanceof ContextualHandler) {
                 handler = ((ContextualHandler) handler).realHandler();
             }
-            visitor.visit(method, node.path(), handler);
+            visitor.visit(method, node.path(), node.routeSource, handler);
         }
         for (Node child : node.dynamicChilds) {
             visit(child, method, visitor);
@@ -216,10 +218,10 @@ public class Router extends AppHolderBase<Router> {
         node = search(node, Path.tokenizer(Unsafe.bufOf(path)), context);
         RequestHandler handler = getInvokerFrom(node);
         RequestHandler blockIssueHandler = app().blockIssueHandler();
-        if (null == blockIssueHandler) {
-            return handler;
-        }
-        if (handler instanceof FileGetter || handler instanceof ResourceGetter) {
+        if (null == blockIssueHandler || (handler instanceof FileGetter || handler instanceof ResourceGetter)) {
+            if (null != node) {
+                context.routeSource(node.routeSource);
+            } // otherwise handler is always 404
             return handler;
         }
         return blockIssueHandler;
