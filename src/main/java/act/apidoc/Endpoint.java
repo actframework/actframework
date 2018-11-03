@@ -334,7 +334,6 @@ public class Endpoint implements Comparable<Endpoint> {
         if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(controllerClass);
         }
-        returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? id(controllerClass, method) : descAnno.value();
         Module methodModule = method.getAnnotation(Module.class);
@@ -344,6 +343,11 @@ public class Endpoint implements Comparable<Endpoint> {
             exploreParamInfo(controllerClass, typeParamLookup);
         }
         this.controllerClass = controllerClass;
+        try {
+            returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
+        } catch (Exception e) {
+            LOGGER.warn(e, "Error creating returnSample of endpoint for request handler [%s] for [%s %s]", handler, httpMethod, path);
+        }
     }
 
     private String inferModule(Class<?> controllerClass) {

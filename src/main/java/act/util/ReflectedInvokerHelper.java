@@ -25,6 +25,7 @@ import act.apidoc.ApiManager;
 import act.app.*;
 import act.inject.util.LoadConfig;
 import act.inject.util.LoadResource;
+import act.job.JobContext;
 import act.route.RouteSource;
 import act.route.RoutedContext;
 import org.osgl.$;
@@ -79,9 +80,14 @@ public class ReflectedInvokerHelper {
         }
         Annotation[][] paramAnnotations = requestHandlerMethodParamAnnotationCache.get(method);
         if (null == paramAnnotations) {
+            boolean searchForOverwrittenMethod = false;
             RoutedContext ctx = RoutedContext.Current.get();
-            E.illegalStateIf(null == ctx, "Unable to detected current RoutedContext");
-            if (RouteSource.ACTION_ANNOTATION == ctx.routeSource() && !hasActionAnnotation(method)) {
+            if (null != ctx) {
+                searchForOverwrittenMethod = RouteSource.ACTION_ANNOTATION == ctx.routeSource() && !hasActionAnnotation(method);
+            } else {
+                E.illegalStateIf(null == JobContext.current(), "Unable to detected current RoutedContext");
+            }
+            if (searchForOverwrittenMethod) {
                 Method overwrittenMethod = overwrittenMethodOf(method);
                 paramAnnotations = overwrittenMethod == method ? method.getParameterAnnotations() : requestHandlerMethodParamAnnotations(overwrittenMethod);
             } else {
