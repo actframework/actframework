@@ -43,7 +43,7 @@ public class OptionAnnoInfoBase {
     private String lead2;
     private String defVal;
     private String group;
-    private String help;
+    private String help = "";
     private boolean required;
     private String param;
 

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* CLI - do not output `null` for options without help message #927
 * API doc - allow fault tolerant when generating sample data #920
 * API doc - it shall support `@Sensitive` annotation #919
 * `UnexpectedClassNotFoundException` raised during restoring plugin classes #923
