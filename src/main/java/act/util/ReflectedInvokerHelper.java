@@ -203,7 +203,7 @@ public class ReflectedInvokerHelper {
     }
 
     private final static List<Class<? extends Annotation>> statelessMarkersForClass = C.list(
-            Singleton.class, Stateless.class
+            Singleton.class, Stateless.class, InheritedStateless.class
     );
 
     private final static List<Class<? extends Annotation>> statelessMarkersForFields = C.list(

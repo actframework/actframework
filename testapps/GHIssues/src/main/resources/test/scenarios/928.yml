@@ -1,0 +1,20 @@
+Scenario(GH928):
+  fixtures:
+    - 928.yml
+  interactions:
+    - description: fetch user list
+      request:
+        get: /928/users
+      response:
+        json:
+          size: 1
+          0:
+            fullName: Gelin Luo
+    - description: fetch department list
+      request:
+        get: /928/departments
+      response:
+        json:
+          size: 1
+          0:
+            name: R&D

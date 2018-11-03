@@ -116,7 +116,7 @@ public class CommandMethodMetaInfo extends LogSupportedDestroyableBase {
     }
 
     public String helpMsg() {
-        return null == helpMsg ? "" : helpMsg;
+        return null == helpMsg ? "<no help message>" : helpMsg;
     }
 
     /**
