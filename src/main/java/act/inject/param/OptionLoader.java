@@ -23,6 +23,7 @@ package act.inject.param;
 import act.cli.CliContext;
 import act.cli.Optional;
 import act.cli.Required;
+import act.inject.DefaultValue;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
@@ -49,31 +50,42 @@ class OptionLoader extends CliParamValueLoader {
         this.bindName = bindName;
         this.required = false;
         this.parseLeads(optional.lead());
-        this.defVal = optional.defVal();
+        String defVal = optional.defVal();
         this.requiredGroup = null;
         this.beanSpec = beanSpec;
         this.errorTemplate = errorTemplate(optional);
         this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundOptional();
+        if (S.blank(defVal)) {
+            DefaultValue defaultValue = beanSpec.getAnnotation(DefaultValue.class);
+            if (null != defaultValue) {
+                defVal = defaultValue.value();
+            }
+        }
+        this.defVal = defVal;
     }
 
     OptionLoader(String bindName, Required required, StringValueResolver resolver, BeanSpec beanSpec) {
         this.bindName = bindName;
         this.required = true;
         this.parseLeads(required.lead());
-        this.defVal = null;
         String group = required.group();
         this.requiredGroup = S.blank(group) ? bindName : group;
         this.beanSpec = beanSpec;
         this.errorTemplate = errorTemplate(required);
         this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
+        DefaultValue defaultValue = beanSpec.getAnnotation(DefaultValue.class);
+        this.defVal = null == defaultValue ? null : defaultValue.value();
     }
 
     @Override
     public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         String optVal = ctx.paramVal(bindName);
+        if (S.blank(optVal)) {
+            optVal = this.defVal;
+        }
         if (S.blank(optVal) && required) {
             optVal = getFirstArgument(ctx);
         }
@@ -83,11 +95,6 @@ class OptionLoader extends CliParamValueLoader {
         }
         if (null == val && null != cachedBean) {
             val = cachedBean;
-        }
-        if (null == val) {
-            if (!required) {
-                val = S.notBlank(defVal) ? resolve(defVal) : resolve(null);
-            }
         }
         if (null != val && required) {
             ctx.parsingContext().foundRequired(requiredGroup);

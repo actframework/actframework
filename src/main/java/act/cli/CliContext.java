@@ -77,6 +77,8 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             return curArgId;
         }
 
+        public Map<Integer, String> argDefVals = new HashMap<>();
+
         public boolean hasArguments(CommandLineParser command) {
             return curArgId.get() < command.argumentCount();
         }
@@ -119,11 +121,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         public ParsingContext copy() {
             ParsingContext ctx = new ParsingContext();
             ctx.optionArgumentsCnt = optionArgumentsCnt;
-            ctx.required = new HashMap<String, AtomicInteger>(required);
+            ctx.required = new HashMap<>(required);
             for (Map.Entry<String, AtomicInteger> entry : ctx.required.entrySet()) {
                 entry.setValue(new AtomicInteger(0));
             }
             ctx.curArgId = new AtomicInteger(0);
+            ctx.argDefVals.putAll(this.argDefVals);
             return ctx;
         }
     }
@@ -133,7 +136,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
         public static void start() {
             ParsingContext ctx0 = new ParsingContext();
-            ctx0.required = new HashMap<String, AtomicInteger>();
+            ctx0.required = new HashMap<>();
             ctx.set(ctx0);
         }
 
@@ -141,8 +144,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             ctx.get().optionArgumentsCnt++;
         }
 
-        public static void foundArgument() {
-            ctx.get().optionArgumentsCnt++;
+        public static void foundArgument(String defVal) {
+            ParsingContext ctx0 = ctx.get();
+            int n = ctx0.optionArgumentsCnt++;
+            if (S.notBlank(defVal)) {
+                ctx0.argDefVals.put(n, defVal) ;
+            }
         }
 
         public static void foundRequired(String group) {

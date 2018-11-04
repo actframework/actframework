@@ -777,7 +777,7 @@ public class App extends LogSupportedDestroyableBase {
                 };
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_PROVISIONED)) {
                     if (Act.isDev()) {
-                        jobManager.now("App:postDbSvcLogic", runnable2);
+                        jobManager.post(SINGLETON_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                     } else {
                         runnable2.run();
                     }
