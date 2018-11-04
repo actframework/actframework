@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.9**
+* update jline to 2.14.4
 * CLI - support `@DefaultValue` #929
 * Allow app to customise error response upon invalid request #922
 * `java.lang.IllegalArgumentException` upon starting BSBF project #931
