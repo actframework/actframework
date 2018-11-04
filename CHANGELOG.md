@@ -2,6 +2,12 @@
 
 **1.8.11** 5/Nov/2018
 * Automate test failure #932
+* update dependencies
+    - undertow-core: 1.4.26.Final
+    - snakeyaml: 1.23
+    - reflectasm: 1.11.7
+    - joda-time: 2.10.1
+    - jline: 2.14.6
 
 **1.8.9** 4/Nov/2018
 * update jline to 2.14.4
