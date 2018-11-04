@@ -1,4 +1,4 @@
-Scenario(GH857):
+Scenario(857):
   description: "[857] Provide a way to allow app to specify order of elements in the injected collection"
   interactions:
     - description: test

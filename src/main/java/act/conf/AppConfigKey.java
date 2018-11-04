@@ -473,6 +473,14 @@ public enum AppConfigKey implements ConfigKey {
     GLOBAL_RETURN_VALUE_ADVICE("globalReturnValueAdvice"),
 
     /**
+     * `globalValidateViolationAdvice` specifies the global {@link act.handler.ValidateViolationAdvice}
+     *  type.
+     *
+     *  Default value: null
+     */
+    GLOBAL_VALIDATE_VIOLATION_ADVICE("globalValidateViolateAdvice"),
+
+    /**
      * `act.handler.csrf_check_failure.impl` specifies the implementation
      * for {@link act.util.MissingAuthenticationHandler}
      *

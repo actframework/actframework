@@ -1,4 +1,4 @@
-Scenario(GH819):
+Scenario(819):
   description: "[819] Extended request handler method's param not enhanced with `@Named` annotation"
   interactions:
   - description: Test

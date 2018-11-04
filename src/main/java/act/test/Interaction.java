@@ -35,7 +35,7 @@ import java.util.*;
 
 public class Interaction implements ScenarioPart {
     public List<Macro> preActions = new ArrayList<>();
-    public String description;
+    public String description = "test interaction";
     public RequestSpec request;
     public ResponseSpec response;
     public List<Macro> postActions = new ArrayList<>();
@@ -46,7 +46,6 @@ public class Interaction implements ScenarioPart {
 
     @Override
     public void validate(Scenario scenario) throws UnexpectedException {
-        E.unexpectedIf(S.blank(description), "no description in the interaction of [%s]", scenario);
         E.unexpectedIf(null == request, "request spec not specified in interaction[%s]", this);
         //E.unexpectedIf(null == response, "response spec not specified");
         scenario.resolveRequest(request);

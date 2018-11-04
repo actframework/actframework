@@ -1,4 +1,4 @@
-Scenario(GH796):
+Scenario(796):
   description: "[796] `@PropertySpec` annotation now cause `NullPointerException` on JSON output"
   interactions:
   - description: Test

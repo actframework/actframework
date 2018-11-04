@@ -1,4 +1,4 @@
-Scenario(GH844):
+Scenario(844):
   description: "[844] Create an annotation to help specify head mapping for `@LoadResource` mechanism"
   interactions:
     - description: test

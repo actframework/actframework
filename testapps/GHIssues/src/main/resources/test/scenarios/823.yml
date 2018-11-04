@@ -1,4 +1,4 @@
-Scenario(GH823):
+Scenario(823):
   description: "[823] Apply new scope for implicit transaction"
   interactions:
   - description: Create an new User

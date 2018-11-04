@@ -1,4 +1,4 @@
-Scenario(GH852):
+Scenario(852):
   description: "[852] @PropertySpec not take effect"
   interactions:
     - description: test

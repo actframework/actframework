@@ -1,4 +1,4 @@
-Scenario(GH870):
+Scenario(870):
   description: "[870] Act not return application/json as default when exception"
   interactions:
     - description: test

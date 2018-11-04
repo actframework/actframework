@@ -36,8 +36,7 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
-import act.handler.ReturnValueAdvice;
-import act.handler.UnknownHttpMethodProcessor;
+import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.internal.util.StrBufRetentionLimitCalculator;
@@ -1104,25 +1103,63 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     protected T globalReturnValueAdvice(ReturnValueAdvice advice) {
         this.globalReturnValueAdvice = $.requireNotNull(advice);
+        this.globalReturnValueAdviceSet = true;
         return me();
     }
 
     public ReturnValueAdvice globalReturnValueAdvice() {
-        if (null != globalReturnValueAdvice) {
+        if (null != globalReturnValueAdviceSet) {
             return globalReturnValueAdvice;
         }
-        if (null == globalReturnValueAdviceSet) {
-            globalReturnValueAdviceSet = true;
-            String s = get(GLOBAL_RETURN_VALUE_ADVICE, null);
-            if (null != s) {
-                try {
-                    globalReturnValueAdvice = app.getInstance(s);
-                } catch (Exception e) {
-                    throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
-                }
+        String s = get(GLOBAL_RETURN_VALUE_ADVICE, null);
+        if (null != s) {
+            try {
+                globalReturnValueAdvice = app.getInstance(s);
+            } catch (Exception e) {
+                throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
             }
         }
+        globalReturnValueAdviceSet = true;
         return globalReturnValueAdvice;
+    }
+
+    private void _mergeGlobalReturnValueAdvice(AppConfig conf) {
+        if (!hasConfiguration(GLOBAL_RETURN_VALUE_ADVICE)) {
+            globalReturnValueAdvice = conf.globalReturnValueAdvice;
+            globalReturnValueAdviceSet = conf.globalReturnValueAdviceSet;
+        }
+    }
+
+    private ValidateViolationAdvice globalValidateViolationAdvice;
+    private Boolean globalValidateViolationAdviceSet;
+
+    protected T globalValidateViolationAdvice(ValidateViolationAdvice advice) {
+        this.globalValidateViolationAdvice = $.requireNotNull(advice);
+        this.globalValidateViolationAdviceSet = true;
+        return me();
+    }
+
+    public ValidateViolationAdvice globalValidateViolationAdvice() {
+        if (null != globalValidateViolationAdviceSet) {
+            return globalValidateViolationAdvice;
+        }
+        String s = get(GLOBAL_VALIDATE_VIOLATION_ADVICE, null);
+        if (null != s) {
+            try {
+                globalValidateViolationAdvice = app.getInstance(s);
+            } catch (Exception e) {
+                throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
+            }
+        }
+        globalValidateViolationAdviceSet = true;
+        return globalValidateViolationAdvice;
+    }
+
+    private void _mergeGlobalValidateViolationAdvice(AppConfig conf) {
+        if (!hasConfiguration(GLOBAL_VALIDATE_VIOLATION_ADVICE)) {
+            globalValidateViolationAdvice = conf.globalValidateViolationAdvice;
+            globalValidateViolationAdviceSet = conf.globalValidateViolationAdviceSet;
+        }
     }
 
 

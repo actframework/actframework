@@ -1,4 +1,4 @@
-Scenario(GH821):
+Scenario(821):
   description: "[821] When returning String is not a valid JSON, it shall be encapsulated with `result`"
   interactions:
   - description: Get invalid JSON

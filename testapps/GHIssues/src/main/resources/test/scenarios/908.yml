@@ -1,4 +1,4 @@
-Scenario(GH908):
+Scenario(908):
   description: "[908] Test - allow setting precision of ${now()} function"
   constants:
     startTs0: ${now()}   # default: low precision

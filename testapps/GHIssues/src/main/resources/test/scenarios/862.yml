@@ -1,4 +1,4 @@
-Scenario(GH862):
+Scenario(862):
   constants:
     newFooName: ${randStr}
   description: "[862] Support using `SessionVariable` annotation and `DbBind` together"

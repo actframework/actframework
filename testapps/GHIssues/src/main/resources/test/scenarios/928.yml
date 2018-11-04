@@ -1,4 +1,4 @@
-Scenario(GH928):
+Scenario(928):
   fixtures:
     - 928.yml
   interactions:

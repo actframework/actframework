@@ -70,6 +70,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
+import javax.validation.ConstraintViolation;
 
 /**
  * Implement handler using
@@ -153,6 +154,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private ReturnValueAdvice returnValueAdvice;
     // see https://github.com/actframework/actframework/issues/852
     private boolean returnIterable;
+    // see https://github.com/actframework/actframework/issues/922
+    private ValidateViolationAdvice validateViolationAdvice;
     private boolean returnSimpleType;
     private boolean returnIterableComponentIsSimpleType;
     private boolean shallTransformReturnVal;
@@ -234,9 +237,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
             if (null != advisor) {
                 returnValueAdvice = app.getInstance(advisor.value());
-            } else if (null == controllerClass.getAnnotation(NoReturnValueAdvice.class)) {
+            } else if (null == getAnnotation(NoReturnValueAdvice.class)) {
                 returnValueAdvice = app.config().globalReturnValueAdvice();
             }
+        }
+
+        ValidateViolationAdvisor vAdvisor = getAnnotation(ValidateViolationAdvisor.class);
+        if (null != vAdvisor) {
+            validateViolationAdvice = app.getInstance(vAdvisor.value());
+        } else if (null == getAnnotation(NoValidateViolationAdvice.class)) {
+            validateViolationAdvice = app.config().globalValidateViolationAdvice();
         }
 
         if (method.isAnnotationPresent(RequireCaptcha.class)) {
@@ -562,21 +572,57 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         final Object controller = controllerInstance(context);
 
-        /*
-         * We will send back response immediately when param validation
-         * failed in either of the following cases:
-         * 1) this is an ajax call
-         * 2) the accept content type is **NOT** html
-         */
-        boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
-
         final Object[] params = params(controller, context);
 
         context.ensureCaptcha();
 
-        if (failOnViolation && context.hasViolation()) {
-            String msg = context.violationMessage(";");
-            return ActBadRequest.create(msg);
+        Map<String, ConstraintViolation> violations = context.violations();
+        if (!violations.isEmpty()) {
+
+            if (null != validateViolationAdvice) {
+                Result r = null;
+                try {
+                    Object retVal = validateViolationAdvice.onValidateViolation(violations, context);
+                    if (null != retVal) {
+                        if (retVal instanceof Result) {
+                            r = (Result) retVal;
+                        } else {
+                            String payload;
+                            H.Format accept = context.accept();
+                            boolean requireXML = accept == H.Format.XML;
+                            JSONObject json = $.deepCopy(retVal).to(JSONObject.class);
+                            if (requireXML) {
+                                Document doc = $.convert(json).to(Document.class);
+                                payload = XML.toString(doc);
+                                r = new RenderXML(payload);
+                            } else {
+                                payload = JSON.toJSONString(json);
+                                context.resp().contentType(H.Format.JSON);
+                                r = new RenderJSON(payload);
+                            }
+                            r.status(H.Status.BAD_REQUEST);
+                        }
+                    }
+                } catch (Result e) {
+                    r = e;
+                }
+                if (null != r) {
+                    return r;
+                }
+            }
+
+            /*
+             * We will send back response immediately when param validation
+             * failed in either of the following cases:
+             * 1) this is an ajax call
+             * 2) the accept content type is **NOT** html
+             */
+            boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
+
+            if (failOnViolation) {
+                String msg = context.violationMessage(";");
+                return ActBadRequest.create(msg);
+            }
         }
 
         if (async) {

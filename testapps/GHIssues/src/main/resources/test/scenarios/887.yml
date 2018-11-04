@@ -1,4 +1,4 @@
-Scenario(GH887):
+Scenario(887):
   description: "[887] Route table: support whitespace in URL path"
   interactions:
   - description: test

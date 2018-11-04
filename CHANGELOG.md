@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.8.8**
+**1.8.9**
+* Allow app to customise error response upon invalid request #922
 * `java.lang.IllegalArgumentException` upon starting BSBF project #931
 * Hot reload is broken in R1.8.8 version #921
 * CLI - do not output `null` for options without help message #927

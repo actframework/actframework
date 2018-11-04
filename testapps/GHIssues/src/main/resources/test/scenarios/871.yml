@@ -1,4 +1,4 @@
-Scenario(GH871):
+Scenario(871):
   description: "[871] Test: evaluation complex expression refer to cached object issue"
   interactions:
     - description: setup

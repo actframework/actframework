@@ -58,7 +58,7 @@
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
-    <jline.version>2.14.3</jline.version>
+    <jline.version>2.14.4</jline.version>
     <jpa.version>1.0.0.Final</jpa.version>
     <joda-time.version>2.9.9</joda-time.version>
     <jsoup.version>1.11.3</jsoup.version>

@@ -1,4 +1,4 @@
-Scenario(GH905):
+Scenario(905):
   description: "[905] Basic support for xml content-type"
   interactions:
   - description: Test

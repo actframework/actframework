@@ -1,4 +1,4 @@
-Scenario(GH907):
+Scenario(907):
   description: "[907] Interceptor defined in super class now not effective on sub class"
   interactions:
   - description: Test

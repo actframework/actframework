@@ -1,4 +1,4 @@
-Scenario(GH906):
+Scenario(906):
   description: "[906] ReflectedHandlerInvoker - try to get Annotation from method in parent class if possible"
   interactions:
   - description: Test
