@@ -747,13 +747,12 @@ public class App extends LogSupportedDestroyableBase {
                 };
                 if (!isDevColdStart()) {
                     runnable1.run();
+                } else {
+                    jobManager.now("post_di_load_init", runnable1);
                 }
                 Runnable runnable2 = new Runnable() {
                     @Override
                     public void run() {
-                        if (isDevColdStart()) {
-                            runnable1.run();
-                        }
                         if (null != blockIssueCause) {
                             setBlockIssue(blockIssueCause);
                         }

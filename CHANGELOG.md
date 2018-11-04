@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `java.lang.IllegalArgumentException` upon starting BSBF project #931
+* Hot reload is broken in R1.8.8 version #921
 * CLI - do not output `null` for options without help message #927
 * API doc - allow fault tolerant when generating sample data #920
 * API doc - it shall support `@Sensitive` annotation #919

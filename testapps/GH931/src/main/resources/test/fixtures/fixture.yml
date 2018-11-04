@@ -1,0 +1,7 @@
+gh931.Account(Tom):
+  name: tom
+
+gh931.Order(monitor):
+  product: monitor
+  quantity: 1
+  accountId: ref:Tom
