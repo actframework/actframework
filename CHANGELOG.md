@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.11** 5/Nov/2018
+* Automate test failure #932
+
 **1.8.9** 4/Nov/2018
 * update jline to 2.14.4
 * CLI - support `@DefaultValue` #929

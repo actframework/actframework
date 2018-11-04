@@ -36,6 +36,11 @@
       <artifactId>hutool-all</artifactId>
       <version>4.1.11</version>
     </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act</artifactId>
+      <version>1.8.11-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
 </project>

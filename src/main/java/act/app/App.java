@@ -739,10 +739,10 @@ public class App extends LogSupportedDestroyableBase {
                         // because once app event is consumed the event listeners
                         // are cleared
                         emit(DEPENDENCY_INJECTOR_PROVISIONED);
-                        emit(SINGLETON_PROVISIONED);
                         registerMetricProvider();
                         config().preloadConfigurations();
                         initSessionManager();
+                        emit(SINGLETON_PROVISIONED);
                     }
                 };
                 if (!isDevColdStart()) {
