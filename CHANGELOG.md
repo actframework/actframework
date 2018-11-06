@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.12**
+* Hot-reload issue caused by `StackOverflowError` on `AppConfig.loginUrl()` #936
+
 **1.8.11** 5/Nov/2018
 * Automate test failure #932
 * update dependencies

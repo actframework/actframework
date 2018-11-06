@@ -1562,12 +1562,16 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public String loginUrl() {
-        if (null == loginUrl) {
-            loginUrl = get(URL_LOGIN, "/login");
-        }
         ActionContext context = ActionContext.current();
         if (null != context && context.isAjax()) {
             return ajaxLoginUrl();
+        }
+        return loginUrl0();
+    }
+
+    private String loginUrl0() {
+        if (null == loginUrl) {
+            loginUrl = get(URL_LOGIN, "/login");
         }
         return loginUrl;
     }
@@ -1588,7 +1592,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String ajaxLoginUrl() {
         if (null == ajaxLoginUrl) {
-            ajaxLoginUrl = get(URL_LOGIN_AJAX, loginUrl());
+            ajaxLoginUrl = get(URL_LOGIN_AJAX, loginUrl0());
         }
         return ajaxLoginUrl;
     }
