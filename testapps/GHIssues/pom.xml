@@ -39,7 +39,7 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.11-SNAPSHOT</version>
+      <version>1.8.12-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

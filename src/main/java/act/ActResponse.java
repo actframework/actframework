@@ -112,8 +112,9 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
        this.onResult = true;
     }
 
-    public void commitContentType() {
+    public T commitContentType() {
         header(H.Header.Names.CONTENT_TYPE, _getContentType());
+        return me();
     }
 
     @Override

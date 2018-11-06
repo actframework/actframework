@@ -189,6 +189,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (null != buffer) {
             context.resp()
                     .contentType(cachedContentType.get(path))
+                    .commitContentType()
                     .header(CACHE_CONTROL, "public, max-age=7200")
                     .etag(etags.get(path))
                     .writeContent(buffer.duplicate());
@@ -234,7 +235,7 @@ public class ResourceGetter extends FastRequestHandler {
             } else {
                 contentType = FileGetter.contentType(target.getPath());
             }
-            resp.contentType(contentType);
+            resp.contentType(contentType).commitContentType();
             if (isProd) {
                 resp.header(CACHE_CONTROL, "max-age=86400");
                 String etag = etags.get(path);
