@@ -1,9 +1,9 @@
 # ActFramework Change Log
 
 **1.8.12**
-*
 * Missing `Content-Type` header in response servicing static file request #937
 * Hot-reload issue caused by `StackOverflowError` on `AppConfig.loginUrl()` #936
+* Handle `Error` encountered processing incoming request #933
 
 **1.8.11** 5/Nov/2018
 * Automate test failure #932
