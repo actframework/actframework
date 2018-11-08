@@ -314,7 +314,7 @@ public class Router extends AppHolderBase<Router> {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
         if (!app().config().builtInReqHandlerEnabled()) {
-            String sPath = path.toString();
+            String sPath = path;
             if (sPath.startsWith("/~/")) {
                 // disable built-in handlers except those might impact application behaviour
                 // apibook is allowed here as it only available on dev mode
@@ -609,7 +609,7 @@ public class Router extends AppHolderBase<Router> {
         if (path.length() == 1 && path.charAt(0) == '/') {
             return node;
         }
-        String sUrl = path.toString();
+        String sUrl = path;
         List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
@@ -627,7 +627,7 @@ public class Router extends AppHolderBase<Router> {
         if (0 == pathLen || (1 == pathLen && path.charAt(0) == '/')) {
             return node;
         }
-        String sUrl = path.toString();
+        String sUrl = path;
         List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
@@ -847,6 +847,8 @@ public class Router extends AppHolderBase<Router> {
      */
     private static class Node extends DestroyableBase implements Serializable, TreeNode, Comparable<Node> {
 
+        private static final S.Pair TILDE = S.pair('~', '~');
+
         // used to pass a baq request result when dynamic regex matching failed
         private static final Node BADREQUEST = new Node(Integer.MIN_VALUE, Act.appConfig()) {
             @Override
@@ -874,8 +876,13 @@ public class Router extends AppHolderBase<Router> {
         // --- for static node
         private String name;
 
+        // --- for keyword matching node
+        private Keyword keyword;
+
         // ignore all the rest in URL when routing
         private boolean ignoreRestParts;
+
+        private boolean hasKeywordMatchingChild;
 
         // --- for dynamic node
         private Pattern pattern;
@@ -890,6 +897,7 @@ public class Router extends AppHolderBase<Router> {
         private transient Node conflictNode;
         private List<Node> dynamicChilds = new ArrayList<>();
         private Map<String, Node> staticChildren = new HashMap<>();
+        private Map<Keyword, Node> keywordMatchingChildren = new HashMap<>();
         private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
         private Map<String, Node> dynamicReverseAliases = new HashMap<>();
         private RequestHandler handler;
@@ -904,9 +912,16 @@ public class Router extends AppHolderBase<Router> {
             root = this;
         }
 
+        Node(Keyword keyword, Node parent) {
+            this.keyword = $.requireNotNull(keyword);
+            this.parent = parent;
+            this.id = keyword.hashCode();
+            this.root = parent.root;
+            this.macroLookup = parent.macroLookup;
+        }
+
         Node(String name, Node parent) {
-            E.NPE(name);
-            this.name = name;
+            this.name = S.requireNotBlank(name);
             this.parent = parent;
             this.id = name.hashCode();
             this.root = parent.root;
@@ -1019,7 +1034,16 @@ public class Router extends AppHolderBase<Router> {
 
         public Node child(String name, ActionContext context) {
             Node node = staticChildren.get(name);
-            if (null == node && !dynamicChilds.isEmpty()) {
+            if (null != node) {
+                return node;
+            }
+            if (hasKeywordMatchingChild) {
+                node = keywordMatchingChildren.get(Keyword.of(name));
+                if (null != node) {
+                    return node;
+                }
+            }
+            if (!dynamicChilds.isEmpty()) {
                 UrlPath path = context.urlPath();
                 for (Node targetNode : dynamicChilds) {
                     for (Map.Entry<UrlPath, Node> entry : targetNode.dynamicAliases.entrySet()) {
@@ -1089,11 +1113,20 @@ public class Router extends AppHolderBase<Router> {
             staticChildren.clear();
         }
 
-        Node childByMetaInfoExactMatching(String s) {
-            Node node = staticChildren.get(s);
-            if (null == node && !dynamicChilds.isEmpty()) {
+        Node childByMetaInfoExactMatching(String name) {
+            Node node = staticChildren.get(name);
+            if (null != node) {
+                return node;
+            }
+            if (hasKeywordMatchingChild) {
+                node = keywordMatchingChildren.get(Keyword.of(name));
+                if (null != node) {
+                    return node;
+                }
+            }
+            if (!dynamicChilds.isEmpty()) {
                 for (Node targetNode : dynamicChilds) {
-                    if (targetNode.metaInfoMatchesExactly(s)) {
+                    if (targetNode.metaInfoMatchesExactly(name)) {
                         return targetNode;
                     }
                 }
@@ -1101,16 +1134,15 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
 
-        Node childByMetaInfoConflictMatching(String s) {
-            Node node = staticChildren.get(s);
-            if (null == node && !dynamicChilds.isEmpty()) {
+        Node childByMetaInfoConflictMatching(String name) {
+            if (!dynamicChilds.isEmpty()) {
                 for (Node targetNode : dynamicChilds) {
-                    if (targetNode.metaInfoConflict(s)) {
+                    if (targetNode.metaInfoConflict(name)) {
                         return targetNode;
                     }
                 }
             }
-            return node;
+            return null;
         }
 
         Node findChild(String name) {
@@ -1120,7 +1152,21 @@ public class Router extends AppHolderBase<Router> {
 
         Node addChild(String name, final String path, final String action) {
             name = name.trim();
-            Node node = childByMetaInfoExactMatching(name);
+            Keyword keyword = null;
+            if (S.is(name).wrappedWith(TILDE)) {
+                keyword = Keyword.of(S.strip(name).of(TILDE));
+                Node node = keywordMatchingChildren.get(keyword);
+                if (null == node) {
+                    node = new Node(keyword, this);
+                    keywordMatchingChildren.put(keyword, node);
+                    hasKeywordMatchingChild = true;
+                    staticChildren.put(keyword.javaVariable(), node);
+                    staticChildren.put(keyword.hyphenated(), node);
+                    staticChildren.put(keyword.underscore(), node);
+                    return node;
+                }
+            }
+            Node node = null != keyword ? keywordMatchingChildren.get(keyword) : childByMetaInfoExactMatching(name);
             if (null != node) {
                 return node;
             }
