@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* Deadlock issue during app hot reload #941
 * Allow app to do keyword matching on certain route path element #939
 * Missing `Content-Type` header in response servicing static file request #937
 * Hot-reload issue caused by `StackOverflowError` on `AppConfig.loginUrl()` #936

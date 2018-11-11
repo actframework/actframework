@@ -9,9 +9,9 @@ package act.app;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -234,6 +234,7 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Returns the name of the app
+     *
      * @return the app name
      */
     public String name() {
@@ -242,8 +243,8 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Returns the app version
-     * @return
-     *      the app version
+     *
+     * @return the app version
      */
     public Version version() {
         return version;
@@ -463,17 +464,15 @@ public class App extends LogSupportedDestroyableBase {
         if (!Act.isDev()) {
             return false;
         }
-        synchronized (this) {
-            try {
-                detectChanges();
-                return false;
-            } catch (RequestRefreshClassLoader refreshRequest) {
-                refresh(async);
-                return true;
-            } catch (RequestServerRestart requestServerRestart) {
-                refresh(async);
-                return true;
-            }
+        try {
+            detectChanges();
+            return false;
+        } catch (RequestRefreshClassLoader refreshRequest) {
+            refresh(async);
+            return true;
+        } catch (RequestServerRestart requestServerRestart) {
+            refresh(async);
+            return true;
         }
     }
 
@@ -796,6 +795,7 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Check if the app has block issue set
+     *
      * @return `true` if the app has block issue encountered during start up
      */
     public boolean hasBlockIssue() {
@@ -816,7 +816,9 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Report if a class is registered into singleton registry
-     * @param cls the class
+     *
+     * @param cls
+     *         the class
      * @return `true` if the class is registered into singleton registry
      */
     public boolean isSingleton(Class<?> cls) {
@@ -842,7 +844,7 @@ public class App extends LogSupportedDestroyableBase {
         boolean found = false;
         GenieInjector injector = Act.app().injector();
         Annotation[] aa = cls.getAnnotations();
-        for (Annotation a: aa) {
+        for (Annotation a : aa) {
             Class<? extends Annotation> type = a.annotationType();
             if (injector.isInheritedScopeStopper(type)) {
                 return false;
@@ -1025,8 +1027,10 @@ public class App extends LogSupportedDestroyableBase {
      *
      * **Note** the class will be loaded by the app's {@link #classLoader()}
      *
-     * @param className the className of the instance to be returned
-     * @param <T>       the generic type of the class
+     * @param className
+     *         the className of the instance to be returned
+     * @param <T>
+     *         the generic type of the class
      * @return the instance of the class
      */
     public <T> T getInstance(String className) {
@@ -1041,8 +1045,10 @@ public class App extends LogSupportedDestroyableBase {
      * to load the instance. And this is dependency inject process,
      * not a simple constructor call
      *
-     * @param clz the class
-     * @param <T> the generic type of the class
+     * @param clz
+     *         the class
+     * @param <T>
+     *         the generic type of the class
      * @return the instance of the class
      */
     public <T> T getInstance(Class<T> clz) {
@@ -1059,7 +1065,7 @@ public class App extends LogSupportedDestroyableBase {
      * on {@link #classLoader() App classloader}.
      *
      * @param name
-     *      the resource name
+     *         the resource name
      * @return `URL` to the resource if found or `null` if not found.
      */
     public URL getResource(String name) {
@@ -1073,7 +1079,7 @@ public class App extends LogSupportedDestroyableBase {
      * on {@link #classLoader()}.
      *
      * @param name
-     *      the resource name
+     *         the resource name
      * @return the input stream to the resource or `null` if resource not found
      */
     public InputStream getResourceAsStream(String name) {
@@ -1095,7 +1101,8 @@ public class App extends LogSupportedDestroyableBase {
     /**
      * Load/get a class by name using the app's {@link #classLoader()}
      *
-     * @param className the name of the class to be loaded
+     * @param className
+     *         the name of the class to be loaded
      * @return the class as described above
      */
     public <T> Class<T> classForName(String className) {
@@ -1499,7 +1506,7 @@ public class App extends LogSupportedDestroyableBase {
             scanPatterns = new HashSet<>();
             scanPrefixList = new HashSet<>();
             scanSuffixList = new HashSet<>();
-            for (String scanPackage: ((BootstrapClassLoader) classLoader).scanList()) {
+            for (String scanPackage : ((BootstrapClassLoader) classLoader).scanList()) {
                 if (scanPackage.contains("\\.") || scanPackage.contains("*")) {
                     scanPatterns.add(Pattern.compile(scanPackage));
                     String prefix = S.cut(scanPackage).beforeFirst("\\");
