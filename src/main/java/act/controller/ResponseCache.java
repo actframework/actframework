@@ -214,7 +214,7 @@ public class ResponseCache extends ActResponse implements Serializable {
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
-        realResponse.writeBinary(binary);
+        realResponse.writeContent(buffer);
         this.wroteDirectly = true;
         return this;
     }
