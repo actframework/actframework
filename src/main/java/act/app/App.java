@@ -1125,16 +1125,16 @@ public class App extends LogSupportedDestroyableBase {
                     ClassNode cn = new ClassNode();
                     cr.accept(cn, 0);
                     final List<MethodNode> mns = cn.methods;
-                    Printer printer = new Textifier();
-                    TraceMethodVisitor mp = new TraceMethodVisitor(printer);
                     for (MethodNode mn : mns) {
                         InsnList inList = mn.instructions;
                         writer.println();
-                        writer.println(mn.name);
+                        writer.println(mn.name + mn.desc);
+                        Printer printer = new Textifier();
+                        TraceMethodVisitor mp = new TraceMethodVisitor(printer);
                         for (int i = 0; i < inList.size(); i++) {
                             inList.get(i).accept(mp);
-                            printer.print(writer);
                         }
+                        printer.print(writer);
                     }
                     IO.close(writer);
                     logger.error("Bad enhanced class encountered, asm code dumped to \n\t>>" + output.getAbsolutePath());
