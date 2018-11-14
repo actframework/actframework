@@ -21,14 +21,12 @@ package act.view.rythm;
  */
 
 import act.Act;
+import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.SysEventId;
-import act.asm.AnnotationVisitor;
-import act.asm.MethodVisitor;
-import act.asm.Type;
+import act.asm.*;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
-import org.osgl.$;
 import org.osgl.util.S;
 import org.rythmengine.extension.Transformer;
 
@@ -103,11 +101,12 @@ public class RythmTransformerScanner extends AppByteCodeScannerBase {
         public void visitEnd() {
             super.visitEnd();
             if (found) {
+                final App app = app();
                 app().jobManager().on(SysEventId.PRE_START, "RythmTransformerScanner:registerTransformer:" + className, new Runnable() {
                     @Override
                     public void run() {
                         RythmView rythmView = (RythmView) Act.viewManager().view(RythmView.ID);
-                        rythmView.registerTransformer(app(), $.classForName(className, app().classLoader()));
+                        rythmView.registerTransformer(app(), app.classForName(className));
                     }
                 });
             }

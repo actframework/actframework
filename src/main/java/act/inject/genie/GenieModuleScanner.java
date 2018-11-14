@@ -20,10 +20,10 @@ package act.inject.genie;
  * #L%
  */
 
+import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.SysEventId;
 import act.util.ByteCodeVisitor;
-import org.osgl.$;
 
 /**
  * Find all classes that ends with `Module`, try to register it as
@@ -47,10 +47,11 @@ public class GenieModuleScanner extends AppByteCodeScannerBase {
     @Override
     public void scanFinished(final String className) {
         if (shouldRegister) {
-            app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_INITIALIZED, "GenieModuleScanner:addModuleClass:" + className, new Runnable() {
+            final App app = app();
+            app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_INITIALIZED, "GenieModuleScanner:addModuleClass:" + className, new Runnable() {
                 @Override
                 public void run() {
-                    GenieInjector.addModuleClass($.classForName(className, app().classLoader()));
+                    GenieInjector.addModuleClass(app.classForName(className));
                 }
             });
         }

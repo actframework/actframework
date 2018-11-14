@@ -44,6 +44,7 @@ public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
 
     private String id;
     private String name;
+    private App app;
     private InvokeType invokeType;
     private JobClassMetaInfo clsInfo;
     private ReturnTypeInfo returnType = new ReturnTypeInfo();
@@ -52,7 +53,7 @@ public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
 
     public JobMethodMetaInfo(final JobClassMetaInfo clsInfo, final List<String> paramTypes) {
         this.clsInfo = clsInfo;
-        final App app = Act.app();
+        app = Act.app();
         app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "JobMethodMetaInfo:init-" + jobIdCounter.getAndIncrement(), new Runnable() {
             @Override
             public void run() {
@@ -71,6 +72,7 @@ public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
 
     @Override
     protected void releaseResources() {
+        app = null;
         clsInfo.destroy();
         super.releaseResources();
     }
@@ -103,7 +105,7 @@ public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
 
     public Method method() {
         if (null == method) {
-            Class<?> c = $.classForName(classInfo().className(), Act.app().classLoader());
+            Class<?> c = app.classForName(classInfo().className());
             if (null == paramTypes() || paramTypes().isEmpty()) {
                 method = $.getMethod(c, name());
             } else {

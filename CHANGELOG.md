@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* Output enhanced asm code when `java.lang.VerifyError` encountered #945
 * `UnexpectedException` with `Controller.Util.download(URL)` call #944
 * Deadlock issue during app hot reload #941
 * Allow app to do keyword matching on certain route path element #939

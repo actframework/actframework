@@ -82,7 +82,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private static final Object[] DUMP_PARAMS = new Object[0];
     private App app;
-    private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
     private MethodAccess methodAccess;
@@ -163,16 +162,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
-        this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
-        this.controllerClass = $.classForName(controller.className(), cl);
+        this.controllerClass = app.classForName(controller.className());
         this.disabled = !Env.matches(controllerClass);
         this.traceHandler = app.config().traceHandler();
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
-        Class[] paramTypes = paramTypes(cl);
+        Class[] paramTypes = paramTypes(app);
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
         } catch (NoSuchMethodException e) {
@@ -418,7 +416,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     @Override
     protected void releaseResources() {
         app = null;
-        cl = null;
         controller = null;
         controllerClass = null;
         method = null;
@@ -801,12 +798,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         return needPatch ? S.fmt("{\"%s\": %s}", theName, body) : body;
     }
 
-    private Class[] paramTypes(ClassLoader cl) {
+    private Class[] paramTypes(App app) {
         int sz = handler.paramCount();
         Class[] ca = new Class[sz];
         for (int i = 0; i < sz; ++i) {
             HandlerParamMetaInfo param = handler.param(i);
-            ca[i] = $.classForName(param.type().getClassName(), cl);
+            ca[i] = app.classForName(param.type().getClassName());
         }
         return ca;
     }
@@ -1311,9 +1308,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             List<String> classNames = metaInfo.exceptionClasses();
             List<Class<? extends Exception>> clsList;
             clsList = C.newSizedList(classNames.size());
-            AppClassLoader cl = App.instance().classLoader();
+            App app = Act.app();
             for (String cn : classNames) {
-                clsList.add((Class) $.classForName(cn, cl));
+                clsList.add((Class) app.classForName(cn));
             }
             return clsList;
         }

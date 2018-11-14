@@ -21,7 +21,7 @@ package act.controller.meta;
  */
 
 import act.Act;
-import org.osgl.$;
+import act.app.App;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -72,7 +72,7 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
     }
 
     private void analyzeParamTypes() {
-        ClassLoader cl = Act.app().classLoader();
+        App app = Act.app();
         List<String> paramExceptions = new ArrayList<>();
         for (int i = 0, n = paramCount(); i < n; ++i) {
             HandlerParamMetaInfo param = param(i);
@@ -80,7 +80,7 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
             if (className.endsWith("Exception")) {
                 paramExceptions.add(className);
             } else {
-                Class<?> cls = $.classForName(className, cl);
+                Class<?> cls = app.classForName(className);
                 if (Throwable.class.isAssignableFrom(cls)) {
                     paramExceptions.add(className);
                 }

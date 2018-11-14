@@ -66,7 +66,7 @@ public class SingletonFinder {
             @Override
             public void visit(ClassNode classNode) throws $.Break {
                 String name = classNode.name();
-                Class<?> cls = $.classForName(name, app.classLoader());
+                Class<?> cls = app.classForName(name);
                 if (!stopInheritedScope(cls)) {
                     registerSingleton(cls);
                 } else if (LOGGER.isDebugEnabled()) {

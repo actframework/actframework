@@ -50,7 +50,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
     protected boolean disabled;
-    protected ClassLoader cl;
+    protected App app;
     protected WebSocketConnectionManager connectionManager;
     protected ActionMethodMetaInfo handler;
     protected ControllerClassMetaInfo controller;
@@ -84,18 +84,17 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
             this.disabled = true;
             return;
         }
-        App app = manager.app();
-        this.cl = app.classLoader();
+        app = manager.app();
         this.handler = $.requireNotNull(methodInfo);
         this.controller = handler.classInfo();
 
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(WebSocketContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
-        this.handlerClass = $.classForName(controller.className(), cl);
+        this.handlerClass = app.classForName(controller.className());
         this.disabled = !Env.matches(handlerClass);
 
-        paramTypes = paramTypes(cl);
+        paramTypes = paramTypes(app);
 
         try {
             this.method = handlerClass.getMethod(methodInfo.name(), paramTypes);
@@ -138,6 +137,24 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
             }
             isSingleParam = 1 == realParamCnt;
         }
+    }
+
+    @Override
+    protected void releaseResources() {
+        app = null;
+        connectionManager = null;
+        handler = null;
+        controller = null;
+        handlerClass = null;
+        method = null;
+        methodAccess = null;
+        paramLoaderService = null;
+        jsonDTOClassManager = null;
+        paramSpecs = null;
+        host = null;
+        $.resetArray(paramTypes);
+        paramTypes = null;
+        super.releaseResources();
     }
 
     @Override
@@ -202,12 +219,12 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         return params;
     }
 
-    private Class[] paramTypes(ClassLoader cl) {
+    private Class[] paramTypes(App app) {
         int sz = handler.paramCount();
         Class[] ca = new Class[sz];
         for (int i = 0; i < sz; ++i) {
             HandlerParamMetaInfo param = handler.param(i);
-            ca[i] = $.classForName(param.type().getClassName(), cl);
+            ca[i] = app.classForName(param.type().getClassName());
         }
         return ca;
     }

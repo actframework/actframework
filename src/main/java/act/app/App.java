@@ -34,6 +34,11 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.asm.AsmException;
+import act.asm.ClassReader;
+import act.asm.tree.ClassNode;
+import act.asm.tree.InsnList;
+import act.asm.tree.MethodNode;
+import act.asm.util.*;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;
 import act.cli.CliDispatcher;
@@ -1034,8 +1039,7 @@ public class App extends LogSupportedDestroyableBase {
      * @return the instance of the class
      */
     public <T> T getInstance(String className) {
-        Class<T> c = $.classForName(className, classLoader());
-        return getInstance(c);
+        return getInstance(this.<T>classForName(className));
     }
 
     /**
@@ -1106,7 +1110,44 @@ public class App extends LogSupportedDestroyableBase {
      * @return the class as described above
      */
     public <T> Class<T> classForName(String className) {
-        return $.classForName(className, classLoader());
+        try {
+            return $.classForName(className, classLoader());
+        } catch (VerifyError error) {
+            if (Act.isDev()) {
+                // try output the bad bytecode
+                byte[] bytes = classLoader.cachedEnhancedBytecode(className);
+                if (null != bytes) {
+                    File outputDir = new File(tmpDir(), "bytes");
+                    outputDir.mkdirs();
+                    File output = new File(outputDir, className + ".java");
+                    PrintWriter writer = new PrintWriter(IO.writer(output));
+                    ClassReader cr = new ClassReader(bytes);
+                    ClassNode cn = new ClassNode();
+                    cr.accept(cn, 0);
+                    final List<MethodNode> mns = cn.methods;
+                    Printer printer = new Textifier();
+                    TraceMethodVisitor mp = new TraceMethodVisitor(printer);
+                    for (MethodNode mn : mns) {
+                        InsnList inList = mn.instructions;
+                        writer.println();
+                        writer.println(mn.name);
+                        for (int i = 0; i < inList.size(); i++) {
+                            inList.get(i).accept(mp);
+                            printer.print(writer);
+                        }
+                    }
+                    IO.close(writer);
+                    logger.error("Bad enhanced class encountered, asm code dumped to \n\t>>" + output.getAbsolutePath());
+                } else {
+                    logger.error("Bad enhanced class: " + className);
+                }
+                setBlockIssue(error);
+            } else {
+                logger.fatal(error, "Bad enhanced class found: " + className);
+                shutdown(-1);
+            }
+            return null;
+        }
     }
 
     @Override

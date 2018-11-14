@@ -130,12 +130,11 @@ public class SimpleEventListenerMetaInfo {
     public static List<BeanSpec> convert(List<String> paramTypes, String className, String methodName, $.Var<Method> methodHolder) {
         int sz = paramTypes.size();
         App app = Act.app();
-        ClassLoader cl = app.classLoader();
-        Class c = $.classForName(className, cl);
+        Class c = app.classForName(className);
         Class[] paramClasses = new Class[sz];
         int i = 0;
         for (String s : paramTypes) {
-            paramClasses[i++] = $.classForName(s, cl);
+            paramClasses[i++] = app.classForName(s);
         }
         Method method = $.getMethod(c, methodName, paramClasses);
         method.setAccessible(true);

@@ -20,9 +20,8 @@ package act.cli.meta;
  * #L%
  */
 
-import act.app.App;
+import act.Act;
 import act.asm.Type;
-import org.osgl.$;
 
 /**
  * Store {@link OptionAnnoInfoBase option annotation info} that
@@ -44,7 +43,7 @@ public class FieldOptionAnnoInfo extends OptionAnnoInfoBase {
     }
 
     public Class fieldType() {
-        return $.classForName(type.getClassName(), App.instance().classLoader());
+        return Act.classForName(type.getClassName());
     }
 
     public void setReadFileContent() {

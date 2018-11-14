@@ -516,15 +516,11 @@ public final class Act {
     }
 
     public static <T> Class<T> classForName(String className) {
-        ClassLoader cl = null;
         App app = app();
         if (null != app) {
-            cl = app.classLoader();
+            return app.classForName(className);
         }
-        if (null == cl) {
-            cl = Act.class.getClassLoader();
-        }
-        return $.classForName(className, cl);
+        return $.classForName(className, Act.class.getClassLoader());
     }
 
     /**
@@ -539,8 +535,7 @@ public final class Act {
         if (null != app) {
             return app.getInstance(className);
         } else {
-            Class<T> type = $.classForName(className);
-            return getInstance(type);
+            return getInstance(Act.<T>classForName(className));
         }
     }
 

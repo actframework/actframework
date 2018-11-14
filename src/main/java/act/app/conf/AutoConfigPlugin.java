@@ -55,7 +55,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 app.eventBus().bind(SysEventId.PRE_START, new SysEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
-                        Class<?> autoConfigClass = $.classForName(className, app.classLoader());
+                        Class<?> autoConfigClass = app.classForName(className);
                         new AutoConfigLoader(app, autoConfigClass).load();
                     }
                 });

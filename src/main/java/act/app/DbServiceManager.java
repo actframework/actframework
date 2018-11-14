@@ -93,7 +93,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
-                        Class<? extends Dao> daoType = $.classForName(classNode.name(), app.classLoader());
+                        Class<? extends Dao> daoType = app.classForName(classNode.name());
                         if (isGeneral(daoType)) {
                             return;
                         }

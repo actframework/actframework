@@ -151,7 +151,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                                 events.add(S.string(value).intern());
                                             } else {
                                                 Type type = (Type) value;
-                                                Class<?> c = $.classForName(type.getClassName(), app().classLoader());
+                                                Class<?> c = app().classForName(type.getClassName());
                                                 events.add(c);
                                             }
                                             super.visit(name, value);
@@ -163,7 +163,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                             delayedEvents.add(new $.Func0() {
                                                 @Override
                                                 public Object apply() throws NotAppliedException, $.Break {
-                                                    Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                                    Class<? extends Enum> enumClass = app().classForName(enumClassName);
                                                     return (Enum.valueOf(enumClass, value));
                                                 }
                                             });
@@ -192,7 +192,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                     delayedEvents.add(new $.Func0() {
                                         @Override
                                         public Object apply() throws NotAppliedException, $.Break {
-                                            Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                            Class<? extends Enum> enumClass = app().classForName(enumClassName);
                                             return (Enum.valueOf(enumClass, value));
                                         }
                                     });
@@ -221,7 +221,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                             logger.warn("@OnEvent annotation shall be put on a method with exactly one event object (optionally with other injectable arguments");
                         } else {
                             String type = paramTypes.get(0);
-                            events.add($.classForName(type, app().classLoader()));
+                            events.add(app().classForName(type));
                         }
                     }
                     if (!events.isEmpty() || !delayedEvents.isEmpty()) {

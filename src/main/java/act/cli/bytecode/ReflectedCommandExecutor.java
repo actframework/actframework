@@ -53,7 +53,6 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private CommandMethodMetaInfo methodMetaInfo;
     private App app;
     private CliContextParamLoader paramLoaderService;
-    private ClassLoader cl;
     private Class[] paramTypes;
     private Class<?> commanderClass;
     private Method method;
@@ -72,11 +71,10 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.requireNotNull(methodMetaInfo);
         this.app = $.NPE(app);
-        this.cl = app.classLoader();
         this.paramTypes = paramTypes();
         this.paramCount = methodMetaInfo.paramCount();
         this.isStatic = methodMetaInfo.isStatic();
-        this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
+        this.commanderClass = app.classForName(methodMetaInfo.classInfo().className());
         try {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
             this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
@@ -150,7 +148,6 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     @Override
     protected void releaseResources() {
         app = null;
-        cl = null;
         commandIndex = 0;
         commanderClass = null;
         method = null;
@@ -181,7 +178,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         for (int i = 0; i < paramCount; ++i) {
             CommandParamMetaInfo param = methodMetaInfo.param(i);
             String className = param.type().getClassName();
-            ca[i] = $.classForName(className, cl);
+            ca[i] = app.classForName(className);
         }
         return ca;
     }

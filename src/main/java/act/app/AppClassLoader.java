@@ -26,25 +26,17 @@ import static org.osgl.Lang.requireNotNull;
 import act.Act;
 import act.app.event.SysEventId;
 import act.app.util.EnvMatcher;
-import act.asm.AsmException;
-import act.asm.ClassReader;
-import act.asm.ClassWriter;
+import act.asm.*;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.FullStackAppBootstrapClassLoader;
-import act.cli.meta.CommanderClassMetaInfo;
-import act.cli.meta.CommanderClassMetaInfoHolder;
-import act.cli.meta.CommanderClassMetaInfoManager;
+import act.cli.meta.*;
 import act.conf.AppConfig;
-import act.controller.meta.ControllerClassMetaInfo;
-import act.controller.meta.ControllerClassMetaInfoHolder;
-import act.controller.meta.ControllerClassMetaInfoManager;
+import act.controller.meta.*;
 import act.event.SysEventListenerBase;
 import act.exception.EnvNotMatchException;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
-import act.mail.meta.MailerClassMetaInfo;
-import act.mail.meta.MailerClassMetaInfoHolder;
-import act.mail.meta.MailerClassMetaInfoManager;
+import act.mail.meta.*;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.util.*;
@@ -644,6 +636,11 @@ public class AppClassLoader
     byte[] enhancedBytecode(String name) {
         byte[] bytecode = bytecode(name, false);
         return null == bytecode ? null : enhance(name, bytecode);
+    }
+
+    byte[] cachedEnhancedBytecode(String className) {
+        String key = className.replace('.', '/') + ".class";
+        return enhancedResourceCache.get(key);
     }
 
     private synchronized ClassNode cache(Class<?> c) {

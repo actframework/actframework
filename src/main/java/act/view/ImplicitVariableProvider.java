@@ -180,7 +180,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
         }
 
         private void register(Meta meta, App app) {
-            Class<?> cls = $.classForName(meta.className, app.classLoader());
+            Class<?> cls = app.classForName(meta.className);
             Method method = findMethod(cls, meta.methodName);
             E.unexpectedIf(null == method, "Unable to find method %s", meta);
             register(meta, cls, method, app);
