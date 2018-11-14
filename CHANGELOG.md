@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* Issue with loading configuration into Map #946
 * `NullPointerException` when calling `$.convert(str).to(DateTime.class)` in Job #947
 * Output enhanced asm code when `java.lang.VerifyError` encountered #945
 * `UnexpectedException` with `Controller.Util.download(URL)` call #944
