@@ -53,6 +53,7 @@ import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -826,10 +827,8 @@ public final class Act {
                     Long l = Long.valueOf(s);
                     return $.convert(l).to(DateTime.class);
                 }
-                ActContext ctx = ActContext.Base.currentContext();
-                Locale locale = ctx.locale(true);
                 AppConfig config = Act.appConfig();
-                String pattern = config.localizedDateTimePattern(locale);
+                String pattern = config.localizedDateTimePattern(locale());
                 return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }
             @Override
@@ -842,6 +841,9 @@ public final class Act {
                     return $.convert(l).to(DateTime.class);
                 }
                 String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTime().parseDateTime(s);
+                }
                 return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }
         }).register(new $.TypeConverter<Long, DateTime>() {
@@ -866,6 +868,16 @@ public final class Act {
             }
         })
         ;
+    }
+
+    private static Locale locale() {
+        ActContext ctx = ActContext.Base.currentContext();
+        if (null != ctx) {
+            return ctx.locale(true);
+        } else {
+            App app = app();
+            return null == app ? Locale.getDefault() : app.config().locale();
+        }
     }
 
     private static void loadConfig() {
