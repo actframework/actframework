@@ -54,6 +54,28 @@ public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implement
         this.app = app;
     }
 
+    @Override
+    protected void releaseResources() {
+        app = null;
+        if (null != dateTimeCodec) {
+            dateTimeCodec.destroy();
+            dateTimeCodec = null;
+        }
+        if (null != localDateCodec) {
+            localDateCodec.destroy();
+            localDateCodec = null;
+        }
+        if (null != localTimeCodec) {
+            localTimeCodec.destroy();
+            localTimeCodec = null;
+        }
+        if (null != localDateTimeCodec) {
+            localDateTimeCodec.destroy();
+            localDateTimeCodec = null;
+        }
+        super.releaseResources();
+    }
+
     public FastJsonJodaDateCodec(
             JodaDateTimeCodec dateTimeCodec,
             JodaLocalDateCodec localDateCodec,

@@ -39,7 +39,6 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.reflect.Method;
@@ -285,8 +284,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private boolean disableCircularReferenceDetect = true;
 
         public Base(App app) {
-            E.NPE(app);
-            this.app = app;
+            this.app = $.requireNotNull(app);
             renderArgs = new HashMap<>();
             attributes = new HashMap<>();
             listenerList = new ArrayList<>();

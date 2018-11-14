@@ -66,6 +66,7 @@ public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
     }
 
     private JobMethodMetaInfo(final JobClassMetaInfo clsInfo, JobMethodMetaInfo parent) {
+        this.app = parent.app;
         this.clsInfo = clsInfo;
         this.paramTypes = parent.paramTypes;
     }

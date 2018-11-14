@@ -21,6 +21,7 @@ package act.data;
  */
 
 import act.Act;
+import act.Destroyable;
 import act.conf.AppConfig;
 import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
@@ -30,13 +31,16 @@ import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
 import org.osgl.util.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.enterprise.context.ApplicationScoped;
 
-public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> implements ValueObject.Codec<T> {
+public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T>
+        implements ValueObject.Codec<T>, Destroyable {
 
     private ConcurrentMap<Locale, DateTimeFormatter> localizedDateFormats = new ConcurrentHashMap<>();
     private boolean i18n;
@@ -44,6 +48,7 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     protected DateTimeFormatter formatter;
     private AppConfig conf;
     private Class<?> dateTimeType;
+    private boolean destroyed;
 
     public JodaDateTimeCodecBase(DateTimeFormatter formatter) {
         exploreDateTimeType();
@@ -60,6 +65,35 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
         i18n = conf.i18nEnabled();
         defLocale = conf.locale();
         initFormatter(formatter(pattern, defLocale));
+    }
+
+    @Override
+    public void destroy() {
+        if (destroyed) {
+            return;
+        }
+        if (null != localizedDateFormats) {
+            localizedDateFormats.clear();
+            localizedDateFormats = null;
+        }
+        defLocale = null;
+        formatter = null;
+        conf = null;
+        dateTimeType = null;
+        releaseResources();
+        destroyed = true;
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    protected void releaseResources() {}
+
+    @Override
+    public Class<? extends Annotation> scope() {
+        return ApplicationScoped.class;
     }
 
     @Override
