@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
 import act.cli.*;
 import act.inject.DefaultValue;
 import act.util.ActContext;
@@ -28,6 +29,7 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.util.*;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
  * Load command line options
@@ -64,9 +66,11 @@ class OptionLoader extends CliParamValueLoader {
         this.defVal = defVal;
         Class<?> rawType = beanSpec.rawType();
         if (rawType.isArray()) {
-            this.langDefVal = Array.newInstance(rawType);
+            this.langDefVal = Array.newInstance(rawType.getComponentType());
         } else if ($.isPrimitiveType(rawType)) {
             this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            this.langDefVal = Act.getInstance(rawType);
         } else {
             this.langDefVal = null;
         }
@@ -86,9 +90,11 @@ class OptionLoader extends CliParamValueLoader {
         this.defVal = null == defaultValue ? null : defaultValue.value();
         Class<?> rawType = beanSpec.rawType();
         if (rawType.isArray()) {
-            this.langDefVal = Array.newInstance(rawType);
+            this.langDefVal = Array.newInstance(rawType.getComponentType());
         } else if ($.isPrimitiveType(rawType)) {
             this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            this.langDefVal = Act.getInstance(rawType);
         } else {
             this.langDefVal = null;
         }
