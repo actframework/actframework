@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* execute `route.list` command causes `NullPointerException` #948
 * Issue with loading configuration into Map #946
 * `NullPointerException` when calling `$.convert(str).to(DateTime.class)` in Job #947
 * Output enhanced asm code when `java.lang.VerifyError` encountered #945

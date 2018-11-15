@@ -44,7 +44,6 @@ import org.osgl.cache.CacheService;
 import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -95,7 +94,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 			}
 			
 			//Populate data
-			data = new ArrayList<List<Object>>();
+			data = new ArrayList<>();
 			List<Object> rowData;
 			Class<?> dataClazz = Object.class;
 			for (Object o: objList) {
@@ -104,14 +103,13 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 					break;
 				}
 			}
-			Map<String, Serializable> propertyExtractorMap = new HashMap<String, Serializable>();
 			CacheService cache = null;
 			CliContext ctx = CliContext.current();
 			if (null != ctx) {
 				cache = ctx.evaluatorCache();
 			}
 			for (int i = 0 ; i < objList.size() ; i ++) {
-				rowData = new ArrayList<Object>();
+				rowData = new ArrayList<>();
 				
 				for (int j = 0 ; j < properties.size() ; j ++) {
 					rowData.add(getProperty(cache,

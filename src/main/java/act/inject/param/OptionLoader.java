@@ -20,16 +20,14 @@ package act.inject.param;
  * #L%
  */
 
-import act.cli.CliContext;
-import act.cli.Optional;
-import act.cli.Required;
+import act.cli.*;
 import act.inject.DefaultValue;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.E;
-import org.osgl.util.Keyword;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
+
+import java.lang.reflect.Array;
 
 /**
  * Load command line options
@@ -40,6 +38,7 @@ class OptionLoader extends CliParamValueLoader {
     String lead1;
     String lead2;
     final String defVal;
+    final Object langDefVal;
     final String requiredGroup;
     final boolean required;
     final BeanSpec beanSpec;
@@ -63,6 +62,14 @@ class OptionLoader extends CliParamValueLoader {
             }
         }
         this.defVal = defVal;
+        Class<?> rawType = beanSpec.rawType();
+        if (rawType.isArray()) {
+            this.langDefVal = Array.newInstance(rawType);
+        } else if ($.isPrimitiveType(rawType)) {
+            this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else {
+            this.langDefVal = null;
+        }
     }
 
     OptionLoader(String bindName, Required required, StringValueResolver resolver, BeanSpec beanSpec) {
@@ -77,6 +84,14 @@ class OptionLoader extends CliParamValueLoader {
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
         DefaultValue defaultValue = beanSpec.getAnnotation(DefaultValue.class);
         this.defVal = null == defaultValue ? null : defaultValue.value();
+        Class<?> rawType = beanSpec.rawType();
+        if (rawType.isArray()) {
+            this.langDefVal = Array.newInstance(rawType);
+        } else if ($.isPrimitiveType(rawType)) {
+            this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else {
+            this.langDefVal = null;
+        }
     }
 
     @Override
@@ -98,6 +113,9 @@ class OptionLoader extends CliParamValueLoader {
         }
         if (null != val && required) {
             ctx.parsingContext().foundRequired(requiredGroup);
+        }
+        if (null == val) {
+            val = langDefVal;
         }
         return val;
     }
