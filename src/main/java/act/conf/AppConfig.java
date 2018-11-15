@@ -3109,6 +3109,10 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return traceHandler;
     }
 
+    void toggleTraceHandler(boolean enabled) {
+        traceHandler = enabled;
+    }
+
     private void _mergeTraceHandler(AppConfig config) {
         if (!hasConfiguration(TRACE_HANDLER_ENABLED)) {
             this.traceHandler = config.traceHandler;
@@ -3127,6 +3131,10 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             traceRequest = get(TRACE_REQUEST_ENABLED, false);
         }
         return traceRequest;
+    }
+
+    void toggleTraceRequest(boolean enabled) {
+        traceRequest = enabled;
     }
 
     private void _mergeTraceRequests(AppConfig config) {

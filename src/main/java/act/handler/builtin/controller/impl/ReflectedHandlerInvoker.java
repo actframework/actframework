@@ -82,6 +82,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private static final Object[] DUMP_PARAMS = new Object[0];
     private App app;
+    private AppConfig config;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
     private MethodAccess methodAccess;
@@ -131,7 +132,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean async;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
-    private boolean traceHandler;
     private boolean isLargeResponse;
     private boolean forceSmallResponse;
     private Class<? extends SerializeFilter> filters[];
@@ -162,11 +162,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
+        this.config = app.config();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = app.classForName(controller.className());
         this.disabled = !Env.matches(controllerClass);
-        this.traceHandler = app.config().traceHandler();
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
@@ -984,7 +984,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         Object retVal;
         String invocationInfo = null;
         try {
-            if (traceHandler) {
+            if (config.traceHandler()) {
                 invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
                 Trace.LOGGER_HANDLER.trace(invocationInfo);
             }
@@ -996,7 +996,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         } catch (Result r) {
             retVal = r;
         } catch (Exception e) {
-            if (traceHandler) {
+            if (config.traceHandler()) {
                 Trace.LOGGER_HANDLER.trace(e, "error invoking %s", invocationInfo);
             }
             throw e;

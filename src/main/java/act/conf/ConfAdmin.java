@@ -21,8 +21,7 @@ package act.conf;
  */
 
 import act.Act;
-import act.cli.Command;
-import act.cli.Optional;
+import act.cli.*;
 import act.controller.ExpressController;
 import act.controller.annotation.UrlContext;
 import com.alibaba.fastjson.JSONObject;
@@ -57,7 +56,13 @@ public class ConfAdmin {
             if (hasQuery && !keyString.contains(q)) {
                 continue;
             }
-            list.add(new ConfigItem(key.toString(), config));
+            if (AppConfigKey.TRACE_HANDLER_ENABLED == key) {
+                list.add(new ConfigItem(key.toString(), appConfig.traceHandler()));
+            } else if (AppConfigKey.TRACE_REQUEST_ENABLED == key) {
+                list.add(new ConfigItem(key.toString(), appConfig.traceRequests()));
+            } else {
+                list.add(new ConfigItem(key.toString(), config));
+            }
         }
         return list;
     }
@@ -69,6 +74,16 @@ public class ConfAdmin {
         retVal.put("headerName", appConfig.csrfHeaderName());
         retVal.put("paramName", appConfig.csrfParamName());
         return retVal;
+    }
+
+    @Command("act.conf.trace-handler")
+    public void toggleTraceHandler(@Required boolean enabled) {
+        appConfig.toggleTraceHandler(enabled);
+    }
+
+    @Command("act.conf.trace-request")
+    public void toggleTraceRequest(@Required boolean enabled) {
+        appConfig.toggleTraceRequest(enabled);
     }
 
 }
