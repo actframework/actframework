@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* `NullPointerException` invoking `job.list` command #950
 * Allow it to turn on/off handler trace while app is running #949
 * execute `route.list` command causes `NullPointerException` #948
 * Issue with loading configuration into Map #946

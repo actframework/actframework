@@ -155,9 +155,12 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 
 	@Override
 	public String formatData(ASCIITableHeader header, int row, int col, Object data) {
+        if (null == data) {
+            return "";
+        }
 		//Format only numbers
 		try {
-			BigDecimal bd = new BigDecimal(data.toString());
+			BigDecimal bd = new BigDecimal(S.string(data));
 			return DecimalFormat.getInstance().format(bd);
 		} catch (Exception e) {
 		}
