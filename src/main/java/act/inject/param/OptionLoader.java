@@ -66,7 +66,7 @@ class OptionLoader extends CliParamValueLoader {
         this.defVal = defVal;
         Class<?> rawType = beanSpec.rawType();
         if (rawType.isArray()) {
-            this.langDefVal = Array.newInstance(rawType.getComponentType());
+            this.langDefVal = Array.newInstance(rawType.getComponentType(), 0);
         } else if ($.isPrimitiveType(rawType)) {
             this.langDefVal = $.primitiveDefaultValue(rawType);
         } else if (Collection.class.isAssignableFrom(rawType)) {
@@ -90,7 +90,7 @@ class OptionLoader extends CliParamValueLoader {
         this.defVal = null == defaultValue ? null : defaultValue.value();
         Class<?> rawType = beanSpec.rawType();
         if (rawType.isArray()) {
-            this.langDefVal = Array.newInstance(rawType.getComponentType());
+            this.langDefVal = Array.newInstance(rawType.getComponentType(), 0);
         } else if ($.isPrimitiveType(rawType)) {
             this.langDefVal = $.primitiveDefaultValue(rawType);
         } else if (Collection.class.isAssignableFrom(rawType)) {
@@ -186,6 +186,5 @@ class OptionLoader extends CliParamValueLoader {
             lead2 = "--" + Keyword.of(bindName).dashed();
         }
     }
-
 
 }
