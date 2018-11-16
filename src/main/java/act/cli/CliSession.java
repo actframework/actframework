@@ -131,7 +131,10 @@ public class CliSession extends DestroyableBase implements Runnable {
      * @return {@code true} if this session is expired
      */
     public boolean expired(int expiration) {
-        if (daemon && null != cliContext && !cliContext.disconnected()) {
+        if (null == cliContext) {
+            return true;
+        }
+        if ((daemon || cliContext.inProgress()) && !cliContext.disconnected()) {
             return false;
         }
         long l = expiration * 1000;

@@ -24,6 +24,7 @@ import act.Act;
 import act.Destroyable;
 import act.cli.CliSession;
 import org.osgl.exception.ConfigurationException;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 
@@ -149,7 +150,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                         try {
                             Thread.sleep(60 * 1000);
                         } catch (InterruptedException e) {
-                            return;
+                            throw new UnexpectedException(e);
                         }
                         app().checkUpdates(false);
                     }

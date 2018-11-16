@@ -21,24 +21,16 @@ package act;
  */
 
 import act.cli.*;
-import act.handler.NonBlock;
 import act.sys.Env;
-import act.util.JsonView;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
-import org.osgl.mvc.annotation.GetAction;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import javax.validation.constraints.Min;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import javax.validation.constraints.Min;
 
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
@@ -57,10 +49,10 @@ public class SysUtilAdmin {
     @Command(name = "act.meminfo, act.mi", help = "Print memory info")
     public void memInfo(
             @act.cli.Optional("monitor memory usage") boolean monitor,
-            @act.cli.Optional("human readable") boolean human,
+            @act.cli.Optional("readable") boolean readable,
             CliContext context
     ) {
-        final int factor = human ? 1024 * 1024 : 1;
+        final int factor = readable ? 1024 * 1024 : 1;
         Runtime runtime = Runtime.getRuntime();
 
         if (monitor) {
@@ -113,7 +105,7 @@ public class SysUtilAdmin {
     public void gc(CliContext context) {
         System.gc();
         context.println("GC executed");
-        memInfo(false, false, context);
+        memInfo(false, true, context);
     }
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")

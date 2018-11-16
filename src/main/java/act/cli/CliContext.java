@@ -9,9 +9,9 @@ package act.cli;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,6 @@ package act.cli;
 
 import static act.cli.ReportProgress.Type.BAR;
 
-import act.app.ActionContext;
 import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
@@ -32,10 +31,7 @@ import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
-import act.util.ActContext;
-import act.util.ProgressGauge;
-import act.util.PropertySpec;
-import act.util.SimpleProgressGauge;
+import act.util.*;
 import jline.console.ConsoleReader;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -47,10 +43,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.xnio.streams.WriterOutputStream;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -71,7 +64,8 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         // for a specific required group
         Map<String, AtomicInteger> required;
 
-        private ParsingContext() {}
+        private ParsingContext() {
+        }
 
         public AtomicInteger curArgId() {
             return curArgId;
@@ -148,7 +142,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             ParsingContext ctx0 = ctx.get();
             int n = ctx0.optionArgumentsCnt++;
             if (S.notBlank(defVal)) {
-                ctx0.argDefVals.put(n, defVal) ;
+                ctx0.argDefVals.put(n, defVal);
             }
         }
 
@@ -193,6 +187,8 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     private boolean rawPrint;
 
+    private boolean inProgress;
+
     private Map<String, String> preparsedOptionValues;
 
     public CliContext(String line, App app, ConsoleReader console, CliSession session) {
@@ -214,7 +210,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Set the console prompt
-     * @param prompt the prompt
+     *
+     * @param prompt
+     *         the prompt
      */
     public void prompt(String prompt) {
         console.setPrompt(prompt);
@@ -266,6 +264,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Returns CLI session id
+     *
      * @return CLI session id
      */
     @Override
@@ -299,6 +298,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Return the current working directory
+     *
      * @return the current working directory
      */
     public File curDir() {
@@ -340,10 +340,15 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
         }
         ReportProgress.Type type = reportProgress.type();
-        if (BAR == type) {
-            printBar(progressGauge);
-        } else {
-            printText(progressGauge);
+        inProgress = true;
+        try {
+            if (BAR == type) {
+                printBar(progressGauge);
+            } else {
+                printText(progressGauge);
+            }
+        } finally {
+            inProgress = false;
         }
     }
 
@@ -381,7 +386,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         println();
     }
 
-    public void print(String template, Object ... args) {
+    public void print(String template, Object... args) {
         if (rawPrint) {
             print1(template, args);
         } else {
@@ -424,7 +429,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
     }
 
-    private void print1(String template, Object ... args) {
+    private void print1(String template, Object... args) {
         if (args.length == 0) {
             pw.print(template);
         } else {
@@ -585,12 +590,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return new File(file.getAbsolutePath());
     }
 
-    private void saveLocal() {
-        _local.set(this);
+    boolean inProgress() {
+        return inProgress;
     }
 
-    private void initOverHttp(ActionContext actionContext) {
-
+    private void saveLocal() {
+        _local.set(this);
     }
 
     public static CliContext current() {
