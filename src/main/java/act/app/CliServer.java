@@ -152,7 +152,9 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                         } catch (InterruptedException e) {
                             throw new UnexpectedException(e);
                         }
-                        app().checkUpdates(false);
+                        if (app().checkUpdatesNonBlock(false)) {
+                            return;
+                        }
                     }
                 }
             });

@@ -1339,7 +1339,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                         public void run() {
                             callOn(event, l);
                         }
-                    });
+                    }, event instanceof SysEvent);
                 }
             }
         } catch (ConcurrentModificationException e) {

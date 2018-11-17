@@ -52,10 +52,19 @@ public class Job extends DestroyableBase implements Runnable {
         boolean iterating;
         List<Job> jobList;
         Job parent;
+        boolean sysJob;
 
         LockableJobList(Job parent) {
             this.jobList = new ArrayList<>();
             this.parent = parent;
+            this.sysJob = null != parent && parent.sysJob;
+        }
+
+        void markAsSysJob() {
+            this.sysJob = true;
+            for (Job job : jobList) {
+                job.markAsSysJob();
+            }
         }
 
         synchronized void clear() {
@@ -67,10 +76,13 @@ public class Job extends DestroyableBase implements Runnable {
                 thatJob.setOneTime();
             }
             if (parent.done() || iterating) {
-                parent.manager.now(thatJob);
+                parent.manager.now(thatJob, sysJob);
                 return parent;
             }
             jobList.add(thatJob);
+            if (sysJob) {
+                thatJob.markAsSysJob();
+            }
             // Note we can't do this otherwise route registration
             // process will be broken
             // - Collections.sort(jobList, Sorter.COMPARATOR);
@@ -95,7 +107,7 @@ public class Job extends DestroyableBase implements Runnable {
                             public void run() {
                                 subJob.run();
                             }
-                        });
+                        }, subJob.sysJob);
                     } else {
                         subJob.run();
                         if (Act.isDev() && subJob.app.hasBlockIssue()) {
@@ -128,6 +140,7 @@ public class Job extends DestroyableBase implements Runnable {
     Object callableResult;
     Exception callableException;
     private Method method;
+    private boolean sysJob;
     // progress percentage
     private SimpleProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
@@ -137,10 +150,20 @@ public class Job extends DestroyableBase implements Runnable {
     private Job(String id) {
         this.id = id;
         this.jobProgressTag = wsJobProgressTag(id);
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager) {
         this(id, manager, ($.Func0<?>)null);
+    }
+
+    Job(String id, boolean sysJob, JobManager manager) {
+        this(id, manager, ($.Func0<?>) null);
+        if (sysJob) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager, final Callable<?> callable) {
@@ -161,6 +184,9 @@ public class Job extends DestroyableBase implements Runnable {
                 return null;
             }
         };
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager, $.Func0<?> worker) {
@@ -178,6 +204,9 @@ public class Job extends DestroyableBase implements Runnable {
         if (worker instanceof ReflectedJobInvoker) {
             this.method = ((ReflectedJobInvoker) worker).method();
         }
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker) {
@@ -193,6 +222,9 @@ public class Job extends DestroyableBase implements Runnable {
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     public void setProgressGauge(ProgressGauge progressGauge) {
@@ -227,6 +259,17 @@ public class Job extends DestroyableBase implements Runnable {
 
     protected String brief() {
         return S.concat("job[", id, "]\none time job:", S.string(oneTime), "\ntrigger:", S.string(trigger));
+    }
+
+    void markAsSysJob() {
+        this.sysJob = true;
+        this.parallelJobs.markAsSysJob();
+        this.followingJobs.markAsSysJob();
+        this.precedenceJobs.markAsSysJob();
+    }
+
+    boolean isSysJob() {
+        return sysJob;
     }
 
     @Override
@@ -286,8 +329,11 @@ public class Job extends DestroyableBase implements Runnable {
         invokeParallelJobs();
         runPrecedenceJobs();
         try {
-            if (Act.isDev() && app.isStarted()) {
-                app.checkUpdates(false);
+            if (Act.isDev() && app.isStarted() && !sysJob) {
+                if (app.checkUpdates(false)) {
+                    // app reloaded
+                    return;
+                }
             }
             doJob();
         } catch (Throwable e) {

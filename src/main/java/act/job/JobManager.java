@@ -45,6 +45,8 @@ import java.util.concurrent.*;
 
 public class JobManager extends AppServiceBase<JobManager> {
 
+    public static final String SYS_JOB_MARKER = "__act_sys__";
+
     private static final Logger LOGGER = LogManager.get(JobManager.class);
 
     private ScheduledThreadPoolExecutor executor;
@@ -53,7 +55,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
     static String sysEventJobId(SysEventId eventId) {
-        return S.concat("__act_sys__", eventId.toString().toLowerCase());
+        return S.concat(SYS_JOB_MARKER, eventId.toString().toLowerCase());
     }
 
     public JobManager(App app) {
@@ -93,12 +95,24 @@ public class JobManager extends AppServiceBase<JobManager> {
         });
     }
 
+    public void now(Job job) {
+        now(job, job.isSysJob());
+    }
+
     public void now(Runnable runnable) {
-        now(randomJobId(), runnable);
+        now(runnable, false);
+    }
+
+    public void now(Runnable runnable, boolean sysJob) {
+        now(randomJobId(), runnable, sysJob);
     }
 
     public void now(String jobId, Runnable runnable) {
-        executor().submit(wrap(jobId, runnable));
+        now(jobId, runnable, false);
+    }
+
+    public void now(String jobId, Runnable runnable, boolean sysJob) {
+        executor().submit(wrap(jobId, runnable, sysJob));
     }
 
     public String now($.Function<ProgressGauge, ?> worker) {
@@ -420,7 +434,7 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     private void createSysEventListener(SysEventId sysEventId) {
         String jobId = sysEventJobId(sysEventId);
-        Job job = new Job(jobId, this);
+        Job job = new Job(jobId, true, this);
         app().eventBus().bind(sysEventId, new _SysEventListener(jobId, job));
     }
 
@@ -445,11 +459,15 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     private Job wrap(Runnable runnable) {
-        return new ContextualJob(randomJobId(), runnable);
+        return wrap(randomJobId(), runnable, false);
     }
 
-    private Job wrap(String name, Runnable runnable) {
-        return new ContextualJob(name, runnable);
+    private Job wrap(String name, Runnable runnable, boolean sysJob) {
+        Job job = new ContextualJob(name, runnable);
+        if (sysJob) {
+            job.markAsSysJob();
+        }
+        return job;
     }
 
     private Job wrap(Callable callable) {
@@ -521,6 +539,10 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     private String randomJobId() {
         return app().cuid() + S.random(4);
+    }
+
+    static boolean isSysJob(Job job) {
+        return S.is(job.id()).startsWith(SYS_JOB_MARKER);
     }
 
 }

@@ -36,8 +36,7 @@ import act.app.util.NamedPort;
 import act.asm.AsmException;
 import act.asm.ClassReader;
 import act.asm.tree.ClassNode;
-import act.asm.tree.InsnList;
-import act.asm.tree.MethodNode;
+import act.asm.tree.*;
 import act.asm.util.*;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;
@@ -97,6 +96,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
@@ -174,7 +174,6 @@ public class App extends LogSupportedDestroyableBase {
     private Set<String> scanSuffixList;
     private List<File> baseDirs;
     private volatile File tmpDir;
-    private boolean restarting;
     private Result blockIssue;
     private Throwable blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
@@ -190,9 +189,11 @@ public class App extends LogSupportedDestroyableBase {
         }
     };
     private final Version version;
-    private boolean reloading;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
     private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
+
+    // lock app hot reload process
+    private final AtomicBoolean loading = new AtomicBoolean();
 
     // for unit test purpose
     private App() {
@@ -465,8 +466,38 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
+    /**
+     * Check if app needs updates.
+     *
+     * @param async
+     *         refresh app async or sync
+     * @return `true` if there are updates and app require hot reload
+     */
     public boolean checkUpdates(boolean async) {
+        return checkUpdates(async, false);
+    }
+
+    public boolean checkUpdatesNonBlock(boolean async) {
+        return checkUpdates(async, true);
+    }
+
+    private boolean checkUpdates(boolean async, boolean nonBlock) {
         if (!Act.isDev()) {
+            return false;
+        }
+        if (loading.get()) {
+            if (nonBlock) {
+                return true;
+            }
+            synchronized (this) {
+                while (loading.get()) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw E.unexpected(e);
+                    }
+                }
+            }
             return false;
         }
         try {
@@ -597,10 +628,6 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
-    public synchronized boolean isRestarting() {
-        return restarting;
-    }
-
     public RequestHandler blockIssueHandler() {
         if (null != blockIssue && Act.isDev()) {
             return blockIssueHandler;
@@ -609,39 +636,38 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public synchronized void refresh() {
-        currentState = null;
-        final long ms = $.ms();
-        info("App starting ....");
-        profile = null;
-        blockIssue = null;
-        blockIssueCause = null;
-
-        Act.viewManager().clearAppDefinedVars();
-        initScanList();
-        initJarFileBlackList();
-        initServiceResourceManager();
-        reload();
-
-        managedCollectionService = new ManagedCollectionService(this);
-        I18n.classInit(this);
-        ReflectedInvokerHelper.classInit(this);
-        ParamValueLoaderService.classInit(this);
-        JodaTransformers.classInit(this);
-        FastJsonPropertyPreFilter.classInit(this);
-        ActErrorResult.classInit(this);
-        ActProviders.classInit(this);
-        ProvidedValueLoader.classInit(this);
-        GenieFactoryFinder.classInit(this);
-
-        mainThread = Thread.currentThread();
-        restarting = mainThread.getName().contains("job");
-        eventEmitted = C.newSet();
-
-        initSingletonRegistry();
-        initEventBus();
-        emit(EVENT_BUS_INITIALIZED);
-
+        startLoading();
         try {
+            currentState = null;
+            final long ms = $.ms();
+            info("App starting ....");
+            profile = null;
+            blockIssue = null;
+            blockIssueCause = null;
+
+            Act.viewManager().clearAppDefinedVars();
+            initScanList();
+            initJarFileBlackList();
+            initServiceResourceManager();
+            reload();
+
+            managedCollectionService = new ManagedCollectionService(this);
+            I18n.classInit(this);
+            ReflectedInvokerHelper.classInit(this);
+            ParamValueLoaderService.classInit(this);
+            JodaTransformers.classInit(this);
+            FastJsonPropertyPreFilter.classInit(this);
+            ActErrorResult.classInit(this);
+            ActProviders.classInit(this);
+            ProvidedValueLoader.classInit(this);
+            GenieFactoryFinder.classInit(this);
+
+            mainThread = Thread.currentThread();
+            eventEmitted = C.newSet();
+
+            initSingletonRegistry();
+            initEventBus();
+            emit(EVENT_BUS_INITIALIZED);
 
             loadConfig();
             emit(CONFIG_LOADED);
@@ -696,30 +722,17 @@ public class App extends LogSupportedDestroyableBase {
                 asmException = e;
                 throw ActErrorResult.of(e);
             }
-        } catch (BlockIssueSignal e) {
-            return;
-        }
 
-        try {
-            //classLoader().loadClasses();
             emit(APP_CODE_SCANNED);
             emit(CLASS_LOADED);
             Act.viewManager().reload(this);
-        } catch (BlockIssueSignal e) {
-            // ignore and keep going with dependency injector initialization
-        }
 
-        try {
             loadDependencyInjector();
             emit(DEPENDENCY_INJECTOR_INITIALIZED);
             dependencyInjector.unlock();
             emit(DEPENDENCY_INJECTOR_LOADED);
-        } catch (BlockIssueSignal e) {
-            return;
-        }
 
-        if (null == blockIssue && null == blockIssueCause) {
-            try {
+            if (null == blockIssue && null == blockIssueCause) {
                 final Runnable runnable1 = new Runnable() {
                     @Override
                     public void run() {
@@ -752,7 +765,7 @@ public class App extends LogSupportedDestroyableBase {
                 if (!isDevColdStart()) {
                     runnable1.run();
                 } else {
-                    jobManager.now("post_di_load_init", runnable1);
+                    jobManager.now("post_di_load_init", runnable1, true);
                 }
                 Runnable runnable2 = new Runnable() {
                     @Override
@@ -770,6 +783,7 @@ public class App extends LogSupportedDestroyableBase {
                         }
                         hasStarted = true;
                         daemonKeeper();
+                        loadingDone();
                         emit(POST_START);
                         jobManager.post(SysEventId.DB_SVC_LOADED, new Runnable() {
                             @Override
@@ -788,9 +802,12 @@ public class App extends LogSupportedDestroyableBase {
                 } else {
                     jobManager().on(DB_SVC_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                 }
-            } catch (BlockIssueSignal e) {
-                // ignore
             }
+        } catch (BlockIssueSignal e) {
+            loadingDone();
+        } catch (RuntimeException e) {
+            loadingDone();
+            throw e;
         }
     }
 
@@ -1287,6 +1304,15 @@ public class App extends LogSupportedDestroyableBase {
             }
         }
         return router;
+    }
+
+    private synchronized void startLoading() {
+        loading.set(true);
+    }
+
+    private synchronized void loadingDone() {
+        loading.set(false);
+        this.notifyAll();
     }
 
     private void loadConfig() {

@@ -173,7 +173,10 @@ public class CliSession extends DestroyableBase implements Runnable {
                     return;
                 }
                 ts = $.ms();
-                app.checkUpdates(true);
+                if (app.checkUpdatesNonBlock(true)) {
+                    console.print("app reloading ...");
+                    return;
+                }
                 if (S.blank(line)) {
                     continue;
                 }
