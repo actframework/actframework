@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* False warning message on DB configuration #953
 * CLI session shall not time out when it is reporting async job progress #952
 * `NullPointerException` invoking `job.list` command #950
 * Allow it to turn on/off handler trace while app is running #949

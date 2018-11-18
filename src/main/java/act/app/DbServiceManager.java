@@ -250,7 +250,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 if (null == db) {
                     logger.warn("DB service not initialized: need to specify default db service implementation");
                 } else {
-                    logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
+                    logger.info("Init default service with the sole db plugin: %s", db);
                     Map<String, String> svcConf = new HashMap<>();
                     String prefix = "db.";
                     for (String key : dbConf.keySet()) {
