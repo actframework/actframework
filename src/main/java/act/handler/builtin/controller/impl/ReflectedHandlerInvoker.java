@@ -20,6 +20,8 @@ package act.handler.builtin.controller.impl;
  * #L%
  */
 
+import static act.app.ActionContext.State.INTERCEPTING;
+
 import act.Act;
 import act.Trace;
 import act.annotations.*;
@@ -484,6 +486,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     public Result handle(final ActionContext context) {
         if (disabled) {
+            if (INTERCEPTING == context.state()) {
+                return null;
+            }
             return ActNotFound.get();
         }
 

@@ -1,12 +1,12 @@
 # ActFramework Change Log
 
 **1.8.12**
+* If interceptor is disabled then it shall not return `404` #955
 * False warning message on DB configuration #953
 * CLI session shall not time out when it is reporting async job progress #952
 * `NullPointerException` invoking `job.list` command #950
 * Allow it to turn on/off handler trace while app is running #949
 * execute `route.list` command causes `NullPointerException` #948
-* Issue with loading configuration into Map #946
 * `NullPointerException` when calling `$.convert(str).to(DateTime.class)` in Job #947
 * Output enhanced asm code when `java.lang.VerifyError` encountered #945
 * `UnexpectedException` with `Controller.Util.download(URL)` call #944
