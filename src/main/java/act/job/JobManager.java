@@ -538,7 +538,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     private String randomJobId() {
-        return app().cuid() + S.random(4);
+        return app().cuid() + S.urlSafeRandom(2);
     }
 
     static boolean isSysJob(Job job) {

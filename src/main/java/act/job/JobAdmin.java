@@ -23,21 +23,17 @@ package act.job;
 import act.cli.*;
 import act.event.OnEvent;
 import act.util.JsonView;
-import act.util.PropertySpec;
-import act.util.SimpleProgressGauge;
-import act.ws.WebSocketConnectEvent;
-import act.ws.WebSocketConnectionManager;
-import act.ws.WebSocketContext;
-import act.ws.WsEndpoint;
+import act.util.*;
+import act.ws.*;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import javax.inject.Inject;
 
 /**
  * Provide admin service to act {@link JobManager}
@@ -107,7 +103,7 @@ public class JobAdmin {
 
     public static class WebsocketEndpoints {
 
-        @WsEndpoint("/~/job/{id}/progress")
+        @WsEndpoint("/~/job/progress")
         public static class JobProgress {
 
             @Inject

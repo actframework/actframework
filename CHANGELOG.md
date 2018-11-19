@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* The `/~/job/progress` ws endpoint does not work #956
 * If interceptor is disabled then it shall not return `404` #955
 * False warning message on DB configuration #953
 * CLI session shall not time out when it is reporting async job progress #952
