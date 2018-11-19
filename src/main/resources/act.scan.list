@@ -33,4 +33,5 @@ act.Zen
 act.apidoc.Endpoint.Service
 org.osgl.util.FastJsonKvCodec
 act.ws.WebSocketAdminConsole
-act.job.JobAdmin$WebsocketEndpoints$JobProgress
+act.job.JobAdmin
+act.job.JobAdmin$WsProgress

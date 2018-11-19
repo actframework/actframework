@@ -214,10 +214,10 @@ public class AppClassLoader
             return c;
         }
 
-        // ensure we can enhance the act classes specified below
-        if (name.startsWith("act.") && name.endsWith("Admin")) {
-            return super.loadClass(name, resolve);
-        }
+//        // ensure we can enhance the act classes specified below
+//        if (name.startsWith("act.") && name.endsWith("Admin")) {
+//            return super.loadClass(name, resolve);
+//        }
 
         c = loadAppClass(name, resolve);
 

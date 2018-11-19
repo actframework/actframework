@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-resourceloader-test</artifactId>
-  <version>1.8.8.8-SNAPSHOT</version>
+  <version>1.8.11.0</version>
 
   <name>ActFramework ResourceLoader Test App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.8.9-SNAPSHOT</version>
+    <version>1.8.11.0</version>
   </parent>
 
   <properties>
@@ -30,7 +30,7 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.11-SNAPSHOT</version>
+      <version>1.8.12-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

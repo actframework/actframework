@@ -29,11 +29,54 @@ import java.util.List;
 
 public class SimpleProgressGauge extends DestroyableBase implements ProgressGauge {
 
+    public static final ProgressGauge NULL = new SimpleProgressGauge(100, -1) {
+
+        @Override
+        public void addListener(Listener listener) {
+            E.unsupport();
+        }
+
+        @Override
+        public void updateMaxHint(int maxHint) {
+            E.unsupport();
+        }
+
+        @Override
+        public void step() {
+            E.unsupport();
+        }
+
+        @Override
+        public void stepBy(int steps) {
+            E.unsupport();
+        }
+
+        @Override
+        public void stepTo(int steps) {
+            E.unsupport();
+        }
+
+        @Override
+        public void setId(String id) {
+            E.unsupport();
+        }
+
+        @Override
+        public void markAsDone() {
+            E.unsupport();
+        }
+    };
+
     private String id;
     private int maxHint;
     private int currentSteps;
     private ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
+
+    private SimpleProgressGauge(int maxHint, int currentSteps) {
+        this.maxHint = maxHint;
+        this.currentSteps = currentSteps;
+    }
 
     private SimpleProgressGauge(ProgressGauge delegate) {
         this.delegate = $.requireNotNull(delegate);

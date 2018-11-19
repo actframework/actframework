@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.12**
+* Change ws endpoint for job progress status, add GET endpoint for job progress checking #957
 * The `/~/job/progress` ws endpoint does not work #956
 * If interceptor is disabled then it shall not return `404` #955
 * False warning message on DB configuration #953

@@ -27,6 +27,7 @@ import act.util.*;
 import act.ws.*;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
+import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -101,22 +102,28 @@ public class JobAdmin {
         return json.toJSONString();
     }
 
-    public static class WebsocketEndpoints {
-
-        @WsEndpoint("/~/job/progress")
-        public static class JobProgress {
-
-            @Inject
-            private WebSocketConnectionManager connectionManager;
-
-            @OnEvent
-            public void onConnect(WebSocketConnectEvent event) {
-                WebSocketContext context = event.source();
-                String jobId = context.actionContext().paramVal("id");
-                String tag = SimpleProgressGauge.wsJobProgressTag(jobId);
-                connectionManager.subscribe(context.actionContext().session(), tag);
-            }
+    @GetAction("jobs/{id}/progress")
+    public ProgressGauge jobProgress(String id, JobManager jobManager) {
+        Job job = jobManager.jobById(id);
+        if (null == job) {
+            return SimpleProgressGauge.NULL;
         }
-
+        ProgressGauge gauge = job.progress();
+        return null == gauge ? SimpleProgressGauge.NULL : gauge;
     }
+
+    @WsEndpoint("/~/ws/jobs/{id}/progress")
+    public static class WsProgress {
+        @Inject
+        private WebSocketConnectionManager connectionManager;
+
+        @OnEvent
+        public void onConnect(WebSocketConnectEvent event) {
+            WebSocketContext context = event.source();
+            String jobId = context.actionContext().paramVal("id");
+            String tag = SimpleProgressGauge.wsJobProgressTag(jobId);
+            connectionManager.subscribe(context.actionContext().session(), tag);
+        }
+    }
+
 }
