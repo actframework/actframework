@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.13**
+* `WebsocketConnectionRegistry` - provide method to remove key #962
 * Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
 
 **1.8.12** 20/Nov/2018
