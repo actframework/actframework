@@ -112,7 +112,7 @@ public class JobAdmin {
         return null == gauge ? SimpleProgressGauge.NULL : gauge;
     }
 
-    @WsEndpoint("/~/ws/jobs/{id}/progress")
+    @WsEndpoint("/~/ws/jobs/{jobId}/progress")
     public static class WsProgress {
         @Inject
         private WebSocketConnectionManager connectionManager;
@@ -120,7 +120,15 @@ public class JobAdmin {
         @OnEvent
         public void onConnect(WebSocketConnectEvent event) {
             WebSocketContext context = event.source();
-            String jobId = context.actionContext().paramVal("id");
+            String url = context.url();
+            if (!url.startsWith("/~/ws/jobs/") && !url.endsWith("/progress") && !context.actionContext().isPathVar("jobId")) {
+                // not my cup of tea
+                return;
+            }
+            String jobId = context.actionContext().paramVal("jobId");
+            if (null == jobId) {
+                return;
+            }
             String tag = SimpleProgressGauge.wsJobProgressTag(jobId);
             connectionManager.subscribe(context.actionContext().session(), tag);
         }
