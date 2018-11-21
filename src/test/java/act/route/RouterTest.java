@@ -105,16 +105,23 @@ public class RouterTest extends RouterTestBase {
     }
 
     @Test
-    public void testGH393_1() {
+    public void testGH939_1() {
         router.addMapping(GET, "/foo/~FooBar~", controller, RouteSource.ACTION_ANNOTATION);
         router.getInvoker(GET, "/foo/foo-bar", ctx).handle(ctx);
         controllerInvoked();
     }
 
     @Test
-    public void testGH393_2() {
+    public void testGH939_2() {
         router.addMapping(GET, "/foo/~FooBar~/{x}", controller, RouteSource.ACTION_ANNOTATION);
         router.getInvoker(GET, "/foo/foo-bar/xyz", ctx).handle(ctx);
+        controllerInvoked();
+    }
+
+    @Test
+    public void testGH958() {
+        router.addMapping(GET, "/foo/~FooBar~/x", controller, RouteSource.ACTION_ANNOTATION);
+        router.getInvoker(GET, "/foo/foo-bar/x", ctx).handle(ctx);
         controllerInvoked();
     }
 

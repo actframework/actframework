@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.8.12**
+**1.8.13**
+* Provides a mechanism for accurate routing ws connection event to user defined connection handler #961
+
+**1.8.12** 20/Nov/2018
 * Change ws endpoint for job progress status, add GET endpoint for job progress checking #957
 * The `/~/job/progress` ws endpoint does not work #956
 * If interceptor is disabled then it shall not return `404` #955
