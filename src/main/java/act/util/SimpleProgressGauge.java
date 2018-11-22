@@ -143,8 +143,10 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             delegate.stepTo(steps);
         } else {
-            currentSteps = steps;
-            triggerUpdateEvent();
+            if (currentSteps != steps) {
+                currentSteps = steps;
+                triggerUpdateEvent();
+            }
         }
     }
 
@@ -186,7 +188,11 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             return delegate.currentSteps() * 100 / delegate.maxHint();
         }
-        return currentSteps * 100 / maxHint;
+        int n = currentSteps * 100 / maxHint;
+        if (100 == n && !isDone()) {
+            n = 99;
+        }
+        return n;
     }
 
     public int getProgressPercent() {
@@ -198,12 +204,14 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             return delegate.isDone();
         }
-        return currentSteps == maxHint;
+        return currentSteps >= maxHint;
     }
 
     @Override
     public void markAsDone() {
-        stepTo(maxHint);
+        if (!isDone()) {
+            stepTo(maxHint);
+        }
     }
 
     private void triggerUpdateEvent() {
