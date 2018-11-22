@@ -628,12 +628,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
 
         if (async) {
-            JobManager jobManager = context.app().jobManager();
-            String jobId = jobManager.prepare(new TrackableWorker() {
+            final JobManager jobManager = context.app().jobManager();
+            final String jobId = app.cuid();
+            jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
                     try {
-                        invoke(handler, context, controller, params);
+                        Object o = invoke(context, controller, params);
+                        jobManager.cacheResult(jobId, o);
                     } catch (Exception e) {
                         warn(e, "Error executing async handler: " + handler);
                     }
@@ -988,16 +990,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object retVal;
         String invocationInfo = null;
+        if (config.traceHandler()) {
+            invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
+            Trace.LOGGER_HANDLER.trace(invocationInfo);
+        }
         try {
-            if (config.traceHandler()) {
-                invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
-                Trace.LOGGER_HANDLER.trace(invocationInfo);
-            }
-            retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
-            if (returnString && context.acceptJson()) {
-                retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
-            }
-            context.calcResultHashForEtag(retVal);
+            retVal = invoke(context, controller, params);
         } catch (Result r) {
             retVal = r;
         } catch (Exception e) {
@@ -1007,6 +1005,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throw e;
         }
         return transform(retVal, this, context, returnValueAdvice, shallTransformReturnVal, returnIterable);
+    }
+
+    private Object invoke(ActionContext context, Object controller, Object[] params) {
+        Object retVal;
+        retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        if (returnString && context.acceptJson()) {
+            retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
+        }
+        context.calcResultHashForEtag(retVal);
+        return retVal;
     }
 
     private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice, boolean transformRetVal, boolean returnIterable) {

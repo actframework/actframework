@@ -126,20 +126,24 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         final Object cmd = commanderInstance(context);
         final Object[] params = params(cmd, context);
         if (async) {
-            JobManager jobManager = context.app().jobManager();
-            String jobId = jobManager.prepare(new TrackableWorker() {
+            final JobManager jobManager = context.app().jobManager();
+            final String jobId = app.cuid();
+            jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
-                    invoke(cmd, params);
+                    Object o = invoke(cmd, params);
+                    jobManager.cacheResult(jobId, o);
                 }
             });
             context.setJobId(jobId);
             jobManager.now(jobId);
+            String message = "Async job started: " + jobId;
             if (null != reportProgress) {
+                context.println(message);
                 context.attribute(ReportProgress.CTX_ATTR_KEY, reportProgress);
                 return context.progress();
             } else {
-                return "Async job started: " + jobId;
+                return message;
             }
         }
         return invoke(cmd, params);

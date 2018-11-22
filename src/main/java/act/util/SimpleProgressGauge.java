@@ -177,6 +177,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         this.id = id;
     }
 
+    @Override
     public String getId() {
         return id;
     }

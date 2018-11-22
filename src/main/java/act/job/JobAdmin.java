@@ -102,6 +102,12 @@ public class JobAdmin {
         return json.toJSONString();
     }
 
+    @GetAction("jobs/{jobId}/result")
+    @Command(value = "act.job.result", help = "Retrieve async job result")
+    public Object getAsyncResult(@Required("specify job id") String jobId, JobManager jobManager, ActContext context) {
+        return jobManager.cachedResult(jobId);
+    }
+
     @GetAction("jobs/{id}/progress")
     public ProgressGauge jobProgress(String id, JobManager jobManager) {
         Job job = jobManager.jobById(id);

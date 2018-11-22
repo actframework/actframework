@@ -34,6 +34,16 @@ public interface ProgressGauge {
     void setId(String id);
 
     /**
+     * Return ID of this gauge.
+     *
+     * **Note** the id of the gauge is the same
+     * with the id of the Job this gauge monitor.
+     *
+     * @return the id of the gauge
+     */
+    String getId();
+
+    /**
      * Update max hint. If the number is negative, then
      * it indicate the progress is indefinite
      *

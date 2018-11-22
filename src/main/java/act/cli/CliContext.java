@@ -22,6 +22,7 @@ package act.cli;
 
 import static act.cli.ReportProgress.Type.BAR;
 
+import act.Act;
 import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
@@ -31,7 +32,9 @@ import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
+import act.job.JobManager;
 import act.util.*;
+import com.alibaba.fastjson.JSON;
 import jline.console.ConsoleReader;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -346,6 +349,10 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 printBar(progressGauge);
             } else {
                 printText(progressGauge);
+            }
+            Object o = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
+            if (null != o) {
+                println(JSON.toJSONString(o));
             }
         } finally {
             inProgress = false;

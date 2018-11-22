@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.13**
+* Provide a mechanism to handle async process result #960
 * `WebsocketConnectionRegistry` - provide method to remove key #962
 * Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
 
