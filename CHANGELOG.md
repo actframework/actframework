@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.13**
+* `NullPointerException` when route path element wrapped with `~` is no the final one #958
 * act.session.ttl=-1 not effect when JWT is enabled #968
 * `App.singleton(Xyz.class)` returns `null` value #967
 * `@CsvView` and `@TableView` not effective when mark on request handler method #966
