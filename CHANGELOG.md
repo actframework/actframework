@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.13**
+* `@CsvView` and `@TableView` not effective when mark on request handler method #966
 * Keep decorator setting of async command/request #965
 * `ProgressGuage.markAsDone` shall not trigger event if progress is already done #963
 * Provide a mechanism to handle async process result #960
