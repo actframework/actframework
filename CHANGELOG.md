@@ -10,6 +10,7 @@
 * Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
 
 **1.8.12** 20/Nov/2018
+* act.session.ttl=-1 not take effect when using jwt #968
 * Change ws endpoint for job progress status, add GET endpoint for job progress checking #957
 * The `/~/job/progress` ws endpoint does not work #956
 * If interceptor is disabled then it shall not return `404` #955

@@ -1,0 +1,13 @@
+Scenario(968):
+  urlContext: 968
+  description: "[gh968] act.session.ttl=-1 not take effect when using jwt #968"
+  interactions:
+    - description: touch
+      request:
+        get: touch
+    - description: meet
+      request:
+        get: meet
+      response:
+        json:
+          result: Hi
