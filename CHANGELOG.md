@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.13**
+* act.session.ttl=-1 not effect when JWT is enabled #968
 * `App.singleton(Xyz.class)` returns `null` value #967
 * `@CsvView` and `@TableView` not effective when mark on request handler method #966
 * Keep decorator setting of async command/request #965
@@ -10,7 +11,6 @@
 * Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
 
 **1.8.12** 20/Nov/2018
-* act.session.ttl=-1 not take effect when using jwt #968
 * Change ws endpoint for job progress status, add GET endpoint for job progress checking #957
 * The `/~/job/progress` ws endpoint does not work #956
 * If interceptor is disabled then it shall not return `404` #955
