@@ -21,16 +21,23 @@ package act.job;
  */
 
 import act.cli.*;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.event.OnEvent;
+import act.util.CsvView;
 import act.util.JsonView;
 import act.util.*;
 import act.ws.*;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
+import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
+import org.osgl.mvc.annotation.ResponseContentType;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -105,7 +112,58 @@ public class JobAdmin {
     @GetAction("jobs/{jobId}/result")
     @Command(value = "act.job.result", help = "Retrieve async job result")
     public Object getAsyncResult(@Required("specify job id") String jobId, JobManager jobManager, ActContext context) {
-        return jobManager.cachedResult(jobId);
+        Object result = jobManager.cachedResult(jobId);
+        if (null == result) {
+            return null;
+        }
+        Object meta = jobManager.cachedMeta(jobId);
+        if (null == meta) {
+            return result;
+        }
+        if (meta instanceof CommandMethodMetaInfo) {
+            CommandMethodMetaInfo methodMetaInfo = $.cast(meta);
+            PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+            methodMetaInfo.view().print(result, filter, (CliContext) context);
+            return null;
+        }
+        if (meta instanceof Method) {
+            Method method = $.cast(meta);
+            PropertySpec spec = method.getAnnotation(PropertySpec.class);
+            if (null != spec) {
+                PropertySpec.MetaInfo metaInfo = new PropertySpec.MetaInfo();
+                for (String s : spec.value()) {
+                    metaInfo.onValue(s);
+                }
+                for (String s : spec.http()) {
+                    metaInfo.onHttp(s);
+                }
+                PropertySpec.currentSpec.set(metaInfo);
+            }
+            if (isAnnotationPresented(JsonView.class, method)) {
+                context.accept(H.Format.JSON);
+            } else if (isAnnotationPresented(CsvView.class, method)) {
+                context.accept(H.Format.CSS);
+            } else {
+                ResponseContentType rct = getAnnotation(ResponseContentType.class, method);
+                if (null != rct) {
+                    context.accept(rct.value().format());
+                }
+            }
+            return result;
+        }
+        throw new UnexpectedException("Oops! how come? The cached async handler meta is type of " + meta.getClass());
+    }
+
+    private boolean isAnnotationPresented(Class<? extends Annotation> annotationClass, Method method) {
+        return null != getAnnotation(annotationClass, method);
+    }
+
+    private <T extends Annotation> T getAnnotation(Class<T> annotationClass, Method method) {
+        T anno = ReflectedInvokerHelper.getAnnotation(annotationClass, method);
+        if (null != anno) {
+            return anno;
+        }
+        return method.getClass().getAnnotation(annotationClass);
     }
 
     @GetAction("jobs/{id}/progress")

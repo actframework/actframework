@@ -635,9 +635,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 protected void run(ProgressGauge progressGauge) {
                     try {
                         Object o = invoke(context, controller, params);
-                        jobManager.cacheResult(jobId, o);
+                        jobManager.cacheResult(jobId, o, method);
                     } catch (Exception e) {
-                        warn(e, "Error executing async handler: " + handler);
+                        warn(e, "Error executing async handler: " + method);
                     }
                 }
             });

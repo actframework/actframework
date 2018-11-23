@@ -30,11 +30,11 @@ import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.job.JobManager;
 import act.util.*;
-import com.alibaba.fastjson.JSON;
 import jline.console.ConsoleReader;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -337,7 +337,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return pw.checkError();
     }
 
-    public void print(ProgressGauge progressGauge) {
+    public void print(CommandMethodMetaInfo methodMetaInfo, ProgressGauge progressGauge) {
         ReportProgress reportProgress = attribute(ReportProgress.CTX_ATTR_KEY);
         if (null == reportProgress) {
             reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
@@ -350,9 +350,10 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             } else {
                 printText(progressGauge);
             }
-            Object o = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
-            if (null != o) {
-                println(JSON.toJSONString(o));
+            Object result = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
+            if (null != result) {
+                PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+                methodMetaInfo.view().print(result, filter, this);
             }
         } finally {
             inProgress = false;

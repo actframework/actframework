@@ -116,7 +116,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
             return;
         }
         if (result instanceof ProgressGauge) {
-            context.print((ProgressGauge) result);
+            context.print(methodMetaInfo, (ProgressGauge) result);
         } else {
             PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
             methodMetaInfo.view().print(result, filter, context);

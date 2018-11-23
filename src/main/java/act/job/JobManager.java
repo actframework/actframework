@@ -433,12 +433,17 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    public void cacheResult(String jobId, Object result) {
+    public void cacheResult(String jobId, Object result, Object meta) {
         jobResultCache.put("__jr_" + jobId, result, 60);
+        jobResultCache.put("__jm_" + jobId, meta, 60);
     }
 
     public Object cachedResult(String jobId) {
         return jobResultCache.get("__jr_" + jobId);
+    }
+
+    public Object cachedMeta(String jobId) {
+        return jobResultCache.get("__jm_" + jobId);
     }
 
     ScheduledThreadPoolExecutor executor() {

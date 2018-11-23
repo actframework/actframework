@@ -132,7 +132,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
                     Object o = invoke(cmd, params);
-                    jobManager.cacheResult(jobId, o);
+                    jobManager.cacheResult(jobId, o, methodMetaInfo);
                 }
             });
             context.setJobId(jobId);
