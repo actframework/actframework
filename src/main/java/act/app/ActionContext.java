@@ -1363,6 +1363,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     protected void releaseResources() {
         super.releaseResources();
         PropertySpec.current.remove();
+        PropertySpec.currentSpec.remove();
         if (this.state != State.DESTROYED) {
             sessionManager = null;
             this.allParams = null;

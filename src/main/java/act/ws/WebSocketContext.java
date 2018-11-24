@@ -69,6 +69,10 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         return connection.sessionId();
     }
 
+    public H.Session session() {
+        return actionContext.session();
+    }
+
     @Override
     public String username() {
         return connection.username();

@@ -294,15 +294,20 @@ public @interface PropertySpec {
 
         public static MetaInfo withCurrent(MetaInfo builtIn, ActContext context) {
             MetaInfo retVal = builtIn;
-            String s = PropertySpec.current.get();
-            if (S.notBlank(s)) {
-                PropertySpec.MetaInfo spec = new PropertySpec.MetaInfo();
-                if (context instanceof CliContext) {
-                    spec.onCli(s);
-                } else {
-                    spec.onHttp(s);
-                }
+            MetaInfo spec = currentSpec.get();
+            if (null != spec) {
                 retVal = spec;
+            } else {
+                String s = PropertySpec.current.get();
+                if (S.notBlank(s)) {
+                    spec = new PropertySpec.MetaInfo();
+                    if (context instanceof CliContext) {
+                        spec.onCli(s);
+                    } else {
+                        spec.onHttp(s);
+                    }
+                    retVal = spec;
+                }
             }
             if (context instanceof ActionContext) {
                 ActionContext actionContext = (ActionContext) context;
@@ -318,5 +323,6 @@ public @interface PropertySpec {
     }
 
     ThreadLocal<String> current = new ThreadLocal<>();
+    ThreadLocal<PropertySpec.MetaInfo> currentSpec = new ThreadLocal<>();
 
 }

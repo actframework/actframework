@@ -202,7 +202,7 @@ public class JWT extends SingletonBase {
 
     private boolean verifyExpires(JSONObject payloads) {
         Object obj = payloads.get(Payload.EXPIRES_AT.key);
-        return null != obj && obj instanceof Number && ((Number) obj).longValue() > ($.ms() / 1000);
+        return null == obj || (obj instanceof Number && ((Number) obj).longValue() > ($.ms() / 1000));
     }
 
     private boolean verifyArgo(JSONObject headers) {

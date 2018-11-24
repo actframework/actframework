@@ -960,7 +960,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             if (!noRegister) {
                 String contextPath = classInfo.urlContext();
                 String className = classInfo.className();
-                String action = WsEndpoint.PSEUDO_METHOD == methodName ? methodName : S.concat(className, ".", methodName);
+                String action = WsEndpoint.PSEUDO_METHOD == methodName ? "ws:" + className : S.concat(className, ".", methodName);
                 registerOnContext(contextPath, action);
                 contexts.add(contextPath);
             }

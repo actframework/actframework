@@ -48,7 +48,7 @@ import java.lang.annotation.*;
  * @see TableView
  * @see PropertySpec
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Deprecated
 @Inherited

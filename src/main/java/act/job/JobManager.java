@@ -20,6 +20,8 @@ package act.job;
  * #L%
  */
 
+import static act.app.event.SysEventId.APP_CODE_SCANNED;
+
 import act.Act;
 import act.Destroyable;
 import act.app.*;
@@ -32,6 +34,7 @@ import act.util.SimpleProgressGauge;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
+import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -53,17 +56,24 @@ public class JobManager extends AppServiceBase<JobManager> {
     private ConcurrentMap<String, Job> jobs = new ConcurrentHashMap<String, Job>();
     private ConcurrentMap<Method, Job> methodIndex = new ConcurrentHashMap<>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
+    private CacheService jobResultCache;
 
     static String sysEventJobId(SysEventId eventId) {
         return S.concat(SYS_JOB_MARKER, eventId.toString().toLowerCase());
     }
 
-    public JobManager(App app) {
+    public JobManager(final App app) {
         super(app);
         initExecutor(app);
         for (SysEventId sysEventId : SysEventId.values()) {
             createSysEventListener(sysEventId);
         }
+        on(APP_CODE_SCANNED, "init-job-result-cache", new Runnable() {
+            @Override
+            public void run() {
+                jobResultCache = app.cache("job_result_cache");
+            }
+        });
     }
 
     @Override
@@ -136,6 +146,10 @@ public class JobManager extends AppServiceBase<JobManager> {
     public String prepare($.Function<ProgressGauge, ?> worker) {
         Job job = wrap(worker);
         return job.id();
+    }
+
+    public void prepare(String jobId, $.Function<ProgressGauge, ?> worker) {
+        wrap(jobId, worker);
     }
 
     /**
@@ -238,7 +252,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public void post(SysEventId sysEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        Job job = jobById(sysEventJobId(sysEvent));
+        Job job = jobById(sysEventJobId(sysEvent), false);
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
@@ -255,7 +269,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         if (traceEnabled) {
             LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, sysEvent, runImmediatelyIfEventDispatched);
         }
-        Job job = jobById(sysEventJobId(sysEvent));
+        Job job = jobById(sysEventJobId(sysEvent), !runImmediatelyIfEventDispatched);
         if (null == job) {
             if (traceEnabled) {
                 LOGGER.trace("process delayed job: %s", jobId);
@@ -417,6 +431,19 @@ public class JobManager extends AppServiceBase<JobManager> {
         if (null != method) {
             methodIndex.remove(method);
         }
+    }
+
+    public void cacheResult(String jobId, Object result, Object meta) {
+        jobResultCache.put("__jr_" + jobId, result, 60);
+        jobResultCache.put("__jm_" + jobId, meta, 60);
+    }
+
+    public Object cachedResult(String jobId) {
+        return jobResultCache.get("__jr_" + jobId);
+    }
+
+    public Object cachedMeta(String jobId) {
+        return jobResultCache.get("__jm_" + jobId);
     }
 
     ScheduledThreadPoolExecutor executor() {

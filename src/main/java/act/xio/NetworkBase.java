@@ -25,6 +25,7 @@ import act.Destroyable;
 import act.app.App;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.util.LogSupportedDestroyableBase;
+import act.ws.WebSocketConnectionListener;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -134,6 +135,14 @@ public abstract class NetworkBase extends LogSupportedDestroyableBase implements
             }
         }
         return simpleWebSocketConnector;
+    }
+
+    @Override
+    public WebSocketConnectionHandler createWebSocketConnectionHandler(final WebSocketConnectionListener listener) {
+        WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
+        WebSocketConnectionHandler handler = internalCreateWsConnHandler(null, manager);
+        handler.setConnectionListener(listener);
+        return handler;
     }
 
     protected abstract WebSocketConnectionHandler internalCreateWsConnHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager);

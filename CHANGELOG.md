@@ -2,6 +2,15 @@
 
 **1.8.13**
 * Provides a mechanism for accurate routing ws connection event to user defined connection handler #961
+* `NullPointerException` when route path element wrapped with `~` is no the final one #958
+* act.session.ttl=-1 not effect when JWT is enabled #968
+* `App.singleton(Xyz.class)` returns `null` value #967
+* `@CsvView` and `@TableView` not effective when mark on request handler method #966
+* Keep decorator setting of async command/request #965
+* `ProgressGuage.markAsDone` shall not trigger event if progress is already done #963
+* Provide a mechanism to handle async process result #960
+* `WebsocketConnectionRegistry` - provide method to remove key #962
+* Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
 
 **1.8.12** 20/Nov/2018
 * Change ws endpoint for job progress status, add GET endpoint for job progress checking #957

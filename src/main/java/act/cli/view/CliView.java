@@ -247,7 +247,7 @@ public enum CliView {
             if (outputFields.isEmpty()) {
                 return;
             }
-            IO.write(buildHeaderLine(outputFields, spec.labelMapping()), writer);
+            IO.write(buildHeaderLine(outputFields, spec.labelMapping(context)), writer);
             IO.write($.OS.lineSeparator(), writer);
             IO.write(buildDataLine(firstElement, outputFields), writer);
             while (iterator.hasNext()) {

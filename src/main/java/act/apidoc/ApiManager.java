@@ -76,7 +76,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         if (!app.config().apiDocEnabled()) {
             return;
         }
-        app.jobManager().alongWith(SysEventId.POST_START, "compile-api-book", new Runnable() {
+        app.jobManager().post(SysEventId.POST_START, "compile-api-book", new Runnable() {
             @Override
             public void run() {
                 IN_PROGRESS.set(true);

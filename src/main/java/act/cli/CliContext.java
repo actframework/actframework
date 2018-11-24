@@ -22,6 +22,7 @@ package act.cli;
 
 import static act.cli.ReportProgress.Type.BAR;
 
+import act.Act;
 import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
@@ -29,8 +30,10 @@ import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
+import act.job.JobManager;
 import act.util.*;
 import jline.console.ConsoleReader;
 import me.tongfei.progressbar.ProgressBar;
@@ -334,7 +337,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return pw.checkError();
     }
 
-    public void print(ProgressGauge progressGauge) {
+    public void print(CommandMethodMetaInfo methodMetaInfo, ProgressGauge progressGauge) {
         ReportProgress reportProgress = attribute(ReportProgress.CTX_ATTR_KEY);
         if (null == reportProgress) {
             reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
@@ -346,6 +349,11 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 printBar(progressGauge);
             } else {
                 printText(progressGauge);
+            }
+            Object result = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
+            if (null != result) {
+                PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+                methodMetaInfo.view().print(result, filter, this);
             }
         } finally {
             inProgress = false;

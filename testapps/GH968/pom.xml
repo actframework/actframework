@@ -4,42 +4,27 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>act-ghissues</artifactId>
-  <version>1.8.12.0</version>
-
-  <name>ActFramework Github Issue Reproduce App</name>
+  <groupId>act_issues</groupId>
+  <artifactId>gh968</artifactId>
+  <version>1.0-SNAPSHOT</version>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.12.0-SNAPSHOT</version>
+    <version>1.8.12.0</version>
   </parent>
 
   <properties>
     <!-- remove the following line if you are on Java 7-->
     <java.version>1.8</java.version>
-    <app.entry>ghissues.AppEntry</app.entry>
+    <app.entry>test.AppEntry</app.entry>
   </properties>
 
   <dependencies>
-    <!-- add your dependencies here -->
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
       <version>1.8.13-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-excel</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-eclipselink</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.hutool</groupId>
-      <artifactId>hutool-all</artifactId>
-      <version>[4.1.12,)</version>
     </dependency>
   </dependencies>
 

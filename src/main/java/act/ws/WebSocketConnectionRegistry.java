@@ -48,6 +48,14 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
     }
 
     /**
+     * Remove all connection associations to `key`.
+     * @param key the key to be removed from the registry
+     */
+    public void removeAll(String key) {
+        registry.remove(key);
+    }
+
+    /**
      * Accept a visitor to iterate through the connections attached to the key specified
      *
      * @param key the key
