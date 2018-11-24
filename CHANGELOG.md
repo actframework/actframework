@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.13**
+**1.8.13** 25/Nov/2018
 * Provides a mechanism for accurate routing ws connection event to user defined connection handler #961
 * `NullPointerException` when route path element wrapped with `~` is no the final one #958
 * act.session.ttl=-1 not effect when JWT is enabled #968
