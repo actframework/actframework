@@ -222,7 +222,12 @@ public class Test extends LogSupport {
                             }
                         }, delay.get(), TimeUnit.SECONDS);
                     } else {
-                        Test.this.run(app, null, true);
+                        app.jobManager().now(new Runnable() {
+                            @Override
+                            public void run() {
+                                Test.this.run(app, null, true);
+                            }
+                        });
                     }
                 }
             });

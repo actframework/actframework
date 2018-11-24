@@ -529,12 +529,12 @@ public class JobManager extends AppServiceBase<JobManager> {
                     return null;
                 }
             }, true);
-            foo();
+            ensureMailerContext();
         }
 
         ContextualJob(String id, final $.Function<ProgressGauge, ?> worker) {
             super(id, JobManager.this, worker);
-            foo();
+            ensureMailerContext();
         }
 
         @Override
@@ -549,10 +549,10 @@ public class JobManager extends AppServiceBase<JobManager> {
             removeJob(this);
         }
 
-        private void foo() {
+        private void ensureMailerContext() {
             app().eventBus().once(MailerContext.InitEvent.class, new OnceEventListenerBase<MailerContext.InitEvent>() {
                 @Override
-                public boolean tryHandle(MailerContext.InitEvent event) throws Exception {
+                public boolean tryHandle(MailerContext.InitEvent event) {
                     MailerContext mailerContext = MailerContext.current();
                     if (null != mailerContext) {
                         _before();

@@ -23,8 +23,9 @@ package act.xio;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.app.event.SysEventId;
+import act.app.event.*;
 import act.controller.meta.*;
+import act.event.SysEventListenerBase;
 import act.handler.RequestHandlerBase;
 import act.inject.param.*;
 import act.sys.Env;
@@ -39,8 +40,7 @@ import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.*;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
@@ -160,13 +160,18 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     }
 
     private void initWebSocketConnectionListenerManager() {
-        final WebSocketConnectionHandler me = this;
-        this.app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
-            @Override
-            public void run() {
-                me.connectionListenerManager = me.app.getInstance(WebSocketConnectionListener.Manager.class);
-            }
-        }, true);
+        App app = Act.app();
+        if (app.eventEmitted(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED)) {
+            this.connectionListenerManager = app.getInstance(WebSocketConnectionListener.Manager.class);
+        } else {
+            final WebSocketConnectionHandler me = this;
+            this.app.eventBus().bind(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new SysEventListenerBase() {
+                @Override
+                public void on(EventObject event) {
+                    me.connectionListenerManager = me.app.getInstance(WebSocketConnectionListener.Manager.class);
+                }
+            });
+        }
     }
 
     protected void setConnectionListener(WebSocketConnectionListener connectionListener) {
