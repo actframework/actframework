@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.14**
+* Make the `dao` field of `SimpleRestfulServiceBase` be protected #980
 * Push progress only when `ProgressGauge`'s percentage changed #975
 
 **1.8.13** 25/Nov/2018

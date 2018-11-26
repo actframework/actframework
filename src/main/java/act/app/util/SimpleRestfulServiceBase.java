@@ -42,7 +42,7 @@ SimpleRestfulServiceBase<
         DAO_TYPE extends DaoBase<ID_TYPE, MODEL_TYPE, ?>> {
 
     @NoBind
-    private DAO_TYPE dao;
+    protected DAO_TYPE dao;
 
     public SimpleRestfulServiceBase() {
         exploreTypes();
