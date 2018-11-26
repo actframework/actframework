@@ -70,6 +70,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     private String id;
     private int maxHint;
     private int currentSteps;
+    private transient int percent;
     private ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
 
@@ -95,7 +96,6 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         maxHint = 100;
         currentSteps = 0;
         Destroyable.Util.tryDestroy(delegate);
-        triggerUpdateEvent();
     }
 
     @Override
@@ -113,7 +113,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
             delegate.updateMaxHint(maxHint);
         } else {
             this.maxHint = maxHint;
-            triggerUpdateEvent();
+            triggerUpdateEvent(true);
         }
     }
 
@@ -188,7 +188,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             return delegate.currentSteps() * 100 / delegate.maxHint();
         }
-        int n = currentSteps * 100 / maxHint;
+        int n = currentSteps * 100 / (maxHint - 1);
         if (100 == n && !isDone()) {
             n = 99;
         }
@@ -204,7 +204,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             return delegate.isDone();
         }
-        return currentSteps >= maxHint;
+        return currentSteps >= (maxHint - 1);
     }
 
     @Override
@@ -215,9 +215,24 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     private void triggerUpdateEvent() {
-        for (Listener listener : listeners) {
-            listener.onUpdate(this);
+        triggerUpdateEvent(false);
+    }
+
+    private void triggerUpdateEvent(boolean forceTriggerEvent) {
+        if (forceTriggerEvent || percentageChanged()) {
+            for (Listener listener : listeners) {
+                listener.onUpdate(this);
+            }
         }
+    }
+
+    private boolean percentageChanged() {
+        int cur = currentProgressPercent();
+        if (cur != percent) {
+            percent = cur;
+            return true;
+        }
+        return false;
     }
 
     public static SimpleProgressGauge wrap(ProgressGauge progressGauge) {
