@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.14**
+* Drop websocket connection subscribed to listen job progress once job is finished #977
 * Make the `dao` field of `SimpleRestfulServiceBase` be protected #980
 * Push progress only when `ProgressGauge`'s percentage changed #975
 

@@ -20,6 +20,8 @@ package act.job;
  * #L%
  */
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import act.cli.*;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.util.CsvView;
@@ -179,15 +181,40 @@ public class JobAdmin {
     public static class WsProgress implements WebSocketConnectionListener {
         @Inject
         private WebSocketConnectionManager connectionManager;
+        @Inject
+        private JobManager jobManager;
 
         @Override
-        public void onConnect(WebSocketContext context) {
+        public void onConnect(final WebSocketContext context) {
             String jobId = context.actionContext().paramVal("jobId");
-            if (null == jobId) {
+            Job job = null;
+            if (null != jobId) {
+                job = jobManager.jobById(jobId);
+            }
+            if (null == job) {
+                jobManager.delay(new Runnable() {
+                    @Override
+                    public void run() {
+                        context.connection().close();
+                    }
+                }, 10, MILLISECONDS);
                 return;
             }
             String tag = SimpleProgressGauge.wsJobProgressTag(jobId);
             connectionManager.subscribe(context.session(), tag);
+            job.progress().addListener(new ProgressGauge.Listener() {
+                @Override
+                public void onUpdate(ProgressGauge progressGauge) {
+                    if (progressGauge.isDone()) {
+                        jobManager.delay(new Runnable() {
+                            @Override
+                            public void run() {
+                                context.connection().close();
+                            }
+                        }, 10, MILLISECONDS);
+                    }
+                }
+            });
         }
     }
 

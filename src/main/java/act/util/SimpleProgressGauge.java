@@ -26,6 +26,7 @@ import org.osgl.util.E;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.*;
 
 public class SimpleProgressGauge extends DestroyableBase implements ProgressGauge {
 
@@ -73,6 +74,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     private transient int percent;
     private ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
+    private ReadWriteLock listenerListLock = new ReentrantReadWriteLock();
 
     private SimpleProgressGauge(int maxHint, int currentSteps) {
         this.maxHint = maxHint;
@@ -103,7 +105,13 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             delegate.addListener(listener);
         } else {
-            listeners.add(listener);
+            Lock lock = listenerListLock.writeLock();
+            lock.lock();
+            try {
+                listeners.add(listener);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -186,13 +194,9 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     public int currentProgressPercent() {
         if (null != delegate) {
-            return delegate.currentSteps() * 100 / delegate.maxHint();
+            return percentage(delegate.currentSteps(), delegate.maxHint());
         }
-        int n = currentSteps * 100 / (maxHint - 1);
-        if (100 == n && !isDone()) {
-            n = 99;
-        }
-        return n;
+        return percentage(currentSteps, maxHint);
     }
 
     public int getProgressPercent() {
@@ -220,8 +224,14 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     private void triggerUpdateEvent(boolean forceTriggerEvent) {
         if (forceTriggerEvent || percentageChanged()) {
-            for (Listener listener : listeners) {
-                listener.onUpdate(this);
+            Lock lock = listenerListLock.readLock();
+            lock.lock();
+            try {
+                for (Listener listener : listeners) {
+                    listener.onUpdate(this);
+                }
+            } finally {
+                lock.unlock();
             }
         }
     }
@@ -245,5 +255,10 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     public static String wsJobProgressTag(String jobId) {
         return "__act_job_progress_" + jobId + "__";
+    }
+
+    private static int percentage(int currentSteps, int maxHint) {
+        int n = currentSteps / (maxHint / 100);
+        return (100 <= n) && (currentSteps < (maxHint - 1)) ? 99 : n;
     }
 }
