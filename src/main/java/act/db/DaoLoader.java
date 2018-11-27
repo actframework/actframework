@@ -20,14 +20,15 @@ package act.db;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.DbServiceManager;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.GenericTypedBeanLoader;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.reflect.Type;
 import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DaoLoader implements GenericTypedBeanLoader<Dao> {
@@ -45,7 +46,7 @@ public class DaoLoader implements GenericTypedBeanLoader<Dao> {
             Class<?> modelType = BeanSpec.rawTypeOf(typeList.get(1));
             return dbServiceManager.dao(modelType);
         }
-        return null;
+        return (Dao)Act.getInstance(spec.rawType());
     }
 
 }
