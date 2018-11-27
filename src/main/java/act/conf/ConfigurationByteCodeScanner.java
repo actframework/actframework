@@ -153,7 +153,7 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                             field.set(null, value);
                         }
                     } catch (Exception e) {
-                        throw E.unexpected(e, "failed to set configuration value[%] to field[%s]", value, field);
+                        throw E.unexpected(e, "failed to set configuration value[%s] to field[%s]", value, field);
                     }
                 }
             }

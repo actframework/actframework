@@ -90,7 +90,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 					properties.remove(i);
 					properties.add(i, prop);
 				}
-				headers.add(new ASCIITableHeader(Keyword.of(String.valueOf(header)).constantName()));
+				headers.add(new ASCIITableHeader(Keyword.of(header).constantName()));
 			}
 			
 			//Populate data
