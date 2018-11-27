@@ -128,6 +128,9 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     loader.init(map, valueSpec);
                     Object value = loader.get();
+                    if (null == value) {
+                        return;
+                    }
                     try {
                         if (isConst) {
                             Const<?> fieldValue = $.cast(field.get(null));

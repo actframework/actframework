@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.14**
+* It shall not set `null` to field marked with `@Configuration` if the setting is not configured #984
 * CLI table view does not work properly with `Keyword` typed field #983
 * Drop websocket connection subscribed to listen job progress once job is finished #977
 * Make the `dao` field of `SimpleRestfulServiceBase` be protected #980
