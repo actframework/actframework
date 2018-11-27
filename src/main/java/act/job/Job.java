@@ -336,6 +336,7 @@ public class Job extends DestroyableBase implements Runnable {
                 }
             }
             doJob();
+            progress.markAsDone();
         } catch (Throwable e) {
             boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass()) || Error.class.isInstance(e);
             Throwable cause = e;
@@ -349,6 +350,7 @@ public class Job extends DestroyableBase implements Runnable {
                     cause = cause.getCause();
                 }
             }
+            progress.fail(e.getMessage());
             if (isFatal) {
                 if (Act.isDev()) {
                     app.setBlockIssue(e);

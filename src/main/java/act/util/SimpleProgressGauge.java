@@ -71,6 +71,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     private String id;
     private int maxHint;
     private int currentSteps;
+    private String error;
     private transient int percent;
     private ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
@@ -208,7 +209,12 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             return delegate.isDone();
         }
-        return currentSteps >= (maxHint - 1);
+        return null != error || currentSteps >= (maxHint - 1);
+    }
+
+    public void fail(String error) {
+        this.error = error;
+        triggerUpdateEvent(true);
     }
 
     @Override

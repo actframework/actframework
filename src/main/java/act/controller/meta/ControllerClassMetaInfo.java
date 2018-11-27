@@ -178,15 +178,11 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
         ClassInfoRepository repo = classLoader.classInfoRepository();
         ClassNode parentNode = repo.node(superType.getClassName());
         while(null != parentNode) {
-            parentNode = parentNode.parent();
-            if (null != parentNode) {
-                ControllerClassMetaInfo parentInfo = classLoader.controllerClassMetaInfo(parentNode.name());
-                if (null != parentInfo) {
-                    return parentInfo;
-                }
-            } else {
-                return null;
+            ControllerClassMetaInfo parentInfo = classLoader.controllerClassMetaInfo(parentNode.name());
+            if (null != parentInfo) {
+                return parentInfo;
             }
+            parentNode = parentNode.parent();
         }
         return null;
     }

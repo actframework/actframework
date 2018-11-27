@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.14**
+* @Before @After not effect when sub class extends from super class #985
+* It shall force marking progress gauge as done once the job is returned #971
 * `DaoLoader` not able to load Dao class without type parameter #979
 * It shall not set `null` to field marked with `@Configuration` if the setting is not configured #984
 * CLI table view does not work properly with `Keyword` typed field #983
