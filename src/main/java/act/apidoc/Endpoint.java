@@ -610,12 +610,12 @@ public class Endpoint implements Comparable<Endpoint> {
                     return 0 < len ? ea[N.randInt(len)] : null;
                 } else if (Locale.class == classType) {
                     return (Act.appConfig().locale());
-                } else if (String.class == classType) {
+                } else if (String.class == classType || Keyword.class == classType) {
                     String mockValue = sampleDataProviderManager.getSampleData(category, name, String.class);
                     if (spec.hasAnnotation(Sensitive.class)) {
                         return Act.crypto().encrypt(mockValue);
                     }
-                    return mockValue;
+                    return Keyword.class == classType ? Keyword.of(mockValue) : mockValue;
                 } else if (classType.isArray()) {
                     Object sample = Array.newInstance(classType.getComponentType(), 2);
                     Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));

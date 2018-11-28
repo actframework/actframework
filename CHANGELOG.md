@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.14**
+* Support generating sample data for `org.osgl.util.Keyword` typed field #986
 * @Before @After not effect when sub class extends from super class #985
 * It shall force marking progress gauge as done once the job is returned #971
 * `DaoLoader` not able to load Dao class without type parameter #979
