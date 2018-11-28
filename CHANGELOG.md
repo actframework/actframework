@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.14**
+* act command throw IllegalStateException: JPAContext is not ready #973
 * java.lang.IllegalStateException: UT000146: HttpServerExchange cannot have both async IO resumed and dispatch() called in the same cycle #974
 * Support generating sample data for `org.osgl.util.Keyword` typed field #986
 * @Before @After not effect when sub class extends from super class #985

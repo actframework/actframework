@@ -112,7 +112,8 @@ public class JobContext extends ActContext.Base<JobContext> {
     /**
      * Init JobContext of current thread
      */
-    static void init() {
+    // make it public for CLI interaction to reuse JobContext
+    public static void init() {
         JobContext parent = current_.get();
         JobContext ctx = new JobContext(parent);
         if (null == parent) {
@@ -123,7 +124,7 @@ public class JobContext extends ActContext.Base<JobContext> {
     /**
      * Clear JobContext of current thread
      */
-    static void clear() {
+    public static void clear() {
         JobContext ctx = current_.get();
         if (null != ctx) {
             ctx.bag_.clear();

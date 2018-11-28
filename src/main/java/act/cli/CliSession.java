@@ -27,6 +27,7 @@ import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
 import act.cli.util.CliCursor;
 import act.handler.CliHandler;
+import act.job.JobContext;
 import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
@@ -184,6 +185,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                 try {
                     CliContext context = new CliContext(line, app, console, this);
                     cliContext = context;
+                    JobContext.init();
                     context.handle();
                 } catch ($.Break b) {
                     Object payload = b.get();
@@ -197,6 +199,8 @@ public class CliSession extends DestroyableBase implements Runnable {
                     } else {
                         console.println(S.fmt("INTERNAL ERROR: unknown payload type: %s", payload.getClass()));
                     }
+                } finally {
+                    JobContext.clear();
                 }
             }
         } catch (InterruptedIOException e) {
