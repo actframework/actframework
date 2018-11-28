@@ -127,7 +127,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         final Object[] params = params(cmd, context);
         if (async) {
             final JobManager jobManager = context.app().jobManager();
-            final String jobId = app.cuid();
+            final String jobId = jobManager.randomJobId();
             jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
