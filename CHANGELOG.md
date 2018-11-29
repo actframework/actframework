@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.15**
+* @After @Finally not effect when @Valid failed #988
 * Hot reload in dev mode always fail at the first POST request #989
 * Add method to handle connection close event to `WebSocketConnectionListener` #994
 * websocket connection not released after closed #991

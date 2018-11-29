@@ -20,6 +20,7 @@ package act.handler.builtin.controller.impl;
  * #L%
  */
 
+import static act.app.ActionContext.State.HANDLING;
 import static act.app.ActionContext.State.INTERCEPTING;
 
 import act.Act;
@@ -576,7 +577,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         context.ensureCaptcha();
 
         Map<String, ConstraintViolation> violations = context.violations();
-        if (!violations.isEmpty()) {
+        if (HANDLING == context.state() && !violations.isEmpty()) {
 
             if (null != validateViolationAdvice) {
                 Result r = null;
