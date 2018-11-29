@@ -3404,6 +3404,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Integer wsPurgeClosedConnPeriod;
+
+    protected T wsPurgeClosedConnPeriod(int period) {
+        this.wsPurgeClosedConnPeriod = period;
+        return me();
+    }
+
+    public int wsPurgeClosedConnPeriod() {
+        if (null == wsPurgeClosedConnPeriod) {
+            wsPurgeClosedConnPeriod = get(WS_PURGE_CLOSED_CONN_PERIOD, Act.isDev() ? 1 : 10);
+        }
+        return wsPurgeClosedConnPeriod;
+    }
+
+    private void _mergeWsPurgeClosedConnPeroid(AppConfig config) {
+        if (!hasConfiguration(WS_PURGE_CLOSED_CONN_PERIOD)) {
+            wsPurgeClosedConnPeriod = config.wsPurgeClosedConnPeriod;
+        }
+    }
+
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
     public void loadJarProperties(Map<String, Properties> jarProperties) {

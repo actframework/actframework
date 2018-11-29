@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.8.14**
+**1.8.15**
+* websocket connection not released after closed #991
+
+**1.8.14** 28/Nov/2018
 * act command throw IllegalStateException: JPAContext is not ready #973
 * java.lang.IllegalStateException: UT000146: HttpServerExchange cannot have both async IO resumed and dispatch() called in the same cycle #974
 * Support generating sample data for `org.osgl.util.Keyword` typed field #986

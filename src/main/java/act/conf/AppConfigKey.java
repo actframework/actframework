@@ -1253,6 +1253,15 @@ public enum AppConfigKey implements ConfigKey {
      */
     WS_KEY_TICKET("ws.key.ticket"),
 
+    /**
+     * `ws.purge-closed-conn.period`
+     *
+     * Specifies the waiting period in seconds to purge closed websocket connections
+     *
+     * Default value: `10` in PROD mode, `1` in DEV mode
+     */
+    WS_PURGE_CLOSED_CONN_PERIOD("ws.purge-closed-conn.period"),
+
     X_FORWARD_PROTOCOL("x_forward_protocol"),
 
     ;
