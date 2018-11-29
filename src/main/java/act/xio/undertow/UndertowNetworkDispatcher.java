@@ -22,6 +22,7 @@ package act.xio.undertow;
 
 import act.xio.NetworkDispatcher;
 import act.xio.NetworkJob;
+import io.undertow.server.Connectors;
 import io.undertow.server.HttpServerExchange;
 
 class UndertowNetworkDispatcher implements NetworkDispatcher {
@@ -42,6 +43,7 @@ class UndertowNetworkDispatcher implements NetworkDispatcher {
     @Override
     public void keep() {
         if (!this.dispatched) {
+            Connectors.resetRequestChannel(exchange);
             exchange.getRequestChannel().resumeReads();
         }
     }
