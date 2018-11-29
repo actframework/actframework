@@ -24,6 +24,7 @@ import act.Act;
 import act.db.*;
 import act.inject.param.NoBind;
 import act.util.PropertySpec;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.*;
@@ -66,6 +67,12 @@ SimpleRestfulServiceBase<
     @PropertySpec("id")
     public MODEL_TYPE create(MODEL_TYPE model) {
         return dao.save(model);
+    }
+
+    @PutAction("{id}")
+    public void update(@DbBind("id") MODEL_TYPE model, JSONObject data) {
+        $.merge(data).to(model);
+        dao.save(model);
     }
 
     @DeleteAction("{id}")
