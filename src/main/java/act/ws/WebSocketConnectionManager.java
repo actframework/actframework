@@ -21,7 +21,7 @@ package act.ws;
  */
 
 import act.app.*;
-import act.event.ActEventListenerBase;
+import act.app.event.SysEventId;
 import act.util.Stateless;
 import act.xio.WebSocketConnection;
 import com.alibaba.fastjson.JSON;
@@ -52,23 +52,32 @@ public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnecti
 
     private String wsTicketKey;
 
-    public WebSocketConnectionManager(App app) {
+    public WebSocketConnectionManager(final App app) {
         super(app);
         wsTicketKey = app.config().wsTicketKey();
-        app.eventBus().bind(WebSocketCloseEvent.class, new ActEventListenerBase<WebSocketCloseEvent>() {
-            @Override
-            public void on(WebSocketCloseEvent event) {
-                WebSocketContext ctx = event.source();
-                closed.put(ctx, ctx);
-                closed.put(ctx.connection(), ctx.connection());
-            }
-        });
         app.jobManager().every(new Runnable() {
             @Override
             public void run() {
                 purgeClosed();
             }
         }, app.config().wsPurgeClosedConnPeriod(), TimeUnit.SECONDS);
+        app.jobManager().on(SysEventId.SINGLETON_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                WebSocketConnectionListener.Manager manager = app.getInstance(WebSocketConnectionListener.Manager.class);
+                manager.freeListeners.add(new WebSocketConnectionListener() {
+                    @Override
+                    public void onConnect(WebSocketContext context) {
+                    }
+
+                    @Override
+                    public void onClose(WebSocketContext context) {
+                        closed.put(context, context);
+                        closed.put(context.connection(), context.connection());
+                    }
+                });
+            }
+        });
     }
 
     public WebSocketConnectionRegistry sessionRegistry() {

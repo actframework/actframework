@@ -50,6 +50,13 @@ public interface WebSocketConnectionListener {
      */
     void onConnect(WebSocketContext context);
 
+    /**
+     * Implement this method to process websocket connection close event.
+     *
+     * @param context the web socket context
+     */
+    void onClose(WebSocketContext context);
+
     @NoAutoRegister
     class DelayedResolveProxy implements WebSocketConnectionListener {
         WebSocketConnectionListener realListener;
@@ -69,19 +76,31 @@ public interface WebSocketConnectionListener {
             E.illegalStateIf(null == realListener);
             realListener.onConnect(context);
         }
+
+        @Override
+        public void onClose(WebSocketContext context) {
+            E.illegalStateIf(null == realListener);
+            realListener.onClose(context);
+        }
     }
 
     @Singleton
-    class Manager extends LogSupportedDestroyableBase {
+    public class Manager extends LogSupportedDestroyableBase {
 
         // NOTE we have to leave it as public
         // as the Finder will be load by Application class loader
         // while the manager is not
         public List<WebSocketConnectionListener> freeListeners = new ArrayList<>();
 
-        public void notifyFreeListeners(WebSocketContext context) {
-            for (WebSocketConnectionListener listener: freeListeners) {
-                listener.onConnect(context);
+        public void notifyFreeListeners(WebSocketContext context, boolean close) {
+            if (close) {
+                for (WebSocketConnectionListener listener : freeListeners) {
+                    listener.onClose(context);
+                }
+            } else {
+                for (WebSocketConnectionListener listener : freeListeners) {
+                    listener.onConnect(context);
+                }
             }
         }
 

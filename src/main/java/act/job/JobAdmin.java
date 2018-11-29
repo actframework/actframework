@@ -216,6 +216,10 @@ public class JobAdmin {
                 }
             });
         }
+
+        @Override
+        public void onClose(WebSocketContext context) {
+        }
     }
 
 }

@@ -187,8 +187,16 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (null != connectionListener) {
             connectionListener.onConnect(context);
         }
-        connectionListenerManager.notifyFreeListeners(context);
+        connectionListenerManager.notifyFreeListeners(context, false);
         Act.eventBus().emit(new WebSocketConnectEvent(context));
+    }
+
+    protected final void _onClose(WebSocketContext context) {
+        if (null != connectionListener) {
+            connectionListener.onClose(context);
+        }
+        connectionListenerManager.notifyFreeListeners(context, true);
+        Act.eventBus().emit(new WebSocketCloseEvent(context));
     }
 
     @Override

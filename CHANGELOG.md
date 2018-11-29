@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.15**
+* Add method to handle connection close event to `WebSocketConnectionListener` #994
 * websocket connection not released after closed #991
 
 **1.8.14** 28/Nov/2018
