@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.15**
+**1.8.15** 30/Nov/2018
 * Introduce `@CommandPrefix` annotation #982
 * `mi` make it display number in MB by default #996
 * `IllegalAccessError` triggered while running `mi` command #995
