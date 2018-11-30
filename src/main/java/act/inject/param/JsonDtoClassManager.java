@@ -207,7 +207,8 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
         Annotation[][] annotations = ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method);
         for (int i = 0; i < sz; ++i) {
             Type type = paramTypes[i];
-            if (type instanceof TypeVariable && !Modifier.isStatic(method.getModifiers())) {
+            boolean isStatic = Modifier.isStatic(method.getModifiers());
+            if (type instanceof TypeVariable && !isStatic) {
                 // explore type variable impl
                 TypeVariable typeVar = $.cast(type);
                 String typeVarName = typeVar.getName();
@@ -219,7 +220,14 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
                 }
             }
             Annotation[] anno = annotations[i];
-            BeanSpec spec = BeanSpec.of(type, anno, injector);
+            BeanSpec spec;
+            if (type instanceof ParameterizedType && !isStatic) {
+                // find all generic types on host
+                Map<String, Class> typeVarLookup = Generics.buildTypeParamImplLookup(host);
+                spec = BeanSpec.of(type, anno, injector, typeVarLookup);
+            } else {
+                spec = BeanSpec.of(type, anno, injector);
+            }
             if (ParamValueLoaderService.providedButNotDbBind(spec, injector)) {
                 continue;
             }

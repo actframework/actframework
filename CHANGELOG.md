@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.15**
+* compile-api-book error when super class has generics #987
 * SimpleRestfulServiceBase 'update' enhancement #976
 * @After @Finally not effect when @Valid failed #988
 * Hot reload in dev mode always fail at the first POST request #989
