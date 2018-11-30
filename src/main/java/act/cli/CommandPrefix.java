@@ -28,6 +28,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Inherited
 public @interface CommandPrefix {
     /**
      * Specify the prefix of the command
