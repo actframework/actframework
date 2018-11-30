@@ -725,7 +725,7 @@ public final class Act {
         bootstrap(AppDescriptor.of(appName, scanPackage, appVersion));
     }
 
-    static int classCacheSize() {
+    public static int classCacheSize() {
         return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
     }
 
