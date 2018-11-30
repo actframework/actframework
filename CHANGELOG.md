@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.15**
+* Introduce `@CommandPrefix` annotation #982
 * `mi` make it display number in MB by default #996
 * `IllegalAccessError` triggered while running `mi` command #995
 * compile-api-book error when super class has generics #987

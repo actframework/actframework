@@ -23,6 +23,7 @@ package act.cli;
 import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.app.event.SysEventId;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.builtin.IterateCursor;
@@ -64,6 +65,12 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 registerBuiltInHandlers();
             }
         });
+        app.jobManager().on(SysEventId.PRE_START, new Runnable() {
+            @Override
+            public void run() {
+                resolveCommandPrefix();
+            }
+        });
     }
 
     public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {
@@ -72,7 +79,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             if (registry.containsKey(s)) {
                 throw E.invalidConfiguration("Command %s already registered", command);
             }
-            addToRegistry(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
+            addToRegistry0(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
             logger.debug("Command registered: %s", s);
         }
         return this;
@@ -170,11 +177,38 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         registry.clear();
     }
 
+    private void addToRegistry0(String name, CliHandler handler) {
+        registry.put(name, handler);
+    }
+
     private void addToRegistry(String name, CliHandler handler) {
         registry.put(name, handler);
         Help.updateMaxWidth(name.length());
         updateNameIndex(name, handler);
         registerShortCut(name, handler);
+    }
+
+    private void resolveCommandPrefix() {
+        Map<String, CliHandler> temp = new HashMap<>();
+        temp.putAll(registry);
+        registry.clear();
+        App app = app();
+        for (Map.Entry<String, CliHandler> pair : temp.entrySet()) {
+            String name = pair.getKey();
+            CliHandler handler = pair.getValue();
+            if (handler instanceof CliHandlerProxy) {
+                CliHandlerProxy proxy = $.cast(handler);
+                Class<?> type = app.classForName(proxy.classMetaInfo().className());
+                CommandPrefix prefix = type.getAnnotation(CommandPrefix.class);
+                if (null != prefix) {
+                    String pre = prefix.value();
+                    if (S.notBlank(pre)) {
+                        name = S.pathConcat(pre, '.', name);
+                    }
+                }
+            }
+            addToRegistry(name, handler);
+        }
     }
 
     private void updateNameIndex(String name, CliHandler handler) {
