@@ -49,10 +49,10 @@ public class SysUtilAdmin {
     @Command(name = "act.meminfo, act.mi", help = "Print memory info")
     public void memInfo(
             @act.cli.Optional("monitor memory usage") boolean monitor,
-            @act.cli.Optional("readable") boolean readable,
+            @act.cli.Optional(lead = "-b,--bytes", help = "display number in bytes") boolean bytes,
             CliContext context
     ) {
-        final int factor = readable ? 1024 * 1024 : 1;
+        final int factor = bytes ? 1 : 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
 
         if (monitor) {
@@ -105,7 +105,7 @@ public class SysUtilAdmin {
     public void gc(CliContext context) {
         System.gc();
         context.println("GC executed");
-        memInfo(false, true, context);
+        memInfo(false, false, context);
     }
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")
