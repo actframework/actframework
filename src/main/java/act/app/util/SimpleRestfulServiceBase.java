@@ -24,7 +24,6 @@ import act.Act;
 import act.db.*;
 import act.inject.param.NoBind;
 import act.util.PropertySpec;
-import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.*;
@@ -58,8 +57,8 @@ SimpleRestfulServiceBase<
         return dao.findAll();
     }
 
-    @GetAction("{id}")
-    public MODEL_TYPE get(@DbBind("id") MODEL_TYPE model) {
+    @GetAction("{model}")
+    public MODEL_TYPE get(@DbBind MODEL_TYPE model) {
         return model;
     }
 
@@ -69,9 +68,9 @@ SimpleRestfulServiceBase<
         return dao.save(model);
     }
 
-    @PutAction("{id}")
-    public void update(@DbBind("id") MODEL_TYPE model, JSONObject data) {
-        $.merge(data).to(model);
+    @PutAction("{model}")
+    public void update(@DbBind MODEL_TYPE model, MODEL_TYPE data) {
+        $.merge(data).filter("-id").to(model);
         dao.save(model);
     }
 
