@@ -2,6 +2,7 @@
 
 **1.8.16**
 * Make `CommandPrefix` be inheritable #998
+* Request handler argument type with type parameter does not work #1000
 
 **1.8.15** 30/Nov/2018
 * Introduce `@CommandPrefix` annotation #982

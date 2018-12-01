@@ -570,7 +570,7 @@ public class Endpoint implements Comparable<Endpoint> {
         if (void.class == type) {
             return null;
         }
-        if (typeChain.contains(type) && !isCollection(type)) {
+        if (typeChain.contains(type) && !isCollection(type) && !$.isSimpleType(spec.rawType())) {
             return S.concat(spec.name(), ":", type); // circular reference detected
         }
         typeChain.add(type);

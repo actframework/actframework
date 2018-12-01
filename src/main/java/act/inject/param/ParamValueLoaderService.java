@@ -305,16 +305,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             Type type = types[i];
-            if (type instanceof TypeVariable) {
-                TypeVariable var = $.cast(type);
-                if (null != host) {
-                    type = Generics.buildTypeParamImplLookup(host).get(var.getName());
-                }
-                if (null == type) {
-                    throw new UnexpectedException("Cannot infer param type: %s", var.getName());
-                }
+            Map<String, Class> typeLookups = null;
+            if (type instanceof TypeVariable || type instanceof ParameterizedType) {
+                typeLookups = Generics.buildTypeParamImplLookup(host);
             }
-            BeanSpec spec = BeanSpec.of(type, annotations[i], name, injector);
+            BeanSpec spec = BeanSpec.of(type, annotations[i], name, injector, typeLookups);
             if (hasValidationConstraint(spec)) {
                 hasValidationConstraint.set(true);
             }
@@ -468,9 +463,10 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             return buildArrayLoader(key, rawType.getComponentType(), spec);
         }
         if (Collection.class.isAssignableFrom(rawType)) {
+            List<Type> typeParams = spec.typeParams();
             Type elementType = Object.class;
             if (type instanceof ParameterizedType) {
-                elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                elementType = typeParams.get(0);
             }
             return buildCollectionLoader(key, rawType, elementType, spec);
         }
