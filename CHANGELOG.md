@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.16**
+* @PropertySpec and PropertySpec.current.set cannot work when object wrapped by GlobalAdvice #1005
 * Make `TimestampAuditor` defined in act-jpa project be common #1002
 * Make `CommandPrefix` be inheritable #998
 * Request handler argument type with type parameter does not work #1000

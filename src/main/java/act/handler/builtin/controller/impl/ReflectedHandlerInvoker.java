@@ -1044,6 +1044,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                     Lang._MappingStage stage = propertySpec.applyTo(Lang.map(retVal), context);
                     Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
                     retVal = stage.to(newRetVal);
+                } else {
+                    String curSpec = PropertySpec.current.get();
+                    if (S.notBlank(curSpec)) {
+                        Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
+                        retVal = Lang.map(retVal).filter(curSpec).to(newRetVal);
+                        PropertySpec.current.remove();
+                    }
                 }
             }
             retVal = returnValueAdvice.applyTo(retVal, context);
