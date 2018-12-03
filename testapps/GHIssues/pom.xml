@@ -22,12 +22,11 @@
   </properties>
 
   <dependencies>
-    <!-- add your dependencies here 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.15-SNAPSHOT</version>
-    </dependency> -->
+      <version>1.8.16-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-excel</artifactId>
