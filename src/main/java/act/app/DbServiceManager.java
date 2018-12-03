@@ -25,8 +25,7 @@ import act.Destroyable;
 import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.db.*;
-import act.db.util.SequenceNumberGenerator;
-import act.db.util._SequenceNumberGenerator;
+import act.db.util.*;
 import act.event.ActEventListenerBase;
 import act.event.EventBus;
 import act.event.SysEventListenerBase;
@@ -76,6 +75,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 app.emit(SysEventId.DB_SVC_LOADED);
                 initDao();
                 app.emit(SysEventId.DB_SVC_PROVISIONED);
+                app.getInstance(AuditHelper.class);
             }
 
             private void initDao() {

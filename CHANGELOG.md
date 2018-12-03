@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.16**
+* Make `TimestampAuditor` defined in act-jpa project be common #1002
 * Make `CommandPrefix` be inheritable #998
 * Request handler argument type with type parameter does not work #1000
 
