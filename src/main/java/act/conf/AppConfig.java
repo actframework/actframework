@@ -162,6 +162,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
+        OsglConfig.setXmlRootTag(xmlRootTag());
+
         OsglConfig.internalCache().clear();
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
         OsglConfig.registerGlobalInstanceFactory(new $.Function<Class, Object>() {
@@ -1095,6 +1097,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeXForwardedProtocol(AppConfig conf) {
         if (!hasConfiguration(X_FORWARD_PROTOCOL)) {
             xForwardedProtocol = conf.xForwardedProtocol;
+        }
+    }
+
+    private String xmlRootTag;
+    protected T xmlRootTag(String tag) {
+        this.xmlRootTag = tag;
+        return me();
+    }
+    public String xmlRootTag() {
+        if (null == xmlRootTag) {
+            xmlRootTag = get(XML_ROOT, "xml");
+        }
+        return xmlRootTag;
+    }
+    private void _mergeXmlRootTag(AppConfig conf) {
+        if (!hasConfiguration(XML_ROOT)) {
+            this.xmlRootTag = conf.xmlRootTag;
         }
     }
 

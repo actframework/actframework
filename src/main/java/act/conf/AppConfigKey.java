@@ -1262,7 +1262,24 @@ public enum AppConfigKey implements ConfigKey {
      */
     WS_PURGE_CLOSED_CONN_PERIOD("ws.purge-closed-conn.period"),
 
+    /**
+     * `x_forward_protocol`
+     *
+     * specifies the header it shall check to determine if the current request
+     * is convey on HTTPS channel.
+     *
+     * Default value: `http`
+     */
     X_FORWARD_PROTOCOL("x_forward_protocol"),
+
+    /**
+     * `xml_root`
+     *
+     * Specifies the XML response root tag name.
+     *
+     * Default value: `xml`
+     */
+    XML_ROOT("xml_root"),
 
     ;
     private String key;

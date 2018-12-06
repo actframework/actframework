@@ -162,6 +162,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean returnIterableComponentIsSimpleType;
     private boolean shallTransformReturnVal;
     private int order;
+    private String xmlRootTag;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -172,6 +173,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.disabled = !Env.matches(controllerClass);
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
+        this.xmlRootTag = config.xmlRootTag();
 
         Class[] paramTypes = paramTypes(app);
         try {
@@ -765,7 +767,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (context.xmlEncoded()) {
             Document doc = XML.read(body);
             JSONObject json = $.convert(doc).to(JSONObject.class);
-            body = JSON.toJSONString(json.containsKey("root") ? json.get("root") : json);
+            body = JSON.toJSONString(json.containsKey(xmlRootTag) ? json.get(xmlRootTag) : json);
         }
         if (1 < fieldsAndParamsCount(context)) {
             return body;

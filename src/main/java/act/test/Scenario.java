@@ -613,8 +613,9 @@ public class Scenario implements ScenarioPart {
         } else if (null != spec.xml && !spec.xml.isEmpty()) {
             org.w3c.dom.Document doc = XML.read(bodyString);
             JSONObject obj = $.convert(doc).to(JSONObject.class);
-            if (obj.containsKey("root")) {
-                Object o = obj.get("root");
+            String xmlRoot = app.config().xmlRootTag();
+            if (obj.containsKey(xmlRoot)) {
+                Object o = obj.get(xmlRoot);
                 lastData.set(o);
                 if (o instanceof JSONObject) {
                     obj = (JSONObject) o;
