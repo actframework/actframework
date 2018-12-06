@@ -26,6 +26,7 @@ import act.app.data.StringValueResolverManager;
 import act.util.HeaderMapping;
 import act.util.Jars;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -311,11 +312,18 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             Object o = content.startsWith("[") ? JSON.parseArray(content) : JSON.parseObject(content);
             return $.map(o).targetGenericType(spec.type()).to(rawType);
         }
-        boolean isYaml = !isJson && (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
+        boolean isYaml = (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
         if (isYaml) {
             Object o = new Yaml().load(IO.readContentAsString(url));
             return $.map(o).targetGenericType(spec.type()).to(rawType);
-        } else if (String.class == rawType) {
+        }
+        boolean isXml = resourcePath.endsWith(".xml");
+        if (isXml) {
+            Object o = XML.read(url);
+            JSONObject json = $.convert(o).to(JSONObject.class);
+            return $.map(json).targetGenericType(spec.type()).to(rawType);
+        }
+        if (String.class == rawType) {
             return IO.readContentAsString(url);
         } else if (List.class.equals(rawType)) {
             List<Type> typeParams = spec.typeParams();

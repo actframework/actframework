@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.16**
+* Allow load resource from `.xml` file #1012
 * `NullPointerException` caused by sending GET request with `Content-Type=application/xml` header #1008
 * api-book-compile cannot get comments from super class #1003
 * act test failed when check return data exist #1010
