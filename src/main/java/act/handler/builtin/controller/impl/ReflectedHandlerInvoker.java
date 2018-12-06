@@ -759,12 +759,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
      */
     private String patchedJsonBody(ActionContext context) {
         String body = context.body();
+        if (S.blank(body)) {
+            return body;
+        }
         if (context.xmlEncoded()) {
             Document doc = XML.read(body);
             JSONObject json = $.convert(doc).to(JSONObject.class);
             body = JSON.toJSONString(json.containsKey("root") ? json.get("root") : json);
         }
-        if (S.blank(body) || 1 < fieldsAndParamsCount(context)) {
+        if (1 < fieldsAndParamsCount(context)) {
             return body;
         }
         String theName = singleJsonFieldName(context);
