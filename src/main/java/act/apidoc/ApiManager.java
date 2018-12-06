@@ -160,10 +160,22 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         });
     }
 
+    private Set<Class> withSuperClasses(Set<Class> classes) {
+        Set<Class> ret = new HashSet<>(classes);
+        for (Class c : classes) {
+            c = c.getSuperclass();
+            while (c != null && c != Object.class) {
+                ret.add(c);
+                c = c.getSuperclass();
+            }
+        }
+        return ret;
+    }
+
     private void exploreDescriptions(Set<Class> controllerClasses) {
         DevModeClassLoader cl = $.cast(Act.app().classLoader());
         Map<String, Javadoc> methodJavaDocs = new HashMap<>();
-        for (Class controllerClass: controllerClasses) {
+        for (Class controllerClass: withSuperClasses(controllerClasses)) {
             Source src = cl.source(controllerClass);
             if (null == src) {
                 continue;
@@ -182,6 +194,12 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         }
         for (Endpoint endpoint : endpoints) {
             Javadoc javadoc = methodJavaDocs.get(endpoint.getId());
+            if (null == javadoc) {
+                String parentId = endpoint.getParentId();
+                if (null != parentId) {
+                    javadoc = methodJavaDocs.get(parentId);
+                }
+            }
             if (null != javadoc) {
                 String desc = javadoc.getDescription().toText();
                 if (S.notBlank(desc)) {

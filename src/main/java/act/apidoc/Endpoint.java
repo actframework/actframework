@@ -21,6 +21,8 @@ package act.apidoc;
  */
 
 import static act.apidoc.SampleDataCategory.EMAIL;
+import static act.apidoc.SimpleEndpointIdProvider.id;
+import static jdk.nashorn.internal.codegen.CompilerConstants.className;
 
 import act.Act;
 import act.app.data.StringValueResolverManager;
@@ -59,7 +61,7 @@ import javax.validation.constraints.NotNull;
 /**
  * An `Endpoint` represents an API that provides specific service
  */
-public class Endpoint implements Comparable<Endpoint> {
+public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private static final Logger LOGGER = ApiManager.LOGGER;
 
@@ -152,6 +154,8 @@ public class Endpoint implements Comparable<Endpoint> {
      */
     private String id;
 
+    private EndpointIdProvider parent;
+
     /**
      * The scheme used to access the endpoint
      */
@@ -224,6 +228,11 @@ public class Endpoint implements Comparable<Endpoint> {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getParentId() {
+        return null == parent ? null : parent.getId();
     }
 
     /**
@@ -329,6 +338,9 @@ public class Endpoint implements Comparable<Endpoint> {
         Module classModule = controllerClass.getAnnotation(Module.class);
         String classModuleText = null == classModule ? inferModule(controllerClass) : classModule.value();
         this.id = id(controllerClass, method);
+        if (controllerClass != method.getDeclaringClass()) {
+            parent = new SimpleEndpointIdProvider(method.getDeclaringClass(), method);
+        }
         Type returnType = method.getGenericReturnType();
         Map<String, Class> typeParamLookup = C.Map();
         if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {
@@ -352,18 +364,6 @@ public class Endpoint implements Comparable<Endpoint> {
 
     private String inferModule(Class<?> controllerClass) {
         return controllerClass.getSimpleName();
-    }
-
-    private String id(Class<?> controllerClass, Method method) {
-        return className(controllerClass) + "." + method.getName();
-    }
-
-    private String className(Class<?> clz) {
-        Class<?> enclosing = clz.getEnclosingClass();
-        if (null != enclosing) {
-            return className(enclosing) + "." + clz.getSimpleName();
-        }
-        return clz.getSimpleName();
     }
 
     private void exploreParamInfo(Method method, Map<String, Class> typeParamLookup) {

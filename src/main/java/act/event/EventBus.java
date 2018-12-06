@@ -131,6 +131,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         private static Class<?> VARARG_TYPE = Object[].class;
 
         private static ConcurrentMap<Class, Class> typeMap = new ConcurrentHashMap<>();
+        static {
+            typeMap.put(ArrayList.class, List.class);
+            typeMap.put(LinkedList.class, List.class);
+            typeMap.put($.Val.class, List.class);
+            typeMap.put($.Var.class, List.class);
+            typeMap.put(HashSet.class, Set.class);
+            typeMap.put(TreeSet.class, Set.class);
+            typeMap.put(LinkedHashSet.class, Set.class);
+            typeMap.put(HashMap.class, Map.class);
+            typeMap.put(LinkedHashMap.class, Map.class);
+            typeMap.put(ConcurrentHashMap.class, Map.class);
+        }
 
         // checkout https://github.com/actframework/actframework/issues/518
         private static Class effectiveTypeOf(Object o) {
@@ -148,11 +160,25 @@ public class EventBus extends AppServiceBase<EventBus> {
                         || type.isAnonymousClass()
                         || type.isLocalClass()
                         || type.isMemberClass()) {
-                    Class[] ca = type.getInterfaces();
-                    if (ca.length > 0) {
-                        for (Class intf: ca) {
-                            if (Modifier.isPublic(intf.getModifiers())) {
-                                mappedType = intf;
+                    boolean isCollection = Collection.class.isAssignableFrom(type);
+                    boolean isMap = !isCollection && Map.class.isAssignableFrom(type);
+                    if (isCollection || isMap) {
+                        if (isMap) {
+                            typeMap.putIfAbsent(type, Map.class);
+                        } else if (List.class.isAssignableFrom(type)) {
+                            typeMap.putIfAbsent(type, List.class);
+                        } else if (Set.class.isAssignableFrom(type)) {
+                            typeMap.putIfAbsent(type, Set.class);
+                        }
+                        mappedType = typeMap.get(type);
+                    }
+                    if (null == mappedType) {
+                        Class[] ca = type.getInterfaces();
+                        if (ca.length > 0) {
+                            for (Class intf : ca) {
+                                if (Modifier.isPublic(intf.getModifiers())) {
+                                    mappedType = intf;
+                                }
                             }
                         }
                     }
@@ -162,8 +188,16 @@ public class EventBus extends AppServiceBase<EventBus> {
                     }
                     typeMap.putIfAbsent(type, mappedType);
                 } else {
-                    typeMap.putIfAbsent(type, type);
-                    mappedType = type;
+                    if (List.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, List.class);
+                    } else if (Set.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, Set.class);
+                    } else if (Map.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, Map.class);
+                    } else {
+                        typeMap.putIfAbsent(type, type);
+                    }
+                    mappedType = typeMap.get(type);
                 }
             }
             return mappedType;
@@ -329,15 +363,25 @@ public class EventBus extends AppServiceBase<EventBus> {
     private static class StringEventContext extends EventContext<String> {
         StringEventContext(String event, Object[] args) {
             super(event, args);
+            validateSimpleEventArgs(args);
         }
 
         StringEventContext(boolean asyncForAsync, boolean asyncForSync, String event, Object[] args) {
             super(asyncForAsync, asyncForSync, event, args);
+            validateSimpleEventArgs(args);
         }
 
         @Override
         boolean shouldCallAdhocEventListeners(EventBus eventBus) {
             return eventBus.hasAdhocEventListenerFor(event);
+        }
+
+        private void validateSimpleEventArgs(Object[] args) {
+            for (Object arg : args) {
+                if (null == arg) {
+                    throw new NullPointerException("Simple event argument cannot be null");
+                }
+            }
         }
     }
 

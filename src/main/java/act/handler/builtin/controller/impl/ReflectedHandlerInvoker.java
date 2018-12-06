@@ -1048,7 +1048,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                     String curSpec = PropertySpec.current.get();
                     if (S.notBlank(curSpec)) {
                         Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
-                        retVal = Lang.map(retVal).filter(curSpec).to(newRetVal);
+                        retVal = Lang.deepCopy(retVal).filter(curSpec).to(newRetVal);
                         PropertySpec.current.remove();
                     }
                 }
