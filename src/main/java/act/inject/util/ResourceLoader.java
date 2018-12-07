@@ -25,8 +25,7 @@ import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.util.HeaderMapping;
 import act.util.Jars;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -38,6 +37,7 @@ import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
+import org.osgl.util.TypeReference;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -320,8 +320,13 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         boolean isXml = resourcePath.endsWith(".xml");
         if (isXml) {
             Object o = XML.read(url);
-            JSONObject json = $.convert(o).to(JSONObject.class);
-            return $.map(json).targetGenericType(spec.type()).to(rawType);
+            if ($.isCollectionType(rawType)) {
+                JSONArray array = $.convert(o).to(JSONArray.class);
+                return $.map(array).targetGenericType(spec.type()).to(rawType);
+            } else {
+                JSONObject json = $.convert(o).to(JSONObject.class);
+                return $.map(json).targetGenericType(spec.type()).to(rawType);
+            }
         }
         if (String.class == rawType) {
             return IO.readContentAsString(url);
