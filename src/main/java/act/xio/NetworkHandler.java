@@ -192,7 +192,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     handleException(e, ctx, "Error handling network request");
                 } catch (Error t) {
                     fatal(t, "Fatal Error encountered handling request: ", ctx.req());
-                    Act.shutdown(app);
+                    if (Act.isProd()) {
+                        Act.shutdown(app);
+                    }
                 } finally {
                     if (!skipEvents) {
                         eventBus.emit(new PostHandle(ctx));
