@@ -345,10 +345,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         ReportProgress.Type type = reportProgress.type();
         inProgress = true;
         try {
-            if (BAR == type) {
-                printBar(progressGauge);
-            } else {
-                printText(progressGauge);
+            if (!progressGauge.isDone()) {
+                if (BAR == type) {
+                    printBar(progressGauge);
+                } else {
+                    printText(progressGauge);
+                }
             }
             Object result = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
             if (null != result) {
@@ -368,6 +370,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         while (!progressGauge.isDone()) {
             pb.maxHint(progressGauge.maxHint());
             pb.stepTo(progressGauge.currentSteps());
+            Thread.yield();
             flush();
         }
         pb.stepTo(pb.getMax());
