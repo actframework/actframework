@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.16**
+**1.8.16** 09/Dec/2018
 * `StackOverflowError` caused by POJO typed request handler method param circular reference #1015
 * Allow configure XML root element tag #1011
 * Allow load resource from `.xml` file #1012

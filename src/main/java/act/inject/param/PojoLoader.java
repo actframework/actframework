@@ -84,25 +84,26 @@ class PojoLoader extends ParamValueLoader.JsonBodySupported {
         Class<?> current = spec.rawType();
         Map<String, FieldLoader> fieldLoaders = new HashMap<>();
         Set<Class<?>> circularReferenceDetector = circularReferenceCounter.get();
-        if (null == circularReferenceDetector) {
-            circularReferenceDetector = new HashSet<>();
-            circularReferenceCounter.set(circularReferenceDetector);
-        }
-        circularReferenceDetector.add(current);
-        try {
-            while (null != current && !current.equals(Object.class)) {
-                for (Field field : current.getDeclaredFields()) {
-                    if (shouldWaive(field) || circularReferenceDetector.contains(field.getType())) {
-                        continue;
-                    }
+        while (null != current && !current.equals(Object.class)) {
+            if (null == circularReferenceDetector) {
+                circularReferenceDetector = new HashSet<>();
+                circularReferenceCounter.set(circularReferenceDetector);
+            }
+            for (Field field : current.getDeclaredFields()) {
+                Class<?> fieldType = field.getType();
+                if (shouldWaive(field) || circularReferenceDetector.contains(fieldType)) {
+                    continue;
+                }
+                circularReferenceDetector.add(fieldType);
+                try {
                     field.setAccessible(true);
                     String fieldName = field.getName();
                     fieldLoaders.put(fieldName, service.fieldLoader(key, field, spec.field(fieldName)));
+                } finally {
+                    circularReferenceDetector.remove(fieldType);
                 }
-                current = current.getSuperclass();
             }
-        } finally {
-            circularReferenceDetector.remove(current);
+            current = current.getSuperclass();
         }
         return fieldLoaders;
     }
