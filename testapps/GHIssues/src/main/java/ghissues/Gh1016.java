@@ -15,8 +15,8 @@ import org.osgl.util.E;
 import java.lang.annotation.*;
 import java.util.Map;
 
-@UrlContext("ip-demo")
-public class IpLoaderDemo extends BaseController {
+@UrlContext("1016")
+public class Gh1016 extends BaseController {
 
     public static class IpLoader implements ValueLoader<String> {
         @Override
