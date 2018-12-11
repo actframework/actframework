@@ -40,30 +40,46 @@ import java.util.*;
  * See https://github.com/actframework/actframework/issues/1016
  */
 public class JsonDtoPatch {
-    private List<JsonDtoPatch> fieldsPatch = new ArrayList<>();
+    private List<JsonDtoPatch> fieldsPatches = new ArrayList<>();
     private String name;
-    private JsonDtoPatch parent;
     private ValueLoader loader;
-    private JsonDtoPatch(String name, BeanSpec spec, JsonDtoPatch parent) {
+    private JsonDtoPatch(String name, BeanSpec spec) {
         this.name = S.requireNotBlank(name);
-        this.parent = parent;
         this.loader = valueLoaderOf(spec);
         if (null == loader) {
             for (Map.Entry<String, BeanSpec> entry : spec.fields().entrySet()) {
                 String fieldName = entry.getKey();
                 BeanSpec fieldSpec = entry.getValue();
-
+                JsonDtoPatch child = new JsonDtoPatch(fieldName, fieldSpec);
+                if (!child.isEmpty()) {
+                    fieldsPatches.add(child);
+                }
             }
         }
     }
 
+    public String name() {
+        return name;
+    }
+
+    public void applyChildren(Object host) {
+        for (JsonDtoPatch child : fieldsPatches) {
+            child.apply(host);
+        }
+    }
+
     public void apply(Object host) {
-        Object v = $.getProperty(host, name);
-        if (null != v) {
-            return;
-        }
         if (null != loader) {
+            Object o = loader.get();
+            $.setProperty(host, o, name);
+        } else {
+            Object o = $.getProperty(host, name);
+            applyChildren(o);
         }
+    }
+
+    private boolean isEmpty() {
+        return null == loader && fieldsPatches.isEmpty();
     }
 
     private ValueLoader valueLoaderOf(BeanSpec spec) {
@@ -76,5 +92,10 @@ public class JsonDtoPatch {
             }
         }
         return null == loadValue ? null : Act.getInstance(loadValue.value());
+    }
+
+    public static JsonDtoPatch of(BeanSpec spec) {
+        JsonDtoPatch patch = new JsonDtoPatch(spec.name(), spec);
+        return patch.isEmpty() ? null : patch;
     }
 }

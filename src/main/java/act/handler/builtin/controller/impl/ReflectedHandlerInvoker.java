@@ -163,6 +163,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean shallTransformReturnVal;
     private int order;
     private String xmlRootTag;
+    private List<JsonDtoPatch> dtoPatches = new ArrayList<>();
+    private boolean hasDtoPatches;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -308,6 +310,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        for (BeanSpec spec : paramSpecs) {
+            JsonDtoPatch patch = JsonDtoPatch.of(spec);
+            if (null != patch) {
+                dtoPatches.add(patch);
+            }
+        }
+        hasDtoPatches = !dtoPatches.isEmpty();
         List<BeanSpec> paramSpecWithoutSessionVariables = new ArrayList<>();
         fieldsAndParamsCount = paramSpecs.size();
         for (BeanSpec spec : paramSpecs) {
@@ -723,7 +732,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         try {
             JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            cacheJsonDto(context, dto);
+            if (null != dto) {
+                patchDtoBeans(dto);
+                cacheJsonDto(context, dto);
+            }
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 warn(e.getCause(), "error parsing JSON data");
@@ -735,7 +747,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     private void patchDtoBeans(JsonDto dto) {
-
+        if (hasDtoPatches) {
+            for (JsonDtoPatch patch : dtoPatches) {
+                Object bean = dto.get(patch.name());
+                patch.applyChildren(bean);
+            }
+        }
     }
 
     private int fieldsAndParamsCount(ActionContext context) {

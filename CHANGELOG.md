@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.17**
+* Annotations with ValueLoader cannot work if post with json #1016
 * Routing issue with dynamic aliases and keyword matching #1022
 * Make CLI help command default to display application commands 1018#
 * CLI - execute `conf.trace-handler -e` trigger `IllegalAccessError` #1019

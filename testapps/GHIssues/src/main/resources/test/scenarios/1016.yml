@@ -11,3 +11,15 @@ Scenario(1016):
         id: 1
         ip:
           - exists: true
+  - description: Test embedded case
+    request:
+      post: /1016/embedded
+      json:
+        foo:
+          id: 1
+    response:
+      json:
+        foo:
+          id: 1
+          ip:
+            - exists: true

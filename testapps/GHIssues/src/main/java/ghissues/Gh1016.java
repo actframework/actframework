@@ -47,9 +47,20 @@ public class Gh1016 extends BaseController {
         public String ip;
     }
 
+    @Data
+    public static class Bar implements SimpleBean {
+        public Foo foo;
+    }
+
+
     @PostAction
     public Foo create(Foo foo) {
         return foo;
+    }
+
+    @PostAction("embedded")
+    public Bar createEmbedded(Bar bar) {
+        return bar;
     }
 
 }
