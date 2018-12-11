@@ -21,6 +21,7 @@ package act.route;
  */
 
 import act.app.App;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.util.ArrayList;
@@ -38,31 +39,30 @@ public class UrlPath {
 
     static final String DYNA_PART = "";
 
-    private final List<String> parts = new ArrayList<>();
+    private final List<Object> parts = new ArrayList<>();
 
     private UrlPath(CharSequence path) {
         String s = path.toString();
         String[] sa = s.split("/");
         for (String item: sa) {
             if (S.notBlank(item)) {
+                Keyword kw = null;
                 if (item.startsWith("{") || item.contains(":")) {
                     item = DYNA_PART;
+                } else if (item.startsWith("~") && item.endsWith("~")) {
+                    kw = Keyword.of(S.strip(item, "~", "~"));
                 }
-                parts.add(item);
+                if (null != kw) {
+                    parts.add(kw);
+                } else {
+                    parts.add(item);
+                }
             }
         }
     }
 
     public int size() {
         return parts.size();
-    }
-
-    public String part(int index) {
-        return parts.get(index);
-    }
-
-    public String lastPart() {
-        return part(size() - 1);
     }
 
     /**
@@ -114,19 +114,30 @@ public class UrlPath {
         return urlPath;
     }
 
-    private static boolean matches(CharSequence cs1, CharSequence cs2) {
+    private static boolean matches(Object cs1, Object cs2) {
         if (DYNA_PART.equals(cs1)) {
             return true;
         }
-        int len = cs1.length();
-        if (len != cs2.length()) {
+        if (cs1 instanceof Keyword) {
+            return matches((Keyword) cs1, cs2);
+        } else if (cs2 instanceof Keyword) {
+            return matches((Keyword) cs2, cs1);
+        }
+        String s1 = S.string(cs1);
+        String s2 = S.string(cs2);
+        int len = s1.length();
+        if (len != s2.length()) {
             return false;
         }
         for (int i = len - 1; i >= 0; --i) {
-            if (cs1.charAt(i) != cs2.charAt(i)) {
+            if (s1.charAt(i) != s2.charAt(i)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean matches(Keyword keyword, Object o) {
+        return keyword.matches(S.string(o));
     }
 }

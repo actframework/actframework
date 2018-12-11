@@ -68,8 +68,7 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
 
     }
 
-    public Class<? extends JsonDto> get(Class<?> host, Method method) {
-        List<BeanSpec> beanSpecs = beanSpecs(host, method);
+    public Class<? extends JsonDto> get(List<BeanSpec> beanSpecs, Class<?> host) {
         String key = key(beanSpecs);
         if (S.blank(key)) {
             return null;

@@ -54,10 +54,12 @@ public class Help extends CliHandlerBase {
         }
         CommandLineParser parser = context.commandLine();
         boolean sys = parser.getBoolean("-s", "--system");
-        boolean app = parser.getBoolean("-a", "--app");
-        if (!sys && !app) {
+        boolean all = parser.getBoolean("-a", "--all");
+        boolean app = true;
+        if (all) {
             sys = true;
-            app = true;
+        } else if (sys) {
+            app = false;
         }
 
         CliDispatcher dispatcher = context.app().cliDispatcher();

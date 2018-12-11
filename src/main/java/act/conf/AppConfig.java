@@ -3128,7 +3128,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return traceHandler;
     }
 
-    void toggleTraceHandler(boolean enabled) {
+    // must be public, otherwise it get IllegalAccessError
+    public void toggleTraceHandler(boolean enabled) {
         traceHandler = enabled;
     }
 
@@ -3152,7 +3153,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return traceRequest;
     }
 
-    void toggleTraceRequest(boolean enabled) {
+    // must be public, otherwise it get IllegalAccessError
+    public void toggleTraceRequest(boolean enabled) {
         traceRequest = enabled;
     }
 

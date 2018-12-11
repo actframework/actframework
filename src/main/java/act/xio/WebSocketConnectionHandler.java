@@ -275,7 +275,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (0 == fieldsAndParamsCount || !context.isJson()) {
             return;
         }
-        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(handlerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(paramSpecs, handlerClass);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;

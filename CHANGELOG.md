@@ -1,5 +1,10 @@
 # ActFramework Change Log
 
+**1.8.17**
+* Routing issue with dynamic aliases and keyword matching #1022
+* Make CLI help command default to display application commands 1018#
+* CLI - execute `conf.trace-handler -e` trigger `IllegalAccessError` #1019
+
 **1.8.16** 09/Dec/2018
 * `StackOverflowError` caused by POJO typed request handler method param circular reference #1015
 * Allow configure XML root element tag #1011

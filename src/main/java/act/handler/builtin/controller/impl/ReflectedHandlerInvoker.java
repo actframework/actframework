@@ -716,7 +716,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (0 == fieldsAndParamsCount || (!context.jsonEncoded() && !context.xmlEncoded())) {
             return;
         }
-        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(controllerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(paramSpecs, controllerClass);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;
@@ -732,6 +732,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             }
             throw new BadRequest(e.getCause());
         }
+    }
+
+    private void patchDtoBeans(JsonDto dto) {
+
     }
 
     private int fieldsAndParamsCount(ActionContext context) {

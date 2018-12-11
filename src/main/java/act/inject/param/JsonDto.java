@@ -20,8 +20,7 @@ package act.inject.param;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The base class of system generated data transfer object to support converting JSON string into
@@ -49,5 +48,13 @@ public abstract class JsonDto {
      */
     protected void set(String name, Object bean) {
         beans.put(name, bean);
+    }
+
+    /**
+     * Get all bean objects deserialized into this DTO.
+     * @return all bean objects
+     */
+    public Collection beans() {
+        return beans.values();
     }
 }
