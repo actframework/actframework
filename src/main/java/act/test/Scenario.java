@@ -217,8 +217,11 @@ public class Scenario implements ScenarioPart {
                     }
                 } else if (val instanceof Map) {
                     processParamSubstitution((Map) val);
+                    ret.add(val);
                 } else if (val instanceof Collection) {
-                    processParamSubstitution((Collection) val);
+                    ret.add(processParamSubstitution((Collection) val));
+                } else {
+                    ret.add(val);
                 }
             }
             return ret;
