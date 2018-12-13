@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.17**
+* Test - json param shall be processed #1025
+* Test - allow it post body for DELETE request #1024
 * Annotations with ValueLoader cannot work if post with json #1016
 * Routing issue with dynamic aliases and keyword matching #1022
 * Make CLI help command default to display application commands 1018#

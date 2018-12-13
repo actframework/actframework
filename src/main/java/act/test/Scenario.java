@@ -28,17 +28,12 @@ import static org.osgl.http.H.Method.POST;
 
 import act.Act;
 import act.app.App;
+import act.handler.builtin.FileGetter;
 import act.test.func.Func;
 import act.test.req_modifier.RequestModifier;
-import act.test.util.CookieStore;
-import act.test.util.JSONTraverser;
-import act.test.util.RequestTemplateManager;
-import act.test.util.ScenarioManager;
+import act.test.util.*;
 import act.test.verifier.Verifier;
-import act.handler.builtin.FileGetter;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,10 +48,7 @@ import org.osgl.util.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -145,9 +137,9 @@ public class Scenario implements ScenarioPart {
                         }
                         url = buf.toString();
                     }
-                case DELETE:
                     builder.method(requestSpec.method.name(), null);
                     break;
+                case DELETE:
                 case POST:
                 case PUT:
                 case PATCH:
@@ -201,12 +193,35 @@ public class Scenario implements ScenarioPart {
                         entry.setValue(getLastVal(ref));
                     } else if (sVal.contains("${")) {
                         sVal = processStringSubstitution(sVal);
-                        entry.setValue(sVal);
+                        entry.setValue(S.isInt(sVal) ? Integer.parseInt(sVal) : sVal);
                     }
                 } else if (val instanceof Map) {
                     processParamSubstitution((Map) val);
+                } else if (val instanceof Collection) {
+                    processParamSubstitution((Collection) val);
                 }
             }
+        }
+
+        private Collection processParamSubstitution(Collection params) {
+            Collection ret = Act.getInstance(params.getClass());
+            for (Object val : params) {
+                if (val instanceof String) {
+                    String sVal = (String) val;
+                    if (sVal.startsWith("last:") || sVal.startsWith("last|")) {
+                        String ref = sVal.substring(5);
+                        ret.add(getLastVal(ref));
+                    } else if (sVal.contains("${")) {
+                        sVal = processStringSubstitution(sVal);
+                        ret.add(S.isInt(sVal) ? Integer.parseInt(sVal) : sVal);
+                    }
+                } else if (val instanceof Map) {
+                    processParamSubstitution((Map) val);
+                } else if (val instanceof Collection) {
+                    processParamSubstitution((Collection) val);
+                }
+            }
+            return ret;
         }
 
         Request build() {
@@ -216,6 +231,8 @@ public class Scenario implements ScenarioPart {
         private String verifyJsonBody(Object jsonBody) {
             if (jsonBody instanceof Map) {
                 processParamSubstitution((Map) jsonBody);
+            } else if (jsonBody instanceof Collection) {
+                jsonBody = processParamSubstitution((Collection) jsonBody);
             }
             String s = null == jsonBody ? "" : (jsonBody instanceof String) ? (String) jsonBody : JSON.toJSONString(jsonBody);
             if (S.blank(s)) {
