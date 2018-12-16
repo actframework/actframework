@@ -768,6 +768,15 @@ public enum AppConfigKey implements ConfigKey {
     MODULES("modules"),
 
     /**
+     * `act.monitor`
+     *
+     * When `act.monitor` is turned on then it will load the monitor thread
+     *
+     * Default value: `false``
+     */
+    MONITOR("monitor.enabled"),
+
+    /**
      * {@code act.namedPorts} specifies a list of port names this
      * application listen to. These are additional ports other than
      * the default {@link #HTTP_PORT}

@@ -29,6 +29,7 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import javax.persistence.Transient;
 
 /**
  * Patch JSON DTO bean object in case there are
@@ -48,8 +49,11 @@ public class JsonDtoPatch {
         this.loader = valueLoaderOf(spec);
         if (null == loader) {
             for (Map.Entry<String, BeanSpec> entry : spec.fields().entrySet()) {
-                String fieldName = entry.getKey();
                 BeanSpec fieldSpec = entry.getValue();
+                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
+                    continue;
+                }
+                String fieldName = entry.getKey();
                 JsonDtoPatch child = new JsonDtoPatch(fieldName, fieldSpec);
                 if (!child.isEmpty()) {
                     fieldsPatches.add(child);

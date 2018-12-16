@@ -361,7 +361,7 @@ public final class Act {
         if (app.config().supportSsl()) {
             network.register(appConfig().httpsPort(), true, networkHandler);
         }
-        List<NamedPort> portList = app.config().namedPorts();
+        Collection<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
             network.register(np.port(), false, new NetworkHandler(app, np));
         }

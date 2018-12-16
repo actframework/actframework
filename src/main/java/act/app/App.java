@@ -1496,7 +1496,7 @@ public class App extends LogSupportedDestroyableBase {
         UrlPath.classInit(this);
         router = new Router(this);
         moreRouters = new HashMap<>();
-        List<NamedPort> ports = config().namedPorts();
+        Collection<NamedPort> ports = config().namedPorts();
         for (NamedPort port : ports) {
             moreRouters.put(port, new Router(this, port.name()));
         }

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.17**
+* Configure healthy monitor and report server status #1021
 * Test - json param shall be processed #1025
 * Test - allow it post body for DELETE request #1024
 * Annotations with ValueLoader cannot work if post with json #1016

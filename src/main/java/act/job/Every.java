@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * thus the job execution time will impact the next time the job is invoked</p>
  */
 @Retention(RetentionPolicy.CLASS)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Every {
     /**
      * Specifies the duration to execute the method. Time could be specified in

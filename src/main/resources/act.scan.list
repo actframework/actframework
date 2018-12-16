@@ -36,3 +36,4 @@ act.ws.WebSocketAdminConsole
 act.job.JobAdmin
 act.job.JobAdmin$WsProgress
 act.ws.WebSocketConnectionListener$Manager$Finder
+act\.monitor\..*

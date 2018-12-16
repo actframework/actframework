@@ -28,27 +28,20 @@ import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.URLResource;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
+import io.undertow.util.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.Output;
-import org.osgl.util.OutputStreamOutput;
+import org.osgl.util.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 public class UndertowResponse extends ActResponse<UndertowResponse> {
@@ -162,7 +155,9 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse send(File file) {
         try {
-            sender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
+            final FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+            hse.setResponseContentLength(channel.size() * 1000);
+            sender().transferFrom(channel, IoCallback.END_EXCHANGE);
             endAsync = !blocking();
             afterWritingContent();
         } catch (IOException e) {

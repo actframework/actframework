@@ -83,6 +83,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public static final String CONF_FILE_NAME = "app.conf";
     public static final String CSRF_TOKEN_NAME = "__csrf__";
     public static final String PORT_CLI_OVER_HTTP = "__admin__";
+    public static final String PORT_SYS = "__sys__";
 
     private App app;
 
@@ -821,7 +822,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int cliOverHttpPort() {
         if (null == cliOverHttpPort) {
-            cliOverHttpPort = get(CLI_OVER_HTTP_PORT, 5462);
+            cliOverHttpPort = get(CLI_OVER_HTTP_PORT, httpPort() + 2);
         }
         return cliOverHttpPort;
     }
@@ -882,7 +883,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int cliPort() {
         if (null == cliPort) {
-            cliPort = get(CLI_PORT, 5461);
+            cliPort = get(CLI_PORT, httpPort() + 1);
         }
         return cliPort;
     }
@@ -1975,40 +1976,67 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private List<NamedPort> namedPorts = null;
+    private Boolean monitorEnabled;
 
-    protected T namedPorts(NamedPort... namedPorts) {
-        this.namedPorts = C.listOf(namedPorts);
+    protected T enableMonitor(boolean enable) {
+        this.monitorEnabled = enable;
         return me();
     }
 
-    public List<NamedPort> namedPorts() {
+    public boolean monitorEnabled() {
+        if (null == monitorEnabled) {
+            monitorEnabled = $.bool(get(MONITOR, false));
+        }
+        return monitorEnabled;
+    }
+
+    private void _mergeMonitorEnabled(AppConfig config) {
+        if (!hasConfiguration(MONITOR)) {
+            this.monitorEnabled = config.monitorEnabled;
+        }
+    }
+
+    private Map<String, NamedPort> namedPorts = null;
+
+    protected T namedPorts(NamedPort... namedPorts) {
+        this.namedPorts = new HashMap<>();
+        for (NamedPort port : namedPorts) {
+            this.namedPorts.put(port.name(), port);
+        }
+        return me();
+    }
+
+    public Collection<NamedPort> namedPorts() {
         if (null == namedPorts) {
             String s = get(NAMED_PORTS, null);
             if (null == s) {
-                namedPorts = cliOverHttp() ? C.list(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort())) : C.<NamedPort>list();
+                namedPorts = new HashMap<>();
             } else {
                 String[] sa = (s.split("[,;]+"));
-                ListBuilder<NamedPort> builder = ListBuilder.create();
+                Map<String, NamedPort> builder = new HashMap<>();
                 for (String s0 : sa) {
                     String[] sa0 = s0.split(":");
                     E.invalidConfigurationIf(2 != sa0.length, "Unknown named port configuration: %s", s);
                     String name = sa0[0].trim();
                     String val = sa0[1].trim();
                     NamedPort port = new NamedPort(name, Integer.parseInt(val));
-                    if (!builder.contains(port)) {
-                        builder.add(port);
+                    if (!builder.containsKey(port.name())) {
+                        builder.put(port.name(), port);
                     } else {
                         throw E.invalidConfiguration("port[%s] already configured", name);
                     }
                 }
-                if (cliOverHttp()) {
-                    builder.add(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort()));
-                }
-                namedPorts = builder.toList();
+                namedPorts = builder;
             }
+            if (cliOverHttp() && !namedPorts.containsKey(PORT_CLI_OVER_HTTP)) {
+                namedPorts.put(PORT_CLI_OVER_HTTP, new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort()));
+            }
+            if (!namedPorts.containsKey(PORT_SYS)) {
+                namedPorts.put(PORT_SYS, new NamedPort(PORT_SYS, httpPort() + 3));
+            }
+
         }
-        return namedPorts;
+        return namedPorts.values();
     }
 
     public NamedPort namedPort(String portId) {
