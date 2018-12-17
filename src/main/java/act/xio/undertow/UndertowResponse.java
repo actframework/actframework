@@ -156,8 +156,20 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     public UndertowResponse send(File file) {
         try {
             final FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
-            hse.setResponseContentLength(channel.size() * 1000);
-            sender().transferFrom(channel, IoCallback.END_EXCHANGE);
+            hse.setResponseContentLength(channel.size());
+            sender().transferFrom(channel, new IoCallback() {
+                @Override
+                public void onComplete(HttpServerExchange exchange, Sender sender) {
+                    IO.close(channel);
+                    IoCallback.END_EXCHANGE.onComplete(exchange, sender);
+                }
+
+                @Override
+                public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+                    IO.close(channel);
+                    IoCallback.END_EXCHANGE.onException(exchange, sender, exception);
+                }
+            });
             endAsync = !blocking();
             afterWritingContent();
         } catch (IOException e) {
