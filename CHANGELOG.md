@@ -1,7 +1,8 @@
 # ActFramework Change Log
 
 **1.8.17**
-*
+* UnexpectedException when submit a `Map<String, T>` type parameter with value as `null` #1027
+* Static file handler - the file handle not closed after serviced #1028
 * Configure healthy monitor and report server status #1021
 * Test - json param shall be processed #1025
 * Test - allow it post body for DELETE request #1024

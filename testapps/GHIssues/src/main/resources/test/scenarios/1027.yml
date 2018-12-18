@@ -1,0 +1,19 @@
+Scenario(1027):
+  description: "[1027] UnexpectedException when submit a `Map<String, T>` type parameter with value as `null`"
+  interactions:
+  - description: Test
+    request:
+      post: /1027
+    params:
+
+    response:
+      json:
+        name:
+          - exists: true
+  - description: Get foo name
+    request:
+      get: /1022/foo/1/name
+    response:
+      json:
+        result:
+          - exists: true
