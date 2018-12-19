@@ -98,6 +98,11 @@ class PojoLoader extends ParamValueLoader.JsonBodySupported {
                 try {
                     field.setAccessible(true);
                     String fieldName = field.getName();
+                    BeanSpec fieldSpec = spec.field(fieldName);
+                    if (null == fieldSpec) {
+                        // circular reference
+                        continue;
+                    }
                     fieldLoaders.put(fieldName, service.fieldLoader(key, field, spec.field(fieldName)));
                 } finally {
                     circularReferenceDetector.remove(fieldType);

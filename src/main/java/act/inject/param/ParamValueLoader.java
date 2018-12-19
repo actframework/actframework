@@ -22,6 +22,7 @@ package act.inject.param;
 
 import act.cli.CliContext;
 import act.util.*;
+import org.osgl.util.E;
 
 /**
  * Responsible for providing the value to a method parameter
@@ -66,6 +67,14 @@ public interface ParamValueLoader {
      */
     boolean supportScopeCaching();
 
+    /**
+     * Does this loader require runtime param type resolution. Useful when parent class
+     * is a generic typed class.
+     */
+    boolean requireRuntimeTypeInfo();
+
+    ParamValueLoader wrapWithRuntimeType(Class<?> type);
+
     abstract class NonCacheable extends LogSupportedDestroyableBase implements ParamValueLoader {
         @Override
         public String bindName() {
@@ -80,6 +89,16 @@ public interface ParamValueLoader {
         @Override
         public boolean supportScopeCaching() {
             return false;
+        }
+
+        @Override
+        public boolean requireRuntimeTypeInfo() {
+            return false;
+        }
+
+        @Override
+        public ParamValueLoader wrapWithRuntimeType(Class<?> type) {
+            throw E.unsupport();
         }
     }
 

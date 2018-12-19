@@ -57,6 +57,13 @@ class JsonParamValueLoader implements ParamValueLoader {
         }
     }
 
+    private JsonParamValueLoader(JsonParamValueLoader parent, Class runtimeType) {
+        this.fallBack = parent.fallBack.wrapWithRuntimeType(runtimeType);
+        this.spec = parent.spec;
+        this.defValProvider = parent.defValProvider;
+        this.isPathVariable = parent.isPathVariable;
+    }
+
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (isPathVariable) {
@@ -110,4 +117,13 @@ class JsonParamValueLoader implements ParamValueLoader {
         }
     }
 
+    @Override
+    public boolean requireRuntimeTypeInfo() {
+        return fallBack.requireRuntimeTypeInfo();
+    }
+
+    @Override
+    public ParamValueLoader wrapWithRuntimeType(Class<?> type) {
+        return new JsonParamValueLoader(this, type);
+    }
 }

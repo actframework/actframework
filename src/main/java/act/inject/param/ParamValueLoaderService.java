@@ -9,9 +9,9 @@ package act.inject.param;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,9 +67,10 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
     private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader.NonCacheable() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-            return ((ActionContext)context).result();
+            return ((ActionContext) context).result();
         }
     };
+
     private static class ThrowableLoader extends ParamValueLoader.NonCacheable {
         private Class<? extends Throwable> throwableType;
 
@@ -91,6 +92,8 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
     protected StringValueResolverManager resolverManager;
     protected BinderManager binderManager;
     protected GenieInjector injector;
+    ConcurrentHashMap<Class, Map<String, Class>> typeLookupLookup = new ConcurrentHashMap<>();
+    ConcurrentHashMap<$.Pair<ParamValueLoader, Class>, ParamValueLoader> runtimeLoaders = new ConcurrentHashMap<>();
     ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
     Map<Method, Boolean> methodValidationConstraintLookup = new HashMap();
     ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<>();
@@ -154,6 +157,15 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         return loaders;
     }
 
+    private Map<String, Class> getTypeLookup(Class host) {
+        Map<String, Class> lookup = typeLookupLookup.get(host);
+        if (null == lookup) {
+            lookup = Generics.buildTypeParamImplLookup(host);
+            typeLookupLookup.put(host, lookup);
+        }
+        return lookup;
+    }
+
     public Object[] loadMethodParams(Object host, Method method, ActContext ctx) {
         try {
             ParamValueLoader[] loaders = methodParamLoaders(host, method, ctx);
@@ -161,7 +173,22 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             int sz = loaders.length;
             Object[] params = new Object[sz];
             for (int i = 0; i < sz; ++i) {
-                params[i] = loaders[i].load(null, ctx, false);
+                ParamValueLoader loader = loaders[i];
+                if (loader.requireRuntimeTypeInfo()) {
+                    Class hostType = host.getClass();
+                    $.Pair<ParamValueLoader, Class> key = $.Pair(loader, hostType);
+                    ParamValueLoader runtimeLoader = runtimeLoaders.get(key);
+                    if (null == runtimeLoader) {
+                        Map<String, Class> typeLookups = getTypeLookup(hostType);
+                        Type[] paramTypes = method.getGenericParameterTypes();
+                        Type paramType = paramTypes[i];
+                        Class runtimeType = typeLookups.get(((TypeVariable) paramType).getName());
+                        runtimeLoader = loader.wrapWithRuntimeType(runtimeType);
+                        runtimeLoaders.put(key, runtimeLoader);
+                    }
+                    loader = runtimeLoader;
+                }
+                params[i] = loader.load(null, ctx, false);
             }
             if (null != hasValidationConstraint && hasValidationConstraint) {
                 Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
@@ -192,7 +219,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         }
     }
 
-    protected <T> ParamValueLoader findBeanLoader(Class<T> beanClass) {
+    protected <T> ParamValueLoader findBeanLoader(final Class<T> beanClass) {
         final Provider<T> provider = injector.getProvider(beanClass);
         final Map<Field, ParamValueLoader> loaders = fieldLoaders(beanClass);
         final boolean hasField = !loaders.isEmpty();
@@ -210,6 +237,18 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                     for (Map.Entry<Field, ParamValueLoader> entry : loaders.entrySet()) {
                         Field field = entry.getKey();
                         ParamValueLoader loader = entry.getValue();
+                        if (loader.requireRuntimeTypeInfo()) {
+                            $.Pair<ParamValueLoader, Class> key = $.Pair(loader, (Class)beanClass);
+                            ParamValueLoader runtimeLoader = runtimeLoaders.get(key);
+                            if (null == runtimeLoader) {
+                                Map<String, Class> typeLookups = getTypeLookup(beanClass);
+                                Type paramType = field.getGenericType();
+                                Class runtimeType = typeLookups.get(((TypeVariable) paramType).getName());
+                                runtimeLoader = loader.wrapWithRuntimeType(runtimeType);
+                                runtimeLoaders.put(key, runtimeLoader);
+                            }
+                            loader = runtimeLoader;
+                        }
                         Object fieldValue = loader.load(null, context, noDefaultValue);
                         if (null != fieldValue) {
                             field.set(bean, fieldValue);
@@ -331,7 +370,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         if (Result.class.isAssignableFrom(rawType)) {
             return RESULT_LOADER;
         } else if (Throwable.class.isAssignableFrom(rawType)) {
-            return new ThrowableLoader((Class<? extends Throwable>)rawType);
+            return new ThrowableLoader((Class<? extends Throwable>) rawType);
         } else if (Annotation.class.isAssignableFrom(rawType)) {
             return findHandlerMethodAnnotation((Class<? extends Annotation>) rawType, ctx);
         }
@@ -358,8 +397,10 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
      * * the handler method
      * * the current method (might be a intercepter method)
      *
-     * @param annoType the annotation type
-     * @param ctx the current {@link ActContext}
+     * @param annoType
+     *         the annotation type
+     * @param ctx
+     *         the current {@link ActContext}
      * @return a `ParamValueLoader` instance
      */
     private ParamValueLoader findHandlerMethodAnnotation(final Class<? extends Annotation> annoType, ActContext<?> ctx) {
@@ -406,7 +447,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         if (null == loader) {
             Annotation[] aa = spec.taggedAnnotations(Bind.class);
             if (aa.length > 0) {
-                for (Annotation a: aa) {
+                for (Annotation a : aa) {
                     Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
                     for (Class<? extends Binder> binderClass : bind.value()) {
                         Binder binder = injector.get(binderClass);
@@ -603,7 +644,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
         if (null != resolver) {
             DefaultValue def = spec.getAnnotation(DefaultValue.class);
-            return new StringValueResolverValueLoader(key, resolver, null, def, fieldType);
+            return new StringValueResolverValueLoader(key, def, spec);
         }
 
         return buildLoader(key, spec);
@@ -675,6 +716,16 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 @Override
                 public boolean supportScopeCaching() {
                     return jsonDecorated.supportScopeCaching();
+                }
+
+                @Override
+                public boolean requireRuntimeTypeInfo() {
+                    return false;
+                }
+
+                @Override
+                public ParamValueLoader wrapWithRuntimeType(Class<?> type) {
+                    throw E.unsupport();
                 }
             };
 
@@ -796,6 +847,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
     }
 
     private static final String DB_BIND_CNAME = DbBind.class.getName();
+
     // DbBind is special: it's class loader is AppClassLoader
     public static boolean hasDbBind(Annotation[] annotations) {
         final String name = DB_BIND_CNAME;

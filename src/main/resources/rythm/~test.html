@@ -65,6 +65,12 @@
 } else {
   @scenario.name.toUpperCase()
 }
+  @if(!scenario.status.pass()) {
+  &nbsp;&nbsp;
+  <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+    Re-run scenario &gt;
+  </a>
+  }
 </h4>
 
 

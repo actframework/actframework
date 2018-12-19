@@ -48,12 +48,15 @@ public class JsonDtoPatch {
         this.name = S.requireNotBlank(name);
         this.loader = valueLoaderOf(spec);
         if (null == loader) {
-            for (Map.Entry<String, BeanSpec> entry : spec.fields().entrySet()) {
-                BeanSpec fieldSpec = entry.getValue();
-                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
+            for (BeanSpec fieldSpec : spec.nonStaticFields()) {
+                Class fieldType = fieldSpec.rawType();
+                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class) || $.isImmutable(fieldType)) {
                     continue;
                 }
-                String fieldName = entry.getKey();
+                if (Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+                    continue;
+                }
+                String fieldName = fieldSpec.name();
                 JsonDtoPatch child = new JsonDtoPatch(fieldName, fieldSpec);
                 if (!child.isEmpty()) {
                     fieldsPatches.add(child);

@@ -40,6 +40,13 @@ class ScopedParamValueLoader implements ParamValueLoader {
         this.key = scopeCache.key(beanSpec);
     }
 
+    private ScopedParamValueLoader(ScopedParamValueLoader parent, Class runtimeType) {
+        this.realLoader = parent.realLoader.wrapWithRuntimeType(runtimeType);
+        this.key = parent.key;
+        this.scopeCache = parent.scopeCache;
+        this.supportCaching = parent.supportCaching;
+    }
+
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (supportCaching) {
@@ -72,5 +79,15 @@ class ScopedParamValueLoader implements ParamValueLoader {
     @Override
     public boolean supportScopeCaching() {
         return realLoader.supportScopeCaching();
+    }
+
+    @Override
+    public boolean requireRuntimeTypeInfo() {
+        return realLoader.requireRuntimeTypeInfo();
+    }
+
+    @Override
+    public ParamValueLoader wrapWithRuntimeType(Class<?> type) {
+        return new ScopedParamValueLoader(this, type);
     }
 }

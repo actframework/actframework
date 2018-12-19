@@ -9,9 +9,9 @@ package act.inject.param;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,9 +23,11 @@ package act.inject.param;
 import act.app.ActionContext;
 import act.inject.DefaultValue;
 import act.util.ActContext;
-import org.osgl.mvc.annotation.Param;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StringValueResolverValueLoader extends StringValueResolverValueLoaderBase {
 
@@ -33,8 +35,44 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
 
     private HttpRequestParamEncode encode;
 
-    public StringValueResolverValueLoader(ParamKey key, StringValueResolver<?> resolver, Param param, DefaultValue def, Class<?> type) {
-        super(key, resolver, param, def, type, false);
+    private ConcurrentHashMap<Class, StringValueResolverValueLoader> dynamicLoaders = new ConcurrentHashMap<>();
+
+    public StringValueResolverValueLoader(ParamKey key, DefaultValue def, BeanSpec paramSpec) {
+        super(key, def, paramSpec, false);
+    }
+
+    public StringValueResolverValueLoader(ParamKey key, DefaultValue def, StringValueResolver resolver, BeanSpec paramSpec) {
+        super(key, def, resolver, paramSpec, false);
+    }
+
+    private StringValueResolverValueLoader(StringValueResolverValueLoader me, Class<?> runtimeType, StringValueResolver resolver, Object defVal) {
+        super(me, runtimeType, resolver, defVal);
+    }
+
+    @Override
+    public ParamValueLoader wrapWithRuntimeType(final Class<?> type) {
+        final StringValueResolverValueLoader me = this;
+        return new JsonBodySupported() {
+            @Override
+            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+                StringValueResolverValueLoader dynamicLoader = dynamicLoaders.get(type);
+                if (null == dynamicLoader) {
+                    StringValueResolver resolver = resolverMap.get(type);
+                    Object defVal;
+                    if (null == resolver) {
+                        resolver = lookupResolver(paramSpec, type);
+                        defVal = null == defSpec ? defVal(param, type) : resolver.resolve(defSpec.value());
+                        resolverMap.put(type, resolver);
+                        defValMap.put(type, defVal);
+                    } else {
+                        defVal = defValMap.get(type);
+                    }
+                    dynamicLoader = new StringValueResolverValueLoader(me, type, resolver, defVal);
+                    dynamicLoaders.put(type, dynamicLoader);
+                }
+                return dynamicLoader.load(bean, context, noDefaultValue);
+            }
+        };
     }
 
     @Override

@@ -10,7 +10,7 @@ Scenario(1022):
           - exists: true
   - description: Get foo name
     request:
-      get: /1022/foo/1/name
+      get: /1022/foo/1/fooName
     response:
       json:
         result:
