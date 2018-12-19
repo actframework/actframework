@@ -23,6 +23,7 @@ package act.app;
 import act.Destroyable;
 import act.app.event.SysEventId;
 import org.osgl.$;
+import org.osgl.util.C;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,6 +64,10 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
         } else {
             register(singletonClass, app().getInstance(singletonClass));
         }
+    }
+
+    public Iterable<String> typeNames() {
+        return C.list(registry.keySet()).map($.F.asString());
     }
 
     public void register(Class singletonClass, Object singleton) {

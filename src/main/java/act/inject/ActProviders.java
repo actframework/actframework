@@ -21,8 +21,7 @@ package act.inject;
  */
 
 import act.Act;
-import act.app.ActionContext;
-import act.app.App;
+import act.app.*;
 import act.cli.CliContext;
 import act.cli.CliOverHttpContext;
 import act.cli.CliSession;

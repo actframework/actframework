@@ -20,6 +20,7 @@ package act;
  * #L%
  */
 
+import act.app.SingletonRegistry;
 import act.cli.*;
 import act.sys.Env;
 import act.util.PropertySpec;
@@ -99,6 +100,18 @@ public class SysUtilAdmin {
             context.println("%12s: %11d", "cached(cls#)", cached);
             context.flush();
         }
+    }
+
+    @Command(name = "act.singleton.list", help = "List all singletons")
+    public Iterable<String> listSingletons() {
+        SingletonRegistry singletonRegistry = Act.app().singletonRegistry();
+        return singletonRegistry.typeNames();
+    }
+
+    @Command(name = "act.singleton.show-property", help = "Show singleton instance property")
+    public Object showSingletonProperty(@Required String type, @Required String property) {
+        Object o = Act.app().singleton(Act.classForName(type));
+        return $.getProperty(o, property);
     }
 
     @Command(name = "act.gc", help = "Run GC")

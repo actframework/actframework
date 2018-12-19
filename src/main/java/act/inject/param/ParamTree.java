@@ -86,7 +86,11 @@ class ParamTree {
     private ParamTreeNode asRootNode() {
         ParamTreeNode root = ParamTreeNode.map(ParamKey.ROOT_KEY);
         for (Map.Entry<ParamKey, ParamTreeNode> entry : allNodes.entrySet()) {
-            root.addChild(entry.getKey().name(), entry.getValue());
+            ParamKey key = entry.getKey();
+            if (key.size() > 1) {
+                continue;
+            }
+            root.addChild(key.name(), entry.getValue());
         }
         return root;
     }

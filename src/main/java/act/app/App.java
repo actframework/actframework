@@ -211,6 +211,7 @@ public class App extends LogSupportedDestroyableBase {
         this.sessionManager = new SessionManager(this.config, config().cacheService("logout-session"));
         this.dependencyInjector = new GenieInjector(this);
         this.singletonRegistry = new SingletonRegistry(this);
+        this.singletonRegistry.register(SingletonRegistry.class, this.singletonRegistry);
         this.singletonRegistry.register(SessionManager.class, this.sessionManager);
         this.singletonRegistry.register(CookieSessionMapper.class, new CookieSessionMapper(this.config));
     }
@@ -1010,6 +1011,10 @@ public class App extends LogSupportedDestroyableBase {
 
     public <DI extends DependencyInjector> DI injector() {
         return (DI) dependencyInjector;
+    }
+
+    public SingletonRegistry singletonRegistry() {
+        return singletonRegistry;
     }
 
     public UploadFileStorageService uploadFileStorageService() {

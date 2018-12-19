@@ -139,6 +139,9 @@ class MapLoader extends ParamValueLoader.JsonBodySupported {
                             throw E.unexpected("Component type not resolvable: %s", valType);
                         }
                         Object value = valueResolver.resolve(sval);
+                        if (null == value) {
+                            continue;
+                        }
                         if (!valClass.isInstance(value)) {
                             throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
                         }
