@@ -1106,7 +1106,7 @@ public class Router extends AppHolderBase<Router> {
 
         @Override
         public String id() {
-            return null == name ? keyword.camelCase() : name;
+            return null == name ? keyword.dashed() : name;
         }
 
         @Override

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.17**
+* Test report page improvement #1032
 * Provide a way to handle generic param type loading #1031
 * UnexpectedException when submit a `Map<String, T>` type parameter with value as `null` #1027
 * Static file handler - the file handle not closed after serviced #1028

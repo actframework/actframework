@@ -125,6 +125,14 @@ public class FindBy extends ValueLoader.Base {
         } else {
             if (findOne) {
                 Object found = dao.findOneBy(Keyword.of(queryFieldName).javaVariable(), by);
+                if (null == found) {
+                    // try find by id anyway
+                    try {
+                        found = dao.findById(by);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
                 return ensureNotNull(found, value, ctx);
             } else {
                 if (S.empty(value)) {

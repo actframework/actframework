@@ -274,7 +274,7 @@ public class YamlLoader extends LogSupport {
         return null == url ? null : IO.read(url).toString();
     }
 
-    private String patchResourceName(String name) {
+    protected String patchResourceName(String name) {
         return S.ensure(name).startWith(fixtureFolder);
     }
 

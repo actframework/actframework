@@ -92,11 +92,11 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void loadDefault() {
-        String content = getResourceAsString("scenarios.yml");
-        if (null == content) {
-            return;
+        URL url = Act.getResource(patchResourceName("scenarios.yml"));
+        if (null != url) {
+            String content = IO.readContentAsString(url);
+            parseOne(content, url.getFile());
         }
-        parseOne(content);
     }
 
     private void searchScenarioFolder() {
@@ -155,7 +155,7 @@ public class ScenarioManager extends YamlLoader {
                 continue;
             }
             try {
-                parseOne(content);
+                parseOne(content, file.getAbsolutePath());
             } catch (RuntimeException e) {
                 error(e, "Error parsing scenario file: %s", file.getName());
                 throw e;
@@ -170,7 +170,7 @@ public class ScenarioManager extends YamlLoader {
                 if (isScenarioFile(name)) {
                     InputStream is = jar.getInputStream(entry);
                     String content = IO.readContentAsString(is);
-                    parseOne(content);
+                    parseOne(content, null);
                 }
             }
         } catch (IOException e) {
@@ -182,7 +182,7 @@ public class ScenarioManager extends YamlLoader {
         return name.startsWith("test/scenarios/") && name.endsWith(".yml");
     }
 
-    private void parseOne(String content) {
+    private void parseOne(String content, String fileName) {
         Map<String, Object> map = parse(content, NULL_DAO);
         Map<String, Scenario> loaded = $.cast(map);
         boolean hasDefaultUrlContext = S.notBlank(urlContext);
@@ -190,6 +190,7 @@ public class ScenarioManager extends YamlLoader {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
+            scenario.source = fileName;
             if (hasDefaultUrlContext) {
                 if (S.isBlank(scenario.urlContext)) {
                     scenario.urlContext = this.urlContext;

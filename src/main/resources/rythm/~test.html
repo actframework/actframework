@@ -5,6 +5,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <script src="/~/asset/js/jquery.js"></script>
   <style>
     body {
       background-color: #222;
@@ -52,6 +53,9 @@
     .version {
       font-weight: 600;
     }
+    .open-source {
+      display:none;
+    }
   </style>
   @render(head)
 </head>
@@ -66,10 +70,31 @@
   @scenario.name.toUpperCase()
 }
   @if(!scenario.status.pass()) {
+    @if(scenario.source) {
+  <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
+    <li style="margin-bottom: 5px">
+      &gt;
+      <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+        Re-run scenario 
+      </a>
+    </li>
+    <li>
+      &gt;
+      <a href="http://localhost:8091?message=@(scenario.source):1">Open scenario source</a>
+    </li>
+  </ul>
+  <span class="no-source">
+    &nbsp;&nbsp;
+    <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+      Re-run scenario &gt;
+    </a>
+  </span>
+    } else {
   &nbsp;&nbsp;
   <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
     Re-run scenario &gt;
   </a>
+    }
   }
 </h4>
 
@@ -103,5 +128,23 @@
 
 }
 <a id="act-version" href="https://github.com/actframework/actframework">actframework-@act.Act.VERSION.getVersion()</a>
+<script>
+$.ajax({
+      url: 'http://localhost:8091/',
+      type: 'GET',
+      crossDomain: true,
+      dataType: 'jsonp',
+      success: function (ip) {
+        $('.no-source').hide();
+        $('.open-source').show();
+      },
+      error: function (err) {
+        if (err.status === 200) {
+          $('.no-source').hide();
+          $('.open-source').show();
+        }
+      }
+});
+</script>
 </body>
 </html>

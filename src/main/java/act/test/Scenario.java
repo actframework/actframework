@@ -276,6 +276,7 @@ public class Scenario implements ScenarioPart {
     public boolean clearFixtures = true;
     public String urlContext;
     public String partition = "DEFAULT";
+    public String source;
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
