@@ -896,21 +896,20 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (!result.status().isError()) {
             return applyContentType();
         }
-        if (req().isAjax()) {
-            H.Request req = req();
+        return applyContentType(contentTypeForErrorResult(req()));
+    }
+
+    public static H.Format contentTypeForErrorResult(H.Request<?> req) {
+        if (req.isAjax()) {
             H.Format fmt = req.accept();
             if (H.Format.UNKNOWN == fmt) {
                 fmt = req.contentType();
             }
             if (H.Format.JSON == fmt || H.Format.XML == fmt) {
-                applyContentType(fmt);
-            } else {
-                applyContentType(H.Format.HTML);
+                return fmt;
             }
-        } else {
-            applyContentType(H.Format.HTML);
         }
-        return this;
+        return (H.Format.HTML);
     }
 
     public ActionContext applyContentType() {
@@ -956,12 +955,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
-    private void applyContentType(H.Format fmt) {
+    private ActionContext applyContentType(H.Format fmt) {
         if (null != fmt) {
             ActResponse resp = response;
             resp.initContentType(fmt.contentType());
             resp.commitContentType();
         }
+        return this;
     }
 
     private void applyGlobalCspSetting() {

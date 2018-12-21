@@ -20,6 +20,7 @@ package act.handler.builtin.controller;
  * #L%
  */
 
+import static act.app.ActionContext.contentTypeForErrorResult;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.POST;
 
@@ -324,7 +325,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 H.Request req = context.req();
                 ActResponse<?> resp = context.prepareRespForResultEvaluation();
                 if (result instanceof ErrorResult) {
-                    resp.contentType(req.accept());
+                    // see https://github.com/actframework/actframework/issues/1034
+                    H.Format fmt = contentTypeForErrorResult(req);
+                    req.accept(fmt);
+                    resp.contentType(fmt);
                 }
                 result.apply(req, resp);
             }
