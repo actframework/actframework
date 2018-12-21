@@ -322,7 +322,7 @@ public class Test extends LogSupport {
 
     private Object generateSampleData_(Class<?> modelType) {
         BeanSpec spec = BeanSpec.of(modelType, Act.injector());
-        return Endpoint.generateSampleData(spec, C.<String, Class>Map(), new HashSet<Type>(), new ArrayList<String>(), null);
+        return Endpoint.generateSampleData(spec, C.<String, Class>Map(), new HashSet<Type>(), new ArrayList<String>(), null, false);
     }
 
     public static String constant(String name) {

@@ -29,6 +29,7 @@ import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
+import org.osgl.util.Generics;
 import org.rythmengine.utils.S;
 
 import java.lang.reflect.*;
@@ -97,7 +98,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         String context = "";
         List<String> retLst = new ArrayList<>();
         for (Method m: ma) {
-            buildPropertyPath(context, m, retLst);
+            buildPropertyPath(context, m, c, retLst);
         }
         Field[] fa = c.getFields();
         for (Field f: fa) {
@@ -106,7 +107,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return retLst;
     }
 
-    private void buildPropertyPath(String context, Method m, List<String> repo) {
+    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo) {
         if (m.getParameterTypes().length > 0) {
             return;
         }
@@ -123,8 +124,8 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         if (S.isEmpty(propName)) {
             return;
         }
-        Class c = m.getReturnType();
-        buildPropertyPath(c, m.getGenericReturnType(), context, propName, repo);
+        Class returnType = Generics.getReturnType(m, c);
+        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo);
     }
 
 

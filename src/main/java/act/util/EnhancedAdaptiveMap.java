@@ -364,7 +364,7 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                         continue;
                     }
                 }
-                final Class returnClass = m.getReturnType();
+                final Class returnClass = Generics.getReturnType(m, clazz);
                 Type returnType = m.getGenericReturnType();
                 Class paramClass = null;
                 Type paramType = null;

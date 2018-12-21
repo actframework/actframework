@@ -165,6 +165,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private String xmlRootTag;
     private List<JsonDtoPatch> dtoPatches = new ArrayList<>();
     private boolean hasDtoPatches;
+    private Class<?> returnType;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -183,7 +184,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
-        this.returnString = method.getReturnType() == String.class;
+        this.returnType = Generics.getReturnType(method, controllerClass);
+        this.returnString = this.returnType == String.class;
         Integer priority = handler.priority();
         if (null != priority) {
             this.order = priority;
@@ -193,8 +195,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
         if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
-            this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
-            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(method.getReturnType()));
+            this.returnSimpleType = this.returnString || $.isSimpleType(returnType);
+            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(returnType));
             if (this.returnIterable) {
                 if (handlerMetaInfo.isReturnArray()) {
                     this.returnIterableComponentIsSimpleType = $.isSimpleType(method.getReturnType().getComponentType());
@@ -1159,7 +1161,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     private boolean shouldSuppressJsonDateFormat() {
-        Class<?> returnType = method.getReturnType();
         List<Field> fields = $.fieldsOf(returnType);
         for (Field field : fields) {
             JSONField jsonField = field.getAnnotation(JSONField.class);
