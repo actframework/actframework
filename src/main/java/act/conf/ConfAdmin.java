@@ -23,7 +23,9 @@ package act.conf;
 import act.Act;
 import act.cli.*;
 import act.controller.ExpressController;
+import act.controller.annotation.Port;
 import act.controller.annotation.UrlContext;
+import act.route.Router;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
@@ -36,6 +38,7 @@ import javax.inject.Singleton;
 @UrlContext("conf")
 @Singleton
 @ExpressController
+@Port({Router.PORT_DEFAULT, AppConfig.PORT_SYS})
 public class ConfAdmin {
 
     @Inject

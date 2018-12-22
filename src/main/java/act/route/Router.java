@@ -55,6 +55,8 @@ import javax.validation.constraints.NotNull;
 
 public class Router extends AppHolderBase<Router> {
 
+    public static final String PORT_DEFAULT = "default";
+
     /**
      * A visitor can be passed to the router to traverse
      * the routes

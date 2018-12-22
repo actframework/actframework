@@ -415,7 +415,7 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public Router router(String name) {
-        if (S.blank(name)) {
+        if (S.blank(name) || "default".equalsIgnoreCase(name)) {
             return router();
         }
         for (Map.Entry<NamedPort, Router> entry : moreRouters.entrySet()) {
