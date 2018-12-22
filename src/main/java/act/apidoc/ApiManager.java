@@ -35,6 +35,8 @@ import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
 import act.route.Router;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -43,11 +45,14 @@ import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import org.osgl.$;
+import org.osgl.Lang;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,6 +60,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Keep track endpoints defined in the system
  */
 public class ApiManager extends AppServiceBase<ApiManager> {
+
+    private static final String FILENAME = ".act.api-book";
 
     static final Logger LOGGER = LogManager.get(ApiManager.class);
 
@@ -65,6 +72,8 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     SortedMap<String, List<Endpoint>> moduleLookup = new TreeMap<>();
 
+    private transient boolean enabled;
+
     private static final AtomicBoolean IN_PROGRESS = new AtomicBoolean(false);
 
     public static boolean inProgress() {
@@ -73,7 +82,8 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     public ApiManager(final App app) {
         super(app);
-        if (!app.config().apiDocEnabled()) {
+        this.enabled = app.config().apiDocEnabled();
+        if (!this.enabled) {
             return;
         }
         app.jobManager().post(SysEventId.POST_START, "compile-api-book", new Runnable() {
@@ -87,12 +97,13 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 }
             }
         });
-        app.router().addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointsHandler(this));
-        app.router().addMapping(H.Method.GET, "/~/apibook/modules", new GetModulesHandler(this));
+        Router router = app.isDev() ? app.router() : app.sysRouter();
+        router.addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointsHandler(this));
+        router.addMapping(H.Method.GET, "/~/apibook/modules", new GetModulesHandler(this));
         ResourceGetter apidocHandler = new ResourceGetter("asset/~act/apibook/index.html");
-        app.router().addMapping(H.Method.GET, "/~/api", apidocHandler);
-        app.router().addMapping(H.Method.GET, "/~/apibook", apidocHandler);
-        app.router().addMapping(H.Method.GET, "/~/apidoc", apidocHandler);
+        router.addMapping(H.Method.GET, "/~/api", apidocHandler);
+        router.addMapping(H.Method.GET, "/~/apibook", apidocHandler);
+        router.addMapping(H.Method.GET, "/~/apidoc", apidocHandler);
     }
 
     @Override
@@ -103,6 +114,16 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     public void load(App app) {
         LOGGER.info("start compiling API book");
+        if (app.isProd()) {
+            try {
+                deserialize();
+            } catch (Exception e) {
+                warn(e, "Error deserialize api-book");
+            }
+            if (!endpoints.isEmpty()) {
+                return;
+            }
+        }
         Router router = app.router();
         AppConfig config = app.config();
         Set<Class> controllerClasses = new HashSet<>();
@@ -118,10 +139,34 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 exploreDescriptions(controllerClasses);
             }
             buildModuleLookup();
+            serialize();
         } finally {
             ctx.destroy();
         }
         LOGGER.info("API book compiled");
+    }
+
+    private void serialize() {
+        File file = new File(FILENAME);
+        IO.write(JSON.toJSONString(moduleLookup)).to(file);
+    }
+
+    private void deserialize() {
+        File file = new File(FILENAME);
+        if (!file.exists() || !file.canRead()) {
+            return;
+        }
+        JSONObject jsonObject = JSON.parseObject(IO.readContentAsString(file));
+        $.map(jsonObject).instanceFactory(new Lang.Function<Class, Object>() {
+            @Override
+            public Object apply(Class aClass) throws NotAppliedException, Lang.Break {
+                return app().getInstance(aClass);
+            }
+        }).targetGenericType(new TypeReference<TreeMap<String, List<Endpoint>>>() {
+        }).to(moduleLookup);
+        for (List<Endpoint> list : moduleLookup.values()) {
+            endpoints.addAll(list);
+        }
     }
 
     private void buildModuleLookup() {

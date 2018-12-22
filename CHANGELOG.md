@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.8.17**
+**1.9.0**
+* Support static apibook generation #893
 * Morphia ObjectId not generate in api-book #1033
 * Bad behaviour when Error result returned on Accept excel mime type #1034
 * Test report page improvement #1032

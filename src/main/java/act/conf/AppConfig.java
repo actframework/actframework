@@ -50,8 +50,7 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
-import org.osgl.$;
-import org.osgl.OsglConfig;
+import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
@@ -59,6 +58,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
+import org.osgl.util.converter.TypeConverterRegistry;
 import org.osgl.web.util.UserAgent;
 import org.rythmengine.utils.Time;
 import osgl.version.Version;
@@ -96,6 +96,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                     ctx.setLargeResponseHint();
                 }
                 return null;
+            }
+        });
+        TypeConverterRegistry.INSTANCE.register(new Lang.TypeConverter<String, Class>() {
+            @Override
+            public Class convert(String s) {
+                return Act.appClassForName(s);
             }
         });
         MvcConfig.errorPageRenderer(new ActErrorPageRender());

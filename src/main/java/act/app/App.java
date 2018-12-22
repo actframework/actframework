@@ -73,7 +73,6 @@ import act.plugin.PrincipalProvider;
 import act.route.*;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
-import act.test.Test;
 import act.util.*;
 import act.validation.Password;
 import act.view.ActErrorResult;
@@ -411,6 +410,10 @@ public class App extends LogSupportedDestroyableBase {
         return router;
     }
 
+    public Router sysRouter() {
+        return router(AppConfig.PORT_SYS);
+    }
+
     public Router router(String name) {
         if (S.blank(name)) {
             return router();
@@ -428,6 +431,37 @@ public class App extends LogSupportedDestroyableBase {
             return router();
         }
         return moreRouters.get(port);
+    }
+
+    private Iterable<Router> allRouters() {
+        return new Iterable<Router>() {
+            @Override
+            public Iterator<Router> iterator() {
+                return new Iterator<Router>() {
+
+                    private Iterator<Router> moreRoutersIterator;
+
+                    @Override
+                    public boolean hasNext() {
+                        return null == moreRoutersIterator || moreRoutersIterator.hasNext();
+                    }
+
+                    @Override
+                    public Router next() {
+                        if (null == moreRoutersIterator) {
+                            moreRoutersIterator = moreRouters.values().iterator();
+                            return router;
+                        }
+                        return moreRoutersIterator.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        E.unsupport();
+                    }
+                };
+            }
+        };
     }
 
     public AppCrypto crypto() {
@@ -689,7 +723,7 @@ public class App extends LogSupportedDestroyableBase {
             emit(ROUTER_INITIALIZED);
             loadRoutes();
             emit(ROUTER_LOADED);
-            initApiManager(this);
+            initApiManager();
             initSampleDataProviderManager();
             initHttpClientService();
             initCaptchaPluginManager();
@@ -1132,6 +1166,9 @@ public class App extends LogSupportedDestroyableBase {
      * @return the class as described above
      */
     public <T> Class<T> classForName(String className) {
+        if (className.contains("/")) {
+            className = className.replace('/', '.');
+        }
         try {
             return $.classForName(className, classLoader());
         } catch (VerifyError error) {
@@ -1560,10 +1597,7 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
-    private void initApiManager(App app) {
-        if (Act.isProd() || Test.shallRunAutomatedTest(app)) {
-            return;
-        }
+    private void initApiManager() {
         apiManager = new ApiManager(this);
     }
 
@@ -1683,17 +1717,22 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
-        router().addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
-        router().addMapping(GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
-        router().addMapping(GET, "/webjars/", new ResourceGetter("META-INF/resources/webjars"), RouteSource.BUILD_IN);
-        router().addContext("act.", "/~");
+        ResourceGetter actAsset = new ResourceGetter("asset/~act");
+        ResourceGetter webjars = new ResourceGetter("META-INF/resources/webjars");
+        ResourceGetter asset = new ResourceGetter("asset");
+        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
+        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
+        for (Router router : allRouters()) {
+            router.addMapping(GET, "/asset/", asset, RouteSource.BUILD_IN);
+            router.addMapping(GET, "/~/asset/", actAsset, RouteSource.BUILD_IN);
+            router.addMapping(GET, "/webjars/", webjars, RouteSource.BUILD_IN);
+            router.addContext("act.", "/~");
+            router.addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
+        }
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
             router.addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         }
-        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
-        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
-        router().addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {

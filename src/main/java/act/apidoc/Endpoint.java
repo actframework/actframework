@@ -68,12 +68,15 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     private static BeanSpecInterpreter beanSpecInterpretor = new BeanSpecInterpreter();
 
     public static class ParamInfo {
-        private String bindName;
-        private BeanSpec beanSpec;
-        private String description;
-        private String defaultValue;
-        private boolean required;
-        private List<String> options;
+        public String bindName;
+        public BeanSpec beanSpec;
+        public String type;
+        public String description;
+        public String defaultValue;
+        public boolean required;
+        public List<String> options;
+
+        private ParamInfo() {}
 
         private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
             this.bindName = bindName;
@@ -89,7 +92,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
 
         public String getType() {
-            return beanSpecInterpretor.interpret(beanSpec);
+            return null == beanSpec ? type : beanSpecInterpretor.interpret(beanSpec);
         }
 
         public String getDescription() {
@@ -152,46 +155,46 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     /**
      * unique identify an endpoint in an application.
      */
-    private String id;
+    public String id;
 
-    private EndpointIdProvider parent;
+    public EndpointIdProvider parent;
 
     /**
      * The scheme used to access the endpoint
      */
-    private Scheme scheme = Scheme.HTTP;
+    public Scheme scheme = Scheme.HTTP;
 
-    private int port;
+    public int port;
 
     /**
      * The HTTP method
      */
-    private H.Method httpMethod;
+    public H.Method httpMethod;
 
     /**
      * The URL path
      */
-    private String path;
+    public String path;
 
     /**
      * The handler.
      *
      * In most case should be `pkg.Class.method`
      */
-    private String handler;
+    public String handler;
 
     FastJsonPropertyPreFilter fastJsonPropertyPreFilter;
 
     /**
      * The description
      */
-    private String description;
+    public String description;
 
-    private String module;
+    public String module;
 
-    private Class<?> returnType;
+    private transient Class<?> returnType;
 
-    private String returnSample;
+    public String returnSample;
 
     /**
      * Param list.
@@ -199,12 +202,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
      * Only available when handler is driven by
      * {@link act.handler.builtin.controller.impl.ReflectedHandlerInvoker}
      */
-    private List<ParamInfo> params = new ArrayList<>();
+    public List<ParamInfo> params = new ArrayList<>();
 
-    private String sampleJsonPost;
-    private String sampleQuery;
-    private Class<?> controllerClass;
-    private transient SampleDataProviderManager sampleDataProviderManager;
+    public String sampleJsonPost;
+    public String sampleQuery;
+    public Class<?> controllerClass;
+    public transient SampleDataProviderManager sampleDataProviderManager;
+
+    private Endpoint() {}
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
         AppConfig conf = Act.appConfig();
