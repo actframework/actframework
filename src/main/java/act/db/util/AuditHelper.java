@@ -39,8 +39,10 @@ import javax.persistence.PreUpdate;
 @Stateless
 public class AuditHelper {
     private Map<Class, $.Visitor> createdAtLookup = new HashMap<>();
+    private Map<Class, $.Predicate> createdAtCheckLookup = new HashMap<>();
     private Map<Class, $.Visitor> lastModifiedAtLookup = new HashMap<>();
     private Map<Class, $.Visitor> createdByLookup = new HashMap<>();
+    private Map<Class, $.Predicate> createdByCheckLookup = new HashMap<>();
     private Map<Class, $.Visitor> lastModifiedByLookup = new HashMap<>();
 
     public AuditHelper() {
@@ -73,6 +75,18 @@ public class AuditHelper {
         apply(lastModifiedByLookup.get(entityType), entity);
     }
 
+    protected boolean hasCreatedAtValue(Object entity) {
+        Class<?> entityType = entity.getClass();
+        $.Predicate predicate = createdAtCheckLookup.get(entityType);
+        return null == predicate ? false : predicate.test(entity);
+    }
+
+    protected boolean hasCreatedByValue(Object entity) {
+        Class<?> entityType = entity.getClass();
+        $.Predicate predicate = createdByCheckLookup.get(entityType);
+        return null == predicate ? false : predicate.test(entity);
+    }
+
     private void buildLookups() {
         final App app = Act.app();
         MasterEntityMetaInfoRepo masterRepo = app.entityMetaInfoRepo();
@@ -92,6 +106,7 @@ public class AuditHelper {
                     field.setAccessible(true);
                     final TimestampFieldVisitor timestampFieldVisitor = new TimestampFieldVisitor(field, dbManager);
                     createdAtLookup.put(entityClass, timestampFieldVisitor);
+                    createdAtCheckLookup.put(entityClass, new FieldChecker(field));
                     final ClassNode node = classInfoRepository.node(entityClass.getName());
                     node.visitSubTree(new $.Visitor<ClassNode>() {
                         @Override
@@ -116,6 +131,7 @@ public class AuditHelper {
                     field.setAccessible(true);
                     final PricipalFieldVisitor pricipalFieldVisitor = new PricipalFieldVisitor(field);
                     createdByLookup.put(entityClass, pricipalFieldVisitor);
+                    createdByCheckLookup.put(entityClass, new FieldChecker(field));
                     final ClassNode node = classInfoRepository.node(entityClass.getName());
                     node.visitSubTree(new $.Visitor<ClassNode>() {
                         @Override
@@ -187,6 +203,20 @@ public class AuditHelper {
     private static void apply($.Visitor visitor, Object entity) {
         if (null != visitor) {
             visitor.visit(entity);
+        }
+    }
+
+    private static class FieldChecker extends $.Predicate {
+
+        final Field field;
+
+        FieldChecker(Field field) {
+            this.field = field;
+        }
+
+        @Override
+        public boolean test(Object o) {
+            return null != $.getFieldValue(o, field);
         }
     }
 

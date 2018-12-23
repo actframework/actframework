@@ -69,7 +69,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     public static class ParamInfo {
         public String bindName;
-        public BeanSpec beanSpec;
+        public transient BeanSpec beanSpec;
         public String type;
         public String description;
         public String defaultValue;
@@ -157,7 +157,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
      */
     public String id;
 
-    public EndpointIdProvider parent;
+    public transient EndpointIdProvider parent;
 
     /**
      * The scheme used to access the endpoint

@@ -50,7 +50,7 @@ public class JsonDtoPatch {
         if (null == loader) {
             for (BeanSpec fieldSpec : spec.nonStaticFields()) {
                 Class fieldType = fieldSpec.rawType();
-                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class) || $.isImmutable(fieldType)) {
+                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
                     continue;
                 }
                 if (Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {

@@ -900,8 +900,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public static H.Format contentTypeForErrorResult(H.Request<?> req) {
+        H.Format fmt = req.accept();
         if (req.isAjax()) {
-            H.Format fmt = req.accept();
             if (H.Format.UNKNOWN == fmt) {
                 fmt = req.contentType();
             }
@@ -909,7 +909,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 return fmt;
             }
         }
-        return (H.Format.HTML);
+        return fmt.isText() ? fmt : H.Format.HTML;
     }
 
     public ActionContext applyContentType() {
