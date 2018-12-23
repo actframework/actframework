@@ -70,7 +70,9 @@ class MapLoader extends ParamValueLoader.JsonBodySupported {
         if (!this.valTypeIsObject) {
             if (Collection.class.isAssignableFrom(valClass)) {
                 Class<? extends Collection> colClass = $.cast(valClass);
-                this.valueResolver = resolverManager.collectionResolver(colClass, (Class<?>)valSpec.typeParams().get(0), ',');
+                this.valueResolver = resolverManager.collectionResolver(colClass, (Class<?>) valSpec.typeParams().get(0), ',');
+            } else if (valClass.isArray()) {
+                this.valueResolver = resolverManager.arrayResolver(valClass, ',');
             } else {
                 this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valType, injector));
             }
