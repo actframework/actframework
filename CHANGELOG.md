@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.17**
+**1.8.17** 23/Dec/2018
 * UnexpectedException when submit a `Map<String, T>` type parameter with value as `null` #1027
 * Support static apibook generation #893
 * Morphia ObjectId not generate in api-book #1033
