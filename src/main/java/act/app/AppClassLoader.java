@@ -228,8 +228,16 @@ public class AppClassLoader
         }
     }
 
+    protected Set<String> libClasses() {
+        return libClsCache.keySet();
+    }
+
     protected void scan() {
-        scanByteCode(libClsCache.keySet(), bytecodeLookup);
+        scanByteCode(libClasses(), bytecodeLookup);
+    }
+
+    protected void scan(Set<String> libClasses) {
+        scanByteCode(libClasses, bytecodeLookup);
     }
 
     /**

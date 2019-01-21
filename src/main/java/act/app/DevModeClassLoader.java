@@ -132,9 +132,24 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     protected void scan() {
-        super.scan();
         compileSources();
-        scanSources();
+        Set<String> sourcesToBeScanned = findSourcesToBeScanned();
+        Set<String> libClasses = libClasses();
+        if (Act.profile().equalsIgnoreCase("test")) {
+            Set<String> toBeRemoved = new HashSet<>();
+            for (String s : libClasses) {
+                if (s.contains("$")) {
+                    String s0 = S.cut(s).beforeFirst("$");
+                    if (sourcesToBeScanned.contains(s0)) {
+                        toBeRemoved.add(s);
+                    }
+                }
+            }
+            libClasses.removeAll(toBeRemoved);
+        }
+        libClasses.removeAll(sourcesToBeScanned);
+        scan(libClasses);
+        scanSources(sourcesToBeScanned);
     }
 
     @Override
@@ -212,8 +227,8 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     }
 
-    private void scanSources() {
-        Timer timer = metric.startTimer("act:classload:scan:scanSources");
+    private Set<String> findSourcesToBeScanned() {
+        Timer timer = metric.startTimer("act:classload:scan:findScanSources");
         try {
             logger.debug("start to scan sources...");
             List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
@@ -245,6 +260,20 @@ public class DevModeClassLoader extends AppClassLoader {
                     }
                 }
             }
+            return classesNeedByteCodeScan;
+        } finally {
+            long ns = timer.ns();
+            timer.stop();
+            if (logger.isDebugEnabled()) {
+                logger.debug("it takes %sms to find %s sources to be scanned and their bytecodes", ns / (1000 * 1000), sources.size());
+            }
+        }
+    }
+
+    private void scanSources(Set<String> classesNeedByteCodeScan) {
+        Timer timer = metric.startTimer("act:classload:scan:scanSources");
+        try {
+            logger.debug("start to scan sources...");
 
             if (classesNeedByteCodeScan.isEmpty()) {
                 return;
