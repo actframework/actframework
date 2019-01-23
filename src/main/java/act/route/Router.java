@@ -719,13 +719,22 @@ public class Router extends AppHolderBase<Router> {
 
     private Node search(Node rootNode, Iterator<String> path, ActionContext context) {
         Node node = rootNode;
+        Node backup = null;
+        String backupPath = null;
+        List<String> pathBackup = null;
         if (node.terminateRouteSearch() && !context.urlPath().isBuiltIn()) {
             S.Buffer sb = S.buffer();
+            pathBackup = new ArrayList<>();
             while (path.hasNext()) {
-                sb.append('/').append(path.next());
+                String pathElement = path.next();
+                pathBackup.add(pathElement);
+                sb.append('/').append(pathElement);
             }
-            context.param(ParamNames.PATH, sb.toString());
-            return node;
+            backupPath = sb.toString();
+            backup = node;
+        }
+        if (null != pathBackup) {
+            path = pathBackup.iterator();
         }
         while (null != node && path.hasNext()) {
             String nodeName = path.next();
@@ -751,6 +760,10 @@ public class Router extends AppHolderBase<Router> {
                     break;
                 }
             }
+        }
+        if (null == node && null != backup) {
+            node = backup;
+            context.param(ParamNames.PATH, backupPath);
         }
         return node;
     }
