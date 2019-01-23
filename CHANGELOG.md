@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.18**
+* Allow load route configuration from `route.conf` file #1042
 * Allow keep searching route table even when a terminate node found #1041
 * act test failed in mvn could not see detail information #1040
 * mvn package will throw IllegalStateException #1039

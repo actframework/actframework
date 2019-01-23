@@ -116,7 +116,7 @@ public class App extends LogSupportedDestroyableBase {
         public static $.Predicate<String> JAVA_SOURCE = endsWith(".java");
         public static $.Predicate<String> JAR_FILE = endsWith(".jar");
         public static $.Predicate<String> CONF_FILE = endsWith(".conf").or(endsWith(".properties").or(endsWith(".yaml").or(endsWith(".yml").or(endsWith(".xml"))))).and(contains("main/resources/test").negate());
-        public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
+        public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE).or($.F.eq(RouteTableRouterBuilder.ROUTES_FILE2));
     }
 
     private volatile String profile;

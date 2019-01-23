@@ -103,6 +103,7 @@ public class RouteTableRouterBuilder implements RouterBuilder {
     private static AtomicInteger jobIdCounter = new AtomicInteger(0);
 
     public static final String ROUTES_FILE = "routes.conf";
+    public static final String ROUTES_FILE2 = "route.conf";
 
     private List<String> lines;
 
