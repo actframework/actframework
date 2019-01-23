@@ -804,6 +804,20 @@ public enum AppConfigKey implements ConfigKey {
     OSGL_THREADLOCAL_BUF_LIMIT("threadlocal_buf.limit"),
 
     /**
+     * `param_binding.keyword_matching` turn on/off keyword matching in HTTP param
+     * binding process.
+     *
+     * When this configuration is turned on the framework is able to do keyword matching
+     * to bind the HTTP parameter, e.g. when it declare to bind a parameter named `fooBar`,
+     * when request is sending with parameter named `foo_bar`, it can still finish the bind.
+     *
+     * **Note** turning on this configuration might cause performance degrade.
+     *
+     * Default value: `false`
+     */
+    PARAM_BINDING_KEYWORD_MATCHING("param_binding.keyword_matching.enabled"),
+
+    /**
      * `password.spec` specify default password spec which is used to
      * validate user password.
      *

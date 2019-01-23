@@ -2514,6 +2514,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean paramBindingKeywordMatching;
+
+    protected T paramBindingKeywordMatching(boolean enabled) {
+        paramBindingKeywordMatching = enabled;
+        return me();
+    }
+
+    public boolean paramBindingKeywordMatching() {
+        if (null == paramBindingKeywordMatching) {
+            paramBindingKeywordMatching = get(PARAM_BINDING_KEYWORD_MATCHING, false);
+        }
+        return paramBindingKeywordMatching;
+    }
+
+    private void _mergeParamBindingKeywordMatching(AppConfig config) {
+        if (!hasConfiguration(PARAM_BINDING_KEYWORD_MATCHING)) {
+            paramBindingKeywordMatching = config.paramBindingKeywordMatching;
+        }
+    }
+
     private boolean pingPathResolved = false;
     private String pingPath = null;
 
