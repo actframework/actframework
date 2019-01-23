@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.18**
+* act test failed in mvn could not see detail information #1040
 * mvn package will throw IllegalStateException #1039
 
 **1.8.17** 23/Dec/2018

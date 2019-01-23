@@ -400,6 +400,16 @@ public class Scenario implements ScenarioPart {
         }
         boolean pass = (!reset || reset()) && run();
         this.status = TestStatus.of(pass);
+        if (TestStatus.FAIL == this.status) {
+            for (Interaction interaction : this.interactions) {
+                if (interaction.status == TestStatus.FAIL) {
+                    this.errorMessage = "Interaction[" + interaction.description + "] fail: " + interaction.errorMessage;
+                    if (interaction.cause != null && !(interaction.cause instanceof ErrorMessage)) {
+                        this.cause = interaction.cause;
+                    }
+                }
+            }
+        }
     }
 
     public void clearSession() {

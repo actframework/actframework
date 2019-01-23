@@ -161,7 +161,7 @@ public class Test extends LogSupport {
                 } catch (IllegalArgumentException e) {
                     if (e.getMessage().contains("Cannot find out Dao for model type")) {
                         // ignore - must be caused by MappedSuperClass
-                        logger.debug(e, "error getting dao for %s", entityClass);
+                        debug(e, "error getting dao for %s", entityClass);
                         continue;
                     }
                 }
@@ -282,6 +282,20 @@ public class Test extends LogSupport {
                 }
             }
             Collections.sort(list, new ScenarioComparator(scenarioManager, true));
+            if (shutdownApp) {
+                for (Scenario scenario : list) {
+                    if (scenario.status == TestStatus.FAIL) {
+                        error("-----------------------------------------------------------");
+                        error("[%s] Failed", scenario.name);
+                        if (S.notBlank(scenario.errorMessage)) {
+                            error("error: " + scenario.errorMessage);
+                        }
+                        if (null != scenario.cause) {
+                            error("cause: \n" + E.stackTrace(scenario.cause));
+                        }
+                    }
+                }
+            }
             return list;
         } catch (Exception e) {
             exitCode = -1;
