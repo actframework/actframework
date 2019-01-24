@@ -20,8 +20,10 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.Keyword;
 import org.rythmengine.utils.S;
 
 import java.util.Arrays;
@@ -34,11 +36,18 @@ class ParamKey {
     static final ParamKey ROOT_KEY = new ParamKey(new String[0]);
 
     private String[] seq;
+    private Keyword[] keywordSeq;
     private int hc;
     private int size;
     private ParamKey(String[] seq) {
         this.seq = seq;
         this.size = seq.length;
+        if (Act.appConfig().paramBindingKeywordMatching()) {
+            keywordSeq = new Keyword[seq.length];
+            for (int i = 0; i < seq.length; ++i) {
+                keywordSeq[i] = Keyword.of(seq[i]);
+            }
+        }
         calcHashCode();
     }
     private ParamKey(String one) {
@@ -52,7 +61,15 @@ class ParamKey {
         if (obj == this) {
             return true;
         }
-        return obj instanceof ParamKey && Arrays.equals(((ParamKey) obj).seq, seq);
+        if (obj instanceof ParamKey) {
+            ParamKey that = (ParamKey) obj;
+            if (null != keywordSeq) {
+                return Arrays.equals(keywordSeq, that.keywordSeq);
+            } else {
+                return Arrays.equals(seq, that.seq);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -105,7 +122,7 @@ class ParamKey {
     }
 
     private void calcHashCode() {
-        this.hc = $.hc(seq);
+        this.hc = null == keywordSeq ? $.hc(seq) : $.hc(keywordSeq);
     }
 
     static ParamKey of(String[] seq) {

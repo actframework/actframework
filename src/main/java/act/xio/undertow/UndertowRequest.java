@@ -65,6 +65,8 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     private HttpServerExchange hse;
     private byte[] body;
     private Map<String, Deque<String>> queryParams;
+    private Map<Keyword, Deque<String>> queryParamsByKeyword;
+    private boolean keywordMatching;
     private Map<HttpString, String> headerCache = new HashMap<>();
 
     public UndertowRequest(HttpServerExchange exchange, AppConfig config) {
@@ -72,6 +74,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         E.NPE(exchange);
         hse = exchange;
         headerOverwrite = config.allowHeaderOverwrite();
+        keywordMatching = config.paramBindingKeywordMatching();
     }
 
     @Override
@@ -158,19 +161,13 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public String paramVal(String name) {
-        if (null == queryParams) {
-            queryParams = hse.getQueryParameters();
-        }
-        Deque<String> dq = queryParams.get(name);
+        Deque<String> dq = queryParamVals(name);
         return null == dq ? null : dq.peekFirst();
     }
 
     @Override
     public String[] paramVals(String name) {
-        if (null == queryParams) {
-            queryParams = hse.getQueryParameters();
-        }
-        Deque<String> deque = queryParams.get(name);
+        Deque<String> deque = queryParamVals(name);
         if (null == deque) {
             return null;
         }
@@ -181,10 +178,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public Iterable<String> paramNames() {
-        if (null == queryParams) {
-            queryParams = hse.getQueryParameters();
-        }
-        return queryParams.keySet();
+        return queryParams().keySet();
     }
 
     public void closeAndDrainRequest() {
@@ -242,6 +236,24 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     HttpServerExchange exchange() {
         return hse;
+    }
+
+    private Map<String, Deque<String>> queryParams() {
+        if (null == queryParams) {
+            queryParams = hse.getQueryParameters();
+            if (keywordMatching) {
+                queryParamsByKeyword = new HashMap<>();
+                for (Map.Entry<String, Deque<String>> entry : queryParams.entrySet()) {
+                    queryParamsByKeyword.put(Keyword.of(entry.getKey()), entry.getValue());
+                }
+            }
+        }
+        return queryParams;
+    }
+
+    private Deque<String> queryParamVals(String name) {
+        queryParams();
+        return keywordMatching ? queryParamsByKeyword.get(Keyword.of(name)) : queryParams.get(name);
     }
 
     public static void main(String[] args) {
