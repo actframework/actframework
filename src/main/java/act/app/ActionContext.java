@@ -29,8 +29,7 @@ import act.controller.ResponseCache;
 import act.controller.captcha.CaptchaViolation;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
-import act.event.ActEvent;
-import act.event.SystemEvent;
+import act.event.*;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
@@ -1218,16 +1217,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public void login(Object userIdentifier) {
         session().put(config().sessionKeyUsername(), userIdentifier);
+        app().eventBus().trigger(new LoginEvent(userIdentifier.toString()));
     }
 
     /**
      * Login the user and redirect back to original URL
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      */
-    public void loginAndRedirectBack(String username) {
-        login(username);
+    public void loginAndRedirectBack(Object userIdentifier) {
+        login(userIdentifier);
         RedirectToLoginUrl.redirectToOriginalUrl(this);
     }
 
@@ -1235,26 +1235,26 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * Login the user and redirect back to original URL. If no
      * original URL found then redirect to `defaultLandingUrl`.
      *
-     * @param username
-     *         The username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      * @param defaultLandingUrl
      *         the URL to be redirected if original URL not found
      */
-    public void loginAndRedirectBack(String username, String defaultLandingUrl) {
-        login(username);
+    public void loginAndRedirectBack(Object userIdentifier, String defaultLandingUrl) {
+        login(userIdentifier);
         RedirectToLoginUrl.redirectToOriginalUrl(this, defaultLandingUrl);
     }
 
     /**
      * Login the user and redirect to specified URL
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      * @param url
      *         the URL to be redirected to
      */
-    public void loginAndRedirect(String username, String url) {
-        login(username);
+    public void loginAndRedirect(Object userIdentifier, String url) {
+        login(userIdentifier);
         throw redirect(url);
     }
 
@@ -1263,8 +1263,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * the session will be cleared
      */
     public void logout() {
+        String userIdentifier = session.get(config().sessionKeyUsername());
         SessionManager sessionManager = app().sessionManager();
         sessionManager.logout(session);
+        if (S.notBlank(userIdentifier)) {
+            app().eventBus().trigger(new LogoutEvent(userIdentifier));
+        }
     }
 
     /**

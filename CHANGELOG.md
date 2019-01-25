@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.18**
+* Send out Login and Logout event #1043
 * Support `Keyword` matching for param binding of incoming request #972
 * Allow load route configuration from `route.conf` file #1042
 * Allow keep searching route table even when a terminate node found #1041
