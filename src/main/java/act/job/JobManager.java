@@ -92,7 +92,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public <T> Future<T> now(String jobId, final Callable<T> callable) {
-        final Job job = wrap(jobId, callable);
+        final Job job = wrap(jobId, callable, false);
         return executor().submit(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -122,7 +122,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public void now(String jobId, Runnable runnable, boolean sysJob) {
-        executor().submit(wrap(jobId, runnable, sysJob));
+        executor().submit(wrap(jobId, runnable, sysJob, false));
     }
 
     public String now($.Function<ProgressGauge, ?> worker) {
@@ -130,7 +130,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public String now(String jobId, $.Function<ProgressGauge, ?> worker) {
-        Job job = wrap(jobId, worker);
+        Job job = wrap(jobId, worker, false);
         executor().submit(job);
         return job.id();
     }
@@ -144,12 +144,12 @@ public class JobManager extends AppServiceBase<JobManager> {
      * @return the job ID allocated
      */
     public String prepare($.Function<ProgressGauge, ?> worker) {
-        Job job = wrap(worker);
+        Job job = wrap(worker, false);
         return job.id();
     }
 
     public void prepare(String jobId, $.Function<ProgressGauge, ?> worker) {
-        wrap(jobId, worker);
+        wrap(jobId, worker, false);
     }
 
     /**
@@ -167,7 +167,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public void delay(Runnable runnable, long delay, TimeUnit timeUnit) {
-        executor().schedule(wrap(runnable), delay, timeUnit);
+        executor().schedule(wrap(runnable, false), delay, timeUnit);
     }
 
     public <T> Future<T> delay(Callable<T> callable, String delay) {
@@ -177,7 +177,7 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     public void delay(Runnable runnable, String delay) {
         int seconds = parseTime(delay);
-        executor().schedule(wrap(runnable), seconds, TimeUnit.SECONDS);
+        executor().schedule(wrap(runnable, false), seconds, TimeUnit.SECONDS);
     }
 
     public void every(String id, Runnable runnable, String interval) {
@@ -226,7 +226,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
-        executor().schedule(wrap(runnable), seconds.getSeconds(), TimeUnit.SECONDS);
+        executor().schedule(wrap(runnable, false), seconds.getSeconds(), TimeUnit.SECONDS);
     }
 
     public <T> Future<T> on(DateTime instant, Callable<T> callable) {
@@ -254,7 +254,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     public void post(SysEventId sysEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         Job job = jobById(sysEventJobId(sysEvent), false);
         if (null == job) {
-            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable, runImmediatelyIfEventDispatched), runImmediatelyIfEventDispatched);
         } else {
             job.addFollowingJob(Job.once(runnable, this));
         }
@@ -274,7 +274,7 @@ public class JobManager extends AppServiceBase<JobManager> {
             if (traceEnabled) {
                 LOGGER.trace("process delayed job: %s", jobId);
             }
-            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable, runImmediatelyIfEventDispatched), runImmediatelyIfEventDispatched);
         } else {
             if (traceEnabled) {
                 LOGGER.trace("schedule job: %s", jobId);
@@ -290,7 +290,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     public void post(SysEventId sysEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
-            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable, runImmediatelyIfEventDispatched), runImmediatelyIfEventDispatched);
         } else {
             job.addFollowingJob(Job.once(jobId, runnable, this));
         }
@@ -299,7 +299,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     public void alongWith(SysEventId sysEvent, String jobId, final Runnable runnable) {
         Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
-            processDelayedJob(wrap(runnable), false);
+            processDelayedJob(wrap(runnable, false), false);
         } else {
             job.addParallelJob(Job.once(jobId, runnable, this));
         }
@@ -485,43 +485,40 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    private Job wrap(Runnable runnable) {
-        return wrap(randomJobId(), runnable, false);
+    private Job wrap(Runnable runnable, boolean runImmediately) {
+        return wrap(randomJobId(), runnable, false, runImmediately);
     }
 
-    private Job wrap(String name, Runnable runnable, boolean sysJob) {
-        Job job = new ContextualJob(name, runnable);
+    private Job wrap(String name, Runnable runnable, boolean sysJob, boolean runImmediately) {
+        Job job = new ContextualJob(name, runnable, runImmediately);
         if (sysJob) {
             job.markAsSysJob();
         }
         return job;
     }
 
-    private Job wrap(Callable callable) {
-        return new ContextualJob(randomJobId(), callable);
+    private Job wrap(String name, Callable callable, boolean runImmediate) {
+        return new ContextualJob(name, callable, runImmediate);
     }
 
-    private Job wrap(String name, Callable callable) {
-        return new ContextualJob(name, callable);
+    private Job wrap($.Function<ProgressGauge, ?> worker, boolean runImmediate) {
+        return new ContextualJob(randomJobId(), worker, runImmediate);
     }
 
-    private Job wrap($.Function<ProgressGauge, ?> worker) {
-        return new ContextualJob(randomJobId(), worker);
-    }
-
-    private Job wrap(String name, $.Function<ProgressGauge, ?> worker) {
-        return new ContextualJob(name, worker);
+    private Job wrap(String name, $.Function<ProgressGauge, ?> worker, boolean runImmediate) {
+        return new ContextualJob(name, worker, runImmediate);
     }
 
     private class ContextualJob extends Job {
 
-        private JobContext origin_ = JobContext.copy();
+        private JobContext origin_;
 
-        ContextualJob(String id, final Callable<?> callable) {
+        ContextualJob(String id, final Callable<?> callable, boolean sync) {
             super(id, JobManager.this, callable);
+            origin_ = JobContext.copy(sync);
         }
 
-        ContextualJob(final String id, final Runnable runnable) {
+        ContextualJob(final String id, final Runnable runnable, boolean sync) {
             super(id, JobManager.this, new $.F0() {
                 @Override
                 public Object apply() throws NotAppliedException, $.Break {
@@ -529,11 +526,13 @@ public class JobManager extends AppServiceBase<JobManager> {
                     return null;
                 }
             }, true);
+            origin_ = JobContext.copy(sync);
             ensureMailerContext();
         }
 
-        ContextualJob(String id, final $.Function<ProgressGauge, ?> worker) {
+        ContextualJob(String id, final $.Function<ProgressGauge, ?> worker, boolean sync) {
             super(id, JobManager.this, worker);
+            origin_ = JobContext.copy(sync);
             ensureMailerContext();
         }
 

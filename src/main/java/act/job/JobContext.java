@@ -40,7 +40,6 @@ import java.util.Set;
 public class JobContext extends ActContext.Base<JobContext> {
 
     private static ThreadLocal<JobContext> current_ = new ThreadLocal<JobContext>();
-
     private JobContext parent;
 
     private JobContext(JobContext parent) {
@@ -180,9 +179,9 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Make a copy of JobContext of current thread
      * @return the copy of current job context or an empty job context
      */
-    static JobContext copy() {
-        JobContext ctxt = new JobContext(null);
+    static JobContext copy(boolean keepParent) {
         JobContext current = current_.get();
+        JobContext ctxt = new JobContext(keepParent ? current : null);
         if (null != current) {
             ctxt.bag_.putAll(current.bag_);
         }
