@@ -539,12 +539,11 @@ public class JobManager extends AppServiceBase<JobManager> {
         @Override
         protected void _before() {
             // copy the JobContext of parent thread into the current thread
-            JobContext.init(origin_);
+            JobContext.loadFromOrigin(origin_);
         }
 
         @Override
         protected void _finally() {
-            JobContext.clear();
             removeJob(this);
         }
 

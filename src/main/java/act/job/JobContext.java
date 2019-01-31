@@ -192,8 +192,7 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Initialize current thread's JobContext using specified copy
      * @param origin the original job context
      */
-    static void init(JobContext origin) {
-        current_.set(origin);
+    static void loadFromOrigin(JobContext origin) {
         if (origin.bag_.isEmpty()) {
             return;
         }

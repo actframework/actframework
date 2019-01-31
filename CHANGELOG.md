@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.18**
+* ContextualJob cause JobContext get cleared twice #1046
 * JobContext lost when invoking another job #1044
 * Send out Login and Logout event #1043
 * Support `Keyword` matching for param binding of incoming request #972
