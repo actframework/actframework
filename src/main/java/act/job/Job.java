@@ -396,7 +396,7 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     protected void doJob(){
-        JobContext.init();
+        JobContext.init(id());
         try {
             _before();
             if (null != worker) {

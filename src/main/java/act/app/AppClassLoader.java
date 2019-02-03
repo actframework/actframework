@@ -592,7 +592,7 @@ public class AppClassLoader
     }
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
-        if (!isSystemClass(className)) return bytecode;
+        if (isSystemClass(className)) return bytecode;
         $.Var<ClassWriter> cw = $.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
@@ -714,7 +714,15 @@ public class AppClassLoader
     }
 
     public static boolean isSystemClass(String name) {
-        boolean sys = name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("com.google") || name.startsWith("org.apache") || name.startsWith("org.springframework") || name.startsWith("sun.") || name.startsWith("org.osgl.") || name.startsWith("osgl.");
-        return !sys;
+        boolean sys = name.startsWith("java.")
+                || name.startsWith("javax.")
+                || name.startsWith("com.google.")
+                || name.startsWith("org.apache.")
+                || name.startsWith("org.springframework.")
+                || name.startsWith("sun.")
+                || name.startsWith("com.sun.")
+                || name.startsWith("org.osgl.")
+                || name.startsWith("osgl.");
+        return sys;
     }
 }

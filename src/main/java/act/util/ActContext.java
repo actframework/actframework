@@ -270,7 +270,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private int fieldOutputVarCount;
         private boolean noTemplateCache;
         private volatile SimpleProgressGauge progress;
-        private String jobId;
+        protected String jobId;
         private Method handlerMethod;
         private Method currentMethod;
         private String pattern;

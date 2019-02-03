@@ -185,7 +185,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                 try {
                     CliContext context = new CliContext(line, app, console, this);
                     cliContext = context;
-                    JobContext.init();
+                    JobContext.init(id());
                     context.handle();
                 } catch ($.Break b) {
                     Object payload = b.get();

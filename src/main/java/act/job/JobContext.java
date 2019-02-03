@@ -44,7 +44,7 @@ public class JobContext extends ActContext.Base<JobContext> {
 
     private JobContext(JobContext parent) {
         super(App.instance());
-        current_.set(this);
+        //current_.set(this);
         this.parent = parent;
         if (null != parent) {
             bag_.putAll(parent.bag_);
@@ -60,6 +60,11 @@ public class JobContext extends ActContext.Base<JobContext> {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "job[" + jobId + "]";
     }
 
     private static Map<String, Object> m() {
@@ -112,9 +117,13 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Init JobContext of current thread
      */
     // make it public for CLI interaction to reuse JobContext
-    public static void init() {
+    public static void init(String jobId) {
         JobContext parent = current_.get();
         JobContext ctx = new JobContext(parent);
+        current_.set(ctx);
+        // don't call setJobId(String)
+        // as it will trigger listeners -- TODO fix me
+        ctx.jobId = jobId;
         if (null == parent) {
             Act.eventBus().trigger(new JobContextInitialized(ctx));
         }
@@ -130,6 +139,7 @@ public class JobContext extends ActContext.Base<JobContext> {
             JobContext parent = ctx.parent;
             if (null != parent) {
                 current_.set(parent);
+                ctx.parent = null;
             } else {
                 current_.remove();
                 Act.eventBus().trigger(new JobContextDestroyed(ctx));
@@ -179,9 +189,10 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Make a copy of JobContext of current thread
      * @return the copy of current job context or an empty job context
      */
-    static JobContext copy(boolean keepParent) {
+    static JobContext copy() {
         JobContext current = current_.get();
-        JobContext ctxt = new JobContext(keepParent ? current : null);
+        //JobContext ctxt = new JobContext(keepParent ? current : null);
+        JobContext ctxt = new JobContext(null);
         if (null != current) {
             ctxt.bag_.putAll(current.bag_);
         }
