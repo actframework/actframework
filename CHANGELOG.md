@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.18**
+**1.8.18** 04/Feb/2019
 * Fix JobContext init logic
 * Error enhancing bytecode at com.sun.mail.util.logging.MailHandler::publish() #1048
 * ContextualJob cause JobContext get cleared twice #1046
