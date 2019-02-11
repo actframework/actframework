@@ -902,7 +902,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             final List<Router> routers = new ArrayList<>();
             final App app = app();
             if (null == ports || ports.length == 0) {
-                if (app().hasMoreRouters()) {
+                if (!methodNames.isEmpty() && app().hasMoreRouters()) {
                     String className = classInfo.className();
                     for (String methodName : methodNames) {
                         Router routerX = app.getRouterFor(className, methodName);

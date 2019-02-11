@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.19**
+* `@WsEndpoint` annotation now failed to register route #1050
+
 **1.8.18** 04/Feb/2019
 * Fix JobContext init logic
 * Error enhancing bytecode at com.sun.mail.util.logging.MailHandler::publish() #1048
