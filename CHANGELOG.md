@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.19**
+* Route information missed in API doc for dynamic aliases #1052
+* command `route.print -t` triggers error #1053
 * `@WsEndpoint` annotation now failed to register route #1050
 
 **1.8.18** 04/Feb/2019

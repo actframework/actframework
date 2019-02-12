@@ -53,7 +53,7 @@ import java.util.regex.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.constraints.NotNull;
 
-public class Router extends AppHolderBase<Router> {
+public class Router extends AppHolderBase<Router> implements TreeNode {
 
     public static final String PORT_DEFAULT = "default";
 
@@ -145,6 +145,26 @@ public class Router extends AppHolderBase<Router> {
         appConfig = null;
     }
 
+    @Override
+    public String id() {
+        return S.blank(portId) ? "default" : portId;
+    }
+
+    @Override
+    public String label() {
+        return S.concat("Router[", id(), "]");
+    }
+
+    @Override
+    public List<TreeNode> children() {
+        List<TreeNode> l = new ArrayList<>();
+        l.add(_GET);
+        l.add(_POST);
+        l.add(_PUT);
+        l.add(_DEL);
+        return l;
+    }
+
     public String portId() {
         return portId;
     }
@@ -204,11 +224,8 @@ public class Router extends AppHolderBase<Router> {
             }
             visitor.visit(method, node.path(), node.routeSource, handler);
         }
-        for (Node child : node.dynamicChilds) {
-            visit(child, method, visitor);
-        }
-        for (Node child : node.staticChildren.values()) {
-            visit(child, method, visitor);
+        for (TreeNode child : node.children()) {
+            visit((Node)child, method, visitor);
         }
     }
 
@@ -258,7 +275,7 @@ public class Router extends AppHolderBase<Router> {
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
-            for (Node targetNode : node.dynamicChilds) {
+            for (Node targetNode : node.dynamicChildren) {
                 if (Node.MATCH_ALL == targetNode.patternTrait || targetNode.pattern.matcher("").matches()) {
                     return getInvokerFrom(targetNode);
                 }
@@ -920,7 +937,7 @@ public class Router extends AppHolderBase<Router> {
         private Node root;
         private Node parent;
         private transient Node conflictNode;
-        private List<Node> dynamicChilds = new ArrayList<>();
+        private List<Node> dynamicChildren = new ArrayList<>();
         private Map<String, Node> staticChildren = new HashMap<>();
         private Map<Keyword, Node> keywordMatchingChildren = new HashMap<>();
         private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
@@ -1026,7 +1043,7 @@ public class Router extends AppHolderBase<Router> {
                     nodes.add(staticNode);
                     continue;
                 }
-                for (Node dynamicNode : parentConflictNode.dynamicChilds) {
+                for (Node dynamicNode : parentConflictNode.dynamicChildren) {
                     if (metaInfoConflict(dynamicNode.name)) {
                         nodes.add(dynamicNode);
                     }
@@ -1058,8 +1075,19 @@ public class Router extends AppHolderBase<Router> {
         @Override
         @SuppressWarnings("unchecked")
         public List<TreeNode> children() {
-            C.List<TreeNode> list = (C.List) C.list(staticChildren.values());
-            return list.append(dynamicChilds);
+            Set<Node> set = new HashSet<>();
+            set.addAll(staticChildren.values());
+            set.addAll(dynamicChildren);
+            List<TreeNode> list = new ArrayList<>();
+            list.addAll(set);
+            for (Node node : set) {
+                for (Node alias : node.dynamicAliases.values()) {
+                    if (!set.contains(alias)) {
+                        list.add(alias);
+                    }
+                }
+            }
+            return list;
         }
 
         public Node child(String name, ActionContext context) {
@@ -1073,9 +1101,9 @@ public class Router extends AppHolderBase<Router> {
                     return node;
                 }
             }
-            if (!dynamicChilds.isEmpty()) {
+            if (!dynamicChildren.isEmpty()) {
                 UrlPath path = context.urlPath();
-                for (Node targetNode : dynamicChilds) {
+                for (Node targetNode : dynamicChildren) {
                     for (Map.Entry<UrlPath, Node> entry : targetNode.dynamicAliases.entrySet()) {
                         if (entry.getKey().equals(path)) {
                             targetNode = entry.getValue();
@@ -1126,7 +1154,7 @@ public class Router extends AppHolderBase<Router> {
 
         @Override
         public String label() {
-            StringBuilder sb = S.newBuilder(name);
+            StringBuilder sb = S.newBuilder(null == name ? "~" + keyword.dashed() + "~" : name);
             if (null != handler) {
                 sb.append(" -> ").append(RouteInfo.compactHandler(handler.toString()));
             }
@@ -1138,7 +1166,7 @@ public class Router extends AppHolderBase<Router> {
             if (null != handler) {
                 handler.destroy();
             }
-            Destroyable.Util.destroyAll(dynamicChilds, ApplicationScoped.class);
+            Destroyable.Util.destroyAll(dynamicChildren, ApplicationScoped.class);
             Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
         }
@@ -1154,8 +1182,8 @@ public class Router extends AppHolderBase<Router> {
                     return node;
                 }
             }
-            if (!dynamicChilds.isEmpty()) {
-                for (Node targetNode : dynamicChilds) {
+            if (!dynamicChildren.isEmpty()) {
+                for (Node targetNode : dynamicChildren) {
                     if (targetNode.metaInfoMatchesExactly(name)) {
                         return targetNode;
                     }
@@ -1165,8 +1193,8 @@ public class Router extends AppHolderBase<Router> {
         }
 
         Node childByMetaInfoConflictMatching(String name) {
-            if (!dynamicChilds.isEmpty()) {
-                for (Node targetNode : dynamicChilds) {
+            if (!dynamicChildren.isEmpty()) {
+                for (Node targetNode : dynamicChildren) {
                     if (targetNode.metaInfoConflict(name)) {
                         return targetNode;
                     }
@@ -1205,7 +1233,7 @@ public class Router extends AppHolderBase<Router> {
             child.conflictNode = conflictNode;
             if (child.isDynamic()) {
                 boolean isAlias = false;
-                for (Node targetNode : dynamicChilds) {
+                for (Node targetNode : dynamicChildren) {
                     if (S.eq(targetNode.patternTrait, child.patternTrait)) {
                         targetNode.dynamicAliases.put(UrlPath.of(path), child);
                         targetNode.dynamicReverseAliases.put(action, child);
@@ -1216,9 +1244,9 @@ public class Router extends AppHolderBase<Router> {
                 if (!isAlias) {
                     child.dynamicAliases.put(UrlPath.of(path), child);
                     child.dynamicReverseAliases.put(action, child);
-                    dynamicChilds.add(child);
+                    dynamicChildren.add(child);
                 }
-                Collections.sort(dynamicChilds);
+                Collections.sort(dynamicChildren);
                 return child;
             } else {
                 staticChildren.put(name, child);
@@ -1257,7 +1285,7 @@ public class Router extends AppHolderBase<Router> {
             for (Node node : staticChildren.values()) {
                 node.debug(method, ps);
             }
-            for (Node node : dynamicChilds) {
+            for (Node node : dynamicChildren) {
                 node.debug(method, ps);
             }
         }
@@ -1269,7 +1297,7 @@ public class Router extends AppHolderBase<Router> {
             for (Node node : staticChildren.values()) {
                 node.debug(method, routes);
             }
-            for (Node node : dynamicChilds) {
+            for (Node node : dynamicChildren) {
                 node.debug(method, routes);
             }
         }
