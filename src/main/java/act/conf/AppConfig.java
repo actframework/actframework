@@ -2471,7 +2471,33 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return CONTROLLER_CLASS_TESTER;
     }
 
-    private TemplatePathResolver templatePathResolver = null;
+    private Integer testTimeout;
+
+    protected T testTimeout(int timeout) {
+        if (timeout < 10) {
+            logger.warn("test.timeout reset to minimum value: 10");
+            timeout = 10;
+        }
+        testTimeout = timeout;
+        return me();
+    }
+
+    public int testTimeout() {
+        if (null == testTimeout) {
+            int defTimeout = ("e2e".equalsIgnoreCase(Act.profile()) || "test".equalsIgnoreCase(Act.profile())) ? 10 : 60 * 60;
+            testTimeout = get(TEST_TIMEOUT, defTimeout);
+            this.testTimeout(testTimeout); // make sure we have a valid number
+        }
+        return testTimeout;
+    }
+
+    private void _mergeTestTimeout(AppConfig conf) {
+        if (!hasConfiguration(TEST_TIMEOUT)) {
+            testTimeout = conf.testTimeout;
+        }
+    }
+
+    private TemplatePathResolver templatePathResolver;
 
     protected T templatePathResolver(TemplatePathResolver resolver) {
         E.NPE(resolver);

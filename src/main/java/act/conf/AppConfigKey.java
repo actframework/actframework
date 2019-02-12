@@ -1202,6 +1202,13 @@ public enum AppConfigKey implements ConfigKey {
     TEMPLATE_HOME("template.home"),
 
     /**
+     * `test.timeout` specifies automate test http agent timeout in seconds
+     *
+     * Default value: 60 * 60 (i.e. 1 hour) in dev mode, 10 in automate test mode
+     */
+    TEST_TIMEOUT("test.timeout"),
+
+    /**
      * `trace.handler.enabled` turn on/off handle invocation calls.
      *
      * When this configuration is turned on, every call to the

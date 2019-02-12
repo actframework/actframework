@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.19**
+* Allow app to configure automate test http request timeout #1051
 * Error enhancing class with `@Data` annotation #1049
 * action method parameter cache #1054
 * Route information missed in API doc for dynamic aliases #1052

@@ -495,7 +495,7 @@ public class Scenario implements ScenarioPart {
     }
 
     private void prepareHttp() {
-        long timeout = ("e2e".equalsIgnoreCase(Act.profile()) || "test".equalsIgnoreCase(Act.profile())) ? 10 : 60 * 60;
+        long timeout = app.config().testTimeout();
         http = new OkHttpClient.Builder()
                 .cookieJar(cookieStore())
                 .connectTimeout(timeout, TimeUnit.SECONDS)
