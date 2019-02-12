@@ -193,6 +193,10 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
         Type host = metaInfo.type();
         List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
         int fieldCount = fieldCount(fields);
+        boolean shouldCallSuper = shouldCallSuper(fieldCount);
+        if (shouldCallSuper) {
+            fieldCount++;
+        }
         if (fieldCount < 6) {
             int cnt = 0;
             for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
@@ -201,7 +205,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                     cnt++;
                 }
             }
-            if (shouldCallSuper(fieldCount)) {
+            if (shouldCallSuper) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
@@ -223,7 +227,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", true);
                 mv.visitInsn(POP);
             }
-            if (shouldCallSuper(fieldCount)) {
+            if (shouldCallSuper) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
