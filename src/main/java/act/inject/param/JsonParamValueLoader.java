@@ -45,28 +45,23 @@ class JsonParamValueLoader implements ParamValueLoader {
     private ParamValueLoader fallBack;
     private BeanSpec spec;
     private Provider defValProvider;
-    private boolean isPathVariable;
 
     JsonParamValueLoader(ParamValueLoader fallBack, BeanSpec spec, DependencyInjector<?> injector) {
         this.fallBack = $.requireNotNull(fallBack);
         this.spec = $.requireNotNull(spec);
         this.defValProvider = findDefValProvider(spec, injector);
         ActionContext ctx = ActionContext.current();
-        if (null != ctx) {
-            isPathVariable = ctx.isPathVar(spec.name());
-        }
     }
 
     private JsonParamValueLoader(JsonParamValueLoader parent, Class runtimeType) {
         this.fallBack = parent.fallBack.wrapWithRuntimeType(runtimeType);
         this.spec = parent.spec;
         this.defValProvider = parent.defValProvider;
-        this.isPathVariable = parent.isPathVariable;
     }
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        if (isPathVariable) {
+        if (context instanceof ActionContext && ((ActionContext)context).isPathVar(spec.name())) {
             return fallBack.load(bean, context, noDefaultValue);
         }
         JsonDto dto = context.attribute(JsonDto.CTX_ATTR_KEY);
