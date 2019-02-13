@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.19**
+* Update dependency versions
 * Test yaml - variable not evaluated when putting in an array #1055
 * Allow app to configure automate test http request timeout #1051
 * Error enhancing class with `@Data` annotation #1049
