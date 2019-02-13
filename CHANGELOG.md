@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.19**
+**1.8.19** 13/Feb/2019
 * Update dependency versions
 * Test yaml - variable not evaluated when putting in an array #1055
 * Allow app to configure automate test http request timeout #1051
