@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.16.0</version>
+  <version>1.8.19.0</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
@@ -39,6 +39,12 @@
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>
       <version>[4.1.12,)</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>27.0.1-jre</version>
+      <type>bundle</type>
     </dependency>
   </dependencies>
 
