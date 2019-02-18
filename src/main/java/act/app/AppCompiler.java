@@ -24,7 +24,7 @@ import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 
 import act.Act;
 import act.conf.AppConfig;
-import act.metric.Metric;
+import act.metric.*;
 import act.metric.Timer;
 import act.util.LogSupportedDestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -60,7 +60,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
         this.classLoader = classLoader;
         this.app = classLoader.app();
         this.conf = app.config();
-        this.metric = Act.metricPlugin().metric("act.classload.compile");
+        this.metric = Act.metricPlugin().metric(MetricInfo.CLASS_LOADING);
         configureCompilerOptions();
     }
 

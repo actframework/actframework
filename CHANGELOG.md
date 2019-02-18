@@ -1,5 +1,10 @@
 # ActFramework Change Log
 
+**1.8.20**
+* API book - Module name shall include enclosing class #1059
+* API doc - line breaks in param description get removed #1060
+* metric command stop working #1058
+
 **1.8.19** 13/Feb/2019
 * Update dependency versions
 * Test yaml - variable not evaluated when putting in an array #1055

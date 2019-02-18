@@ -28,7 +28,7 @@
                             <span if={ defaultValue }>{ defaultValue }</span>
                             <span if={ !defaultValue }>N/A</span>
                         </td>
-                        <td>{ description }</td>
+                        <td><pre>{ description }</pre></td>
                     </tr>
                     </tbody>
                 </table>
@@ -96,6 +96,11 @@
         td {
             font-weight: 300;
             padding-bottom: 0;
+            vertical-align: top;
+        }
+
+        td:not(:first-child) {
+            font-family: monospace;
         }
 
         td:first-child, th:first-child {
@@ -107,6 +112,10 @@
 
         td:last-child, th:last-child {
             width: 100%;
+        }
+
+        td pre {
+            margin-top: 0;
         }
 
         div.endpoint {

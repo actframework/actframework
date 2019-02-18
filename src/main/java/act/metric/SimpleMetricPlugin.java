@@ -49,7 +49,7 @@ public class SimpleMetricPlugin implements MetricPlugin {
         }
         Logger logger = enabledMap.get(name);
         if (null == logger) {
-            logger = LogManager.get("metric." + name);
+            logger = LogManager.get("act.metric." + name);
             enabledMap.put(name, logger);
         }
         return logger.isTraceEnabled() ? metric() : Metric.NULL_METRIC;

@@ -100,7 +100,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
 
         public void setDescription(String description) {
-            this.description = description;
+            this.description = description.replaceAll("\\n\\s+","\n");
         }
 
         public boolean isRequired() {
@@ -367,6 +367,11 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     private String inferModule(Class<?> controllerClass) {
+        Class<?> enclosingClass = controllerClass.getEnclosingClass();
+        if (null != enclosingClass) {
+            String enclosingModule = inferModule(enclosingClass);
+            return S.concat(enclosingModule, ".", controllerClass.getSimpleName());
+        }
         return controllerClass.getSimpleName();
     }
 

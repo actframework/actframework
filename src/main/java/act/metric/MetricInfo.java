@@ -26,6 +26,7 @@ public class MetricInfo {
 
     public static final String HTTP_HANDLER = "act:http";
     public static final String CLASS_LOADING = "act:classload";
+    public static final String COMPILING = CLASS_LOADING + Metric.PATH_SEPARATOR + "compile";
     public static final String JOB_HANDLER = "act:job";
     public static final String CLI_HANDLER = "act:cli";
     public static final String MAILER = "act:mail";

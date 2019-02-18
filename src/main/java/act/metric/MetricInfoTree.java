@@ -161,14 +161,14 @@ public class MetricInfoTree {
 
     }
 
-    static final NodeDecorator COUNTER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
+    public static final NodeDecorator COUNTER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
         @Override
         public String transform(MetricInfo metricInfo) {
             return S.fmt("%s: %s", metricInfo.getName(), metricInfo.getCountAsStr());
         }
     });
 
-    static final NodeDecorator TIMER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
+    public static final NodeDecorator TIMER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
         @Override
         public String transform(MetricInfo metricInfo) {
             return S.fmt("%s: %s / %s = %s", metricInfo.getName(), metricInfo.getAccumulated(), metricInfo.getCountAsStr(), metricInfo.getAvg());

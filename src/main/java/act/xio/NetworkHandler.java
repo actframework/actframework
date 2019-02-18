@@ -62,7 +62,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
     public NetworkHandler(App app) {
         E.NPE(app);
         this.app = app;
-        this.metric = Act.metricPlugin().metric("act.http");
+        this.metric = Act.metricPlugin().metric(MetricInfo.HTTP_HANDLER);
         this.initUrlProcessors();
         app.registerHotReloadListener(new App.HotReloadListener() {
             @Override
