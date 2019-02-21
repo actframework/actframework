@@ -67,7 +67,9 @@ public class RouterAdmin {
         if (S.notBlank(q)) {
             List<RouteInfo> toBeRemoved = new ArrayList<>();
             for (RouteInfo info: list) {
-                if (info.path().matches(q) || S.string(info.handler()).matches(q)) {
+                String handler = S.string(info.handler());
+                String path = info.path();
+                if (path.contains(q) || handler.contains(q) || path.matches(q) || handler.matches(q)) {
                     continue;
                 }
                 toBeRemoved.add(info);

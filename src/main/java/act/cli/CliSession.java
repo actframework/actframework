@@ -22,7 +22,6 @@ package act.cli;
 
 import act.Destroyable;
 import act.app.*;
-import act.cli.builtin.IterateCursor;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
 import act.cli.util.CliCursor;
@@ -237,15 +236,8 @@ public class CliSession extends DestroyableBase implements Runnable {
     }
 
     void handler(CliHandler handler) {
-        if (handler == IterateCursor.INSTANCE) {
-            return;
-        }
-        if (null == this.handler || S.string(this.handler).equals(S.string(handler))) {
-            this.handler = handler;
-            return;
-        }
+        handler.resetCursor(this);
         this.handler = handler;
-        removeCursor();
     }
 
     private static void printBanner(String banner, ConsoleReader console) throws IOException {
