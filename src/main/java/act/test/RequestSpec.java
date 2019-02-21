@@ -61,6 +61,7 @@ public class RequestSpec implements InteractionPart {
     public Map<String, Object> headers = new LinkedHashMap<>();
     public Map<String, Object> parts = new LinkedHashMap<>();
     public Object json;
+    public Object xml;
 
     private boolean resolved;
 

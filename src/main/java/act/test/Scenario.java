@@ -145,8 +145,11 @@ public class Scenario implements ScenarioPart {
                 case PATCH:
                     RequestBody body = EMPTY_BODY;
                     String jsonBody = verifyJsonBody(requestSpec.json);
+                    String xmlBody = verifyXmlBody(requestSpec.xml);
                     if (S.notBlank(jsonBody)) {
                         body = RequestBody.create(MediaType.parse("application/json"), jsonBody);
+                    } else if (S.notBlank(xmlBody)) {
+                        body = RequestBody.create(MediaType.parse("text/xml"), xmlBody);
                     } else if (hasParams) {
                         FormBody.Builder formBuilder = new FormBody.Builder();
                         for (Map.Entry<String, Object> entry : requestSpec.params.entrySet()) {
@@ -251,6 +254,34 @@ public class Scenario implements ScenarioPart {
             }
             try {
                 JSON.parse(s);
+            } catch (Exception e) {
+                E.unexpected(e, "Invalid JSON body: " + origin);
+            }
+            return s;
+        }
+
+        private String verifyXmlBody(Object xmlBody) {
+            JSON json = null;
+            if (xmlBody instanceof Map) {
+                processParamSubstitution((Map) xmlBody);
+                json = JSON.parseObject(JSON.toJSONString(xmlBody));
+            } else if (xmlBody instanceof Collection) {
+                xmlBody = processParamSubstitution((Collection) xmlBody);
+                json = JSON.parseArray(JSON.toJSONString(xmlBody));
+            }
+            String s = null == xmlBody ? "" : (xmlBody instanceof String) ? (String) xmlBody : XML.toString($.convert(json).to(org.w3c.dom.Document.class));
+            if (S.blank(s)) {
+                return "";
+            }
+            final String origin = s;
+            if (s.startsWith("resource:")) {
+                s = S.ensure(s.substring(9).trim()).startWith("/");
+                URL url = Act.getResource(s);
+                E.unexpectedIf(null == url, "Cannot find JSON body: " + origin);
+                s = IO.read(url).toString();
+            }
+            try {
+                XML.read(s);
             } catch (Exception e) {
                 E.unexpected(e, "Invalid JSON body: " + origin);
             }

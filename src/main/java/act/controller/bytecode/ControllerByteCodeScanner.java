@@ -69,6 +69,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     @Override
+    protected void reset(String className) {
+        super.reset(className);
+        envMatches = $.var(true);
+        eav = null;
+    }
+
+    @Override
     protected void onAppSet() {
         router = app().router();
     }
