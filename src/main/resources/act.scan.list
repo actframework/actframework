@@ -1,6 +1,6 @@
 # Put package/class names that needs Act to scan. It can be regular expressions
 act\..*Admin
-act.route.RouterAdmin$1
+act\..*Admin\$.*
 act.apidoc.SampleDataProviderFinder
 act.app.SingletonFinder
 act.app.util.SimpleRestfulServiceBase
