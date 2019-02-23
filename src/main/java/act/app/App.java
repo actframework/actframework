@@ -958,7 +958,7 @@ public class App extends LogSupportedDestroyableBase {
         daemonRegistry.remove(daemon.id());
     }
 
-    List<Daemon> registeredDaemons() {
+    public List<Daemon> registeredDaemons() {
         return C.list(daemonRegistry.values());
     }
 

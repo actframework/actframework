@@ -9,9 +9,9 @@ package act.cli.builtin;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,12 +40,13 @@ public class Help extends CliHandlerBase {
 
     private static int maxWidth = 0;
 
-    private Help() {}
+    private Help() {
+    }
 
     @Override
     public void handle(CliContext context) {
         List<String> args = context.arguments();
-        String command = null;
+        String command;
         if (args.size() > 0) {
             command = args.get(0);
             if (showHelp(command, context)) {
@@ -55,6 +56,7 @@ public class Help extends CliHandlerBase {
         CommandLineParser parser = context.commandLine();
         boolean sys = parser.getBoolean("-s", "--system");
         boolean all = parser.getBoolean("-a", "--all");
+        String q = parser.getString("-q", "--filter");
         boolean app = true;
         if (all) {
             sys = true;
@@ -75,29 +77,29 @@ public class Help extends CliHandlerBase {
         }
         String fmt = "%-" + (maxLen + 4) + "s - %s";
         if (sys) {
-            list(command, "@|bold System commands|@", fmt, sysCommands, dispatcher, context);
+            list("@|bold System commands|@", fmt, sysCommands, dispatcher, context, q);
         }
         if (app) {
             if (sys) {
                 context.println("");
             }
-            list(command, "@|bold Application commands|@", fmt, appCommands, dispatcher, context);
+            list("@|bold Application commands|@", fmt, appCommands, dispatcher, context, q);
         }
     }
 
-    private void list(String search, String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context) {
+    private void list(String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context, String q) {
         List<String> lines = new ArrayList<>();
-        boolean noSearch = S.blank(search);
-        if (noSearch) {
-            lines.add(label.toUpperCase());
-            lines.add("");
-        }
+        lines.add(label.toUpperCase());
+        lines.add("");
+        q = S.string(q).trim();
+        boolean hasFilter = S.notEmpty(q);
         for (String cmd : commands) {
+            if (hasFilter && !(cmd.toLowerCase().contains(q) || cmd.matches(q))) {
+                continue;
+            }
             CliHandler handler = dispatcher.handler(cmd);
             T2<String, String> commandLine = handler.commandLine();
-            if (noSearch || commandLine._1.contains(search)) {
-                lines.add(S.fmt(fmt, cmd, commandLine._2));
-            }
+            lines.add(S.fmt(fmt, cmd, commandLine._2));
         }
         context.println(Ansi.ansi().render(S.join("\n", lines)).toString());
     }
@@ -135,11 +137,11 @@ public class Help extends CliHandlerBase {
             lines.add("");
             lines.add("@|bold Options|@:");
             int maxLen = 0;
-            for (T2<String, String> t2: options) {
+            for (T2<String, String> t2 : options) {
                 maxLen = Math.max(maxLen, t2._1.length());
             }
             String fmt = "  %-" + (maxLen + 4) + "s %s";
-            for (T2<String, String> t2: options) {
+            for (T2<String, String> t2 : options) {
                 lines.add(S.fmt(fmt, t2._1, t2._2));
             }
         }

@@ -21,11 +21,13 @@ package act;
  */
 
 import act.app.SingletonRegistry;
+import act.cli.Optional;
 import act.cli.*;
 import act.sys.Env;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
@@ -102,10 +104,24 @@ public class SysUtilAdmin {
         }
     }
 
-    @Command(name = "act.singleton.list", help = "List all singletons")
-    public Iterable<String> listSingletons() {
+    @Command(name = "act.singleton.list, act.singleton, act.singletons", help = "List all singletons")
+    public Iterable<String> listSingletons(@Optional("specify singleton filter") final String q) {
         SingletonRegistry singletonRegistry = Act.app().singletonRegistry();
-        return singletonRegistry.typeNames();
+        final Iterable<String> iterable = singletonRegistry.typeNames();
+        if (S.notBlank(q)) {
+            return new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    return Iterators.filter(iterable.iterator(), new Lang.Predicate<String>() {
+                        @Override
+                        public boolean test(String s) {
+                            return s.toLowerCase().contains(q) || s.matches(q);
+                        }
+                    });
+                }
+            };
+        }
+        return iterable;
     }
 
     @Command(name = "act.singleton.show-property", help = "Show singleton instance property")

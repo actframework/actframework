@@ -211,7 +211,7 @@ public abstract class Config<E extends ConfigKey> extends LogSupportedDestroyabl
     protected abstract ConfigKey keyOf(String s);
 
     public static String canonical(String key) {
-        return Keyword.of(key).dotted();
+        return Keyword.of(key).dotted().toLowerCase();
     }
 
     public static boolean matches(String k1, String k2) {

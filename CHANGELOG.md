@@ -1,6 +1,23 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Multiple improvements on sys admin command #1068
+  + simplified command name aliases for system command: xxx.list
+    - route.list -> route or routes
+    - metric.timer.list -> metric.timer 
+                        or metric.timers 
+                        or metric
+                        or metrics
+                        or timer
+                        or timers
+    - metric.counter.list -> metric.counter
+                        or metric.counters
+                        or counters
+    - job.list -> job or jobs
+    - daemon.list - daemon or daemons
+    - conf.list
+  + method/field access error due to different classloader for XxxAdmin and the access type
+  + uniformed `q` parameter handling for list commands 
 * Improve metric timer
 * envMatches in ControllerByteCodeScanner shall be reset upon scanning new class #1065
 * Act-Test - support post XML encoded body #1062

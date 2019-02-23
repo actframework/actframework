@@ -37,13 +37,13 @@ public class WebSocketAdminConsole {
         return S.blank(username) ? registry.count() : registry.count(username);
     }
 
-    @Command(name = "act.ws.conn.by-tag", help = "report websocket connection number by user")
+    @Command(name = "act.ws.conn.by-tag", help = "report websocket connection number by (channel) tag ")
     public int tagConnections(@Optional("specify the tag label") String label) {
         WebSocketConnectionRegistry registry = manager.tagRegistry();
         return S.blank(label) ? registry.count() : registry.count(label);
     }
 
-    @Command(name = "act.ws.conn.by-session", help = "report websocket connection number by user")
+    @Command(name = "act.ws.conn.by-session", help = "report websocket connection number by session id")
     public int sessionConnections(@Optional("specify the session id") String sessionId) {
         WebSocketConnectionRegistry registry = manager.sessionRegistry();
         return S.blank(sessionId) ? registry.count() : registry.count(sessionId);

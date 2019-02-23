@@ -46,7 +46,7 @@ public interface Plugin {
             plugins.clear();
         }
 
-        static List<String> plugins() {
+        public static List<String> plugins() {
             return C.list(plugins);
         }
     }

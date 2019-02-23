@@ -23,7 +23,9 @@ package act.plugin;
 import act.cli.Command;
 import act.cli.Optional;
 import act.util.PropertySpec;
+import org.osgl.Lang;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.List;
 
@@ -32,12 +34,21 @@ import java.util.List;
  */
 public class PluginAdmin {
 
-    @Command(name = "act.plugin.list", help = "list plugins")
+    @Command(name = "act.plugin.list,act.plugin,act.plugins", help = "list plugins")
     @PropertySpec("this as Plugin")
     public List<String> list(
-            @Optional("sort alphabetically") boolean sort
+            @Optional("sort alphabetically") boolean sort,
+            @Optional("filter plugin") final String q
     ) {
         C.List<String> l =  C.list(Plugin.InfoRepo.plugins());
+        if (S.notBlank(q)) {
+            l = l.filter(new Lang.Predicate<String>() {
+                @Override
+                public boolean test(String s) {
+                    return s.toLowerCase().contains(q) || s.matches(q);
+                }
+            });
+        }
         return sort ? l.sorted() : l;
     }
 

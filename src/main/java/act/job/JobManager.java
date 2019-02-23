@@ -374,11 +374,11 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    C.List<Job> jobs() {
+    public C.List<Job> jobs() {
         return C.list(jobs.values());
     }
 
-    C.List<Job> virtualJobs() {
+    public C.List<Job> virtualJobs() {
         final JobManager jobManager = Act.jobManager();
         return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, Job>() {
             @Override

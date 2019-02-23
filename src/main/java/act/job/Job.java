@@ -303,7 +303,7 @@ public class Job extends DestroyableBase implements Runnable {
         return executed && oneTime;
     }
 
-    final String id() {
+    public final String id() {
         return id;
     }
 

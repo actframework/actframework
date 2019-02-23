@@ -104,6 +104,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         for (Field f: fa) {
             buildPropertyPath(context, f, retLst);
         }
+        Collections.sort(retLst);
         return retLst;
     }
 

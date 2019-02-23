@@ -26,6 +26,7 @@ import act.controller.ExpressController;
 import act.controller.annotation.Port;
 import act.controller.annotation.UrlContext;
 import act.route.Router;
+import act.util.PropertySpec;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
@@ -44,7 +45,8 @@ public class ConfAdmin {
     @Inject
     private AppConfig appConfig;
 
-    @Command(name = "act.conf.list", help = "list configuration")
+    @Command(name = "act.conf.list, act.conf, act.configuration, act.configurations", help = "list configuration")
+    @PropertySpec("key,val")
     public List<ConfigItem> list(
             @Optional("list system configuration") boolean system,
             @Optional(lead = "-q", help = "specify search text") String q
@@ -54,9 +56,12 @@ public class ConfAdmin {
 
         Config<?> config = system ? Act.conf() : appConfig;
         boolean hasQuery = S.notBlank(q);
+        if (hasQuery) {
+            q = q.trim().toLowerCase();
+        }
         for (ConfigKey key: keys) {
-            String keyString = key.toString();
-            if (hasQuery && !keyString.contains(q)) {
+            String keyString = key.toString().toLowerCase();
+            if (hasQuery && (!keyString.contains(q) && !keyString.matches(q))) {
                 continue;
             }
             if (AppConfigKey.TRACE_HANDLER_ENABLED == key) {

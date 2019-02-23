@@ -61,7 +61,7 @@ public class JobAdmin {
      * List all jobs in the job manager
      * @return a list of {@link Job jobs}
      */
-    @Command(value = "act.job.list", help = "List jobs")
+    @Command(value = "act.job.list,act.job,act.jobs", help = "List jobs")
     @PropertySpec(Job.BRIEF_VIEW)
     @TableView
     public List<Job> listJobs(@Optional(lead = "-q") final String q, JobManager jobManager) {
@@ -70,7 +70,8 @@ public class JobAdmin {
             jobs = jobs.filter(new $.Predicate<Job>() {
                 @Override
                 public boolean test(Job job) {
-                    return job.toString().contains(q);
+                    String jobStr = job.toString();
+                    return jobStr.contains(q) || jobStr.matches(q);
                 }
             });
         }
