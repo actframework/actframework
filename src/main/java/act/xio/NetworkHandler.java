@@ -157,6 +157,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 //      set up the parameter spec where ActionContext.current is required.
                 //      see ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method)
                 ctx.saveLocal();
+                Thread.currentThread().setContextClassLoader(app.classLoader());
                 final boolean skipEvents = ctx.skipEvents();
                 try {
                     if (!skipEvents) {

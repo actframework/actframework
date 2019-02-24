@@ -397,6 +397,10 @@ public class Job extends DestroyableBase implements Runnable {
 
     protected void doJob(){
         JobContext.init(id());
+        ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+        if (ctxClassLoader != app.classLoader()) {
+            Thread.currentThread().setContextClassLoader(app.classLoader());
+        }
         try {
             _before();
             if (null != worker) {
@@ -406,6 +410,9 @@ public class Job extends DestroyableBase implements Runnable {
             JobContext.clear();
             scheduleNextInvocation();
             _finally();
+            if (ctxClassLoader != app.classLoader()) {
+                Thread.currentThread().setContextClassLoader(ctxClassLoader);
+            }
         }
     }
 
