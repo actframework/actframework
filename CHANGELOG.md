@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* StackOverflowError caused by JsonDtoPatch #1064
 * Multiple improvements on sys admin command #1068
   + simplified command name aliases for system command: xxx.list
     - route.list -> route or routes

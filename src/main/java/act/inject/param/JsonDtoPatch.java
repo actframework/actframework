@@ -44,11 +44,15 @@ public class JsonDtoPatch {
     private List<JsonDtoPatch> fieldsPatches = new ArrayList<>();
     private String name;
     private ValueLoader loader;
-    private JsonDtoPatch(String name, BeanSpec spec) {
+    private JsonDtoPatch(String name, BeanSpec spec, Set<BeanSpec> circularReferenceDetector) {
         this.name = S.requireNotBlank(name);
         this.loader = valueLoaderOf(spec);
         if (null == loader) {
             for (BeanSpec fieldSpec : spec.nonStaticFields()) {
+                if (circularReferenceDetector.contains(fieldSpec)) {
+                    continue;
+                }
+                circularReferenceDetector.add(fieldSpec);
                 Class fieldType = fieldSpec.rawType();
                 if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
                     continue;
@@ -57,10 +61,11 @@ public class JsonDtoPatch {
                     continue;
                 }
                 String fieldName = fieldSpec.name();
-                JsonDtoPatch child = new JsonDtoPatch(fieldName, fieldSpec);
+                JsonDtoPatch child = new JsonDtoPatch(fieldName, fieldSpec, circularReferenceDetector);
                 if (!child.isEmpty()) {
                     fieldsPatches.add(child);
                 }
+                circularReferenceDetector.remove(fieldSpec);
             }
         }
     }
@@ -102,7 +107,8 @@ public class JsonDtoPatch {
     }
 
     public static JsonDtoPatch of(BeanSpec spec) {
-        JsonDtoPatch patch = new JsonDtoPatch(spec.name(), spec);
+        Set<BeanSpec> circularReferenceDetector = new HashSet<>();
+        JsonDtoPatch patch = new JsonDtoPatch(spec.name(), spec, circularReferenceDetector);
         return patch.isEmpty() ? null : patch;
     }
 }
