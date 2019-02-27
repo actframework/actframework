@@ -121,9 +121,20 @@
             self.selectedModules = modules;
             self.update()
         })
+        riot.store.on('filter-changed', function(filter) {
+            self.filter = filter
+            self.update()
+        })
         show(endpoint) {
             var show = self.selectedModules.indexOf(endpoint.module) > -1
-            return show
+            if (!show) {
+                return false
+            }
+            if (!self.filter) {
+                return show
+            }
+            x = endpoint
+            return x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter)
         }
     </script>
 </toc>

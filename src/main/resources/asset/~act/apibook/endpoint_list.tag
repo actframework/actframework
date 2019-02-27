@@ -186,12 +186,20 @@
     </style>
     <script>
         var self = this
+        self.filter = false
         self.endpoints = []
         self.sysInfo = {}
         self.on('mount', function () {
             self.fetchEndpoints()
         })
         self.selectedModules = []
+        filteredEndpoints() {
+            if (!self.filter) {
+                return self.endpoints
+            } else {
+                return self.endpoints.filter(x => x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter))
+            }
+        }
         fetchEndpoints() {
             $.getJSON('/~/apibook/endpoints', function(endpoints) {
                 for(var i = 0, j = endpoints.length; i < j; ++i) {
@@ -207,8 +215,20 @@
             self.selectedModules = modules;
             self.update()
         })
+        riot.store.on('filter-changed', function(filter) {
+            self.filter = filter
+            self.update()
+        })
         show(endpoint) {
-            return self.selectedModules.indexOf(endpoint.module) > -1;
+            var ret = self.selectedModules.indexOf(endpoint.module) > -1;
+            if (!ret) {
+                return false
+            }
+            if (!self.filter) {
+                return ret
+            }
+            x = endpoint
+            return x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter)
         }
     </script>
 </endpoint-list>

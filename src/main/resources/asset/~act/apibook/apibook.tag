@@ -1,6 +1,16 @@
 <apibook>
+    <style>
+        #search-box-container {
+            position: absolute;
+            top: 26px;
+            right: 20px;
+            width: 150px;
+            padding: 5px;
+        }
+    </style>
     <div class="header">
         <h1>API Book - { sysInfo.appName }</h1>
+        <input type="text" id="search-box-container" placeholder="filter" oninput={filterUpdate}>
     </div>
     <div class="content">
         <module-list></module-list>
@@ -37,6 +47,7 @@
     </style>
     <script>
         var self = this
+        self.throttle = false
         self.sysInfo = {}
         self.on('mount', function () {
             self.fetchSysInfo()
@@ -47,6 +58,18 @@
                 document.title = 'API book - ' + info.appName;
                 self.update();
             })
+        }
+        filterUpdate(e) {
+            self.filter = e.target.value.toLowerCase()
+            if (self.filter.trim() === "") {
+                self.filter = false
+            }
+            if (self.throttle) {
+                clearTimeout(self.throttle)
+            }
+            self.throttle = setTimeout(function() {
+                riot.store.trigger('filter-changed', self.filter);
+            }, 300)
         }
     </script>
 </apibook>

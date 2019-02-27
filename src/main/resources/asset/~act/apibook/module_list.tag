@@ -1,7 +1,7 @@
 <module-list>
     <div id="module-list-container">
         <div class="module-list-inner">
-            <ul class="module-list-list" each={module in modules}>
+            <ul class="module-list-list" each={module in filteredModules()}>
                 <li class={selected: module.selected} onclick={forceSelect}>{module.name}</li>
             </ul>
         </div>
@@ -60,9 +60,18 @@
     <script>
         var self = this
         self.modules = [{name: 'All modules', selected: true, all: true, lastSelected: false}]
+        self.filter = false
         self.on('mount', function () {
             self.fetchModules()
         })
+        filteredModules() {
+            if (!self.filter) {
+                return self.modules
+            } else {
+                return self.modules.filter(x => x.name.toLowerCase().includes(self.filter))
+            }
+        }
+
         fetchModules() {
             $.getJSON('/~/apibook/modules', function(modules) {
                 for (var i = 0, j = modules.length; i < j; ++i) {
@@ -139,5 +148,9 @@
             }
             riot.store.trigger('module-selected', selected);
         }
+        riot.store.on('filter-changed', function(filter) {
+            self.filter = filter
+            self.update()
+        })
     </script>
 </module-list>
