@@ -1,0 +1,14 @@
+- id: u31.csg
+  name: 网管
+  type: corba
+  provider: zz
+  adapter: Adapter
+  ip: 10.206.20.235
+  port: 21176
+  nameService:  NameService
+  userName: user
+  password:
+  howmany: 100
+  nameComponents:
+    - id: 123
+      kind: ems
