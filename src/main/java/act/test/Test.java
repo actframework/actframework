@@ -263,7 +263,7 @@ public class Test extends LogSupport {
                         continue;
                     }
                     if (null != testId) {
-                        scenario.ignore = true;
+                        scenario.ignore = false;
                     } else if (scenario.ignore) {
                         addToList(scenario, list, scenarioManager);
                         continue;

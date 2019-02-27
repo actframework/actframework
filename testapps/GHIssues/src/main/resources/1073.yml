@@ -3,11 +3,11 @@
   type: corba
   provider: zz
   adapter: Adapter
-  ip: 10.206.20.235
-  port: 21176
+  ip: 127.0.0.1
+  port: 8080
   nameService:  NameService
   userName: user
-  password:
+  password: aaa
   howmany: 100
   nameComponents:
     - id: 123
