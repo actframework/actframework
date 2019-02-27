@@ -297,6 +297,7 @@ public class Scenario implements ScenarioPart {
     private App app;
     public String name;
     public String description;
+    public boolean ignore = false;
     public List<String> fixtures = new ArrayList<>();
     public Object generateTestData;
     public List<String> depends = new ArrayList<>();
@@ -331,7 +332,11 @@ public class Scenario implements ScenarioPart {
     }
 
     public String title() {
-        return S.blank(description) ? name : description;
+        String s = S.blank(description) ? name : description;
+        if (ignore) {
+            s = "[IGNORED]" + s;
+        }
+        return s;
     }
 
     public void cache(String name, Object payload) {

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Act-Test - add `ignore` flag to scenario #1075
 * JPAContext is not readay error when app start asynchronously #1063
 * StackOverflowError caused by JsonDtoPatch #1064
 * Multiple improvements on sys admin command #1068

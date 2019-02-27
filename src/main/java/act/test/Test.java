@@ -262,6 +262,12 @@ public class Test extends LogSupport {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }
+                    if (null != testId) {
+                        scenario.ignore = true;
+                    } else if (scenario.ignore) {
+                        addToList(scenario, list, scenarioManager);
+                        continue;
+                    }
                     try {
                         scenario.start(scenarioManager, requestTemplateManager);
                     } catch (Exception e) {
@@ -275,7 +281,7 @@ public class Test extends LogSupport {
             }
             if (shutdownApp) {
                 for (Scenario scenario : list) {
-                    if (!scenario.status.pass()) {
+                    if (!scenario.ignore && !scenario.status.pass()) {
                         exitCode = -1;
                     }
                     output(scenario);
@@ -293,6 +299,8 @@ public class Test extends LogSupport {
                         if (null != scenario.cause) {
                             error("cause: \n" + E.stackTrace(scenario.cause));
                         }
+                    } else if (scenario.ignore) {
+                        warn("[%s] ignored", scenario.name);
                     }
                 }
             }
@@ -312,6 +320,9 @@ public class Test extends LogSupport {
     }
 
     private void output(Scenario scenario) {
+        if (scenario.ignore) {
+            return;
+        }
         printBanner(scenario);
         printInteractions(scenario);
         printFooter();

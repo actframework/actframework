@@ -56,6 +56,10 @@
     .open-source {
       display:none;
     }
+    h4.ignore {
+      color: #FFEB3B;
+      text-decoration: line-through;
+    }
   </style>
   @render(head)
 </head>
@@ -63,13 +67,9 @@
 <h1>Test Report</h1>
 <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
 @for(Scenario scenario: result) {
-<h4>
-@if(scenario.description) {
-  @scenario.description
-} else {
-  @scenario.name.toUpperCase()
-}
-  @if(!scenario.status.pass()) {
+<h4 @if(scenario.ignore) {class="ignore"}>
+  @scenario.title().nl2br().raw()
+  @if(!scenario.ignore && !scenario.status.pass()) {
     @if(scenario.source) {
   <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
     <li style="margin-bottom: 5px">
@@ -99,7 +99,7 @@
 </h4>
 
 
-@if(!scenario.status.pass() && null != scenario.errorMessage) {
+@if(!scenario.ignore && !scenario.status.pass() && null != scenario.errorMessage) {
 <div class="@scenario.status">
   [@scenario.status] @scenario.errorMessage
   @if(scenario.cause) {
@@ -110,6 +110,7 @@
 </div>
 }
 
+@ifNot(scenario.ignore) {
 <ul class="interactions">
 @for (Interaction interaction: scenario.interactions) {
   <li class="@interaction.status">
@@ -125,6 +126,7 @@
   </li>
 }
 </ul>
+}
 
 }
 <a id="act-version" href="https://github.com/actframework/actframework">actframework-@act.Act.VERSION.getVersion()</a>
