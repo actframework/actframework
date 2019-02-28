@@ -23,6 +23,8 @@ package act.app;
 import static act.Destroyable.Util.tryDestroyAll;
 
 import act.Act;
+import act.exception.AppStartTerminateException;
+import act.exception.PortOccupiedException;
 import act.internal.util.AppDescriptor;
 import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
@@ -141,6 +143,10 @@ public class AppManager extends LogSupportedDestroyableBase {
                 public void visit(App app) throws $.Break {
                     try {
                         mgr.load(app);
+                    } catch (PortOccupiedException e) {
+                        Act.LOGGER.fatal("Cannot start ActFramework: %s", e.getMessage());
+                        Act.shutdown(app);
+                        throw new AppStartTerminateException();
                     } catch (RuntimeException e) {
                         Act.shutdown(app);
                         throw e;

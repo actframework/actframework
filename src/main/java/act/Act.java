@@ -34,6 +34,7 @@ import act.controller.meta.*;
 import act.crypto.AppCrypto;
 import act.db.DbManager;
 import act.event.*;
+import act.exception.AppStartTerminateException;
 import act.handler.RequestHandlerBase;
 import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
@@ -297,7 +298,11 @@ public final class Act {
         NetworkBootupThread nbt = initNetworkLayer();
         initApplicationManager();
         LOGGER.info("loading application(s) ...");
-        appManager.loadSingleApp(descriptor);
+        try {
+            appManager.loadSingleApp(descriptor);
+        } catch (AppStartTerminateException e) {
+            System.exit(-1);
+        }
         startNetworkLayer(nbt);
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
         App app = app();

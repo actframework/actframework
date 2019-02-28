@@ -413,7 +413,11 @@ public class ResourceGetter extends FastRequestHandler {
      */
     private FastRequestHandler verifyBase(URL baseUrl, String baseSupplied) {
         if (null == baseUrl) {
-            logger.warn("URL base not exists: " + baseSupplied);
+            if ("META-INF/resources/webjars".equalsIgnoreCase(baseSupplied)) {
+                // webjars not provided, just ignore it.
+            } else {
+                logger.warn("URL base not exists: " + baseSupplied);
+            }
             return AlwaysNotFound.INSTANCE;
         }
         return null;

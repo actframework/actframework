@@ -23,6 +23,7 @@ package act.app;
 import act.Act;
 import act.Destroyable;
 import act.cli.CliSession;
+import act.exception.PortOccupiedException;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
@@ -159,9 +160,12 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 }
             });
         } catch (IOException e) {
+            if (e instanceof BindException) {
+                throw new PortOccupiedException(port);
+            }
             Throwable t = e.getCause();
             if (null != t && t.getMessage().contains("Address already in use")) {
-                throw new ConfigurationException("Cannot start app, port[%s] already occupied. Possible cause: another app instance is running", port);
+                throw new PortOccupiedException(port);
             }
             throw new ConfigurationException(e, "Cannot start CLI server on port: %s", port);
         }
