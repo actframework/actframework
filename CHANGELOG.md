@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Act-Test - JSON request array content get dropped #1076
 * Add filter box in API page #1074
 * Act-Test - add `ignore` flag to scenario #1075
 * JPAContext is not readay error when app start asynchronously #1063

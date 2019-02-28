@@ -218,6 +218,8 @@ public class Scenario implements ScenarioPart {
                     } else if (sVal.contains("${")) {
                         sVal = processStringSubstitution(sVal);
                         ret.add(S.isInt(sVal) ? Integer.parseInt(sVal) : sVal);
+                    } else {
+                        ret.add(sVal);
                     }
                 } else if (val instanceof Map) {
                     processParamSubstitution((Map) val);
@@ -730,6 +732,7 @@ public class Scenario implements ScenarioPart {
                         // try next one
                     }
                 }
+                throw error("No element matches requirement: %s", test);
             } else if (S.isInt(sKey)) {
                 int id = Integer.parseInt(sKey);
                 value = array.get(id);
