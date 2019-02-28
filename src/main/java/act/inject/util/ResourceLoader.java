@@ -234,8 +234,8 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         try {
             return null == hint ? IO.read(url).to(spec) : IO.read(url).hint(hint).to(spec);
         } catch (Exception e) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(e, "error read URL[%s] to [%s] via IO.read call", url, spec);
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(e, "error read URL[%s] to [%s] via IO.read call", url, spec);
             }
             // ignore
         }
