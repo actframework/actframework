@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Error visiting page with IE 8 or below #1079
 * Misleading error stack printed out when loading yml file with `@LoadResource` #1073
 * Act-Test - JSON request array content get dropped #1076
 * Add filter box in API page #1074
