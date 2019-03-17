@@ -156,8 +156,15 @@ public class Test extends LogSupport {
         List<Dao> toBeDeleted = new ArrayList<>();
         for (DbService svc : dbServiceManager.registeredServices()) {
             for (Class entityClass : svc.entityClasses()) {
+                if (entityClass.isAnnotationPresent(NotFixture.class)) {
+                    continue;
+                }
+                Dao dao = dbServiceManager.dao(entityClass);
+                if (dao.getClass().isAnnotationPresent(NotFixture.class)) {
+                    continue;
+                }
                 try {
-                    toBeDeleted.add(dbServiceManager.dao(entityClass));
+                    toBeDeleted.add(dao);
                 } catch (IllegalArgumentException e) {
                     if (e.getMessage().contains("Cannot find out Dao for model type")) {
                         // ignore - must be caused by MappedSuperClass
