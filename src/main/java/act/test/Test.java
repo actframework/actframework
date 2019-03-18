@@ -36,8 +36,8 @@ import act.test.macro.Macro;
 import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
-import act.util.LogSupport;
-import act.util.Stateless;
+import act.util.*;
+import org.fusesource.jansi.Ansi;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.DeleteAction;
@@ -342,8 +342,14 @@ public class Test extends LogSupport {
     }
 
     private void printInteractions(Scenario scenario) {
+        boolean ansi = Banner.supportAnsi();
         for (Interaction interaction : scenario.interactions) {
             String msg = S.concat("[", interaction.status, "]", interaction.description);
+            if (ansi) {
+                String color = interaction.status == TestStatus.PASS ? "green" : "red";
+                msg = "@|" + color + " " + msg + "|@";
+                msg = Ansi.ansi().render(msg).toString();
+            }
             info(msg);
         }
     }

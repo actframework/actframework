@@ -82,7 +82,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     public ApiManager(final App app) {
         super(app);
-        this.enabled = app.config().apiDocEnabled();
+        this.enabled = app.config().apiDocEnabled() && !Act.isTest();
         if (!this.enabled) {
             return;
         }

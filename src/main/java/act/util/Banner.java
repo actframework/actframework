@@ -239,9 +239,8 @@ public class Banner {
         return S.concat(S.times(" ", gap), poweredBy);
     }
 
-    private static boolean supportAnsi() {
-        // eclipse project does not support ansi
-        return !new File(".project").exists();
+    public static boolean supportAnsi() {
+        return S.notBlank(System.getenv("TERM"));
     }
 
 }

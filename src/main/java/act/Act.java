@@ -97,11 +97,23 @@ public final class Act {
      */
     private static final String ATTR_APP_JAR = "App-Jar";
 
+    /**
+     * The runtime mode
+     */
     public enum Mode {
-        PROD,
+
         /**
-         * DEV mode is special as Act might load classes
-         * directly from srccode code when running in this mode
+         * PROD mode should be used when app is running in product
+         * deployment or SIT/UAT testing deployment etc
+         */
+        PROD,
+
+        /**
+         * DEV mode should be used by developer when developing the application.
+         *
+         * When Act is started in DEV mode the framework will monitor the
+         * source/configuration file and do hot reload when source/configuration
+         * file changes.
          */
         DEV() {
             @Override
@@ -188,16 +200,38 @@ public final class Act {
     private static Map<String, Plugin> genericPluginRegistry = new HashMap<>();
     private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = new HashMap<>();
 
+    /**
+     * Returns the runtime mode of the process.
+     *
+     * @return Act process runtime mode
+     * @see Mode
+     */
     public static Mode mode() {
         return mode;
     }
 
+    /**
+     * Check if the Act process is running in {@link Mode#PROD} mode
+     * @return `true` if Act process is running in prod mode
+     */
     public static boolean isProd() {
         return mode.isProd();
     }
 
+    /**
+     * Check if the Act process is running in {@link Mode#DEV} mode
+     * @return `true` if Act process is running in dev mode
+     */
     public static boolean isDev() {
         return mode.isDev();
+    }
+
+    /**
+     * Check if the Act process is running using `test` profile
+     * @return `true` if Act process is running using `test` profile
+     */
+    public static boolean isTest() {
+        return "test".equalsIgnoreCase(profile());
     }
 
     /**

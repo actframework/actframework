@@ -29,6 +29,7 @@ import act.handler.CliHandler;
 import act.job.JobContext;
 import act.util.Banner;
 import act.util.DestroyableBase;
+import jline.Terminal;
 import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
@@ -119,6 +120,10 @@ public class CliSession extends DestroyableBase implements Runnable {
 
     public void removeCursor() {
         cursor = null;
+    }
+
+    public Terminal term() {
+        return console.getTerminal();
     }
 
     public <T> T attribute(String key) {
