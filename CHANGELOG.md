@@ -1,7 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
-* Act-Test - Allow developer mark a model class as non-fixture #1080
+* Act-Test - allow developer specify a model shall not be cleared at fixture loading #1080
 * Error visiting page with IE 8 or below #1079
 * Misleading error stack printed out when loading yml file with `@LoadResource` #1073
 * Act-Test - JSON request array content get dropped #1076
