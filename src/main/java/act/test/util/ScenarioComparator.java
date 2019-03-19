@@ -62,7 +62,14 @@ public class ScenarioComparator implements Comparator<Scenario> {
             return -1;
         }
         int n = o1.partition.compareTo(o2.partition);
-        return 0 != n ? n : o1.name.compareTo(o2.name);
+        if (n != 0) {
+            return n;
+        }
+        n = d1.size() - d2.size();
+        if (n != 0) {
+            return n;
+        }
+        return o1.name.compareTo(o2.name);
     }
 
     private List<Scenario> depends(Scenario s, List<Scenario> depends) {

@@ -330,7 +330,11 @@ public class Scenario implements ScenarioPart {
 
     @Override
     public String toString() {
-        return title();
+        S.Buffer buf = S.buffer("[").a(status).a("]").a(title());
+        if (partition != "DEFAULT") {
+            buf.append('@').append(partition);
+        }
+        return buf.toString();
     }
 
     public String title() {

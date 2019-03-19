@@ -9,9 +9,9 @@ package act.event.bytecode;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,14 +28,13 @@ import act.asm.Type;
 import act.event.*;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.job.JobManager;
-import act.util.AsmTypes;
-import act.util.Async;
-import act.util.ByteCodeVisitor;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,14 +62,35 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         if (!metaInfoList.isEmpty()) {
             final EventBus eventBus = app().eventBus();
             JobManager jobManager = app().jobManager();
+            final ClassInfoRepository repo = app().classLoader().classInfoRepository();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
                 SysEventId hookOn = metaInfo.beforeAppStart() ? SysEventId.DEPENDENCY_INJECTOR_PROVISIONED : SysEventId.PRE_START;
                 jobManager.on(hookOn, "SimpleEventListenerByteCodeScanner:bindEventListener:" + metaInfo.jobId(), new Runnable() {
                     @Override
                     public void run() {
+                        ReflectedSimpleEventListener listener = new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), metaInfo.isStatic(), metaInfo.isAsync());
+                        /*
+                         * Here we might need to build a full class graph so we can generate
+                         * permutation of simple event listener method argument types, and bind
+                         * it to event in the event bus
+                         */
+                        if (!app().classLoader().isFullClassGraphBuilt() && $.bool(listener.argumentTypes())) {
+                            boolean needBuildFullClassGraph = false;
+                            for (Class c : listener.argumentTypes()) {
+                                if ($.isSimpleType(c) || Modifier.isFinal(c.getModifiers())) {
+                                    continue;
+                                }
+                                if (null == repo.findNode(c)) {
+                                    needBuildFullClassGraph = true;
+                                    break;
+                                }
+                            }
+                            if (needBuildFullClassGraph) {
+                                app().classLoader().buildFullClassGraph();
+                            }
+                        }
                         for (final Object event : metaInfo.events()) {
-                            final boolean isStatic = metaInfo.isStatic();
-                            eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic, metaInfo.isAsync()));
+                            eventBus.bind(event, listener);
                         }
                     }
                 });

@@ -44,6 +44,7 @@ import org.osgl.mvc.annotation.DeleteAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
@@ -156,14 +157,17 @@ public class Test extends LogSupport {
         List<Dao> toBeDeleted = new ArrayList<>();
         for (DbService svc : dbServiceManager.registeredServices()) {
             for (Class entityClass : svc.entityClasses()) {
+                if (Modifier.isAbstract(entityClass.getModifiers())) {
+                    continue;
+                }
                 if (entityClass.isAnnotationPresent(NotFixture.class)) {
                     continue;
                 }
-                Dao dao = dbServiceManager.dao(entityClass);
-                if (dao.getClass().isAnnotationPresent(NotFixture.class)) {
-                    continue;
-                }
                 try {
+                    Dao dao = dbServiceManager.dao(entityClass);
+                    if (dao.getClass().isAnnotationPresent(NotFixture.class)) {
+                        continue;
+                    }
                     toBeDeleted.add(dao);
                 } catch (IllegalArgumentException e) {
                     if (e.getMessage().contains("Cannot find out Dao for model type")) {

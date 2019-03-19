@@ -20,6 +20,7 @@ package act.app;
  * #L%
  */
 
+import static act.boot.app.FullStackAppBootstrapClassLoader.KEY_CLASSPATH;
 import static act.util.ClassInfoRepository.canonicalName;
 import static org.osgl.Lang.requireNotNull;
 
@@ -73,6 +74,7 @@ public class AppClassLoader
     private Map<String, byte[]> enhancedResourceCache = new HashMap<>();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
+    private boolean fullClassGraphBuilt;
     protected ControllerClassMetaInfoManager controllerInfo;
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
@@ -205,6 +207,34 @@ public class AppClassLoader
             }
         }
         return c;
+    }
+
+    public synchronized boolean isFullClassGraphBuilt() {
+        return fullClassGraphBuilt;
+    }
+
+    public synchronized void buildFullClassGraph() {
+        if (fullClassGraphBuilt) {
+            return;
+        }
+        E.illegalStateIf(null == classInfoRepository);
+        C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
+        path = path.filter(S.F.endsWith(".jar"));
+        List<File> jars = path.map(new $.Transformer<String, File>() {
+            @Override
+            public File transform(String s) {
+                return new File(s);
+            }
+        }).sorted();
+        Map<String, byte[]> index = Jars.buildClassNameIndex(jars);
+        ClassInfoByteCodeScanner scanner = new ClassInfoByteCodeScanner(classInfoRepository());
+        ByteCodeVisitor bv = scanner.byteCodeVisitor();
+        for (Map.Entry<String, byte[]> entry : index.entrySet()) {
+            byte[] ba = entry.getValue();
+            ClassReader cr = new ClassReader(ba);
+            cr.accept(bv, 0);
+        }
+        fullClassGraphBuilt = true;
     }
 
     @Override

@@ -43,7 +43,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     private static final Logger LOGGER = LogManager.get(FullStackAppBootstrapClassLoader.class);
 
-    private static final String KEY_CLASSPATH = "java.class.path";
+    public static final String KEY_CLASSPATH = "java.class.path";
 
     /**
      * the {@link System#getProperty(String) system property} key to get
@@ -149,13 +149,29 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         return super.getResources(name);
     }
 
+    /**
+     * Returns all jar files in the class loader without filtering.
+     * @return all jar files
+     */
+    public List<File> allJars() {
+        return jars(false);
+    }
+
     protected void preload() {
         buildIndex();
     }
 
+    /**
+     * Returns filtered jar files in the class loader.
+     * @return filtered jar files.
+     */
     protected List<File> jars() {
+        return jars(true);
+    }
+
+    protected List<File> jars(boolean filter) {
         if (null == jars) {
-            jars = jars(FullStackAppBootstrapClassLoader.class.getClassLoader());
+            jars = jars(FullStackAppBootstrapClassLoader.class.getClassLoader(), filter);
             jarsChecksum = calculateChecksum(jars);
         }
         return jars;
@@ -209,13 +225,14 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     }
 
     private List<File> filterJars(List<File> jars) {
-        if (null == jarFilter) {
-            return null;
-        }
         return C.list(jars).filter(jarFilter);
     }
 
     public List<File> jars(ClassLoader cl) {
+        return jars(cl, true);
+    }
+
+    public List<File> jars(ClassLoader cl, boolean filter) {
         List<File> jars = null;
         C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
         if (path.size() < 10) {
@@ -249,7 +266,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                 }
             }).sorted();
         }
-        return filterJars(jars);
+        return filter ? filterJars(jars) : jars;
     }
 
     private void saveClassInfoRegistry() {

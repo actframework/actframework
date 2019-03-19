@@ -136,6 +136,10 @@ public class ClassNode {
         }
     }
 
+    public boolean hasInterfaces() {
+        return !interfaces.isEmpty();
+    }
+
     public boolean hasInterface(String name) {
         return interfaces.containsKey(name);
     }

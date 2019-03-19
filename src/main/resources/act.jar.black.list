@@ -27,6 +27,7 @@ objenesis
 org.apache.bval.bundle
 osgl
 -osgl-mvc
+-osgl-storage
 patchca
 reflectasm
 rythm
