@@ -186,6 +186,20 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.sessionManager = app.sessionManager();
     }
 
+    @Override
+    public String toString() {
+        H.Request req = request;
+        if (null == req) {
+            return "INVALID CONTEXT";
+        }
+        return S.buffer("[")
+                .a(req.ip())
+                .a("]")
+                .a(req.method())
+                .a(" ")
+                .a(req.url()).toString();
+    }
+
     public State state() {
         return state;
     }
