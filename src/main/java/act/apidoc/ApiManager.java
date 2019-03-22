@@ -220,6 +220,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     private void exploreDescriptions(Set<Class> controllerClasses) {
         DevModeClassLoader cl = $.cast(Act.app().classLoader());
         Map<String, Javadoc> methodJavaDocs = new HashMap<>();
+        Map<String, Javadoc> fieldJavaDocs = new HashMap<>();
         for (Class controllerClass: withSuperClasses(controllerClasses)) {
             Source src = cl.source(controllerClass);
             if (null == src) {
@@ -230,7 +231,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 List<TypeDeclaration> types = compilationUnit.getTypes();
                 for (TypeDeclaration type : types) {
                     if (type instanceof ClassOrInterfaceDeclaration) {
-                        exploreDeclaration((ClassOrInterfaceDeclaration) type, methodJavaDocs, "");
+                        exploreDeclaration((ClassOrInterfaceDeclaration) type, methodJavaDocs, fieldJavaDocs, "");
                     }
                 }
             } catch (Exception e) {
@@ -256,7 +257,16 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 }
                 Map<String, ParamInfo> paramLookup = new HashMap<>();
                 for (ParamInfo param : params) {
-                    paramLookup.put(param.getName(), param);
+                    String paramName = param.getName();
+                    paramLookup.put(paramName, param);
+                    String fieldKey = S.concat(SimpleEndpointIdProvider.className(endpoint.controllerClass), ".", paramName);
+                    Javadoc fieldJavadoc = fieldJavaDocs.get(fieldKey);
+                    if (null != fieldJavadoc) {
+                        JavadocDescription fieldJavadocDesc = fieldJavadoc.getDescription();
+                        if (null != fieldJavadocDesc) {
+                            param.setDescription(fieldJavadocDesc.toText());
+                        }
+                    }
                 }
                 List<JavadocBlockTag> blockTags = javadoc.getBlockTags();
                 for (JavadocBlockTag tag : blockTags) {
@@ -274,12 +284,24 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     private static final Set<String> actionAnnotations = C.set("Action", "GetAction", "PostAction", "PutAction", "DeleteAction");
 
-    private void exploreDeclaration(ClassOrInterfaceDeclaration classDeclaration, Map<String, Javadoc> methodJavaDocs, String prefix) {
+    private void exploreDeclaration(ClassOrInterfaceDeclaration classDeclaration, Map<String, Javadoc> methodJavaDocs, Map<String, Javadoc> fieldJavaDocs, String prefix) {
         String className = classDeclaration.getName();
         String newPrefix = S.blank(prefix) ? className : S.concat(prefix, ".", className);
         for (Node node : classDeclaration.getChildrenNodes()) {
             if (node instanceof ClassOrInterfaceDeclaration) {
-                exploreDeclaration((ClassOrInterfaceDeclaration) node, methodJavaDocs, newPrefix);
+                exploreDeclaration((ClassOrInterfaceDeclaration) node, methodJavaDocs, fieldJavaDocs, newPrefix);
+            } else if (node instanceof FieldDeclaration) {
+                FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
+                Comment comment = fieldDeclaration.getComment();
+                if (!(comment instanceof JavadocComment)) {
+                    continue;
+                }
+                List<VariableDeclarator> vars = fieldDeclaration.getVariables();
+                if (vars.size() > 0) {
+                    JavadocComment javadocComment = (JavadocComment) comment;
+                    Javadoc javadoc = JavadocParser.parse(javadocComment);
+                    fieldJavaDocs.put(S.concat(newPrefix, ".", vars.get(0).getId()), javadoc);
+                }
             } else if (node instanceof MethodDeclaration) {
                 MethodDeclaration methodDeclaration = (MethodDeclaration) node;
                 List<AnnotationExpr> annoList = methodDeclaration.getAnnotations();

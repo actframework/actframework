@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.20**
+* API doc - make it consistent for styling of javadoc code block and sample code block #1085
+* API doc - capture field javadoc comment #1084
 * `ISObject` is not null when no file is uploaded #1083
 * Upload file caused server crash #1082
 * Event bus - simple event key matching logic needs improvement #1077

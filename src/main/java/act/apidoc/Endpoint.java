@@ -44,7 +44,8 @@ import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.OsglConfig;
 import org.osgl.http.H;
-import org.osgl.inject.*;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
@@ -479,6 +480,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
         Object sample = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), isReturn);
         if (null == sample) {
+            return null;
+        }
+        if (sample instanceof Map && ((Map) sample).isEmpty()) {
             return null;
         }
         if ($.isSimpleType(type)) {

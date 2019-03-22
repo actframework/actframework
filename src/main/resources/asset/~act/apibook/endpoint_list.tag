@@ -153,7 +153,8 @@
             padding: 10pt;
             background: #444;
             max-width: 1280px;
-            font-size: 12pt;
+            font-size: 14px;
+            font-weight: 500;
             line-height: 1.5;
             overflow-x: auto;
             margin: 16px 0 16px 0;
@@ -193,6 +194,11 @@
             self.fetchEndpoints()
         })
         self.selectedModules = []
+        patchPreCode() {
+            $('pre > code').each(function() {
+                $(this).parent().addClass('code')
+            })
+        }
         filteredEndpoints() {
             if (!self.filter) {
                 return self.endpoints
@@ -209,15 +215,18 @@
                 self.endpoints = endpoints
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);
+                self.patchPreCode()
             })
         }
         riot.store.on('module-selected', function(modules) {
             self.selectedModules = modules;
             self.update()
+            self.patchPreCode()
         })
         riot.store.on('filter-changed', function(filter) {
             self.filter = filter
             self.update()
+            self.patchPreCode()
         })
         show(endpoint) {
             var ret = self.selectedModules.indexOf(endpoint.module) > -1;

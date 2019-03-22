@@ -53,7 +53,7 @@ public class SimpleEndpointIdProvider implements EndpointIdProvider {
         return className(controllerClass) + "." + method.getName();
     }
 
-    static String className(Class<?> clz) {
+    public static String className(Class<?> clz) {
         Class<?> enclosing = clz.getEnclosingClass();
         if (null != enclosing) {
             return className(enclosing) + "." + clz.getSimpleName();
