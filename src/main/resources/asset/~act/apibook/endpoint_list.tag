@@ -3,10 +3,6 @@
         <a class="id" id="{ endpoint.xid }">&nbsp;</a>
         <h4 class="entry">[{ endpoint.httpMethod }] { endpoint.path }</h4>
         <div class="desc"><raw html={ endpoint.richDesc }></raw></div>
-        <div class="desc" if={endpoint.returnDescription}>
-            <b>return</b>&nbsp;
-            {endpoint.returnDescription}
-        </div>
         <div class="param-list">
             <h5>Parameters</h5>
             <div class="param-list-body">
@@ -37,6 +33,10 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class="return" if={ endpoint.returnDescription }>
+            <h5>Return</h5>
+            <div class="return-desc">{ endpoint.returnDescription }</div>
         </div>
         <!-- eof param list -->
         <div class="query-sample" if="{ endpoint.sampleQuery }">
@@ -171,7 +171,7 @@
             margin: 16px 0 16px 0;
         }
 
-        .param-list-body {
+        .param-list-body, .return-desc {
             padding: 10px;
             background: #444;
             max-width: 1280px;
