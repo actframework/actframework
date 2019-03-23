@@ -85,7 +85,7 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
         ParamTree paramTree = ParamValueLoaderService.paramTree();
         if (null != paramTree) {
             return load(paramTree, context);
-        } else if (context instanceof ActionContext && ((ActionContext) context).isAllowIgnoreParamNamespace()) {
+        } else if (context instanceof ActionContext && context.isAllowIgnoreParamNamespace()) {
             paramTree = ParamValueLoaderService.ensureParamTree(context);
             return load(paramTree, context);
         }

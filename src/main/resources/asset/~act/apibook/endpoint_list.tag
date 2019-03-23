@@ -1,10 +1,14 @@
 <endpoint-list>
     <div class="endpoint" each={ endpoint in endpoints } show={ show(endpoint) }>
         <a class="id" id="{ endpoint.xid }">&nbsp;</a>
-        <pre class="code">[{ endpoint.httpMethod }] { endpoint.path }</pre>
+        <h4 class="entry">[{ endpoint.httpMethod }] { endpoint.path }</h4>
         <div class="desc"><raw html={ endpoint.richDesc }></raw></div>
+        <div class="desc" if={endpoint.returnDescription}>
+            <b>return</b>&nbsp;
+            {endpoint.returnDescription}
+        </div>
         <div class="param-list">
-            <h4>Parameters</h4>
+            <h5>Parameters</h5>
             <div class="param-list-body">
                 <div if={ endpoint.params.length== 0 }>
                     N/A
@@ -28,7 +32,7 @@
                             <span if={ defaultValue }>{ defaultValue }</span>
                             <span if={ !defaultValue }>N/A</span>
                         </td>
-                        <td><pre>{ description }</pre></td>
+                        <td>{ description }</td>
                     </tr>
                     </tbody>
                 </table>
@@ -36,15 +40,15 @@
         </div>
         <!-- eof param list -->
         <div class="query-sample" if="{ endpoint.sampleQuery }">
-            <h4>Query example</h4>
+            <h5>Query example</h5>
             <pre class="code">{ endpoint.sampleQuery }</pre>
         </div>
         <div class="post-sample" if="{ endpoint.sampleJsonPost }">
-            <h4>Json body example</h4>
+            <h5>Json body example</h5>
             <pre class="code">{ endpoint.sampleJsonPost }</pre>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
-            <h4>Return value sample</h4>
+            <h5>Return value sample</h5>
             <pre class="code">{ endpoint.returnSample }</pre>
         </div>
     </div>
@@ -57,6 +61,10 @@
 
         h3, h4, h5 {
             margin-bottom: 0.2em;
+        }
+
+        h4.entry {
+            font-family: "Noto Sans Mono CJK SC", Menlo, Consolas, "Envy Code R",
         }
 
         div.desc {
@@ -82,7 +90,7 @@
         td, th {
             width: 1px;
             padding: 5px 1em;
-            font-size: .9em;
+            font-size: 12px;
             white-space: nowrap;
         }
 
@@ -100,7 +108,7 @@
         }
 
         td:not(:first-child) {
-            font-family: monospace;
+            font-family: "Envy Code R", "Roboto Mono", Menlo, Consolas, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
         }
 
         td:first-child, th:first-child {
@@ -155,7 +163,7 @@
             background: #444;
             max-width: 1280px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 400;
             line-height: 1.5;
             overflow-x: auto;
             margin: 16px 0 16px 0;

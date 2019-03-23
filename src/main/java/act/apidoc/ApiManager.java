@@ -43,7 +43,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.JavadocComment;
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.exception.NotAppliedException;
@@ -53,6 +52,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -269,6 +269,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                     }
                 }
                 List<JavadocBlockTag> blockTags = javadoc.getBlockTags();
+                String returnDesc = null;
                 for (JavadocBlockTag tag : blockTags) {
                     if ("param".equals(tag.getTagName())) {
                         String paramName = tag.getName().get();
@@ -276,13 +277,16 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                         if (null != paramInfo) {
                             paramInfo.setDescription(tag.getContent().toText());
                         }
+                    } else if ("return".equals(tag.getTagName())) {
+                        returnDesc = tag.getContent().toText();
                     }
+                }
+                if (null != returnDesc) {
+                    endpoint.returnDescription = returnDesc;
                 }
             }
         }
     }
-
-    private static final Set<String> actionAnnotations = C.set("Action", "GetAction", "PostAction", "PutAction", "DeleteAction");
 
     private void exploreDeclaration(ClassOrInterfaceDeclaration classDeclaration, Map<String, Javadoc> methodJavaDocs, Map<String, Javadoc> fieldJavaDocs, String prefix) {
         String className = classDeclaration.getName();
@@ -304,17 +308,10 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 }
             } else if (node instanceof MethodDeclaration) {
                 MethodDeclaration methodDeclaration = (MethodDeclaration) node;
-                List<AnnotationExpr> annoList = methodDeclaration.getAnnotations();
-                boolean needJavadoc = false;
-                if (null != annoList && !annoList.isEmpty()) {
-                    for (AnnotationExpr anno : annoList) {
-                        String annoName = anno.getName().getName();
-                        if (actionAnnotations.contains(annoName)) {
-                            needJavadoc = true;
-                            break;
-                        }
-                    }
-                }
+                // Note we can't check only request handler annotation here
+                // because we need to cater for the extended request handler declaration
+                // which does not have the annotation specified
+                boolean needJavadoc = Modifier.isPublic(methodDeclaration.getModifiers());
                 if (!needJavadoc) {
                     continue;
                 }

@@ -47,6 +47,7 @@ import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
@@ -66,7 +67,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private static final Logger LOGGER = ApiManager.LOGGER;
 
-    private static BeanSpecInterpreter beanSpecInterpretor = new BeanSpecInterpreter();
+    private static BeanSpecInterpreter beanSpecInterpreter = new BeanSpecInterpreter();
 
     public static class ParamInfo {
         public String bindName;
@@ -76,8 +77,6 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public String defaultValue;
         public boolean required;
         public List<String> options;
-
-        private ParamInfo() {}
 
         private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
             this.bindName = bindName;
@@ -93,7 +92,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
 
         public String getType() {
-            return null == beanSpec ? type : beanSpecInterpretor.interpret(beanSpec);
+            return null == beanSpec ? type : beanSpecInterpreter.interpret(beanSpec);
         }
 
         public String getDescription() {
@@ -190,6 +189,11 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
      * The description
      */
     public String description;
+
+    /**
+     * The return info description
+     */
+    public String returnDescription;
 
     public String module;
 
@@ -355,13 +359,15 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         this.description = null == descAnno ? id(controllerClass, method) : descAnno.value();
         Module methodModule = method.getAnnotation(Module.class);
         this.module = null == methodModule ? classModuleText : methodModule.value();
-        exploreParamInfo(method, typeParamLookup);
+        boolean payloadMethod = H.Method.POST == httpMethod || H.Method.PUT == httpMethod || H.Method.PATCH == httpMethod;
+        boolean body = payloadMethod && null != invoker.singleJsonFieldName();
+        exploreParamInfo(method, typeParamLookup, body);
         if (!Modifier.isStatic(method.getModifiers())) {
-            exploreParamInfo(controllerClass, typeParamLookup);
+            exploreParamInfo(controllerClass, typeParamLookup, body);
         }
         this.controllerClass = controllerClass;
         try {
-            returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector()), typeParamLookup, true);
+            this.returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector()), typeParamLookup, true);
         } catch (Exception e) {
             LOGGER.warn(e, "Error creating returnSample of endpoint for request handler [%s] for [%s %s]", handler, httpMethod, path);
         }
@@ -376,21 +382,25 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         return controllerClass.getSimpleName();
     }
 
-    private void exploreParamInfo(Method method, Map<String, Class> typeParamLookup) {
+    private void exploreParamInfo(Method method, Map<String, Class> typeParamLookup, boolean body) {
         Type[] paramTypes = method.getGenericParameterTypes();
         int paramCount = paramTypes.length;
         if (0 == paramCount) {
             return;
         }
         DependencyInjector injector = Act.injector();
-        Annotation[][] allAnnos = method.getParameterAnnotations();
+        Method declaredMethod = overridenRequestHandlerMethod(method);
+        if (null == declaredMethod) {
+            return;
+        }
+        Annotation[][] allAnnos = declaredMethod.getParameterAnnotations();
         Map<String, Object> sampleData = new HashMap<>();
         StringValueResolverManager resolver = Act.app().resolverManager();
         List<String> sampleQuery = new ArrayList<>();
         for (int i = 0; i < paramCount; ++i) {
             Type type = paramTypes[i];
             Annotation[] annos = allAnnos[i];
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null);
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null, body);
             if (null != info) {
                 params.add(info);
                 if (path.contains("{" + info.getName() + "}")) {
@@ -414,7 +424,11 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             }
         }
         if (!sampleData.isEmpty()) {
-            sampleJsonPost = JSON.toJSONString(sampleData, true);
+            Object payload = sampleData;
+            if (sampleData.size() == 1) {
+                payload = sampleData.values().iterator().next();
+            }
+            sampleJsonPost = null == payload ? null : JSON.toJSONString(payload, true);
         }
         if (!sampleQuery.isEmpty()) {
             this.sampleQuery = S.join("&", sampleQuery);
@@ -429,20 +443,20 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
     };
 
-    private void exploreParamInfo(Class<?> controller, Map<String, Class> typeParamLookup) {
+    private void exploreParamInfo(Class<?> controller, Map<String, Class> typeParamLookup, boolean body) {
         DependencyInjector injector = Act.injector();
         List<Field> fields = $.fieldsOf(controller, FIELD_PREDICATE);
         for (Field field : fields) {
             Type type = field.getGenericType();
             Annotation[] annos = field.getAnnotations();
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName());
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName(), body);
             if (null != info) {
                 params.add(info);
             }
         }
     }
 
-    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name) {
+    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name, boolean body) {
         if (isLoginUser(annos)) {
             return null;
         }
@@ -461,7 +475,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         if (null != descAnno) {
             description = descAnno.value();
         }
-        return new ParamInfo(spec.name(), spec, description);
+        return new ParamInfo(body ? spec.name() + " (body)" : spec.name(), spec, description);
     }
 
     private boolean isLoginUser(Annotation[] annos) {
@@ -666,18 +680,25 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                         typeParams = Generics.typeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.size() < 2) {
-                        map.put(S.random(), S.random());
-                        map.put(S.random(), S.random());
+                        return null;
                     } else {
                         Type keyType = typeParams.get(0);
                         Type valType = typeParams.get(1);
-                        map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
-                        map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
+                        if (Object.class == valType) {
+                            return null;
+                        }
+                        Object key1 = "foo";
+                        Object key2 = "bar";
+                        if (keyType != String.class) {
+                            key1 = generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                            key2 = generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        }
+                        Object val1 = generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        Object val2 = generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        map.put(key1, val1);
+                        map.put(key2, val2);
                     }
+                    return map;
                 } else if (Iterable.class.isAssignableFrom(classType)) {
                     Collection col = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
@@ -854,6 +875,41 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 || Object.class.equals(entityType)
                 || Class.class.equals(entityType)
                 || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+    }
+
+    private static Method overridenRequestHandlerMethod(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            return null;
+        }
+        if (isRequestHandler(method)) {
+            return method;
+        }
+        Method overridenMethod = overridenMethod(method);
+        return null == overridenMethod ? null : overridenRequestHandlerMethod(overridenMethod);
+    }
+
+    private static Method overridenMethod(Method method) {
+        Class<?> host = method.getDeclaringClass();
+        Class<?> superHost = host.getSuperclass();
+        if (null == superHost || Object.class == superHost) {
+            return null;
+        }
+        Method[] ma = superHost.getMethods();
+        for (Method m : ma) {
+            if (m.getName().equals(method.getName()) && $.eq2(method.getParameterTypes(), method.getParameterTypes())) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isRequestHandler(Method method) {
+        return method.isAnnotationPresent(Action.class)
+                || method.isAnnotationPresent(GetAction.class)
+                || method.isAnnotationPresent(PutAction.class)
+                || method.isAnnotationPresent(PostAction.class)
+                || method.isAnnotationPresent(PatchAction.class)
+                || method.isAnnotationPresent(DeleteAction.class);
     }
 
 

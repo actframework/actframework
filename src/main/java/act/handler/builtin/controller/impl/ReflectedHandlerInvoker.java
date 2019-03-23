@@ -719,6 +719,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
     }
 
+    public String singleJsonFieldName() {
+        return singleJsonFieldName;
+    }
+
     private void cacheJsonDto(ActContext<?> context, JsonDto dto) {
         context.attribute(JsonDto.CTX_ATTR_KEY, dto);
     }
