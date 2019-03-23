@@ -21,8 +21,8 @@ package act.apidoc;
  */
 
 import static act.apidoc.SampleDataCategory.EMAIL;
+import static act.apidoc.SimpleEndpointIdProvider.className;
 import static act.apidoc.SimpleEndpointIdProvider.id;
-import static jdk.nashorn.internal.codegen.CompilerConstants.className;
 
 import act.Act;
 import act.app.data.StringValueResolverManager;
@@ -199,6 +199,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private transient Class<?> returnType;
 
+    private Map<String, Class> typeLookups;
+
     public String returnSample;
 
     /**
@@ -234,6 +236,11 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return n;
         }
         return httpMethod.ordinal() - o.httpMethod.ordinal();
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 
     public String getId() {
@@ -281,7 +288,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = processTypeImplSubstitution(description);
     }
 
     public String getModule() {
@@ -323,10 +330,40 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         return controllerClass;
     }
 
+    public String processTypeImplSubstitution(String s) {
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        int a = 0;
+        int z = n;
+        S.Buffer buf = S.buffer();
+        while (true) {
+            buf.append(s.substring(a, z));
+            n = s.indexOf("}", z);
+            a = n;
+            E.illegalArgumentIf(n < -1, "Invalid string: " + s);
+            String key = s.substring(z + 2, a);
+            Class<?> impl = typeLookups.get(key);
+            if (null != impl) {
+                buf.append(Keyword.of(className(impl)).readable().toLowerCase());
+            } else {
+                buf.append("${").append(key).append("}");
+            }
+            n = s.indexOf("${", a);
+            if (n < 0) {
+                buf.append(s.substring(a + 1));
+                return buf.toString();
+            }
+            z = n;
+        }
+    }
+
     private void explore(RequestHandler handler) {
         RequestHandlerProxy proxy = $.cast(handler);
         ReflectedHandlerInvoker invoker = $.cast(proxy.actionHandler().invoker());
         Class<?> controllerClass = invoker.controllerClass();
+        typeLookups = Generics.buildTypeParamImplLookup(controllerClass);
         Method method = invoker.method();
         returnType = Generics.getReturnType(method, controllerClass);
         PropertySpec pspec = method.getAnnotation(PropertySpec.class);
@@ -677,7 +714,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                     Map map = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(classType, Map.class);
+                        typeParams = Generics.tryGetTypeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.size() < 2) {
                         return null;
@@ -703,10 +740,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                     Collection col = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(classType, Map.class);
+                        typeParams = Generics.tryGetTypeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.isEmpty()) {
-                        col.add(S.random());
+                        return null;
                     } else {
                         Type componentType = typeParams.get(0);
                         col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));

@@ -64,7 +64,10 @@
         }
 
         h4.entry {
-            font-family: "Noto Sans Mono CJK SC", Menlo, Consolas, "Envy Code R",
+            font-family: "Noto Sans Mono CJK SC", Menlo, Consolas, "Envy Code R";
+            border-bottom: 1px solid #aaa;
+            display: block;
+            padding-bottom: 10px;
         }
 
         div.desc {
@@ -129,7 +132,6 @@
 
         div.endpoint {
             padding-bottom: 25px;
-            border-bottom: 1px solid #aaa;
         }
 
         .endpoint > .desc {

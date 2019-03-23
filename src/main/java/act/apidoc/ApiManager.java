@@ -252,9 +252,6 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                     endpoint.setDescription(desc);
                 }
                 List<ParamInfo> params = endpoint.getParams();
-                if (params.isEmpty()) {
-                    continue;
-                }
                 Map<String, ParamInfo> paramLookup = new HashMap<>();
                 for (ParamInfo param : params) {
                     String paramName = param.getName();
@@ -264,7 +261,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                     if (null != fieldJavadoc) {
                         JavadocDescription fieldJavadocDesc = fieldJavadoc.getDescription();
                         if (null != fieldJavadocDesc) {
-                            param.setDescription(fieldJavadocDesc.toText());
+                            param.setDescription(endpoint.processTypeImplSubstitution(fieldJavadocDesc.toText()));
                         }
                     }
                 }
@@ -275,14 +272,14 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                         String paramName = tag.getName().get();
                         ParamInfo paramInfo = paramLookup.get(paramName);
                         if (null != paramInfo) {
-                            paramInfo.setDescription(tag.getContent().toText());
+                            paramInfo.setDescription(endpoint.processTypeImplSubstitution(tag.getContent().toText()));
                         }
                     } else if ("return".equals(tag.getTagName())) {
                         returnDesc = tag.getContent().toText();
                     }
                 }
                 if (null != returnDesc) {
-                    endpoint.returnDescription = returnDesc;
+                    endpoint.returnDescription = endpoint.processTypeImplSubstitution(returnDesc);
                 }
             }
         }

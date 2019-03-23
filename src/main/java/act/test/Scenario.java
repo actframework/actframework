@@ -1110,7 +1110,6 @@ public class Scenario implements ScenarioPart {
             buf.append(s.substring(a, z));
             n = s.indexOf("}", z);
             a = n;
-            E.illegalArgumentIf(n < -1, "Invalid string: " + s);
             String part = s.substring(z + 2, a);
             if (part.contains("(") && part.endsWith(")")) {
                 buf.append(evalFunc(part));
