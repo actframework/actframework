@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.20**
+* GH 1072 - improve dao init logic, log warn message when an non-abstract Dao class
+  cannot be materialized because of mssing type param implementation  
 * API Doc - improve support for endpoints defined in parent class #1086
 * API doc - make it consistent for styling of javadoc code block and sample code block #1085
 * API doc - capture field javadoc comment #1084

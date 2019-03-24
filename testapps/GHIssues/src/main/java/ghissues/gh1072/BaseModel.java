@@ -15,6 +15,6 @@ public class BaseModel implements SimpleBean {
     public String name;
 
     @UrlContext("1072")
-    public abstract static class Dao<M extends BaseModel> extends JPADao<Long, M> {
+    public static class Dao<M extends BaseModel> extends JPADao<Long, M> {
     }
 }

@@ -26,20 +26,15 @@ import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.db.*;
 import act.db.util.*;
-import act.event.ActEventListenerBase;
-import act.event.EventBus;
-import act.event.SysEventListenerBase;
+import act.event.*;
 import act.util.ClassNode;
-import act.util.General;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -81,20 +76,18 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             private void initDao() {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
-                    private boolean isGeneral(Class c) {
-                        Annotation[] aa = c.getDeclaredAnnotations();
-                        for (Annotation a : aa) {
-                            if (a instanceof General) {
-                                return true;
-                            }
-                        }
-                        return false;
+                    private boolean isValidDao(Class c) {
+                        return Generics.tryGetTypeParamImplementations(c, DaoBase.class).isEmpty();
                     }
 
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
                         Class<? extends Dao> daoType = app.classForName(classNode.name());
-                        if (isGeneral(daoType)) {
+                        if (Modifier.isAbstract(daoType.getModifiers())) {
+                            return;
+                        }
+                        if (isValidDao(daoType)) {
+                            warn("Ignore dao type[%s]: no type implementation found", daoType.getName());
                             return;
                         }
                         try {
