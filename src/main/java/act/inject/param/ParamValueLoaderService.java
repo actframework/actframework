@@ -167,56 +167,52 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
     }
 
     public Object[] loadMethodParams(Object host, Method method, ActContext ctx) {
-        try {
-            ParamValueLoader[] loaders = methodParamLoaders(host, method, ctx);
-            Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
-            int sz = loaders.length;
-            Object[] params = new Object[sz];
-            for (int i = 0; i < sz; ++i) {
-                ParamValueLoader loader = loaders[i];
-                if (loader.requireRuntimeTypeInfo()) {
-                    Class hostType = host.getClass();
-                    $.Pair<ParamValueLoader, Class> key = $.Pair(loader, hostType);
-                    ParamValueLoader runtimeLoader = runtimeLoaders.get(key);
-                    if (null == runtimeLoader) {
-                        Map<String, Class> typeLookups = getTypeLookup(hostType);
-                        Type[] paramTypes = method.getGenericParameterTypes();
-                        Type paramType = paramTypes[i];
-                        Class runtimeType = typeLookups.get(((TypeVariable) paramType).getName());
-                        runtimeLoader = loader.wrapWithRuntimeType(runtimeType);
-                        runtimeLoaders.put(key, runtimeLoader);
-                    }
-                    loader = runtimeLoader;
+        ParamValueLoader[] loaders = methodParamLoaders(host, method, ctx);
+        Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
+        int sz = loaders.length;
+        Object[] params = new Object[sz];
+        for (int i = 0; i < sz; ++i) {
+            ParamValueLoader loader = loaders[i];
+            if (loader.requireRuntimeTypeInfo()) {
+                Class hostType = host.getClass();
+                $.Pair<ParamValueLoader, Class> key = $.Pair(loader, hostType);
+                ParamValueLoader runtimeLoader = runtimeLoaders.get(key);
+                if (null == runtimeLoader) {
+                    Map<String, Class> typeLookups = getTypeLookup(hostType);
+                    Type[] paramTypes = method.getGenericParameterTypes();
+                    Type paramType = paramTypes[i];
+                    Class runtimeType = typeLookups.get(((TypeVariable) paramType).getName());
+                    runtimeLoader = loader.wrapWithRuntimeType(runtimeType);
+                    runtimeLoaders.put(key, runtimeLoader);
                 }
-                params[i] = loader.load(null, ctx, false);
+                loader = runtimeLoader;
             }
-            if (null != hasValidationConstraint && hasValidationConstraint) {
-                Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
-                if (!violations.isEmpty()) {
-                    Map<String, ConstraintViolation> map = new HashMap<>();
-                    for (ConstraintViolation v : violations) {
-                        S.Buffer buf = S.buffer();
-                        for (Path.Node node : v.getPropertyPath()) {
-                            if (node.getKind() == ElementKind.METHOD) {
-                                continue;
-                            } else if (node.getKind() == ElementKind.PARAMETER) {
-                                Path.ParameterNode pnode = node.as(Path.ParameterNode.class);
-                                int paramIdx = pnode.getParameterIndex();
-                                ParamValueLoader ploader = loaders[paramIdx];
-                                buf.append(ploader.bindName());
-                            } else if (node.getKind() == ElementKind.PROPERTY) {
-                                buf.append(".").append(node.toString());
-                            }
-                        }
-                        map.put(buf.toString(), v);
-                    }
-                    ctx.addViolations(map);
-                }
-            }
-            return params;
-        } finally {
-            PARAM_TREE.remove();
+            params[i] = loader.load(null, ctx, false);
         }
+        if (null != hasValidationConstraint && hasValidationConstraint) {
+            Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
+            if (!violations.isEmpty()) {
+                Map<String, ConstraintViolation> map = new HashMap<>();
+                for (ConstraintViolation v : violations) {
+                    S.Buffer buf = S.buffer();
+                    for (Path.Node node : v.getPropertyPath()) {
+                        if (node.getKind() == ElementKind.METHOD) {
+                            continue;
+                        } else if (node.getKind() == ElementKind.PARAMETER) {
+                            Path.ParameterNode pnode = node.as(Path.ParameterNode.class);
+                            int paramIdx = pnode.getParameterIndex();
+                            ParamValueLoader ploader = loaders[paramIdx];
+                            buf.append(ploader.bindName());
+                        } else if (node.getKind() == ElementKind.PROPERTY) {
+                            buf.append(".").append(node.toString());
+                        }
+                    }
+                    map.put(buf.toString(), v);
+                }
+                ctx.addViolations(map);
+            }
+        }
+        return params;
     }
 
     protected <T> ParamValueLoader findBeanLoader(final Class<T> beanClass) {
@@ -622,6 +618,10 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             PARAM_TREE.set(tree);
         }
         return tree;
+    }
+
+    public static void clearParamTree() {
+        PARAM_TREE.remove();
     }
 
     private ParamValueLoader buildPojoLoader(final ParamKey key, final BeanSpec spec) {

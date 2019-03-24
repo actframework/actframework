@@ -160,6 +160,11 @@ public class ReflectedInvokerHelper {
         if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _hasGlobalOrStatelessAnnotations(type)) {
             return true;
         }
+        // when type is interface or abstract class we need to infer it as stateful
+        // as we can't determine the implementation class
+        if (!type.getSimpleName().equals("Logger") && (type.isInterface() || Modifier.isAbstract(type.getModifiers()))) {
+            return false;
+        }
         if (circularReferenceDetector.contains(type)) {
             return false;
         }
@@ -195,10 +200,10 @@ public class ReflectedInvokerHelper {
     }
 
     private static boolean isGlobalOrStateless(Field field, Set<Class> circularReferenceDetector) {
-        Class<?> fieldType = field.getType();
         if (_hasGlobalOrStatelessAnnotations(field)) {
             return true;
         }
+        Class<?> fieldType = field.getType();
         return isGlobalOrStateless(fieldType, circularReferenceDetector);
     }
 

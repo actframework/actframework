@@ -34,6 +34,7 @@ import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
+import act.inject.param.ParamValueLoaderService;
 import act.route.*;
 import act.security.CORS;
 import act.session.SessionManager;
@@ -1383,6 +1384,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         PropertySpec.current.remove();
         PropertySpec.currentSpec.remove();
         if (this.state != State.DESTROYED) {
+            ParamValueLoaderService.clearParamTree();
             sessionManager = null;
             this.allParams = null;
             this.extraParams = null;

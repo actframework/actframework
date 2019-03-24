@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.util.ActContext;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -72,6 +73,21 @@ class ParamTree {
         if (null == node && context.isAllowIgnoreParamNamespace()) {
             key = key.withoutNamespace();
             if (null == key) {
+                // take out URL variable values.
+                if (context instanceof ActionContext) {
+                    ActionContext actionContext = (ActionContext) context;
+                    Map<ParamKey, ParamTreeNode> nonUrlPathVars = new HashMap<>();
+                    for (Map.Entry<ParamKey, ParamTreeNode> entry : allNodes.entrySet()) {
+                        if (!actionContext.isPathVar(entry.getKey().name())) {
+                            nonUrlPathVars.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    Map<ParamKey, ParamTreeNode> copy = allNodes;
+                    allNodes = nonUrlPathVars;
+                    node = asRootNode();
+                    allNodes = copy;
+                    return node;
+                }
                 if (null == rootNode) {
                     rootNode = asRootNode();
                 }
