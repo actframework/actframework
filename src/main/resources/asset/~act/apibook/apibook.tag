@@ -36,7 +36,7 @@
             padding-left: 10px;
         }
         endpoint-list {
-            width: 60%;
+            width: 55%;
             left: 15%;
             overflow-x: hidden;
             position: absolute;

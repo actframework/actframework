@@ -279,6 +279,11 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         return path;
     }
 
+    public String getPathHtml() {
+        String s = path.replace("{", "<span class='var'>{");
+        return s.replace("}", "}</span>");
+    }
+
     public String getHandler() {
         return handler;
     }

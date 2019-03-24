@@ -99,7 +99,16 @@ public class ScenarioDebugHelper {
         if (context.accept() == H.Format.HTML) {
             context.templatePath("/~test.html");
         }
-        return test.run(app, testId, false);
+        List<Scenario> results = test.run(app, testId, false);
+        boolean failure = false;
+        for (Scenario scenario : results) {
+            if (!scenario.ignore && !scenario.status.pass()) {
+                failure = true;
+                break;
+            }
+        }
+        context.renderArg("failure", failure);
+        return results;
     }
 
 }

@@ -79,6 +79,10 @@
             display: block;
         }
 
+        .desc ul li {
+            line-height: 150%;
+        }
+
         table {
             font-family: Roboto, 'San Francisco Display', 'Noto Sans', 'Segoe UI', 'Arial', 'Sans';
             border-collapse: collapse;
@@ -105,7 +109,7 @@
         }
 
         td {
-            font-weight: 300;
+            font-weight: 500;
             padding-bottom: 0;
             vertical-align: top;
         }
@@ -135,7 +139,7 @@
         }
 
         .endpoint > .desc {
-            font-weight: 300;
+            font-weight: 500;
             max-width: 1280px;
         }
 

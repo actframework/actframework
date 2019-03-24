@@ -23,7 +23,6 @@
             color: #bbbbbb;
         }
         .module-list-inner {
-            font-size: 13px;
             overflow-y: visible;
             padding: 4px 0 0 10px;
         }
@@ -34,9 +33,7 @@
         }
         .module-list-inner ul.module-list-list li {
             box-sizing: border-box;
-            color: #999;
-            font-size: 16px;
-            line-height: 24px;
+            color: #bbb;
             padding: 3px 0 3px 12px;
             position: relative;
             transition: all .3s ease-in-out;
