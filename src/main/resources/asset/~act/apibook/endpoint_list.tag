@@ -34,10 +34,6 @@
                 </table>
             </div>
         </div>
-        <div class="return" if={ endpoint.returnDescription }>
-            <h5>Return</h5>
-            <div class="return-desc">{ endpoint.returnDescription }</div>
-        </div>
         <!-- eof param list -->
         <div class="query-sample" if="{ endpoint.sampleQuery }">
             <h5>Query example</h5>
@@ -46,6 +42,10 @@
         <div class="post-sample" if="{ endpoint.sampleJsonPost }">
             <h5>Json body example</h5>
             <pre class="code">{ endpoint.sampleJsonPost }</pre>
+        </div>
+        <div class="return" if={ endpoint.returnDescription }>
+            <h5>Return</h5>
+            <div class="return-desc">{ endpoint.returnDescription }</div>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
             <h5>Return value sample</h5>

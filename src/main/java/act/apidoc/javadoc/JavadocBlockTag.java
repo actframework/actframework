@@ -119,6 +119,10 @@ public class JavadocBlockTag {
         this.tagName = tagName;
     }
 
+    public void setContent(JavadocDescription desc) {
+        content = desc;
+    }
+
     public static JavadocBlockTag createParamBlockTag(String paramName, String content) {
         return new JavadocBlockTag(Type.PARAM, paramName + " " + content);
     }

@@ -390,8 +390,12 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         Module classModule = controllerClass.getAnnotation(Module.class);
         String classModuleText = null == classModule ? inferModule(controllerClass) : classModule.value();
         this.id = id(controllerClass, method);
-        if (controllerClass != method.getDeclaringClass()) {
-            parent = new SimpleEndpointIdProvider(method.getDeclaringClass(), method);
+        Class<?> superClass = controllerClass.getSuperclass();
+        try {
+            Method overwrittenMethod = superClass.getMethod(method.getName(), method.getParameterTypes());
+            parent = new SimpleEndpointIdProvider(overwrittenMethod.getDeclaringClass(), method);
+        } catch (Exception e) {
+            // so we don't have an overwritten method, that's fine, just ignore the exception
         }
         Map<String, Class> typeParamLookup = C.Map();
         if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {

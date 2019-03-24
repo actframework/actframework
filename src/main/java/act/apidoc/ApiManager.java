@@ -70,6 +70,8 @@ public class ApiManager extends AppServiceBase<ApiManager> {
      */
     SortedSet<Endpoint> endpoints = new TreeSet<>();
 
+    Map<String, Endpoint> endpointLookup = new HashMap<>();
+
     SortedMap<String, List<Endpoint>> moduleLookup = new TreeMap<>();
 
     private transient boolean enabled;
@@ -167,6 +169,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         for (List<Endpoint> list : moduleLookup.values()) {
             endpoints.addAll(list);
         }
+        for (Endpoint endpoint : endpoints) {
+            endpointLookup.put(endpoint.getId(), endpoint);
+        }
     }
 
     private void buildModuleLookup() {
@@ -192,6 +197,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 if (showEndpoint(path, handler)) {
                     Endpoint endpoint = new Endpoint(portNumber, method, path, handler);
                     endpoints.add(endpoint);
+                    endpointLookup.put(endpoint.getId(), endpoint);
                     if (isDev) {
                         controllerClasses.add(endpoint.controllerClass());
                     }
@@ -217,6 +223,59 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         return ret;
     }
 
+    private static List<JavadocBlockTag> merge(List<JavadocBlockTag> overwritten, List<JavadocBlockTag> parent) {
+        if (null == overwritten || overwritten.isEmpty()) {
+            return parent;
+        }
+        List<JavadocBlockTag> list = new ArrayList<>(overwritten);
+        Map<$.T2<JavadocBlockTag.Type, $.Option<String>>, JavadocBlockTag> parentTagLookup = new HashMap<>();
+        for (JavadocBlockTag tag : parent) {
+            parentTagLookup.put($.T2(tag.getType(), tag.getName()), tag);
+        }
+        for (JavadocBlockTag tag : overwritten) {
+            JavadocBlockTag parentTag = parentTagLookup.remove($.T2(tag.getType(), tag.getName()));
+            if (tag.getContent().isEmpty()) {
+                if (null != parentTag) {
+                    tag.setContent(parentTag.getContent());
+                }
+            }
+            list.add(tag);
+        }
+        list.addAll(parentTagLookup.values());
+        return list;
+    }
+
+    private Javadoc javadocOf(Endpoint endpoint, Map<String, Javadoc> methodJavaDocs) {
+        Javadoc javadoc = methodJavaDocs.get(endpoint.getId());
+        if (null == javadoc) {
+            String parentId = endpoint.getParentId();
+            if (S.blank(parentId)) {
+                return null;
+            }
+            Endpoint parent = endpointLookup.get(parentId);
+            return null == parent ? methodJavaDocs.get(parentId) : javadocOf(parent, methodJavaDocs);
+        }
+        JavadocDescription desc = javadoc.getDescription();
+        String s = desc.toText();
+        if (S.blank(s) || s.contains("@inheritDoc")) {
+            String parentId = endpoint.getParentId();
+            if (S.notBlank(parentId)) {
+                Endpoint parent = endpointLookup.get(parentId);
+                Javadoc parentDoc = null == parent ? methodJavaDocs.get(parentId) : javadocOf(parent, methodJavaDocs);
+                if (null != parentDoc) {
+                    if (S.blank(s)) {
+                        javadoc = parentDoc;
+                    } else {
+                        JavadocDescription parentDesc = parentDoc.getDescription();
+                        s = s.replace("@inheritDoc", parentDesc.toText());
+                        javadoc = new Javadoc(JavadocDescription.parseText(s), merge(javadoc.blockTags(), parentDoc.blockTags()));
+                    }
+                }
+            }
+        }
+        return javadoc;
+    }
+
     private void exploreDescriptions(Set<Class> controllerClasses) {
         DevModeClassLoader cl = $.cast(Act.app().classLoader());
         Map<String, Javadoc> methodJavaDocs = new HashMap<>();
@@ -239,13 +298,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
             }
         }
         for (Endpoint endpoint : endpoints) {
-            Javadoc javadoc = methodJavaDocs.get(endpoint.getId());
-            if (null == javadoc) {
-                String parentId = endpoint.getParentId();
-                if (null != parentId) {
-                    javadoc = methodJavaDocs.get(parentId);
-                }
-            }
+            Javadoc javadoc = javadocOf(endpoint, methodJavaDocs);
             if (null != javadoc) {
                 String desc = javadoc.getDescription().toText();
                 if (S.notBlank(desc)) {

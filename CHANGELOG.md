@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* API Doc - handle `@inheritDoc` tag #1089
 * ReflectedInvokerHelper treated `Set` as stateless type #1088
 * ParamValueLoaderService - PARAM_TREE not cleared in certain case #1087
 * GH 1072 - improve dao init logic, log warn message when an non-abstract Dao class

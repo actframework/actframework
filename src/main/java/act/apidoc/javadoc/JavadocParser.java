@@ -35,6 +35,7 @@ public class JavadocParser {
 
     private static final String EOL = System.getProperty("line.separator");
     private static String BLOCK_TAG_PREFIX = "@";
+    private static String INHERIT_DOC = "@inheritDoc";
     private static Pattern BLOCK_PATTERN = Pattern.compile("^" + BLOCK_TAG_PREFIX, Pattern.MULTILINE);
 
     public static Javadoc parse(JavadocComment comment) {
@@ -89,7 +90,11 @@ public class JavadocParser {
     }
 
     private static boolean isABlockLine(String line) {
-        return line.trim().startsWith(BLOCK_TAG_PREFIX);
+        return !isInheritDoc(line) && line.trim().startsWith(BLOCK_TAG_PREFIX);
+    }
+
+    private static boolean isInheritDoc(String line) {
+        return line.trim().startsWith(INHERIT_DOC);
     }
 
     private static String trimRight(String string) {
