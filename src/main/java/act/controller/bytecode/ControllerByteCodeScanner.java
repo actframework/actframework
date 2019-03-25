@@ -336,7 +336,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         private class ActionMethodVisitor extends MethodVisitor implements Opcodes {
 
             private String methodName;
-            private int access;
             private String desc;
             private String signature;
             private boolean isStatic;
@@ -357,7 +356,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
-                this.access = access;
                 this.methodName = methodName;
                 this.desc = desc;
                 this.signature = signature;
@@ -380,7 +378,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return av;
                 }
                 if (Global.class.getName().equals(c.getName())) {
-                    isGlobal.set(true);
+                    if (classInfo.isAbstract() && !isStatic) {
+                        logger.warn("\"@Global\" cannot be used on instance method of an abstract class");
+                    } else {
+                        isGlobal.set(true);
+                    }
                     return av;
                 }
                 if (Type.getType(With.class).getDescriptor().equals(desc)) {
@@ -508,7 +510,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 final HandlerMethodMetaInfo info = methodInfo;
                 info.name(methodName);
-                boolean isStatic = AsmTypes.isStatic(access);
                 if (isStatic) {
                     info.invokeStaticMethod();
                 } else {

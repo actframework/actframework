@@ -5,7 +5,7 @@ import org.osgl.mvc.annotation.After;
 import org.osgl.mvc.result.RenderJSON;
 import org.osgl.util.C;
 
-public abstract class Base extends BaseController {
+public abstract class Gh1078_Base extends BaseController {
 
     @After
     public void after() {

@@ -69,6 +69,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private static BeanSpecInterpreter beanSpecInterpreter = new BeanSpecInterpreter();
 
+    private static boolean mapTypeQuerySampleWarned = false;
+
     public static class ParamInfo {
         public String bindName;
         public transient BeanSpec beanSpec;
@@ -590,7 +592,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                         + "&" + bindName + "=" + generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain, false);
             }
         } else if (Map.class.isAssignableFrom(type)) {
-            LOGGER.warn("Map not supported yet");
+            if (!mapTypeQuerySampleWarned) {
+                mapTypeQuerySampleWarned = true;
+                LOGGER.warn("Query sample does not support Map type! Make sure your @GetAction handler param or field be simple types");
+            }
             return "";
         } else if (ReadableInstant.class.isAssignableFrom(type)) {
             return bindName + "=<datetime>";

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* GH 1078 - Log warn message when `@Global` is found on instance method of an abstract class
 * API Doc - handle `@inheritDoc` tag #1089
 * ReflectedInvokerHelper treated `Set` as stateless type #1088
 * ParamValueLoaderService - PARAM_TREE not cleared in certain case #1087
