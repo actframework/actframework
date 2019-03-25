@@ -73,6 +73,13 @@ public enum ActConfigKey implements ConfigKey {
     MODE("mode", Act.Mode.PROD),
 
     /**
+     * `hot_reload.disabled` turn off/on hot reload on DEV mode (GH1090)
+     *
+     * Default value: `false`
+     */
+    HOT_RELOAD("hot_reload.enabled"),
+
+    /**
      * `act.xio.worker_threads.max`
      *
      * specifies the maximum number of worker threads shall be created.

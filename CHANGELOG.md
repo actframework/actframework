@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Add switch to disable auto hot deploy in DEV mode #1090
 * GH 1078 - Log warn message when `@Global` is found on instance method of an abstract class
 * API Doc - handle `@inheritDoc` tag #1089
 * ReflectedInvokerHelper treated `Set` as stateless type #1088

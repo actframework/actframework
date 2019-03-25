@@ -329,7 +329,7 @@ public class Job extends DestroyableBase implements Runnable {
         invokeParallelJobs();
         runPrecedenceJobs();
         try {
-            if (Act.isDev() && app.isStarted() && !sysJob) {
+            if (Act.isDev() && !Act.conf().hotReloadDisabled() && app.isStarted() && !sysJob) {
                 if (app.checkUpdates(false)) {
                     // app reloaded
                     return;

@@ -97,7 +97,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         }
         Exception refreshError = null;
         final boolean isDev = Act.isDev();
-        if (isDev) {
+        if (isDev && !Act.conf().hotReloadDisabled()) {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
