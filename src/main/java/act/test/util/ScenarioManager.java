@@ -199,6 +199,9 @@ public class ScenarioManager extends YamlLoader {
                 }
             }
             this.store.put(Keyword.of(key), scenario);
+            if (S.notBlank(scenario.refId)) {
+                this.store.put(Keyword.of(scenario.refId), scenario);
+            }
         }
     }
 

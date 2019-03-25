@@ -298,6 +298,8 @@ public class Scenario implements ScenarioPart {
     private CookieStore cookieStore;
     private App app;
     public String name;
+    // GH1091 - a user friendly name for dependency reference
+    public String refId;
     public String description;
     public boolean ignore = false;
     public List<String> fixtures = new ArrayList<>();
