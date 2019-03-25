@@ -165,7 +165,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
             String className = classInfo.className();
             boolean isRoutedMethod = app().isRoutedActionMethod(className, name);
-            return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
+            return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature);
         }
 
         @Override
@@ -354,7 +354,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private EnvAnnotationVisitor eav;
             private $.Var<Boolean> envMatched = $.var(true);
 
-            ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
+            ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature) {
                 super(ASM5, mv);
                 this.methodName = methodName;
                 this.desc = desc;
@@ -379,7 +379,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 if (Global.class.getName().equals(c.getName())) {
                     if (classInfo.isAbstract() && !isStatic) {
-                        logger.warn("\"@Global\" cannot be used on instance method of an abstract class");
+                        logger.warn("\"@Global\" cannot be used on instance method of an abstract class: %s.%s", classInfo.className(), methodName);
                     } else {
                         isGlobal.set(true);
                     }

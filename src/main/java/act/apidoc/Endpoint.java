@@ -594,7 +594,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         } else if (Map.class.isAssignableFrom(type)) {
             if (!mapTypeQuerySampleWarned) {
                 mapTypeQuerySampleWarned = true;
-                LOGGER.warn("Query sample does not support Map type! Make sure your @GetAction handler param or field be simple types");
+                LOGGER.warn("Query sample does not support Map type! Make sure your @GetAction handler params/fields be simple types");
             }
             return "";
         } else if (ReadableInstant.class.isAssignableFrom(type)) {
