@@ -53,28 +53,61 @@ SimpleRestfulServiceBase<
         this.dao = $.requireNotNull(dao);
     }
 
+    /**
+     * List all ${MODEL_TYPE} records.
+     *
+     * @return all ${MODEL_TYPE} records
+     */
     @GetAction
     public Iterable<MODEL_TYPE> list() {
         return dao.findAll();
     }
 
+    /**
+     * Returns a ${MODEL_TYPE} record by id.
+     *
+     * @param model
+     *      a URL path variable specify the id of the record to be returned
+     * @return a ${MODEL_TYPE} record specified by URL path variable `model`
+     */
     @GetAction("{model}")
     public MODEL_TYPE get(@DbBind MODEL_TYPE model) {
         return model;
     }
 
+    /**
+     * Create a ${MODEL_TYPE} record.
+     *
+     * @param model
+     *      the data for the new ${MODEL_TYPE} record.
+     * @return
+     *      the id of the new ${MODEL_TYPE} record.
+     */
     @PostAction
     @PropertySpec("id")
     public MODEL_TYPE create(MODEL_TYPE model) {
         return dao.save(model);
     }
 
+    /**
+     * Update a ${MODEL_TYPE} record by id.
+     *
+     * @param model
+     *      the URL path variable specifies the id of the record to be updated.
+     * @param data
+     *      the update data that will be applied to the ${MODEL_TYPE} record
+     */
     @PutAction("{model}")
     public void update(@DbBind MODEL_TYPE model, MODEL_TYPE data) {
         $.merge(data).filter("-id").to(model);
         dao.save(model);
     }
 
+    /**
+     * Delete a ${MODEL_TYPE} record by id.
+     * @param id
+     *      the URL path variable specifies the id of the record to be deleted.
+     */
     @DeleteAction("{id}")
     public void delete(ID_TYPE id) {
         dao.deleteById(id);

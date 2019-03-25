@@ -28,7 +28,7 @@
                             <span if={ defaultValue }>{ defaultValue }</span>
                             <span if={ !defaultValue }>N/A</span>
                         </td>
-                        <td>{ description }</td>
+                        <td><raw html={ richDesc }></raw></td>
                     </tr>
                     </tbody>
                 </table>
@@ -45,7 +45,7 @@
         </div>
         <div class="return" if={ endpoint.returnDescription }>
             <h5>Return</h5>
-            <div class="return-desc">{ endpoint.returnDescription }</div>
+            <div class="return-desc"><raw html={ endpoint.richReturnDescription }></raw></div>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
             <h5>Return value sample</h5>
@@ -80,7 +80,8 @@
         }
 
         .desc ul li {
-            line-height: 150%;
+            line-height: 160%;
+            font-size: 13px;
         }
 
         table {
@@ -224,8 +225,28 @@
         fetchEndpoints() {
             $.getJSON('/~/apibook/endpoints', function(endpoints) {
                 for(var i = 0, j = endpoints.length; i < j; ++i) {
-                    var endpoint = endpoints[i];
+                    var endpoint = endpoints[i]
                     endpoint.richDesc = riot.md.render(endpoint.description);
+                    if (endpoint.returnDescription) {
+                        var html = riot.md.render(endpoint.returnDescription)
+                        var tag = $(html)
+                        endpoint.richReturnDescription = tag.html()
+                    } else {
+                        endpoint.richReturnDescription = ''
+                    }
+                    for (var pi = 0, pj = endpoint.params.length; pi < pj; ++pi) {
+                        var param = endpoint.params[pi]
+                        if (param && param.description) {
+                            var html = riot.md.render(param.description)
+                            var tag = $(html)
+                            param.richDesc = tag.html()
+                            if (!param.richDesc || typeof param.richDesc === 'undefined') {
+                                param.richDesc = ''
+                            }
+                        } else if (param) {
+                            param.richDesc = ''
+                        }
+                    }
                 }
                 self.endpoints = endpoints
                 self.update()
