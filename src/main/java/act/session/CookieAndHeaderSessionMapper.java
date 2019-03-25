@@ -31,8 +31,8 @@ public class CookieAndHeaderSessionMapper extends CompoundSesssionMapper {
     @Inject
     public CookieAndHeaderSessionMapper(AppConfig config) {
         super(
-                new CookieSessionMapper(config),
-                new HeaderTokenSessionMapper(config)
+                new HeaderTokenSessionMapper(config),
+                new CookieSessionMapper(config)
         );
     }
 }

@@ -76,7 +76,7 @@ public class HeaderTokenSessionMapper implements SessionMapper {
     @Override
     public String readSession(H.Request request) {
         String payload = request.header(sessionHeader);
-        return hasSessionPayloadPrefix ? S.afterFirst(payload, sessionPayloadPrefix) : payload;
+        return null == payload ? null : hasSessionPayloadPrefix ? S.afterFirst(payload, sessionPayloadPrefix) : payload;
     }
 
     @Override
