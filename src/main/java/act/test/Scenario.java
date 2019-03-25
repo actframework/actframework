@@ -338,11 +338,11 @@ public class Scenario implements ScenarioPart {
     }
 
     public String title() {
-        String s = S.blank(description) ? name : description;
-        if (ignore) {
-            s = "[IGNORED]" + s;
+        S.Buffer buf = S.buffer("[").a(name).a("]");
+        if (S.notBlank(description)) {
+            buf.a(" ").a(description);
         }
-        return s;
+        return buf.toString();
     }
 
     public void cache(String name, Object payload) {
