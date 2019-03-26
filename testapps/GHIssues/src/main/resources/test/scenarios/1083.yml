@@ -1,5 +1,5 @@
 Scenario(1083):
-  description: "[1083] `ISObject` is not null when no file is uploaded"
+  description: "`ISObject` is not null when no file is uploaded"
   interactions:
   - description: It shall be null when no file uploaded
     request:

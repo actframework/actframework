@@ -162,7 +162,7 @@ public class ReflectedInvokerHelper {
         }
         // when type is interface or abstract class we need to infer it as stateful
         // as we can't determine the implementation class
-        if (!type.getSimpleName().equals("Logger") && (type.isInterface() || Modifier.isAbstract(type.getModifiers()))) {
+        if ((Modifier.isAbstract(type.getModifiers()) || type.isInterface()) && !isStatelessType(type)) {
             return false;
         }
         if (circularReferenceDetector.contains(type)) {
@@ -170,6 +170,18 @@ public class ReflectedInvokerHelper {
         }
         circularReferenceDetector.add(type);
         return _isGlobalOrStateless(type, circularReferenceDetector);
+    }
+
+
+    private static List<String> statelessTypeTraits = C.list("Logger", "CacheService");
+    private static boolean isStatelessType(Class<?> intfType) {
+        String typeName = intfType.getName();
+        for (String s : statelessTypeTraits) {
+            if (typeName.contains(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static $.Predicate<Class<?>> STATEFUL_CLASS = new $.Predicate<Class<?>>() {

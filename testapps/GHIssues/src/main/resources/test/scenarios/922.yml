@@ -1,5 +1,5 @@
 Scenario(922):
-  description: "[922] Allow app to customise error response upon invalid request"
+  description: Allow app to customise error response upon invalid request
   interactions:
     - description: method specific violation advice
       request:

@@ -1,5 +1,5 @@
 Scenario(1064):
-  description: "[1064] StackOverflowError caused by JsonDtoPatch"
+  description: StackOverflowError caused by JsonDtoPatch
   interactions:
     - description: Test
       request:

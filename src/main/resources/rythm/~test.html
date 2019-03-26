@@ -15,8 +15,8 @@
     body {
       background-color: #222;
       color: #f1f1f1;
-      font-family: "Roboto", "Trebuchet MS", "Dejavu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 1em;
+      font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
     }
     a {color: #00b8b6;}
     h1,h2,h3,h4,h5 {
@@ -65,6 +65,9 @@
       color: #aaa;
       text-decoration: line-through;
     }
+    ul.interactions li {
+      margin-bottom: 8px;
+    }
   </style>
   @render(head)
 </head>
@@ -73,7 +76,7 @@
 <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
 @for(Scenario scenario: result) {
 <h4 @if(scenario.ignore) {class="ignore"}>
-  @scenario.title().nl2br().raw()
+  @scenario.title().raw()
   @if(!scenario.ignore && !scenario.status.pass()) {
     @if(scenario.source) {
   <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
@@ -107,7 +110,7 @@
 @if(!scenario.ignore && !scenario.status.pass() && null != scenario.errorMessage && !scenario.errorMessage.contains("Interaction[")) {
 <div class="@scenario.status">
   [@scenario.status] @scenario.errorMessage
-  @if(scenario.cause) {
+  @if(null != scenario.cause && (!(scenario.cause instanceof act.test.util.ErrorMessage))) {
   <pre>
 @scenario.causeStackTrace()
   </pre>
@@ -122,7 +125,7 @@
     [@interaction.status] @interaction.description.capFirst()
     @if(interaction.errorMessage) {
     <div class="error-message">- @interaction.errorMessage</div>
-    @if(interaction.cause) {
+    @if(interaction.cause != null && (!(interaction.cause instanceof act.test.util.ErrorMessage))) {
 <pre>
 @interaction.causeStackTrace()
 </pre>

@@ -1,5 +1,5 @@
 Scenario(958):
-  description: "[GH958] `NullPointerException` when route path element wrapped with `~` is no the final one"
+  description: "`NullPointerException` when route path element wrapped with `~` is no the final one"
   interactions:
   - description: test
     request:

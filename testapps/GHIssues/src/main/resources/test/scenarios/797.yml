@@ -1,5 +1,5 @@
 Scenario(797):
-  description: "[797] JSON output: default format for `java.util.Date` missing time part"
+  description: "JSON output: default format for `java.util.Date` missing time part"
   interactions:
   - description: Test
     request:

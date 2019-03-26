@@ -1,5 +1,5 @@
 Scenario(1016):
-  description: "[1016] Annotations with ValueLoader cannot work if post with json"
+  description: Annotations with ValueLoader cannot work if post with json
   interactions:
   - description: Test
     request:

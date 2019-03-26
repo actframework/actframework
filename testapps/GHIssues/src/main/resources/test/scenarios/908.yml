@@ -1,5 +1,5 @@
 Scenario(908):
-  description: "[908] Test - allow setting precision of ${now()} function"
+  description: Test - allow setting precision of ${now()} function
   constants:
     startTs0: ${now()}   # default: low precision
     startTs1: ${now(hp)} # specify high precision

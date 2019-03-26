@@ -1,5 +1,5 @@
 Scenario(866):
-  description: "[866] `PropertySpec` specification not working when return value is a list"
+  description: "`PropertySpec` specification not working when return value is a list"
   interactions:
     - description: test
       request:

@@ -1,5 +1,5 @@
 Scenario(786):
-  description: "[786] `@Data` enhancement shall call super by default for Map/AdaptiveMap types"
+  description: "`@Data` enhancement shall call super by default for Map/AdaptiveMap types"
   interactions:
   - description: test case A - app shall specify call super
     request:

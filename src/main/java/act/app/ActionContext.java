@@ -1174,7 +1174,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public S.Buffer buildViolationMessage(S.Buffer builder, String separator) {
-        Map<String, ConstraintViolation> violations = violations();
+        return buildViolationMessage(violations(), builder, separator);
+    }
+
+    public static S.Buffer buildViolationMessage(Map<String, ConstraintViolation> violations, S.Buffer builder, String separator) {
         if (violations.isEmpty()) return builder;
         for (Map.Entry<String, ConstraintViolation> entry : violations.entrySet()) {
             builder.append(entry.getKey()).append(": ").append(entry.getValue().getMessage()).append(separator);

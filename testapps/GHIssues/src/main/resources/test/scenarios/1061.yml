@@ -1,5 +1,5 @@
 Scenario(1061):
-  description: "[1061] act1.8.17 Document Class Object conflict"
+  description: act1.8.17 Document Class Object conflict
   interactions:
     - description: Test
       request:

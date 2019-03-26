@@ -1,5 +1,5 @@
 Scenario(1058):
-  description: "[1058] metric command stop working"
+  description: metric command stop working
   interactions:
     - description: test
       request:

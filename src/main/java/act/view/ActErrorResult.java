@@ -25,8 +25,7 @@ import static act.util.ActError.Util.loadSourceInfo;
 import static org.osgl.http.H.Status.INTERNAL_SERVER_ERROR;
 
 import act.Act;
-import act.app.App;
-import act.app.SourceInfo;
+import act.app.*;
 import act.asm.AsmContext;
 import act.asm.AsmException;
 import act.exception.BindException;
@@ -41,10 +40,8 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.validation.ValidationException;
+import java.util.*;
+import javax.validation.*;
 
 public class ActErrorResult extends ErrorResult implements ActError {
 
@@ -211,6 +208,17 @@ public class ActErrorResult extends ErrorResult implements ActError {
     public static Result of(Throwable t) {
         if (t instanceof Result) {
             return (Result) t;
+        } else if (t instanceof ConstraintViolationException) {
+            ConstraintViolationException e = (ConstraintViolationException) t;
+            Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
+            Map<String, ConstraintViolation> lookup = new HashMap<>();
+            for (ConstraintViolation v : violations) {
+                lookup.put(S.pathConcat(v.getRootBeanClass().getSimpleName(), '.', v.getPropertyPath().toString()), v);
+            }
+            S.Buffer buf = S.buffer();
+            ActionContext.buildViolationMessage(lookup, buf, ";");
+            String msg = buf.toString();
+            return ActBadRequest.create(msg);
         } else if (t instanceof org.rythmengine.exception.RythmException) {
             return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(INTERNAL_SERVER_ERROR);
         } else if (t instanceof AsmException) {

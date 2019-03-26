@@ -1,5 +1,5 @@
 Scenario(852):
-  description: "[852] @PropertySpec not take effect"
+  description: "@PropertySpec not take effect"
   interactions:
     - description: test
       request:

@@ -24,10 +24,7 @@ import act.app.App;
 import act.plugin.AppServicePlugin;
 
 import javax.inject.Singleton;
-import javax.validation.Configuration;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 
 @Singleton
 public class ValidationPlugin extends AppServicePlugin {

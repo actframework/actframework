@@ -1,5 +1,5 @@
 Scenario(829):
-  description: "[829] Allow app developer to specify download file name"
+  description: Allow app developer to specify download file name
   interactions:
     - description: test static filename setting by `@DownloadFilename` annotation
       request:

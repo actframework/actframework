@@ -1,5 +1,5 @@
 Scenario(819):
-  description: "[819] Extended request handler method's param not enhanced with `@Named` annotation"
+  description: Extended request handler method's param not enhanced with `@Named` annotation
   interactions:
   - description: Test
     request:

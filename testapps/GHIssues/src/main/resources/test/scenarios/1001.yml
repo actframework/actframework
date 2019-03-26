@@ -1,5 +1,5 @@
 Scenario(1001):
-  description: "[1001] HTTP GET support json auto bind to obj #1001"
+  description: HTTP GET support json auto bind to obj #1001
   interactions:
   - description: Test
     request:

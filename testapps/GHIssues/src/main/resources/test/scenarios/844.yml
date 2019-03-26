@@ -1,5 +1,5 @@
 Scenario(844):
-  description: "[844] Create an annotation to help specify head mapping for `@LoadResource` mechanism"
+  description: Create an annotation to help specify head mapping for `@LoadResource` mechanism
   interactions:
     - description: test
       request:

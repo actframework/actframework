@@ -1,4 +1,4 @@
-package test;
+package ghissues.gh1069;
 
 import java.lang.annotation.*;
 import javax.validation.*;

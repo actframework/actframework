@@ -1,5 +1,5 @@
 Scenario(857):
-  description: "[857] Provide a way to allow app to specify order of elements in the injected collection"
+  description: Provide a way to allow app to specify order of elements in the injected collection
   interactions:
     - description: test
       request:

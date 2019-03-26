@@ -1,5 +1,5 @@
 Scenario(790):
-  description: "[790] Resource loader - allow loading from excel file"
+  description: Resource loader - allow loading from excel file
   interactions:
   - description: retreive all students
     request:

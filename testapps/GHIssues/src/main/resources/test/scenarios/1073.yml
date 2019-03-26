@@ -1,5 +1,5 @@
 Scenario(1073):
-  description: "[1073] `@LoadResource ` load yml file to bean failed"
+  description: "`@LoadResource` load yml file to bean failed"
   interactions:
     - description: Test
       request:

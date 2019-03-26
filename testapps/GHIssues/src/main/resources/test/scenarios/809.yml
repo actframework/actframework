@@ -1,5 +1,5 @@
 Scenario(809):
-  description: "[809] Bytecode enhanement error on App start"
+  description: Bytecode enhanement error on App start
   interactions:
   - description: Test
     request:

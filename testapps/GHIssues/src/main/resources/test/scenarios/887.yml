@@ -1,5 +1,5 @@
 Scenario(887):
-  description: "[887] Route table: support whitespace in URL path"
+  description: "Route table: support whitespace in URL path"
   interactions:
   - description: test
     request:

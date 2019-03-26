@@ -1,5 +1,5 @@
 Scenario(976):
-  description: "[GH976] SimpleRestfulServiceBase 'update' enhancement"
+  description: SimpleRestfulServiceBase 'update' enhancement
   interactions:
   - description: create data
     request:

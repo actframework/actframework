@@ -1,5 +1,5 @@
 Scenario(1005):
-  description: "[1005] @PropertySpec and PropertySpec.current.set cannot work"
+  description: "@PropertySpec and PropertySpec.current.set cannot work"
   interactions:
   - description: Test
     request:

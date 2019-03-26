@@ -26,6 +26,7 @@ import act.controller.ExpressController;
 import act.controller.annotation.Port;
 import act.controller.annotation.UrlContext;
 import act.route.Router;
+import act.sys.Env;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.mvc.annotation.GetAction;
@@ -44,6 +45,16 @@ public class ConfAdmin {
 
     @Inject
     private AppConfig appConfig;
+
+    @Env.RequireMode(Act.Mode.DEV)
+    @Command(name = "act.conf.hot_reload", help = "enable/disable hot reload in dev mode")
+    public void disableEnableHotReload(
+            @Required("true for enable, false for disable") boolean enable,
+            CliContext context
+    ) {
+        Act.conf().enableDisableHotReload(enable);
+        context.println(Act.conf().hotReloadDisabled() ? "Hot reload disabled" : "Hot reload enabled");
+    }
 
     @Command(name = "act.conf.list, act.conf, act.configuration, act.configurations", help = "list configuration")
     @PropertySpec("key,val")

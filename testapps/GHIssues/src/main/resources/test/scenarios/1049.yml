@@ -1,5 +1,5 @@
 Scenario(1049):
-  description: "[1049] Error enhancing class with `@Data` annotation"
+  description: Error enhancing class with `@Data` annotation
   interactions:
     - description: Test
       request:

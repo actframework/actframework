@@ -1,5 +1,5 @@
 Scenario(911):
-  description: "[911] Test - enhance ${now()} function"
+  description: Test - enhance ${now()} function
   interactions:
   - description: simple now
     request:

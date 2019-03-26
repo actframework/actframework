@@ -76,7 +76,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             private void initDao() {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
-                    private boolean isValidDao(Class c) {
+                    private boolean isGeneral(Class c) {
                         return Generics.tryGetTypeParamImplementations(c, DaoBase.class).isEmpty();
                     }
 
@@ -86,8 +86,10 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                         if (Modifier.isAbstract(daoType.getModifiers())) {
                             return;
                         }
-                        if (isValidDao(daoType)) {
-                            warn("Ignore dao type[%s]: no type implementation found", daoType.getName());
+                        if (isGeneral(daoType)) {
+                            if (!daoType.getName().startsWith("act.")) {
+                                warn("Ignore dao type[%s]: no type implementation found", daoType.getName());
+                            }
                             return;
                         }
                         try {

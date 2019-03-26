@@ -1,5 +1,5 @@
 Scenario(990):
-  description: "[990] @Named inject fail #990"
+  description: "@Named inject fail #990"
   interactions:
   - description: Test
     request:

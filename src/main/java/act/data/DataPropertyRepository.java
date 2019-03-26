@@ -215,6 +215,8 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         s.add(LocalDateTime.class);
         s.add(LocalTime.class);
 
+        s.add(Object.class); // use toString() to ouptut
+
         terminators = s;
 
         Set<String> s0 = C.newSet();

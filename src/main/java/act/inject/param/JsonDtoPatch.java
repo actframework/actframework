@@ -21,6 +21,7 @@ package act.inject.param;
  */
 
 import act.Act;
+import act.app.App;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ValueLoader;
@@ -57,7 +58,7 @@ public class JsonDtoPatch {
                 if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
                     continue;
                 }
-                if (Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+                if (App.class == fieldType || Class.class == fieldType || Object.class == fieldType || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
                     continue;
                 }
                 String fieldName = fieldSpec.name();

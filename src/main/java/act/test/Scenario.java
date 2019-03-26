@@ -301,6 +301,7 @@ public class Scenario implements ScenarioPart {
     // GH1091 - a user friendly name for dependency reference
     public String refId;
     public String description;
+    public String issueUrl;
     public boolean ignore = false;
     public List<String> fixtures = new ArrayList<>();
     public Object generateTestData;
@@ -344,7 +345,11 @@ public class Scenario implements ScenarioPart {
         if (S.notBlank(description)) {
             buf.a(" ").a(description);
         }
-        return buf.toString();
+        String label = buf.toString();
+        if (null != this.issueUrl && this.issueUrl.startsWith("http")) {
+            return S.concat("<a target='_blank' href='", issueUrl, "'>", label, "</a>");
+        }
+        return label;
     }
 
     public void cache(String name, Object payload) {

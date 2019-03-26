@@ -1,6 +1,6 @@
 # The issue cannot be closed till Fastjson provide deserialization support for multi-map
 #Scenario(1026):
-#  description: "[1026] act post could not support Multimap type"
+#  description: act post could not support Multimap type
 #  interactions:
 #  - description: Test
 #    request:

@@ -26,11 +26,14 @@ import static act.test.util.ErrorMessage.error;
 import act.Act;
 import act.test.inbox.Inbox;
 import act.test.macro.Macro;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import okhttp3.Response;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Interaction implements ScenarioPart {
@@ -140,7 +143,24 @@ public class Interaction implements ScenarioPart {
         H.Status expected = expectedStatus();
         if (null == expected) {
             if (!resp.isSuccessful()) {
-                error("Status verification failure. Expected: successful, Found: " + resp.code());
+                int status = resp.code();
+                try {
+                    String body = resp.body().string();
+                    String msg = body;
+                    if (body.startsWith("{") && body.endsWith("}")) {
+                        try {
+                            JSONObject json = JSON.parseObject(body);
+                            if (json.containsKey("message")) {
+                                msg = json.getString("message");
+                            }
+                        } catch (Exception e) {
+                            // ignore
+                        }
+                    }
+                    error("Status verification failure. Expected: successful, Found: %s, Error message: %s", status, msg);
+                } catch (IOException e) {
+                    error("Status verification failure. Expected: successful, Found: %s", status);
+                }
             }
         } else {
             if (expected.code() != resp.code()) {

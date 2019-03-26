@@ -49,6 +49,7 @@ public class ScenarioManager extends YamlLoader {
     private Map<Keyword, Scenario> store = new LinkedHashMap<>();
 
     private String urlContext;
+    private String issueUrlTemplate;
 
     public ScenarioManager() {
         super("act.test");
@@ -89,6 +90,7 @@ public class ScenarioManager extends YamlLoader {
         }
         AppConfig<?> config = app.config();
         urlContext = config.get("test.urlContext");
+        issueUrlTemplate = config.get("test.issueUrlTemplate");
     }
 
     private void loadDefault() {
@@ -201,6 +203,9 @@ public class ScenarioManager extends YamlLoader {
             this.store.put(Keyword.of(key), scenario);
             if (S.notBlank(scenario.refId)) {
                 this.store.put(Keyword.of(scenario.refId), scenario);
+            }
+            if (S.blank(scenario.issueUrl) && S.notBlank(issueUrlTemplate)) {
+                scenario.issueUrl = S.fmt(issueUrlTemplate, key);
             }
         }
     }

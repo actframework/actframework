@@ -1,5 +1,5 @@
 Scenario(1015):
-  description: "[1015] `StackOverflowError` caused by POJO typed request handler method param circular reference"
+  description: "`StackOverflowError` caused by POJO typed request handler method param circular reference"
   interactions:
   - description: Test
     request:

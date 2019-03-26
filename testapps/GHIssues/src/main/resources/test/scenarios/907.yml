@@ -1,5 +1,5 @@
 Scenario(907):
-  description: "[907] Interceptor defined in super class now not effective on sub class"
+  description: Interceptor defined in super class now not effective on sub class
   interactions:
   - description: Test
     request:

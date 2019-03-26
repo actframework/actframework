@@ -1,5 +1,5 @@
 Scenario(1022):
-  description: "[1022] Routing issue with dynamic aliases"
+  description: Routing issue with dynamic aliases
   interactions:
   - description: Get foo
     request:

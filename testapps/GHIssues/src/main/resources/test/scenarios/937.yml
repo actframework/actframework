@@ -1,5 +1,5 @@
 Scenario(937):
-  description: "[937] Missing `Content-Type` header in response servicing static file request"
+  description: Missing `Content-Type` header in response servicing static file request
   interactions:
   - description: Test
     request:

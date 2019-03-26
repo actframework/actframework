@@ -1,5 +1,5 @@
 Scenario(820):
-  description: "[820] Using generic typed injection in Controller cause `UnexpectedException`"
+  description: Using generic typed injection in Controller cause `UnexpectedException`
   interactions:
   - description: Test
     request:

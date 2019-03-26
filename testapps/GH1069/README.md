@@ -1,1 +1,0 @@
-If the app start without any error, then test passed.

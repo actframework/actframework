@@ -78,6 +78,10 @@ public class ActConfig extends Config<ActConfigKey> {
 
     private Boolean hotReload;
 
+    public void enableDisableHotReload(boolean on) {
+        hotReload = on;
+    }
+
     public boolean hotReloadDisabled() {
         if (null == hotReload) {
             hotReload = get(HOT_RELOAD, true);

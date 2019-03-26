@@ -24,14 +24,11 @@ import static act.app.ActionContext.contentTypeForErrorResult;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.POST;
 
-import act.Act;
-import act.ActResponse;
-import act.Destroyable;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppInterceptorManager;
+import act.*;
+import act.app.*;
 import act.app.event.SysEventId;
-import act.controller.*;
+import act.controller.CacheSupportMetaInfo;
+import act.controller.ResponseCache;
 import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.inject.util.Sorter;
@@ -242,8 +239,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             }
             if (null == result) {
                 H.Request req = context.req();
-                logger.error(e, "error handling request: " + req);
                 result = ActErrorResult.of(e);
+                if (result.status().isServerError()) {
+                    logger.error(e, "Server error encountered on handling request: " + req);
+                }
             }
             try {
                 onResult(result, context);

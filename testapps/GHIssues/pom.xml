@@ -32,9 +32,22 @@
       <artifactId>act-excel</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-jpa-common</artifactId>
+      <version>1.5.7-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-eclipselink</artifactId>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.actframework</groupId>-->
+      <!--<artifactId>act-hibernate</artifactId>-->
+    <!--</dependency>-->
     <dependency>
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>

@@ -1,5 +1,5 @@
 Scenario(860):
-  description: "[860] test resource not refreshed after hot-reload"
+  description: test resource not refreshed after hot-reload
   interactions:
   - description: Test
     preActions:

@@ -1,5 +1,5 @@
 Scenario(835):
-  description: "[835] Provide a mechanism to allow developer advice on return value of request handler method"
+  description: Provide a mechanism to allow developer advice on return value of request handler method
   interactions:
     - description: test specified advice
       request:

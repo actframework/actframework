@@ -1,5 +1,5 @@
 Scenario(985):
-  description: "[985] @Before @After not effect when sub class extends from super class"
+  description: "@Before @After not effect when sub class extends from super class"
   interactions:
   - description: test
     request:

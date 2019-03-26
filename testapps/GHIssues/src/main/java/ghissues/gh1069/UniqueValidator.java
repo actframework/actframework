@@ -1,4 +1,4 @@
-package test;
+package ghissues.gh1069;
 
 import act.app.App;
 import act.db.Dao;

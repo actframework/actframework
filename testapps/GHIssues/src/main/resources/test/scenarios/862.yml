@@ -1,7 +1,7 @@
 Scenario(862):
   constants:
     newFooName: ${randStr}
-  description: "[862] Support using `SessionVariable` annotation and `DbBind` together"
+  description: Support using `SessionVariable` annotation and `DbBind` together
   interactions:
   - description: Create record
     request:

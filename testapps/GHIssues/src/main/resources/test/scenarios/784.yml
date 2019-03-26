@@ -1,5 +1,5 @@
 Scenario(784):
-  description: "[784] `@Data` enhancement error when Model class has no fields"
+  description: "`@Data` enhancement error when Model class has no fields"
   interactions:
   - description: test
     request:
