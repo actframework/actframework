@@ -84,8 +84,9 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         if (ls != null) {
             return ls;
         }
-        ls = buildPropertyList(c);
-        repo.put(cn, ls);
+        Set<Class<?>> circularReferenceDetector = new HashSet<>();
+        ls = propertyListOf(c, circularReferenceDetector);
+        repo.put(c.getName(), ls);
         return ls;
     }
 
@@ -93,22 +94,27 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return outputFieldsCache.getOutputFields(spec, componentClass, context);
     }
 
-    private List<String> buildPropertyList(Class c) {
+    private List<String> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector) {
+        List<String> ls = buildPropertyList(c, circularReferenceDetector);
+        return ls;
+    }
+
+    private List<String> buildPropertyList(Class c, Set<Class<?>> circularReferenceDetector) {
         Method[] ma = c.getMethods();
         String context = "";
         List<String> retLst = new ArrayList<>();
         for (Method m: ma) {
-            buildPropertyPath(context, m, c, retLst);
+            buildPropertyPath(context, m, c, retLst, circularReferenceDetector);
         }
         Field[] fa = c.getFields();
         for (Field f: fa) {
-            buildPropertyPath(context, f, retLst);
+            buildPropertyPath(context, f, retLst, circularReferenceDetector);
         }
         Collections.sort(retLst);
         return retLst;
     }
 
-    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo) {
+    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo, Set<Class<?>> circularReferenceDetector) {
         if (m.getParameterTypes().length > 0) {
             return;
         }
@@ -126,21 +132,21 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return;
         }
         Class returnType = Generics.getReturnType(m, c);
-        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo);
+        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo, circularReferenceDetector);
     }
 
 
-    private void buildPropertyPath(String context, Field field, List<String> repo) {
-        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo);
+    private void buildPropertyPath(String context, Field field, List<String> repo, Set<Class<?>> circularReferenceDetector) {
+        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo, circularReferenceDetector);
     }
 
-    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo) {
+    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo, Set<Class<?>> circularReferenceDetector) {
         if (Class.class.equals(c)) {
             return;
         }
         if (c.isArray()) {
             Class componentType = c.getComponentType();
-            List<String> retTypeProperties = propertyListOf(componentType);
+            List<String> retTypeProperties = propertyListOf(componentType, circularReferenceDetector);
             context = context + propName + ".";
             for (String s: retTypeProperties) {
                 String s0 = context + s;
@@ -164,7 +170,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
                 Type[] ta = pt.getActualTypeArguments();
                 for (Type t0: ta) {
                     Class<?> c0 = (Class) t0;
-                    List<String> retTypeProperties = propertyListOf(c0);
+                    List<String> retTypeProperties = propertyListOf(c0, circularReferenceDetector);
                     context = context + propName + ".";
                     for (String s: retTypeProperties) {
                         String s0 = context + s;
@@ -183,13 +189,21 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             }
             return;
         }
-        List<String> retTypeProperties = propertyListOf(c);
-        context = context + propName + ".";
-        for (String s : retTypeProperties) {
-            String s0 = context + s;
-            if (!repo.contains(s0)) {
-                repo.add(s0);
+        if (circularReferenceDetector.contains(c)) {
+            return;
+        }
+        circularReferenceDetector.add(c);
+        try {
+            List<String> retTypeProperties = propertyListOf(c, circularReferenceDetector);
+            context = context + propName + ".";
+            for (String s : retTypeProperties) {
+                String s0 = context + s;
+                if (!repo.contains(s0)) {
+                    repo.add(s0);
+                }
             }
+        } finally {
+            circularReferenceDetector.remove(c);
         }
     }
 

@@ -1,0 +1,10 @@
+Scenario(1093):
+  description: "DataPropertyRepository - StackOverflowError building property path for model with circular reference"
+  interactions:
+  - description: Test
+    request:
+      get: 1093/users
+      accept: csv
+    response:
+      text:
+        - contains: green

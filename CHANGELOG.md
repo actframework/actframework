@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* DataPropertyRepository - StackOverflowError building property path for model with circular reference #1093
 * Error encountered with customised Unique validator when working with JPA #1069
 * Act-Test - add refId property to Scenario #1091
 * Add switch to disable auto hot deploy in DEV mode #1090

@@ -169,7 +169,11 @@ public class ReflectedInvokerHelper {
             return false;
         }
         circularReferenceDetector.add(type);
-        return _isGlobalOrStateless(type, circularReferenceDetector);
+        try {
+            return _isGlobalOrStateless(type, circularReferenceDetector);
+        } finally {
+            circularReferenceDetector.remove(type);
+        }
     }
 
 
