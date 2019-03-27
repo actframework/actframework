@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* java.lang.LinkageError caused by org.w3c.dom.Document #1096
 * ActFramework hot reload caused Ehcache Classloader Exception #1070
 * `@LoginUser` caused `InjectException` upon hot reload #1071
 * DataPropertyRepository - ClassCastException encountered building property path #1095

@@ -8,7 +8,6 @@ import javax.inject.Inject;
 
 @UrlContext("1069")
 public class Gh1069_Service extends BaseController {
-
     @Inject
     Gh1069User.Dao dao;
 
