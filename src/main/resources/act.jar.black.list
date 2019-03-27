@@ -5,6 +5,7 @@ commons
 core
 debugger
 ecj
+ehcache
 fastjson
 guava
 hamcrest
