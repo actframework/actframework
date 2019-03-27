@@ -1572,7 +1572,7 @@ public class App extends LogSupportedDestroyableBase {
         cache = cache(config().cacheName());
         cache.startup();
         if (Act.isDev()) {
-            cache.clear();
+            config.resetCacheServices(cache);
         }
         CacheService sessionCache = cache(config().cacheNameSession());
         if (cache != sessionCache) {

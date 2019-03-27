@@ -26,6 +26,7 @@ import act.util.ActContext;
 import act.util.PropertySpec;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -85,7 +86,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return ls;
         }
         Set<Class<?>> circularReferenceDetector = new HashSet<>();
-        ls = propertyListOf(c, circularReferenceDetector);
+        ls = propertyListOf(c, circularReferenceDetector, null);
         repo.put(c.getName(), ls);
         return ls;
     }
@@ -94,27 +95,40 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return outputFieldsCache.getOutputFields(spec, componentClass, context);
     }
 
-    private List<String> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector) {
-        List<String> ls = buildPropertyList(c, circularReferenceDetector);
-        return ls;
+    private List<String> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+        if (null == typeImplLookup) {
+            typeImplLookup = Generics.buildTypeParamImplLookup(c);
+        } else {
+            typeImplLookup.putAll(Generics.buildTypeParamImplLookup(c));
+        }
+        if (circularReferenceDetector.contains(c)) {
+            return C.list();
+        }
+        circularReferenceDetector.add(c);
+        try {
+            List<String> ls = buildPropertyList(c, circularReferenceDetector, typeImplLookup);
+            return ls;
+        } finally {
+            circularReferenceDetector.remove(c);
+        }
     }
 
-    private List<String> buildPropertyList(Class c, Set<Class<?>> circularReferenceDetector) {
+    private List<String> buildPropertyList(Class c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         Method[] ma = c.getMethods();
         String context = "";
         List<String> retLst = new ArrayList<>();
         for (Method m: ma) {
-            buildPropertyPath(context, m, c, retLst, circularReferenceDetector);
+            buildPropertyPath(context, m, c, retLst, circularReferenceDetector, typeImplLookup);
         }
         Field[] fa = c.getFields();
         for (Field f: fa) {
-            buildPropertyPath(context, f, retLst, circularReferenceDetector);
+            buildPropertyPath(context, f, retLst, circularReferenceDetector, typeImplLookup);
         }
         Collections.sort(retLst);
         return retLst;
     }
 
-    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo, Set<Class<?>> circularReferenceDetector) {
+    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         if (m.getParameterTypes().length > 0) {
             return;
         }
@@ -132,21 +146,21 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return;
         }
         Class returnType = Generics.getReturnType(m, c);
-        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo, circularReferenceDetector);
+        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo, circularReferenceDetector, typeImplLookup);
     }
 
 
-    private void buildPropertyPath(String context, Field field, List<String> repo, Set<Class<?>> circularReferenceDetector) {
-        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo, circularReferenceDetector);
+    private void buildPropertyPath(String context, Field field, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo, circularReferenceDetector, typeImplLookup);
     }
 
-    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo, Set<Class<?>> circularReferenceDetector) {
+    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         if (Class.class.equals(c)) {
             return;
         }
         if (c.isArray()) {
             Class componentType = c.getComponentType();
-            List<String> retTypeProperties = propertyListOf(componentType, circularReferenceDetector);
+            List<String> retTypeProperties = propertyListOf(componentType, circularReferenceDetector, typeImplLookup);
             context = context + propName + ".";
             for (String s: retTypeProperties) {
                 String s0 = context + s;
@@ -169,8 +183,16 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
                 ParameterizedType pt = (ParameterizedType) t;
                 Type[] ta = pt.getActualTypeArguments();
                 for (Type t0: ta) {
-                    Class<?> c0 = (Class) t0;
-                    List<String> retTypeProperties = propertyListOf(c0, circularReferenceDetector);
+                    Class<?> c0;
+                    if (t0 instanceof Class) {
+                        c0 = (Class) t0;
+                    } else if (t0 instanceof TypeVariable) {
+                        String typeVarName = ((TypeVariable) t0).getName();
+                        c0 = typeImplLookup.get(typeVarName);
+                    } else {
+                        throw new UnexpectedException("Unknown type: " + t0);
+                    }
+                    List<String> retTypeProperties = propertyListOf(c0, circularReferenceDetector, typeImplLookup);
                     context = context + propName + ".";
                     for (String s: retTypeProperties) {
                         String s0 = context + s;
@@ -189,21 +211,13 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             }
             return;
         }
-        if (circularReferenceDetector.contains(c)) {
-            return;
-        }
-        circularReferenceDetector.add(c);
-        try {
-            List<String> retTypeProperties = propertyListOf(c, circularReferenceDetector);
-            context = context + propName + ".";
-            for (String s : retTypeProperties) {
-                String s0 = context + s;
-                if (!repo.contains(s0)) {
-                    repo.add(s0);
-                }
+        List<String> retTypeProperties = propertyListOf(c, circularReferenceDetector, typeImplLookup);
+        context = context + propName + ".";
+        for (String s : retTypeProperties) {
+            String s0 = context + s;
+            if (!repo.contains(s0)) {
+                repo.add(s0);
             }
-        } finally {
-            circularReferenceDetector.remove(c);
         }
     }
 

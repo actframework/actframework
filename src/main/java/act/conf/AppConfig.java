@@ -53,6 +53,8 @@ import act.ws.UsernameSecureTicketCodec;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
+import org.osgl.cache.impl.SimpleCacheService;
+import org.osgl.cache.impl.SimpleCacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -3334,6 +3336,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             }
         }
         return cacheServiceProvider.get(name);
+    }
+
+    public void resetCacheServices(CacheService sample) {
+        if (!Act.isDev()) {
+            return;
+        }
+        if (sample instanceof SimpleCacheService) {
+            SimpleCacheServiceProvider.reset();
+        }
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
