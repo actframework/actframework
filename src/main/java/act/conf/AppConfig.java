@@ -173,7 +173,6 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
         OsglConfig.setXmlRootTag(xmlRootTag());
 
-        OsglConfig.internalCache().clear();
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
         OsglConfig.registerGlobalInstanceFactory(new $.Function<Class, Object>() {
             final App app = Act.app();
@@ -3342,6 +3341,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         if (!Act.isDev()) {
             return;
         }
+        OsglConfig.internalCache().clear();
         if (sample instanceof SimpleCacheService) {
             SimpleCacheServiceProvider.reset();
         }
