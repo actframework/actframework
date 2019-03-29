@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.20**
+* request handler - allow bind to a path in JSON body #1099
+* Exception raised before committing to response shall trigger another 500 response #1097
 * OsglConfig.internalCache shall be cleared before DB start init #1098
 * java.lang.LinkageError caused by org.w3c.dom.Document #1096
 * ActFramework hot reload caused Ehcache Classloader Exception #1070

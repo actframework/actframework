@@ -300,18 +300,20 @@ public class Test extends LogSupport {
             }
             Collections.sort(list, new ScenarioComparator(scenarioManager, true));
             if (shutdownApp) {
+                boolean ansi = Banner.supportAnsi();
+                error("Failed and Ignored scenarios:");
                 for (Scenario scenario : list) {
                     if (scenario.status == TestStatus.FAIL) {
                         error("-----------------------------------------------------------");
-                        error("[%s] Failed", scenario.name);
+                        error("[failed] ", scenario.title());
                         if (S.notBlank(scenario.errorMessage)) {
-                            error("error: " + scenario.errorMessage);
+                            logError(ansi, scenario.errorMessage);
                         }
                         if (null != scenario.cause) {
-                            error("cause: \n" + E.stackTrace(scenario.cause));
+                            logError(ansi, "cause: \n" + E.stackTrace(scenario.cause));
                         }
                     } else if (scenario.ignore) {
-                        warn("[%s] ignored", scenario.name);
+                        warn("[ignored] %s", scenario.title());
                     }
                 }
             }
@@ -328,6 +330,15 @@ public class Test extends LogSupport {
             }
             eventBus.trigger(TestStop.INSTANCE);
         }
+    }
+
+    private void logError(boolean ansi, String msg, Object... args) {
+        msg = S.fmt(msg, args);
+        if (ansi) {
+            msg = "@|red " + msg + "|@";
+            msg = Ansi.ansi().render(msg).toString();
+        }
+        error(msg);
     }
 
     private void output(Scenario scenario) {

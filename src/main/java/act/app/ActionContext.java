@@ -119,6 +119,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private String attachmentName;
     private Class<?> handlerClass;
     private RouteSource routeSource;
+    private String patchedJsonBody;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -591,6 +592,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext routeSource(RouteSource routeSource) {
         this.routeSource = routeSource;
         return this;
+    }
+
+    public ActionContext patchedJsonBody(String patchedJsonBody) {
+        this.patchedJsonBody = patchedJsonBody;
+        return this;
+    }
+
+    public String patchedJsonBody() {
+        return patchedJsonBody;
     }
 
     public H.Format accept() {

@@ -79,6 +79,9 @@ class JsonDtoClassGenerator implements Opcodes {
 
     private void generateSetter(BeanSpec beanSpec) {
         String setterName = setterName(beanSpec);
+        if (setterName.contains(".")) {
+            return;
+        }
         mv = cw.visitMethod(ACC_PUBLIC, setterName, setterDescriptor(beanSpec), setterSignature(beanSpec), null);
         mv.visitCode();
         Label l0 = new Label();

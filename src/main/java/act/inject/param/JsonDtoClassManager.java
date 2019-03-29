@@ -260,7 +260,7 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
     private static String key(List<BeanSpec> beanSpecs) {
         S.Buffer sb = S.buffer();
         for (BeanSpec beanSpec : beanSpecs) {
-            sb.append(beanSpec.name()).append(beanSpec.type().hashCode());
+            sb.append(S.underscore(beanSpec.name())).append(beanSpec.type().hashCode());
         }
         return sb.toString();
     }

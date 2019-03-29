@@ -737,7 +737,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             return;
         }
         try {
-            JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
+            String patchedJsonBody = patchedJsonBody(context);
+            context.patchedJsonBody(patchedJsonBody);
+            JsonDto dto = JSON.parseObject(patchedJsonBody, dtoClass);
             if (null != dto) {
                 patchDtoBeans(dto);
                 cacheJsonDto(context, dto);
