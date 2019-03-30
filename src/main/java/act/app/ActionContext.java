@@ -732,6 +732,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return param(name, value);
     }
 
+    /**
+     * Get all parameter keys.
+     * @return a set of parameter keys
+     */
     @Override
     public Set<String> paramKeys() {
         Set<String> set = new HashSet<String>();
@@ -741,6 +745,18 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         set.remove("_method");
         set.remove("_body");
         return set;
+    }
+
+    /**
+     * Get all parameter names.
+     *
+     * This method is an alias to {@link #paramKeys()}. We provide this method
+     * to make it consistent with {@link H.Request#paramNames()}.
+     *
+     * @return a set of parameter names
+     */
+    public Set<String> paramNames() {
+        return paramKeys();
     }
 
     @Override

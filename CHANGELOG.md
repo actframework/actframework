@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Provide mechanism to inspect Job failure #1100
 * request handler - allow bind to a path in JSON body #1099
 * Exception raised before committing to response shall trigger another 500 response #1097
 * OsglConfig.internalCache shall be cleared before DB start init #1098

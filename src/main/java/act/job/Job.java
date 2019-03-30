@@ -337,11 +337,11 @@ public class Job extends DestroyableBase implements Runnable {
             }
             doJob();
             progress.markAsDone();
-        } catch (Throwable e) {
-            boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass()) || Error.class.isInstance(e);
-            Throwable cause = e;
+        } catch (Throwable t) {
+            boolean isFatal = FATAL_EXCEPTIONS.contains(t.getClass()) || !Exception.class.isInstance(t);
+            Throwable cause = t;
             if (!isFatal) {
-                cause = e.getCause();
+                cause = t.getCause();
                 while (null != cause) {
                     isFatal = FATAL_EXCEPTIONS.contains(cause.getClass());
                     if (isFatal) {
@@ -350,26 +350,26 @@ public class Job extends DestroyableBase implements Runnable {
                     cause = cause.getCause();
                 }
             }
-            progress.fail(e.getMessage());
+            progress.fail(t.getMessage());
             if (isFatal) {
                 if (Act.isDev()) {
-                    app.setBlockIssue(e);
+                    app.setBlockIssue(t);
                 } else {
+                    LOGGER.fatal(cause, "Fatal error executing job[%s]", id());
                     Act.shutdown(App.instance());
                     destroy();
                     if (App.instance().isMainThread()) {
                         if (cause instanceof RuntimeException) {
                             throw (RuntimeException) cause;
                         }
-                        throw E.unexpected(e);
-                    } else {
-                        LOGGER.fatal(cause, "Fatal error executing job %s", id());
+                        throw E.unexpected(t);
                     }
                 }
                 return;
             }
-            // TODO inject Job Exception Handling mechanism here
-            LOGGER.warn(e, "error executing job %s", id());
+
+            JobExceptionListenerManager manager = Act.jobManager().exceptionListenerManager();
+            manager.handleJobException(id(), (Exception) t);
         } finally {
             if (!isDestroyed()) {
                 executed = true;

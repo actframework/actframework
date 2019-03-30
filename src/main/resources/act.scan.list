@@ -25,6 +25,9 @@ act.i18n.EnumLookupCache
 act.inject.DependencyInjectorBase
 act.inject.genie.GenieInjector
 act.Info
+act.job.JobAdmin
+act.job.JobAdmin$WsProgress
+act.job.JobExceptionListenerFinder
 act.meta.ClassMetaInfoManager
 act.util.FastJsonEnhancedAdaptiveMapCodec
 act.util.FastJson
@@ -34,7 +37,5 @@ act.Zen
 act.apidoc.Endpoint.Service
 org.osgl.util.FastJsonKvCodec
 act.ws.WebSocketAdminConsole
-act.job.JobAdmin
-act.job.JobAdmin$WsProgress
 act.ws.WebSocketConnectionListener$Manager$Finder
 act\.monitor\..*

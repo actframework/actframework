@@ -57,6 +57,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     private ConcurrentMap<Method, Job> methodIndex = new ConcurrentHashMap<>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
     private CacheService jobResultCache;
+    private JobExceptionListenerManager exceptionListenerManager = new JobExceptionListenerManager();
 
     static String sysEventJobId(SysEventId eventId) {
         return S.concat(SYS_JOB_MARKER, eventId.toString().toLowerCase());
@@ -79,12 +80,17 @@ public class JobManager extends AppServiceBase<JobManager> {
     @Override
     protected void releaseResources() {
         LOGGER.trace("release job manager resources");
+        exceptionListenerManager.destroy();
         for (Job job : jobs.values()) {
             job.destroy();
         }
         jobs.clear();
         executor.getQueue().clear();
         executor.shutdownNow();
+    }
+
+    public JobExceptionListenerManager exceptionListenerManager() {
+        return exceptionListenerManager;
     }
 
     public <T> Future<T> now(Callable<T> callable) {
