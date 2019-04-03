@@ -348,6 +348,15 @@ public class Scenario implements ScenarioPart {
         return buf.toString();
     }
 
+    /**
+     * For {@link #title()} JSON export.
+     *
+     * @return the {@link #title()} of the scenario.
+     */
+    public String getTitle() {
+        return title();
+    }
+
     public void cache(String name, Object payload) {
         cache.put(name, payload);
     }

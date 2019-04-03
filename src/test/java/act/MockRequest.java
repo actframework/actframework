@@ -51,6 +51,11 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
+    public Iterable<String> headerNames() {
+        return null;
+    }
+
+    @Override
     public H.Format accept() {
         return super.accept();
     }

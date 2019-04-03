@@ -94,7 +94,7 @@ public class ScenarioDebugHelper {
     private Test test;
 
     @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
-    @PropertySpec("name, status, description")
+    @PropertySpec("name, status, title, errorMessage")
     public List<Scenario> run(App app, Keyword testId, ActionContext context) {
         if (context.accept() == H.Format.HTML) {
             context.templatePath("/~test.html");

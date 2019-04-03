@@ -28,6 +28,8 @@ import io.undertow.io.Receiver;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.HttpString;
+import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.util.*;
 
 import java.io.ByteArrayInputStream;
@@ -134,6 +136,11 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
             vals = hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));
         }
         return vals;
+    }
+
+    @Override
+    public Iterable<String> headerNames() {
+        return C.seq(hse.getRequestHeaders().getHeaderNames()).map($.F.<HttpString>asString());
     }
 
     @Override
