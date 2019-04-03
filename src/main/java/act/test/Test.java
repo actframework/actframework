@@ -301,11 +301,14 @@ public class Test extends LogSupport {
             Collections.sort(list, new ScenarioComparator(scenarioManager, true));
             if (shutdownApp) {
                 boolean ansi = Banner.supportAnsi();
-                error("Failed and Ignored scenarios:");
+                String msg = ansi ? Ansi.ansi().render("@|bold FAILED/IGNORED SCENARIOS:|@").toString() : "FAILED/IGNORED SCENARIOS:";
+                info("================================================================================");
+                info(msg);
+                info("--------------------------------------------------------------------------------");
                 for (Scenario scenario : list) {
                     if (scenario.status == TestStatus.FAIL) {
-                        error("-----------------------------------------------------------");
-                        error("[failed] ", scenario.title());
+                        info("--------------------------------------------------------------------------------");
+                        logError(ansi, "[failed] %s", scenario.title());
                         if (S.notBlank(scenario.errorMessage)) {
                             logError(ansi, scenario.errorMessage);
                         }
@@ -313,9 +316,11 @@ public class Test extends LogSupport {
                             logError(ansi, "cause: \n" + E.stackTrace(scenario.cause));
                         }
                     } else if (scenario.ignore) {
-                        warn("[ignored] %s", scenario.title());
+                        logIgnore(ansi, "[ignored] %s", scenario.title());
                     }
                 }
+                info("================================================================================");
+                info("");
             }
             return list;
         } catch (Exception e) {
@@ -336,6 +341,15 @@ public class Test extends LogSupport {
         msg = S.fmt(msg, args);
         if (ansi) {
             msg = "@|red " + msg + "|@";
+            msg = Ansi.ansi().render(msg).toString();
+        }
+        error(msg);
+    }
+
+    private void logIgnore(boolean ansi, String msg, Object... args) {
+        msg = S.fmt(msg, args);
+        if (ansi) {
+            msg = "@|faint " + msg + "|@";
             msg = Ansi.ansi().render(msg).toString();
         }
         error(msg);

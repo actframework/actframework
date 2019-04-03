@@ -345,11 +345,7 @@ public class Scenario implements ScenarioPart {
         if (S.notBlank(description)) {
             buf.a(" ").a(description);
         }
-        String label = buf.toString();
-        if (null != this.issueUrl && this.issueUrl.startsWith("http")) {
-            return S.concat("<a target='_blank' href='", issueUrl, "'>", label, "</a>");
-        }
-        return label;
+        return buf.toString();
     }
 
     public void cache(String name, Object payload) {

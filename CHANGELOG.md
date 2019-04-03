@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Add `-parameters` argument to ECJ #1103
+* Act-Test add containsIgnoreCase verifier #1102
 * Provide mechanism to inspect Job failure #1100
 * request handler - allow bind to a path in JSON body #1099
 * Exception raised before committing to response shall trigger another 500 response #1097
@@ -948,7 +950,7 @@
 * Update fastjson to 1.2.30
 
 1.0.5
-* * remove version range from pom.xml. See https://issues.apache.org/jira/browse/MNG-3092
+* * remove version range from pom.xml. See <https://issues.apache.org/jira/browse/MNG-3092>
 
 1.0.4
 * It shall display the exception stack trace tab on template exception page #109 

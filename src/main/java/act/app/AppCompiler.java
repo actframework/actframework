@@ -84,6 +84,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
         opt(map, OPTION_Source, conf.sourceVersion());
         opt(map, OPTION_TargetPlatform, conf.targetVersion());
         opt(map, OPTION_Compliance, conf.sourceVersion());
+        opt(map, OPTION_MethodParametersAttribute, GENERATE);
         compilerOptions = new CompilerOptions(map);
     }
 

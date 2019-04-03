@@ -76,7 +76,9 @@
 <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
 @for(Scenario scenario: result) {
 <h4 @if(scenario.ignore) {class="ignore"}>
-  @scenario.title().raw()
+  @scenario.title() @if(scenario.issueUrl) {
+    &nbsp;<a class="issue-url" href="@scenario.issueUrl" target="_blank">issue link</a>
+  }
   @if(!scenario.ignore && !scenario.status.pass()) {
     @if(scenario.source) {
   <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
@@ -92,7 +94,6 @@
     </li>
   </ul>
   <span class="no-source">
-    &nbsp;&nbsp;
     <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
       Re-run scenario &gt;
     </a>
