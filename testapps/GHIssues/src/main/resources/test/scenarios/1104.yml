@@ -11,4 +11,4 @@ Scenario(1104):
       json:
         size:
           - gt: 0
-        ?: bar
+        ?: foo
