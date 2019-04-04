@@ -444,6 +444,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         return this.order;
     }
 
+    public M handlerMetaInfo() {
+        return handler;
+
+    }
+
     @Override
     public Integer priority() {
         return handler.priority();

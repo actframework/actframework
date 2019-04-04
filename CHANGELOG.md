@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Mock data function for development #1106
 * Add headerNames() to UndertowRequest #1104
 * Add `-parameters` argument to ECJ #1103
 * Act-Test add containsIgnoreCase verifier #1102

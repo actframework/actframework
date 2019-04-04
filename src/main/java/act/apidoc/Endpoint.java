@@ -53,6 +53,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
+import java.beans.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -156,6 +157,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     /**
      * unique identify an endpoint in an application.
+     *
+     * Generated from class and method name via {@link SimpleEndpointIdProvider#id(Class, Method)}
      */
     public String id;
 
@@ -199,11 +202,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     public String module;
 
-    private transient Class<?> returnType;
+    private transient BeanSpec returnType;
 
     private Map<String, Class> typeLookups;
 
     public String returnSample;
+
+    public transient Object returnSampleObject;
 
     /**
      * Param list.
@@ -310,7 +315,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         return params;
     }
 
-    public Class<?> returnType() {
+    public BeanSpec returnType() {
         return returnType;
     }
 
@@ -319,10 +324,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     public String getReturnType() {
-        if (void.class == returnType || Void.class == returnType) {
-            return null;
-        }
-        return className(returnType);
+        return null == returnType ? null : returnType.toString();
     }
 
     public String getSampleJsonPost() {
@@ -372,7 +374,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         Class<?> controllerClass = invoker.controllerClass();
         typeLookups = Generics.buildTypeParamImplLookup(controllerClass);
         Method method = invoker.method();
-        returnType = Generics.getReturnType(method, controllerClass);
+        returnType = BeanSpec.of(method.getGenericReturnType(), Act.injector(), typeLookups);
         PropertySpec pspec = method.getAnnotation(PropertySpec.class);
         if (null != pspec) {
             PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
@@ -385,7 +387,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             List<String> outputs = propSpec.outputFieldsForHttp();
             Set<String> excluded = propSpec.excludeFieldsForHttp();
             if (!(outputs.isEmpty() && excluded.isEmpty())) {
-                fastJsonPropertyPreFilter = new FastJsonPropertyPreFilter(returnType, outputs, excluded, Act.app().service(DataPropertyRepository.class));
+                fastJsonPropertyPreFilter = new FastJsonPropertyPreFilter(returnType.rawType(), outputs, excluded, Act.app().service(DataPropertyRepository.class));
             }
             // just ignore cli value here
         }
@@ -415,7 +417,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
         this.controllerClass = controllerClass;
         try {
-            this.returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector()), typeParamLookup, true);
+            this.returnSample = null == returnType ? null : generateSampleJson(returnType, typeParamLookup, true);
         } catch (Exception e) {
             LOGGER.warn(e, "Error creating returnSample of endpoint for request handler [%s] for [%s %s]", handler, httpMethod, path);
         }
@@ -424,8 +426,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     private String inferModule(Class<?> controllerClass) {
         Class<?> enclosingClass = controllerClass.getEnclosingClass();
         if (null != enclosingClass) {
-            String enclosingModule = inferModule(enclosingClass);
-            return S.concat(enclosingModule, ".", controllerClass.getSimpleName());
+            return inferModule(enclosingClass);
         }
         return controllerClass.getSimpleName();
     }
@@ -540,17 +541,17 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         if (Result.class.isAssignableFrom(type) || void.class == type) {
             return null;
         }
-        Object sample = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), isReturn);
-        if (null == sample) {
+        returnSampleObject = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), isReturn);
+        if (null == returnSampleObject) {
             return null;
         }
-        if (sample instanceof Map && ((Map) sample).isEmpty()) {
+        if (returnSampleObject instanceof Map && ((Map) returnSampleObject).isEmpty()) {
             return null;
         }
         if ($.isSimpleType(type)) {
-            sample = C.Map("result", sample);
+            returnSampleObject = C.Map("result", returnSampleObject);
         }
-        return JSON.toJSONString(sample, true);
+        return JSON.toJSONString(returnSampleObject, true);
     }
 
     private String generateSampleQuery(BeanSpec spec, Map<String, Class> typeParamLookup, String bindName, Set<Type> typeChain, List<String> nameChain) {

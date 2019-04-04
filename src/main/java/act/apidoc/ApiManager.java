@@ -39,7 +39,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NamedNode;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.JavadocComment;
@@ -70,6 +72,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
      */
     SortedSet<Endpoint> endpoints = new TreeSet<>();
 
+    /**
+     * Mapped by {@link Endpoint#getId()}
+     */
     Map<String, Endpoint> endpointLookup = new HashMap<>();
 
     SortedMap<String, List<Endpoint>> moduleLookup = new TreeMap<>();
@@ -112,6 +117,10 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     protected void releaseResources() {
         endpoints.clear();
         moduleLookup.clear();
+    }
+
+    public Endpoint endpoint(String id) {
+        return endpointLookup.get(id);
     }
 
     public void load(App app) {
@@ -246,7 +255,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     }
 
     private Javadoc javadocOf(Endpoint endpoint, Map<String, Javadoc> methodJavaDocs) {
-        Javadoc javadoc = methodJavaDocs.get(endpoint.getId());
+        Javadoc javadoc = methodJavaDocs.get(endpoint.getId().replace('$', '.'));
         if (null == javadoc) {
             String parentId = endpoint.getParentId();
             if (S.blank(parentId)) {
@@ -290,7 +299,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 List<TypeDeclaration> types = compilationUnit.getTypes();
                 for (TypeDeclaration type : types) {
                     if (type instanceof ClassOrInterfaceDeclaration) {
-                        exploreDeclaration((ClassOrInterfaceDeclaration) type, methodJavaDocs, fieldJavaDocs, "");
+                        exploreDeclaration((ClassOrInterfaceDeclaration) type, methodJavaDocs, fieldJavaDocs);
                     }
                 }
             } catch (Exception e) {
@@ -338,12 +347,31 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         }
     }
 
-    private void exploreDeclaration(ClassOrInterfaceDeclaration classDeclaration, Map<String, Javadoc> methodJavaDocs, Map<String, Javadoc> fieldJavaDocs, String prefix) {
-        String className = classDeclaration.getName();
-        String newPrefix = S.blank(prefix) ? className : S.concat(prefix, ".", className);
+    private static String name(Node node) {
+        S.Buffer buffer = S.newBuffer();
+        Node parent = node.getParentNode();
+        if (null != parent) {
+            buffer.append(name(parent));
+        }
+        if (node instanceof NamedNode) {
+            buffer.append(".").append(((NamedNode) node).getName());
+        } else if (node instanceof CompilationUnit) {
+            CompilationUnit unit = $.cast(node);
+            PackageDeclaration pkg = unit.getPackage();
+            return pkg.getPackageName();
+        }
+        return buffer.toString();
+    }
+
+    private void exploreDeclaration(
+            ClassOrInterfaceDeclaration classDeclaration,
+            Map<String, Javadoc> methodJavaDocs,
+            Map<String, Javadoc> fieldJavaDocs
+    ) {
+        String prefix = name(classDeclaration);
         for (Node node : classDeclaration.getChildrenNodes()) {
             if (node instanceof ClassOrInterfaceDeclaration) {
-                exploreDeclaration((ClassOrInterfaceDeclaration) node, methodJavaDocs, fieldJavaDocs, newPrefix);
+                exploreDeclaration((ClassOrInterfaceDeclaration) node, methodJavaDocs, fieldJavaDocs);
             } else if (node instanceof FieldDeclaration) {
                 FieldDeclaration fieldDeclaration = (FieldDeclaration) node;
                 Comment comment = fieldDeclaration.getComment();
@@ -354,7 +382,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 if (vars.size() > 0) {
                     JavadocComment javadocComment = (JavadocComment) comment;
                     Javadoc javadoc = JavadocParser.parse(javadocComment);
-                    fieldJavaDocs.put(S.concat(newPrefix, ".", vars.get(0).getId()), javadoc);
+                    fieldJavaDocs.put(S.concat(prefix, ".", vars.get(0).getId()), javadoc);
                 }
             } else if (node instanceof MethodDeclaration) {
                 MethodDeclaration methodDeclaration = (MethodDeclaration) node;
@@ -371,7 +399,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 }
                 JavadocComment javadocComment = (JavadocComment) comment;
                 Javadoc javadoc = JavadocParser.parse(javadocComment);
-                methodJavaDocs.put(S.concat(newPrefix, ".", methodDeclaration.getName()), javadoc);
+                methodJavaDocs.put(S.concat(prefix, ".", methodDeclaration.getName()), javadoc);
             }
         }
     }

@@ -50,7 +50,7 @@ public class SimpleEndpointIdProvider implements EndpointIdProvider {
     }
 
     static String id(Class<?> controllerClass, Method method) {
-        return className(controllerClass) + "." + method.getName();
+        return controllerClass.getName() + "." + method.getName();
     }
 
     public static String className(Class<?> clz) {

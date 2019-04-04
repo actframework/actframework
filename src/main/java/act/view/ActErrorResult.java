@@ -32,6 +32,7 @@ import act.exception.BindException;
 import act.util.ActError;
 import org.osgl.$;
 import org.osgl.exception.InvalidRangeException;
+import org.osgl.exception.ToBeImplemented;
 import org.osgl.exception.UnsupportedException;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.ResponseStatus;
@@ -164,6 +165,12 @@ public class ActErrorResult extends ErrorResult implements ActError {
                 return ActNotImplemented.create(throwable);
             }
         };
+        x.put(ToBeImplemented.class, new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                return ActToBeImplemented.create();
+            }
+        });
         x.put(UnsupportedException.class, unsupported);
         x.put(UnsupportedOperationException.class, unsupported);
         x.put(IllegalStateException.class, new $.Transformer<Throwable, Result>() {
