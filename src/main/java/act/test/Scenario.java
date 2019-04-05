@@ -29,6 +29,10 @@ import static org.osgl.http.H.Method.POST;
 import act.Act;
 import act.app.App;
 import act.handler.builtin.FileGetter;
+import act.metric.MeasureTime;
+import act.metric.Metric;
+import act.metric.MetricInfo;
+import act.metric.Timer;
 import act.test.func.Func;
 import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
@@ -315,6 +319,7 @@ public class Scenario implements ScenarioPart {
     public String urlContext;
     public String partition = "DEFAULT";
     public String source;
+    private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
@@ -477,11 +482,20 @@ public class Scenario implements ScenarioPart {
         if (!clearFixtures) {
             return true;
         }
-        return verify(RequestSpec.RS_CLEAR_FIXTURE, "clearing fixtures");
+        Timer timer = metric.startTimer("clear-fixtures");
+        try {
+            return verify(RequestSpec.RS_CLEAR_FIXTURE, "clearing fixtures");
+        } finally {
+            timer.stop();
+        }
     }
 
     public String causeStackTrace() {
         return null == cause ? null: E.stackTrace(cause);
+    }
+
+    public String getStackTrace() {
+        return causeStackTrace();
     }
 
     void resolveRequest(RequestSpec req) {
@@ -489,8 +503,12 @@ public class Scenario implements ScenarioPart {
     }
 
     Response sendRequest(RequestSpec req) throws IOException {
+        Timer timer = metric.startTimer("build-request");
         Request httpRequest = new RequestBuilder(req).build();
+        timer.stop();
+        timer = metric.startTimer("send-request");
         Response resp = http.newCall(httpRequest).execute();
+        timer.stop();;
         lastHeaders.set(resp.headers());
         return resp;
     }
@@ -499,35 +517,45 @@ public class Scenario implements ScenarioPart {
         if (fixtures.isEmpty()) {
             return true;
         }
-        RequestSpec req = RequestSpec.loadFixtures(fixtures);
-        return verify(req, "creating fixtures");
+        Timer timer = metric.startTimer("create-fixtures");
+        try {
+            RequestSpec req = RequestSpec.loadFixtures(fixtures);
+            return verify(req, "creating fixtures");
+        } finally {
+            timer.stop();
+        }
     }
 
     private boolean generateTestData() {
         if (null == generateTestData) {
             return true;
         }
-        boolean ok;
-        if (generateTestData instanceof Map) {
-            Map<String, Integer> map = $.cast(generateTestData);
-            for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                RequestSpec req = RequestSpec.generateTestData(entry.getKey(), entry.getValue());
-                ok = verify(req, "generate test data for " + entry.getKey());
-                if (!ok) {
-                    return false;
+        Timer timer = metric.startTimer("generate-test-data");
+        try {
+            boolean ok;
+            if (generateTestData instanceof Map) {
+                Map<String, Integer> map = $.cast(generateTestData);
+                for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                    RequestSpec req = RequestSpec.generateTestData(entry.getKey(), entry.getValue());
+                    ok = verify(req, "generate test data for " + entry.getKey());
+                    if (!ok) {
+                        return false;
+                    }
+                }
+            } else if (generateTestData instanceof List) {
+                List<String> list = $.cast(generateTestData);
+                for (String modelType : list) {
+                    RequestSpec req = RequestSpec.generateTestData(modelType, 100);
+                    ok = verify(req, "generate test data for " + modelType);
+                    if (!ok) {
+                        return false;
+                    }
                 }
             }
-        } else if (generateTestData instanceof List) {
-            List<String> list = $.cast(generateTestData);
-            for (String modelType: list) {
-                RequestSpec req = RequestSpec.generateTestData(modelType, 100);
-                ok = verify(req, "generate test data for " + modelType);
-                if (!ok) {
-                    return false;
-                }
-            }
+            return true;
+        } finally {
+            timer.stop();
         }
-        return true;
     }
 
     private boolean verify(RequestSpec req, String operation) {
@@ -560,12 +588,17 @@ public class Scenario implements ScenarioPart {
     }
 
     private boolean reset() {
-        errorMessage = null;
-        clearSession();
-        if (depends.isEmpty()) {
-            return clearFixtures() && createFixtures() && generateTestData();
+        Timer timer = metric.startTimer("reset");
+        try {
+            errorMessage = null;
+            clearSession();
+            if (depends.isEmpty()) {
+                return clearFixtures() && createFixtures() && generateTestData();
+            }
+            return createFixtures() && generateTestData();
+        } finally {
+            timer.stop();
         }
-        return createFixtures() && generateTestData();
     }
 
     private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager) {
@@ -581,7 +614,12 @@ public class Scenario implements ScenarioPart {
         if (status.finished()) {
             return status.pass();
         }
-        return runDependents() && runInteractions();
+        Timer timer = metric.startTimer("run");
+        try {
+            return runDependents() && runInteractions();
+        } finally {
+            timer.stop();
+        }
     }
 
     private boolean runDependents() {

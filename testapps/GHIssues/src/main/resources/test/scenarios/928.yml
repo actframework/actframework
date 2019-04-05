@@ -1,4 +1,5 @@
 Scenario(928):
+  description: "`JPADao` injection error - it always inject the first `JPADao` instance"
   fixtures:
     - 928.yml
   interactions:

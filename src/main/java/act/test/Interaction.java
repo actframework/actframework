@@ -20,21 +20,29 @@ package act.test;
  * #L%
  */
 
-import static act.test.TestStatus.PENDING;
-import static act.test.util.ErrorMessage.error;
-
 import act.Act;
+import act.metric.Metric;
 import act.test.inbox.Inbox;
 import act.test.macro.Macro;
+import act.test.util.ErrorMessage;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.Response;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
-import org.osgl.util.*;
+import org.osgl.util.E;
+import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static act.metric.MetricInfo.ACT_TEST_INTERACTION;
+import static act.test.TestStatus.PENDING;
+import static act.test.util.ErrorMessage.error;
 
 public class Interaction implements ScenarioPart {
     public List<Macro> preActions = new ArrayList<>();
@@ -44,19 +52,25 @@ public class Interaction implements ScenarioPart {
     public List<Macro> postActions = new ArrayList<>();
     public Map<String, String> cache = new LinkedHashMap<>();
     public String errorMessage;
-    public Throwable cause;
+    public transient Throwable cause;
     public TestStatus status = PENDING;
+    private transient Metric metric = Act.metricPlugin().metric(ACT_TEST_INTERACTION);
 
     @Override
     public void validate(Scenario scenario) throws UnexpectedException {
         E.unexpectedIf(null == request, "request spec not specified in interaction[%s]", this);
         //E.unexpectedIf(null == response, "response spec not specified");
-        scenario.resolveRequest(request);
-        request.validate(this);
-        if (null != response) {
-            response.validate(this);
+        act.metric.Timer timer = metric.startTimer("validate");
+        try {
+            scenario.resolveRequest(request);
+            request.validate(this);
+            if (null != response) {
+                response.validate(this);
+            }
+            reset();
+        } finally {
+            timer.stop();
         }
-        reset();
     }
 
     @Override
@@ -64,10 +78,19 @@ public class Interaction implements ScenarioPart {
         return description;
     }
 
+    public String getStackTrace() {
+        return causeStackTrace();
+    }
+
     public boolean run() {
-        boolean pass = run(preActions) && verify() && run(postActions);
-        status = TestStatus.of(pass);
-        return pass;
+        act.metric.Timer timer = metric.startTimer("run");
+        try {
+            boolean pass = run(preActions) && verify() && run(postActions);
+            status = TestStatus.of(pass);
+            return pass;
+        } finally {
+            timer.stop();
+        }
     }
 
     public String causeStackTrace() {
@@ -102,9 +125,14 @@ public class Interaction implements ScenarioPart {
     }
 
     private void doVerify(Response resp) throws Exception {
-        verifyStatus(resp);
-        verifyHeaders(resp);
-        verifyBody(resp);
+        act.metric.Timer timer = metric.startTimer("verify");
+        try {
+            verifyStatus(resp);
+            verifyHeaders(resp);
+            verifyBody(resp);
+        } finally {
+            timer.stop();
+        }
     }
 
     private void doVerifyEmail(String email) throws Exception {
@@ -205,6 +233,10 @@ public class Interaction implements ScenarioPart {
 
     private static Throwable causeOf(Exception e) {
         Throwable cause = e.getCause();
-        return null == cause ? e : cause;
+        Throwable t = null == cause ? e : cause;
+        if (t instanceof ErrorMessage) {
+            t = null;
+        }
+        return t;
     }
 }

@@ -20,6 +20,8 @@ package act.util;
  * #L%
  */
 
+import java.util.Map;
+
 /**
  * Class implement this interface can track progress
  */
@@ -92,6 +94,23 @@ public interface ProgressGauge {
      * Mark the progress as done
      */
     void markAsDone();
+
+    /**
+     * Set payload to the gauge.
+     *
+     * This method could be used to pass additional message to
+     * listener including websocket broadcast
+     *
+     * @param key the key
+     * @param val the value
+     */
+    void setPayload(String key, Object val);
+
+    /**
+     * Returns the payload that has been set to this gauge.
+     * @return the payload set to this gauge
+     */
+    Map<String, Object> getPayload();
 
     /**
      * Add an listener to this gauge that monitors the progress update

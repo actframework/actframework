@@ -25,6 +25,10 @@ import org.osgl.$;
 public class MetricInfo {
 
     public static final String HTTP_HANDLER = "act:http";
+    public static final String ACT_TEST = "act:test";
+    public static final String ACT_TEST_HELPER = "act:test:helper";
+    public static final String ACT_TEST_SCENARIO = "act:test:scenario";
+    public static final String ACT_TEST_INTERACTION = "act:test:scenario:interaction";
     public static final String CLASS_LOADING = "act:classload";
     public static final String COMPILING = CLASS_LOADING + Metric.PATH_SEPARATOR + "compile";
     public static final String JOB_HANDLER = "act:job";

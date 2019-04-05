@@ -25,7 +25,9 @@ import org.osgl.$;
 import org.osgl.util.E;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.*;
 
 public class SimpleProgressGauge extends DestroyableBase implements ProgressGauge {
@@ -72,6 +74,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     private int maxHint;
     private int currentSteps;
     private String error;
+    private Map<String, Object> payload = new HashMap<>();
     private transient int percent;
     private ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
@@ -224,6 +227,17 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         }
     }
 
+    @Override
+    public void setPayload(String key, Object val) {
+        this.payload.put(key, val);
+        this.triggerUpdateEvent(true);
+    }
+
+    @Override
+    public Map<String, Object> getPayload() {
+        return this.payload;
+    }
+
     private void triggerUpdateEvent() {
         triggerUpdateEvent(false);
     }
@@ -264,7 +278,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     private static int percentage(int currentSteps, int maxHint) {
-        int n = currentSteps / (maxHint / 100);
+        int n = currentSteps * 100 / maxHint;
         return (100 <= n) && (currentSteps < (maxHint - 1)) ? 99 : n;
     }
 }

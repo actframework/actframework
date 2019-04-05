@@ -26,10 +26,15 @@ import act.app.App;
 import act.app.DbServiceManager;
 import act.app.event.SysEventId;
 import act.db.Dao;
+import act.db.DaoBase;
 import act.db.DbService;
 import act.event.EventBus;
 import act.inject.DefaultValue;
+import act.inject.param.NoBind;
 import act.job.*;
+import act.metric.MeasureTime;
+import act.metric.Metric;
+import act.metric.MetricInfo;
 import act.sys.Env;
 import act.test.func.Func;
 import act.test.macro.Macro;
@@ -37,13 +42,17 @@ import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
 import act.util.*;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.fusesource.jansi.Ansi;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.DeleteAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
+import org.xnio.streams.WriterOutputStream;
 
+import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -100,6 +109,7 @@ public class Test extends LogSupport {
      * setup testing data
      */
     @PostAction({"e2e/fixtures", "test/fixtures"})
+    @MeasureTime(MetricInfo.ACT_TEST_HELPER + ":load-fixtures")
     public void loadFixtures(List<String> fixtures) {
         for (String fixture : fixtures) {
             Job fixtureLoader = jobManager.jobById(fixture, false);
@@ -119,6 +129,7 @@ public class Test extends LogSupport {
      *      the number of records to be generated
      */
     @PostAction({"e2e/generateTestData", "test/generateTestData"})
+    @MeasureTime(MetricInfo.ACT_TEST_HELPER + ":generate-sample-data")
     public void generateSampleData(String modelType, @DefaultValue("100") Integer number) {
         E.illegalArgumentIf(number < 1);
         Class<?> modelClass = null;
@@ -153,6 +164,7 @@ public class Test extends LogSupport {
      * setup testing data
      */
     @DeleteAction({"e2e/fixtures", "test/fixtures"})
+    @MeasureTime(MetricInfo.ACT_TEST_HELPER + ":clear-fixtures")
     public void clearFixtures() {
         List<Dao> toBeDeleted = new ArrayList<>();
         for (DbService svc : dbServiceManager.registeredServices()) {
@@ -166,6 +178,9 @@ public class Test extends LogSupport {
                 try {
                     Dao dao = dbServiceManager.dao(entityClass);
                     if (dao.getClass().isAnnotationPresent(NotFixture.class)) {
+                        continue;
+                    }
+                    if (Generics.tryGetTypeParamImplementations(dao.getClass(), DaoBase.class).isEmpty()) {
                         continue;
                     }
                     toBeDeleted.add(dao);
@@ -187,7 +202,7 @@ public class Test extends LogSupport {
          * Hopefully when the owner model get removed eventually and
          * back to the previous model, it will be good to go.
          */
-        int count = 1000;
+        int count = toBeDeleted.size();
         while (!toBeDeleted.isEmpty() && count-- > 0) {
             List<Dao> list = new ArrayList<>(toBeDeleted);
             for (Dao dao : list) {
@@ -197,11 +212,11 @@ public class Test extends LogSupport {
                     try {
                         TxScope.commit();
                     } catch (Exception e) {
-                        continue;
+                        trace(e, "error drop dao");
                     }
                     toBeDeleted.remove(dao);
                 } catch (Exception e) {
-                    // ignore and try next dao
+                    trace(e, "error drop dao");
                 } finally {
                     TxScope.clear();
                 }
@@ -225,18 +240,21 @@ public class Test extends LogSupport {
             app.jobManager().post(SysEventId.POST_STARTED, new Runnable() {
                 @Override
                 public void run() {
+                    final ProgressGauge gauge = new SimpleProgressGauge();
                     if (delay.get() > 0l) {
                         app.jobManager().delay(new Runnable() {
                             @Override
                             public void run() {
-                                Test.this.run(app, null, true);
+                                Test.this.run(app, null, true, gauge);
+                                gauge.markAsDone();
                             }
                         }, delay.get(), TimeUnit.SECONDS);
                     } else {
                         app.jobManager().now(new Runnable() {
                             @Override
                             public void run() {
-                                Test.this.run(app, null, true);
+                                Test.this.run(app, null, true, gauge);
+                                gauge.markAsDone();
                             }
                         });
                     }
@@ -249,7 +267,7 @@ public class Test extends LogSupport {
         return $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
     }
 
-    public List<Scenario> run(App app, Keyword testId, boolean shutdownApp) {
+    public List<Scenario> run(App app, Keyword testId, boolean shutdownApp, ProgressGauge gauge) {
         E.illegalStateIf(inProgress());
         info("Start running test scenarios\n");
         int exitCode = 0;
@@ -268,26 +286,51 @@ public class Test extends LogSupport {
                 warn("No scenario defined.");
                 list = C.list();
             } else {
+                gauge.updateMaxHint(scenarios.size() + 1);
                 list = new ArrayList<>();
+                ProgressBar pb = null;
+                boolean pbStarted = false;
+                if (null == testId && shutdownApp && Banner.supportAnsi()) {
+                    String label = "Testing";
+                    pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
+                }
                 for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager, false))) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }
+                    gauge.setPayload("scenario", scenario.title());
                     if (null != testId) {
                         scenario.ignore = false;
-                    } else if (scenario.ignore) {
-                        addToList(scenario, list, scenarioManager);
-                        continue;
+                    } else if (!scenario.ignore) {
+                        try {
+                            scenario.start(scenarioManager, requestTemplateManager);
+                            if (!scenario.status.pass()) {
+                                gauge.setPayload("failed", true);
+                            }
+                        } catch (Exception e) {
+                            gauge.setPayload("failed", true);
+                            String message = e.getMessage();
+                            scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
+                            scenario.cause = e.getCause();
+                            scenario.status = TestStatus.FAIL;
+                        }
                     }
-                    try {
-                        scenario.start(scenarioManager, requestTemplateManager);
-                    } catch (Exception e) {
-                        String message = e.getMessage();
-                        scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
-                        scenario.cause = e.getCause();
-                        scenario.status = TestStatus.FAIL;
-                    }
+                    gauge.step();
                     addToList(scenario, list, scenarioManager);
+                    if (null != pb) {
+                        if (!pbStarted) {
+                            pb.start();
+                            pbStarted = true;
+                        }
+
+                        pb.stepTo(gauge.currentSteps());
+                        System.out.flush();
+                    }
+                }
+                if (null != pb) {
+                    pb.stepTo(pb.getMax());
+                    pb.stop();
+                    System.out.println();
                 }
             }
             if (shutdownApp) {
@@ -352,7 +395,7 @@ public class Test extends LogSupport {
             msg = "@|faint " + msg + "|@";
             msg = Ansi.ansi().render(msg).toString();
         }
-        error(msg);
+        warn(msg);
     }
 
     private void output(Scenario scenario) {
