@@ -5,6 +5,7 @@ import act.controller.annotation.UrlContext;
 import act.handler.ValidateViolationAdvice;
 import act.handler.ValidateViolationAdvisor;
 import com.alibaba.fastjson.JSONObject;
+import org.osgl.aaa.NoAuthentication;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.RenderJSON;
 import org.osgl.util.C;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
 @UrlContext("922")
+@NoAuthentication
 public class Gh922 {
 
     public static class GenkoAdvice implements ValidateViolationAdvice {

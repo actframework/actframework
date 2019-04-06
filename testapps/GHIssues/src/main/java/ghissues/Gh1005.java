@@ -2,9 +2,11 @@ package ghissues;
 
 import act.controller.annotation.UrlContext;
 import act.util.PropertySpec;
+import org.osgl.aaa.NoAuthentication;
 import org.osgl.mvc.annotation.PostAction;
 
 @UrlContext("1005")
+@NoAuthentication
 public class Gh1005 {
 
     public static class Foo {

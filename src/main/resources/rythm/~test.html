@@ -147,6 +147,7 @@ $.ajax({
       type: 'GET',
       crossDomain: true,
       dataType: 'jsonp',
+      timeout: 500,
       success: function (ip) {
         $('.no-source').hide();
         $('.open-source').show();

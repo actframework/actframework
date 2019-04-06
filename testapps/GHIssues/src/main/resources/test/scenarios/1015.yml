@@ -19,4 +19,4 @@ Scenario(1015):
           name: bar
           age: 2
           invitor:
-            - exists: true
+            - exists: false # circular reference not supported

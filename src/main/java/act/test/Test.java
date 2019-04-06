@@ -66,6 +66,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
+import javax.persistence.MappedSuperclass;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -190,15 +191,12 @@ public class Test extends LogSupport {
                 if (Modifier.isAbstract(entityClass.getModifiers())) {
                     continue;
                 }
-                if (entityClass.isAnnotationPresent(NotFixture.class)) {
+                if (entityClass.isAnnotationPresent(NotFixture.class) || entityClass.isAnnotationPresent(MappedSuperclass.class)) {
                     continue;
                 }
                 try {
                     Dao dao = dbServiceManager.dao(entityClass);
                     if (dao.getClass().isAnnotationPresent(NotFixture.class)) {
-                        continue;
-                    }
-                    if (Generics.tryGetTypeParamImplementations(dao.getClass(), DaoBase.class).isEmpty()) {
                         continue;
                     }
                     toBeDeleted.add(dao);
@@ -230,7 +228,7 @@ public class Test extends LogSupport {
                     try {
                         TxScope.commit();
                     } catch (Exception e) {
-                        trace(e, "error drop dao");
+                        warn(e, "error drop dao");
                     }
                     toBeDeleted.remove(dao);
                 } catch (Exception e) {

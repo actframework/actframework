@@ -166,7 +166,7 @@
 {{for interactions}}
   <li class="{{:status}}">
     [{{:status}}] {{:description}}
-    {{if errorMessage && errorMessage.includes('<!DOCTYPE html>')}}
+    {{if errorMessage}}
     <div class="error-message">- {{:errorMessage}}</div>
       {{if stackTrace }}
         <pre>
@@ -199,13 +199,12 @@
           type: 'GET',
           crossDomain: true,
           dataType: 'jsonp',
+          timeout: 500,
           success: function (ip) {
-            $('.no-source').hide();
             $('.open-source').show();
           },
           error: function (err) {
             if (err.status === 200) {
-              $('.no-source').hide();
               $('.open-source').show();
             }
           }

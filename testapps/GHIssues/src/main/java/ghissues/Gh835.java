@@ -5,10 +5,12 @@ import act.controller.Controller;
 import act.controller.annotation.UrlContext;
 import act.handler.ReturnValueAdvice;
 import act.handler.ReturnValueAdvisor;
+import org.osgl.aaa.NoAuthentication;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
 
 @UrlContext("835")
+@NoAuthentication
 public class Gh835 extends Controller.Util {
 
     public static class GenkoAdvice implements ReturnValueAdvice {
