@@ -42,12 +42,18 @@ import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
 import act.util.*;
+import act.ws.WebSocketConnectionListener;
+import act.ws.WebSocketConnectionManager;
+import act.ws.WebSocketContext;
+import act.ws.WsEndpoint;
+import com.alibaba.fastjson.JSON;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.fusesource.jansi.Ansi;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.DeleteAction;
+import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
 import org.xnio.streams.WriterOutputStream;
@@ -60,6 +66,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Env.RequireMode(Act.Mode.DEV)
 @Stateless
@@ -101,6 +109,12 @@ public class Test extends LogSupport {
 
     @Inject
     private JobManager jobManager;
+
+    @NoBind
+    private List<Scenario> result;
+
+    @NoBind
+    public ProgressGauge gauge;
 
     /**
      * Load fixture data for testing.
@@ -267,12 +281,20 @@ public class Test extends LogSupport {
         return $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
     }
 
+    @GetAction("test/result")
+    @PropertySpec("name, ignore, source, status, issueUrl, issueUrlIcon, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
+    public List<Scenario> result() {
+        return result;
+    }
+
     public List<Scenario> run(App app, Keyword testId, boolean shutdownApp, ProgressGauge gauge) {
         E.illegalStateIf(inProgress());
         info("Start running test scenarios\n");
         int exitCode = 0;
         EventBus eventBus = app.eventBus();
         STARTED.set(true);
+        this.result = C.list();
+        this.gauge = gauge;
         try {
             eventBus.trigger(TestStart.INSTANCE);
             app.captchaManager().disable();
@@ -298,12 +320,12 @@ public class Test extends LogSupport {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }
-                    gauge.setPayload("scenario", scenario.title());
                     if (null != testId) {
                         scenario.ignore = false;
-                    } else if (!scenario.ignore) {
+                    }
+                    if (!scenario.ignore) {
                         try {
-                            scenario.start(scenarioManager, requestTemplateManager);
+                            scenario.start(scenarioManager, requestTemplateManager, gauge);
                             if (!scenario.status.pass()) {
                                 gauge.setPayload("failed", true);
                             }
@@ -365,11 +387,13 @@ public class Test extends LogSupport {
                 info("================================================================================");
                 info("");
             }
+            this.result = list;
             return list;
         } catch (Exception e) {
             exitCode = -1;
             throw e;
         } finally {
+            this.gauge = null;
             STARTED.set(false);
             if (shutdownApp) {
                 app.shutdown(exitCode);

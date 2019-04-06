@@ -22,6 +22,7 @@ package act.test;
 
 import static act.test.TestStatus.PENDING;
 import static act.test.util.ErrorMessage.*;
+import static act.util.ProgressGauge.PAYLOAD_MESSAGE;
 import static org.osgl.http.H.Header.Names.ACCEPT;
 import static org.osgl.http.H.Header.Names.X_REQUESTED_WITH;
 import static org.osgl.http.H.Method.POST;
@@ -37,6 +38,7 @@ import act.test.func.Func;
 import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
+import act.util.ProgressGauge;
 import com.alibaba.fastjson.*;
 import okhttp3.*;
 import org.jsoup.Jsoup;
@@ -306,6 +308,7 @@ public class Scenario implements ScenarioPart {
     public String refId;
     public String description;
     public String issueUrl;
+    public String issueUrlIcon;
     public boolean ignore = false;
     public List<String> fixtures = new ArrayList<>();
     public Object generateTestData;
@@ -343,6 +346,10 @@ public class Scenario implements ScenarioPart {
             buf.append('@').append(partition);
         }
         return buf.toString();
+    }
+
+    public int port() {
+        return port;
     }
 
     public String title() {
@@ -445,20 +452,31 @@ public class Scenario implements ScenarioPart {
         return func.apply();
     }
 
-    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager) {
-        start(scenarioManager, requestTemplateManager, true);
+    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
+        start(scenarioManager, requestTemplateManager, true, gauge);
     }
 
-    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset) {
+    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset, ProgressGauge gauge) {
         this.scenarioManager = $.requireNotNull(scenarioManager);
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
         current.set(this);
-        validate(this);
-        if (null == http) {
-            prepareHttp();
+        gauge.setPayload(PAYLOAD_MESSAGE, title());
+        gauge.incrMaxHint();
+        try {
+            validate(this);
+        } finally {
+            gauge.step();
         }
-        boolean pass = (!reset || reset()) && run();
+        if (null == http) {
+            gauge.incrMaxHint();
+            try {
+                prepareHttp();
+            } finally {
+                gauge.step();
+            }
+        }
+        boolean pass = (!reset || reset(gauge)) && run(gauge);
         this.status = TestStatus.of(pass);
         if (TestStatus.FAIL == this.status) {
             for (Interaction interaction : this.interactions) {
@@ -587,9 +605,10 @@ public class Scenario implements ScenarioPart {
                 .build();
     }
 
-    private boolean reset() {
+    private boolean reset(ProgressGauge gauge) {
         Timer timer = metric.startTimer("reset");
         try {
+            gauge.incrMaxHint();
             errorMessage = null;
             clearSession();
             if (depends.isEmpty()) {
@@ -597,44 +616,50 @@ public class Scenario implements ScenarioPart {
             }
             return createFixtures() && generateTestData();
         } finally {
+            gauge.step();
             timer.stop();
         }
     }
 
-    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager) {
+    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
         if (null == this.scenarioManager) {
-            this.start(scenarioManager, requestTemplateManager, false);
+            this.start(scenarioManager, requestTemplateManager, false, gauge);
             return this.status.pass();
         } else {
-            return run();
+            return run(gauge);
         }
     }
 
-    private boolean run() {
+    private boolean run(ProgressGauge gauge) {
         if (status.finished()) {
             return status.pass();
         }
         Timer timer = metric.startTimer("run");
         try {
-            return runDependents() && runInteractions();
+            return runDependents(gauge) && runInteractions(gauge);
         } finally {
             timer.stop();
         }
     }
 
-    private boolean runDependents() {
+    private boolean runDependents(ProgressGauge gauge) {
+        gauge.incrMaxHintBy(depends.size());
         for (String dependent : depends) {
-            Scenario scenario = scenarioManager.get(dependent);
-            errorIf(null == scenario, "Dependent not found: " + dependent);
-            Scenario old = current.get();
             try {
-                if (!scenario.run(scenarioManager, requestTemplateManager)) {
-                    errorMessage = "dependency failure: " + dependent;
-                    return false;
+                Scenario scenario = scenarioManager.get(dependent);
+                errorIf(null == scenario, "Dependent not found: " + dependent);
+                Scenario old = current.get();
+                try {
+                    if (!scenario.run(scenarioManager, requestTemplateManager, gauge)) {
+                        errorMessage = "dependency failure: " + dependent;
+                        return false;
+                    }
+                    inheritFrom(scenario);
+                } finally {
+                    current.set(old);
                 }
-                inheritFrom(scenario);
             } finally {
-                current.set(old);
+                gauge.step();
             }
         }
         return true;
@@ -650,12 +675,18 @@ public class Scenario implements ScenarioPart {
         constants.putAll(map);
     }
 
-    private boolean runInteractions() {
+    private boolean runInteractions(ProgressGauge gauge) {
+        gauge.incrMaxHintBy(interactions.size());
         for (Interaction interaction : interactions) {
-            boolean pass = run(interaction);
-            if (!pass) {
-                //errorMessage = S.fmt("interaction[%s] failure", interaction.description);
-                return false;
+            try {
+                gauge.setPayload(PAYLOAD_MESSAGE, interaction.description);
+                boolean pass = run(interaction);
+                if (!pass) {
+                    //errorMessage = S.fmt("interaction[%s] failure", interaction.description);
+                    return false;
+                }
+            } finally {
+                gauge.step();
             }
         }
         return true;

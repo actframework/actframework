@@ -45,6 +45,16 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         }
 
         @Override
+        public void incrMaxHint() {
+            E.unsupport();
+        }
+
+        @Override
+        public void incrMaxHintBy(int number) {
+            E.unsupport();
+        }
+
+        @Override
         public void step() {
             E.unsupport();
         }
@@ -127,6 +137,16 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
             this.maxHint = maxHint;
             triggerUpdateEvent(true);
         }
+    }
+
+    @Override
+    public void incrMaxHint() {
+        this.maxHint++;
+    }
+
+    @Override
+    public void incrMaxHintBy(int number) {
+        this.maxHint += number;
     }
 
     @Override

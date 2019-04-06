@@ -28,6 +28,9 @@ import act.test.util.ErrorMessage;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.E;
@@ -183,6 +186,20 @@ public class Interaction implements ScenarioPart {
                             }
                         } catch (Exception e) {
                             // ignore
+                        }
+                    }
+                    if (msg.contains("<html>")) {
+                        Document doc = Jsoup.parse(msg, S.concat("http://localhost:", Scenario.get().port(), "/"));
+                        Elements elements = doc.select(".error-message");
+                        if (elements.hasText()) {
+                            msg = elements.text();
+                        } else {
+                            elements = doc.select("h1");
+                            if (elements.hasText()) {
+                                msg = doc.text();
+                            } else {
+                                msg = doc.title();
+                            }
                         }
                     }
                     error("Status verification failure. Expected: successful, Found: %s, Error message: %s", status, msg);

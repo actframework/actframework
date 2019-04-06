@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface ProgressGauge {
 
+    String PAYLOAD_MESSAGE = "message";
+
     /**
      * Set ID to the gauge
      *
@@ -52,6 +54,17 @@ public interface ProgressGauge {
      * @param maxHint the max steps hint
      */
     void updateMaxHint(int maxHint);
+
+    /**
+     * Increment max hint by 1.
+     */
+    void incrMaxHint();
+
+    /**
+     * Increment max hint by number specified
+     * @param number the number to be add up to max hint
+     */
+    void incrMaxHintBy(int number);
 
     /**
      * Advances the progress by one step

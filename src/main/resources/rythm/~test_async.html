@@ -3,15 +3,16 @@
 @args String testId
 <head>
     <meta charset="UTF-8">
-    <script src="/~/asset/js/jquery.js"></script>
-    <script src="/~/asset/js/jquery.ext.js"></script>
-    <script src="/~/asset/js/jsrender.js"></script>
+    <link id="favicon-link" rel="icon" type="image/png" href="/~/asset/img/test.png?v=@act.Act.VERSION.getBuildNumber()">
+    <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jsrender.js?v=@act.Act.VERSION.getBuildNumber()"></script>
     <style>
         body {
           background-color: #222;
           color: #f1f1f1;
           font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-          font-size: 14px;
+          font-size: 13px;
         }
         #test-result {
             display: none;
@@ -56,7 +57,7 @@
           font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
         }
         h4 {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 600;
           margin-bottom: 5px;
           margin-top: 30px;
@@ -120,8 +121,10 @@
 {{for}}
 <h4 {{if ignore}}class='ignore'{{/if}}>
     {{:title}}
-    {{if issueLink}}
-    <a class="issue-url" href="issueLink" target="_blank">issue link</a>
+    {{if issueUrl}}
+    <a class="issue-url" href="{{:issueUrl}}" target="issue-{{:name}}" style="text-decoration: none" title="jump to issue page">
+        <img src="/~/asset/img/{{:issueUrlIcon}}.png" style="height: 16px; padding-left: 1px;"></img>
+    </a>
     {{/if}}
     {{if (!ignore && status !== 'PASS')}}
   <br/>
@@ -158,7 +161,7 @@
 {{for interactions}}
   <li class="{{:status}}">
     [{{:status}}] {{:description}}
-    {{if errorMessage }}
+    {{if errorMessage && errorMessage.includes('<!DOCTYPE html>')}}
     <div class="error-message">- {{:errorMessage}}</div>
       {{if stackTrace }}
         <pre>
@@ -174,9 +177,14 @@
 {{/for}}
 </script>
 <script>
-    var jobId
-    function handleResult(result) {
+    function handleResult(result, failed) {
         console.log(result)
+        if (failed) {
+            favicon = '/~/asset/img/test-failure.png?v=@act.Act.VERSION.getBuildNumber()'
+        } else {
+            favicon = '/~/asset/img/test-success.png?v=@act.Act.VERSION.getBuildNumber()'
+        }
+        $('#favicon-link').attr('href', favicon)
         $('#in-progress').fadeOut();
         var tmpl = $.templates('#scenario-template')
         $('#scenario-list').html(tmpl.render(result))
@@ -196,25 +204,29 @@
               $('.open-source').show();
             }
           }
-
         });
     }
     $.postJSON('/~/test/@testId', function(data) {
-        jobId = data.jobId;
-        var ws = $.createWebSocket('/~/ws/jobs/' + jobId + '/progress')
+        var ws = $.createWebSocket('/~/ws/test/progress', function(e) {
+            alert("error")
+        })
+        var failed
         ws.onmessage = function (event) {
-            var gauge = JSON.parse(event.data).act_job_progress
+            var gauge = JSON.parse(event.data)
             if (!gauge) return
             if (gauge.done) {
                 $('#progress').width(500);
                 $('#in-progress h1').text('Test finished')
-                $.getJSON('/~/jobs/' + jobId + '/result', handleResult)
+                $.getJSON('/~/test/result', function(result) {
+                    handleResult(result, failed)
+                })
             } else {
                 if (gauge.payload.failed) {
+                    failed = true
                     $('#progress').addClass('failure')
                 }
-                if (gauge.payload.scenario) {
-                    $('#message').text(gauge.payload.scenario)
+                if (gauge.payload.message) {
+                    $('#message').text(gauge.payload.message)
                 }
                 $('#progress-text').text(gauge.currentSteps + '/' + (gauge.maxHint - 1))
                 $('#progress').width(gauge.progressPercent * 500 / 100)

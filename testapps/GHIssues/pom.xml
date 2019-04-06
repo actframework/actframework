@@ -64,6 +64,11 @@
       <artifactId>guava</artifactId>
       <version>27.0.1-jre</version>
     </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-aaa</artifactId>
+      <version>1.5.5-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
 </project>

@@ -10,6 +10,7 @@ act.controller.captcha.CaptchaService
 act.db.DbBind
 act.db.util.Page
 act.test.Test
+act.test.TestWsProgress
 act.test.inbox.Inbox
 act.test.ScenarioDebugHelper
 act.test.ScenarioDebugHelper$LoadFixtures

@@ -50,7 +50,7 @@ if (!jQuery.cookie) {
     }
 }
 
-jQuery.createWebSocket = function(path) {
+jQuery.createWebSocket = function(path, errorCallback) {
     if (!path.startsWith('/')) {
         var pathname = window.location.pathname
         if (pathname.endsWith('/')) {
@@ -59,7 +59,14 @@ jQuery.createWebSocket = function(path) {
             path = pathname + '/' + path
         }
     }
-    return new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + path);
+    try {
+        return new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + path);
+    } catch (e) {
+        if (jQuery.isFunction(errorCallback)) {
+            errorCallback.call(e)
+        }
+        throw e
+    }
 }
 
 var checkAjaxRedirect = function(data, testStatus, jqXHR) {
@@ -69,12 +76,19 @@ var checkAjaxRedirect = function(data, testStatus, jqXHR) {
 }
 
 jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
-    jQuery[ method ] = function (url, data, callback, type) {
+    jQuery[ method ] = function (url, data, callback, type, errorCallback) {
         // shift arguments if data argument was omitted
         if (jQuery.isFunction(data)) {
+            errorCallback = errorCallback || type;
             type = type || callback;
             callback = data;
             data = undefined;
+        }
+
+        if (typeof errorCallback === 'undefined') {
+            if (jQuery.isFunction(type)) {
+                errorCallback = type
+            }
         }
 
         var submitMethod = method;
@@ -90,7 +104,8 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
             type: submitMethod,
             dataType: type,
             data: data,
-            success: callback
+            success: callback,
+            error: errorCallback
         }
 
         __processCsrfSetup(setup, submitMethod)
@@ -99,8 +114,9 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
 });
 
 jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], function (i, method) {
-    jQuery[ method ] = function (url, data, callback) {
+    jQuery[ method ] = function (url, data, callback, errorCallback) {
         if (jQuery.isFunction(data)) {
+            errorCallback = callback
             callback = data;
             data = undefined;
         }
@@ -125,7 +141,8 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
             type: submitMethod.replace("JSON", ""),
             dataType: "json",
             data: data,
-            success: callback
+            success: callback,
+            error: errorCallback
         }
         __processCsrfSetup(setup, submitMethod)
         return jQuery.ajax(setup).always(checkAjaxRedirect);

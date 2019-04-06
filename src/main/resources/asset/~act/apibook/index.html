@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>apibook - { appName } </title>
-    <link rel="stylesheet" href="/~/asset/css/highlight.min.css">
-    <link rel="icon" type="image/png" href="/~/asset/img/apibook.png">
+    <link rel="stylesheet" href="/~/asset/css/highlight.min.css?v=${buildNumber}">
+    <link rel="icon" type="image/png" href="/~/asset/img/apibook.png?v=${buildNumber}">
     <style>
         @media print {
             @page {size: landscape}
@@ -60,17 +60,17 @@
 </head>
 <body>
 <apibook></apibook>
-<script src="/~/asset/js/jquery.js"></script>
-<script src="/~/asset/js/jquery.ext.js"></script>
-<script src="/~/asset/js/riotjs.js"></script>
-<script src="/~/asset/js/highlight.min.js"></script>
-<script src="/~/asset/js/highlight.java.min.js"></script>
-<script src="/~/asset/js/markdown-it.min.js"></script>
-<script type="riot/tag" src="/~/asset/apibook/raw.tag"></script>
-<script type="riot/tag" src="/~/asset/apibook/apibook.tag"></script>
-<script type="riot/tag" src="/~/asset/apibook/module_list.tag"></script>
-<script type="riot/tag" src="/~/asset/apibook/endpoint_list.tag"></script>
-<script type="riot/tag" src="/~/asset/apibook/toc.tag"></script>
+<script src="/~/asset/js/jquery.js?v=${buildNumber}"></script>
+<script src="/~/asset/js/jquery.ext.js?v=${buildNumber}"></script>
+<script src="/~/asset/js/riotjs.js?v=${buildNumber}"></script>
+<script src="/~/asset/js/highlight.min.js?v=${buildNumber}"></script>
+<script src="/~/asset/js/highlight.java.min.js?v=${buildNumber}"></script>
+<script src="/~/asset/js/markdown-it.min.js?v=${buildNumber}"></script>
+<script type="riot/tag" src="/~/asset/apibook/raw.tag?v=${buildNumber}"></script>
+<script type="riot/tag" src="/~/asset/apibook/apibook.tag?v=${buildNumber}"></script>
+<script type="riot/tag" src="/~/asset/apibook/module_list.tag?v=${buildNumber}"></script>
+<script type="riot/tag" src="/~/asset/apibook/endpoint_list.tag?v=${buildNumber}"></script>
+<script type="riot/tag" src="/~/asset/apibook/toc.tag?v=${buildNumber}"></script>
 <script>
     var Store = function(){
         riot.observable(this)

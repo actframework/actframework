@@ -6,17 +6,17 @@
 <head>
   <meta charset="utf-8">
   @ifNot(failure) {
-  <link rel="icon" type="image/png" href="/~/asset/img/test-success.png">
+  <link rel="icon" type="image/png" href="/~/asset/img/test-success.png?v=@act.Act.VERSION.getBuildNumber()">
   } else {
-  <link rel="icon" type="image/png" href="/~/asset/img/test-failure.png">
+  <link rel="icon" type="image/png" href="/~/asset/img/test-failure.png?v=@act.Act.VERSION.getBuildNumber()">
   }
-  <script src="/~/asset/js/jquery.js"></script>
+  <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
   <style>
     body {
       background-color: #222;
       color: #f1f1f1;
       font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-      font-size: 14px;
+      font-size: 13px;
     }
     a {color: #00b8b6;}
     h1,h2,h3,h4,h5 {
@@ -77,7 +77,9 @@
 @for(Scenario scenario: result) {
 <h4 @if(scenario.ignore) {class="ignore"}>
   @scenario.title() @if(scenario.issueUrl) {
-    &nbsp;<a class="issue-url" href="@scenario.issueUrl" target="_blank">issue link</a>
+    &nbsp;<a class="issue-url" href="@scenario.issueUrl" target="_blank"  title="jump to issue page" style="text-decoration: none">
+  <img src="/~/asset/img/@(scenario.issueUrlIcon).png" style="height: 16px; padding-left: 1px;"></img>
+     </a>
   }
   @if(!scenario.ignore && !scenario.status.pass()) {
     @if(scenario.source) {

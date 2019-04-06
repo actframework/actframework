@@ -50,6 +50,7 @@ public class ScenarioManager extends YamlLoader {
 
     private String urlContext;
     private String issueUrlTemplate;
+    private String issueUrlIcon = "external-link";
 
     public ScenarioManager() {
         super("act.test");
@@ -91,6 +92,23 @@ public class ScenarioManager extends YamlLoader {
         AppConfig<?> config = app.config();
         urlContext = config.get("test.urlContext");
         issueUrlTemplate = config.get("test.issueUrlTemplate");
+        if (S.notBlank(issueUrlTemplate)) {
+            issueUrlIcon = inferIssueUrlIcon(issueUrlTemplate);
+        }
+    }
+
+    private String inferIssueUrlIcon(String issueUrl) {
+        String issueUrlIcon = "external-link";
+        if (issueUrl.contains("github")) {
+            issueUrlIcon = "github-issue";
+        } else if (issueUrl.contains("jira") || issueUrl.contains("/browse/")) {
+            issueUrlIcon = "jira-issue";
+        } else if (issueUrl.contains("gitlab")) {
+            issueUrlIcon = "gitlab-issue";
+        } else if (issueUrl.contains("gitee") || issueUrl.contains("oschina")) {
+            issueUrlIcon = "gitee-issue";
+        }
+        return issueUrlIcon;
     }
 
     private void loadDefault() {
@@ -206,6 +224,9 @@ public class ScenarioManager extends YamlLoader {
             }
             if (S.blank(scenario.issueUrl) && S.notBlank(issueUrlTemplate)) {
                 scenario.issueUrl = S.fmt(issueUrlTemplate, key);
+                scenario.issueUrlIcon = issueUrlIcon;
+            } else if (S.notBlank(scenario.issueUrl)) {
+                scenario.issueUrlIcon = inferIssueUrlIcon(scenario.issueUrl);
             }
         }
     }

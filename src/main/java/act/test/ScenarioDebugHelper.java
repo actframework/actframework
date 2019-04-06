@@ -116,16 +116,31 @@ public class ScenarioDebugHelper {
     @Inject
     private Test test;
 
-    @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
-    public Result testForm(String testId, ActionContext context) {
+    @GetAction({"e2e", "test", "tests"})
+    public Result testForm(ActionContext context) {
         context.templatePath("/~test_async.html");
-        return render(testId);
+        return render();
     }
 
-    @PostAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
+    @PostAction({"e2e", "test", "tests"})
     @PropertySpec("name, ignore, source, status, issueUrl, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
     @Async
-    public List<Scenario> run(App app, Keyword testId, ActionContext context, ProgressGauge gauge) {
+    public List<Scenario> run(App app, ActionContext context, ProgressGauge gauge) {
+        List<Scenario> results = test.run(app, null, false, gauge);
+        boolean failure = false;
+        for (Scenario scenario : results) {
+            if (!scenario.ignore && !scenario.status.pass()) {
+                failure = true;
+                break;
+            }
+        }
+        context.renderArg("failure", failure);
+        gauge.markAsDone();
+        return results;
+    }
+
+    @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
+    public List<Scenario> runTest(App app, Keyword testId, ActionContext context, ProgressGauge gauge) {
         if (context.accept() == H.Format.HTML) {
             context.templatePath("/~test.html");
         }
@@ -141,5 +156,4 @@ public class ScenarioDebugHelper {
         gauge.markAsDone();
         return results;
     }
-
 }
