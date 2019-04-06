@@ -39,6 +39,9 @@ import act.inject.param.ParamValueLoaderService;
 import act.util.*;
 import act.validation.NotBlank;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.bval.constraints.NotEmpty;
 import org.joda.time.*;
 import org.osgl.$;
@@ -551,7 +554,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         if ($.isSimpleType(type)) {
             returnSampleObject = C.Map("result", returnSampleObject);
         }
-        return JSON.toJSONString(returnSampleObject, true);
+        SerializeFilter[] filters = new SerializeFilter[null == fastJsonPropertyPreFilter ? 0 : 1];
+        if (null != fastJsonPropertyPreFilter) {
+            filters[0] = fastJsonPropertyPreFilter;
+        }
+        SerializerFeature[] features = new SerializerFeature[] {
+                SerializerFeature.PrettyFormat
+        };
+        return JSON.toJSONString(returnSampleObject, SerializeConfig.globalInstance, filters, features);
     }
 
     private String generateSampleQuery(BeanSpec spec, Map<String, Class> typeParamLookup, String bindName, Set<Type> typeChain, List<String> nameChain) {
@@ -637,7 +647,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     private Object generateSampleData(BeanSpec spec, Map<String, Class> typeParamLookup, Set<Type> typeChain, List<String> nameChain, boolean isReturn) {
-        return generateSampleData(spec, typeParamLookup, typeChain, nameChain, fastJsonPropertyPreFilter, isReturn);
+        return generateSampleData(spec, typeParamLookup, typeChain, nameChain, isReturn ? fastJsonPropertyPreFilter : null, isReturn);
     }
 
     public static Object generateSampleData(
@@ -660,12 +670,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
         if (null != fastJsonPropertyPreFilter) {
             String path = S.join(nameChain).by(".").get();
-            if (!fastJsonPropertyPreFilter.matches(path)) {
-                if (spec.isArray() || Iterable.class.isAssignableFrom(spec.rawType())) {
-                    return Act.getInstance(spec.rawType());
-                } else {
-                    return null;
-                }
+            if (S.notBlank(path) && !fastJsonPropertyPreFilter.matches(path)) {
+                return null;
             }
         }
         SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
@@ -785,7 +791,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                                 continue;
                             }
                             Class<?> propertyClass = m.getReturnType();
-                            Object val = null;
+                            Object val;
                             try {
                                 String propertyName = m.getName().substring(3);
                                 if ("name".equalsIgnoreCase(propertyName)) {
@@ -862,7 +868,15 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                         }
                         BeanSpec fieldSpec = BeanSpec.of(fieldType, annotations, fieldName, injector, field.getModifiers(), typeParamLookup);
                         if (null == emailField && isEmail(fieldSpec)) {
-                            emailField = field;
+                            if (null != fastJsonPropertyPreFilter) {
+                                List<String> newNameChain = C.newList(nameChain).append(fieldSpec.name());
+                                String path = S.join(newNameChain).by(".").get();
+                                if (fastJsonPropertyPreFilter.matches(path)) {
+                                    emailField = field;
+                                }
+                            } else {
+                                emailField = field;
+                            }
                         } else {
                             val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
                             if (null == val) {
