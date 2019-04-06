@@ -73,6 +73,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @Stateless
 public class Test extends LogSupport {
 
+    public static final String PG_PAYLOAD_SCENARIO = "scenario";
+    public static final String PG_PAYLOAD_INTERACTION = "interaction";
+    public static final String PG_PAYLOAD_FAILED = "failed";
+
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
     /**
@@ -327,10 +331,10 @@ public class Test extends LogSupport {
                         try {
                             scenario.start(scenarioManager, requestTemplateManager, gauge);
                             if (!scenario.status.pass()) {
-                                gauge.setPayload("failed", true);
+                                gauge.setPayload(PG_PAYLOAD_FAILED, true);
                             }
                         } catch (Exception e) {
-                            gauge.setPayload("failed", true);
+                            gauge.setPayload(PG_PAYLOAD_FAILED, true);
                             String message = e.getMessage();
                             scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
                             scenario.cause = e.getCause();

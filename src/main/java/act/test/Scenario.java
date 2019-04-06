@@ -461,7 +461,7 @@ public class Scenario implements ScenarioPart {
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
         current.set(this);
-        gauge.setPayload(PAYLOAD_MESSAGE, title());
+        gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, title());
         gauge.incrMaxHint();
         try {
             validate(this);
@@ -679,7 +679,7 @@ public class Scenario implements ScenarioPart {
         gauge.incrMaxHintBy(interactions.size());
         for (Interaction interaction : interactions) {
             try {
-                gauge.setPayload(PAYLOAD_MESSAGE, interaction.description);
+                gauge.setPayload(Test.PG_PAYLOAD_INTERACTION, interaction.description);
                 boolean pass = run(interaction);
                 if (!pass) {
                     //errorMessage = S.fmt("interaction[%s] failure", interaction.description);

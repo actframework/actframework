@@ -81,6 +81,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     };
 
     private String id;
+    private boolean markedAsDown;
     private int maxHint;
     private int currentSteps;
     private String error;
@@ -242,7 +243,8 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void markAsDone() {
-        if (!isDone()) {
+        if (!markedAsDown) {
+            markedAsDown = true;
             stepTo(maxHint);
         }
     }

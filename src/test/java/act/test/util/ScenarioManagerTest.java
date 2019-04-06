@@ -59,7 +59,7 @@ public class ScenarioManagerTest extends TestTestBase {
         String s = createTask.depends.get(0);
         Scenario signIn = loader.get(s);
         notNull(signIn);
-        s = signIn.depends.get(0);
+        s = signIn.depends.get(1);
         Scenario signUp = loader.get(s);
         verifySignUp(signUp);
     }

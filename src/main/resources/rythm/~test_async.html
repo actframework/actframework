@@ -3,7 +3,7 @@
 @args String testId
 <head>
     <meta charset="UTF-8">
-    <link id="favicon-link" rel="icon" type="image/png" href="/~/asset/img/test.png?v=@act.Act.VERSION.getBuildNumber()">
+    <link id="favicon-link" rel="icon" type="image/png" href="/~/asset/img/testing.ico?v=@act.Act.VERSION.getBuildNumber()">
     <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
     <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
     <script src="/~/asset/js/jsrender.js?v=@act.Act.VERSION.getBuildNumber()"></script>
@@ -46,12 +46,14 @@
         #message, #progress-text {
             font-size: 80%;
             font-family: tahoma, verdana, arial;
-            padding: 5px 10px;
+            padding: 5px 2px;
             max-width: 500px;
             overflow-x: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
         }
+        #message {text-align: left}
+        #progress-text {text-align: right}
         a {color: #00b8b6;}
         h1,h2,h3,h4,h5 {
           font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
@@ -106,7 +108,10 @@
 </head>
 <body>
 <div id="in-progress">
-    <div id="message">running tests</div>
+    <div id="message">
+        <div id="scenario">scenario: <span id="scenario-desc"></span></div>
+        <div id="interaction">interaction: <span id="interaction-desc"></span></div>
+    </div>
     <div id="gauge-container">
         <div id="progress"></div>
         <div id="progress-text"></div>
@@ -180,9 +185,9 @@
     function handleResult(result, failed) {
         console.log(result)
         if (failed) {
-            favicon = '/~/asset/img/test-failure.png?v=@act.Act.VERSION.getBuildNumber()'
+            favicon = '/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()'
         } else {
-            favicon = '/~/asset/img/test-success.png?v=@act.Act.VERSION.getBuildNumber()'
+            favicon = '/~/asset/img/test-success.ico?v=@act.Act.VERSION.getBuildNumber()'
         }
         $('#favicon-link').attr('href', favicon)
         $('#in-progress').fadeOut();
@@ -225,8 +230,11 @@
                     failed = true
                     $('#progress').addClass('failure')
                 }
-                if (gauge.payload.message) {
-                    $('#message').text(gauge.payload.message)
+                if (gauge.payload.scenario) {
+                    $('#scenario-desc').text(gauge.payload.scenario)
+                }
+                if (gauge.payload.interaction) {
+                    $('#interaction-desc').text(gauge.payload.interaction)
                 }
                 $('#progress-text').text(gauge.currentSteps + '/' + (gauge.maxHint - 1))
                 $('#progress').width(gauge.progressPercent * 500 / 100)
