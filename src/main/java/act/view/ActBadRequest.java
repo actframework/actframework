@@ -57,7 +57,7 @@ public class ActBadRequest extends BadRequest implements ActError {
     }
 
     public ActBadRequest(Throwable cause) {
-        super(cause, errorMessage(BAD_REQUEST));
+        super(cause, errorMessage(BAD_REQUEST, cause.getMessage()));
         if (Act.isDev()) {
             sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
         }
@@ -85,7 +85,7 @@ public class ActBadRequest extends BadRequest implements ActError {
     }
 
     public ActBadRequest(int errorCode, Throwable cause) {
-        super(errorCode, cause, errorMessage(BAD_REQUEST));
+        super(errorCode, cause, errorMessage(BAD_REQUEST, cause.getMessage()));
         if (Act.isDev()) {
             sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
         }
