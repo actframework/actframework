@@ -186,7 +186,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         return !matches(excludes, path, true) && (includes.isEmpty() || matches(includes, path, false));
     }
 
-    private static final Pattern SQUARE_BLOCK = Pattern.compile("\\[.*\\]");
+    private static final Pattern SQUARE_BLOCK = Pattern.compile("\\[.*?\\]");
     private boolean matches(Set<String> paths, String path, boolean exclude) {
         if (path.contains("[")) {
             path = SQUARE_BLOCK.matcher(path).replaceAll("");
@@ -256,5 +256,10 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
             spCache.put(strings, ret);
         }
         return ret;
+    }
+
+    public static void main(String[] args) {
+        String path = "foo[0].bar[0].name";
+        System.out.println(path = SQUARE_BLOCK.matcher(path).replaceAll(""));
     }
 }

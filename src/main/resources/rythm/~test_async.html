@@ -104,6 +104,13 @@
         li.open-source {
           display: none;
         }
+        #error {
+            color: #ee0000;
+        }
+        #error-message {
+            padding: 5px 15px;
+            border: 1px solid #aaa;
+        }
     </style>
 </head>
 <body>
@@ -123,7 +130,13 @@
     <div id="scenario-list"></div>
 </div>
 <script type="text/x-jsrender" id="scenario-template">
-{{for}}
+{{if error}}
+<div id="error">
+<h3>ERROR</h3>
+<pre id="error-message">{{:error.stackTrace}}</pre>
+</div>
+{{/if}}
+{{for scenarios}}
 <h4 {{if ignore}}class='ignore'{{/if}}>
     {{:title}}
     {{if issueUrl}}
@@ -218,11 +231,10 @@
         ws.onmessage = function (event) {
             var gauge = JSON.parse(event.data)
             if (!gauge) return
-            if (gauge.done) {
+            if (gauge.done || gauge.error) {
                 $('#progress').width(500);
-                $('#in-progress h1').text('Test finished')
                 $.getJSON('/~/test/result', function(result) {
-                    handleResult(result, failed)
+                    handleResult(result, failed || gauge.error)
                 })
             } else {
                 if (gauge.payload.failed) {

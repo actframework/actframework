@@ -26,6 +26,7 @@ import act.ws.WebSocketConnectionListener;
 import act.ws.WebSocketContext;
 import act.ws.WsEndpoint;
 import com.alibaba.fastjson.JSON;
+import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.inject.Inject;
@@ -43,6 +44,10 @@ public class TestWsProgress implements WebSocketConnectionListener {
 
     @Override
     public void onConnect(final WebSocketContext context) {
+        if (null == test.gauge) {
+            context.sendJsonToSelf(C.Map("error", true));
+            return;
+        }
         E.illegalStateIfNot(Test.inProgress() || test.gauge.isDone());
         test.gauge.addListener(new ProgressGauge.Listener() {
             @Override

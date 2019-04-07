@@ -119,6 +119,9 @@ public class Test extends LogSupport {
     private List<Scenario> result;
 
     @NoBind
+    private Throwable error;
+
+    @NoBind
     public ProgressGauge gauge;
 
     /**
@@ -284,9 +287,20 @@ public class Test extends LogSupport {
     }
 
     @GetAction("test/result")
-    @PropertySpec("name, ignore, source, status, issueUrl, issueUrlIcon, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
-    public List<Scenario> result() {
-        return result;
+    @PropertySpec("error, scenarios.name, scenarios.ignore, scenarios.source, scenarios.status, " +
+            "scenarios.issueUrl, scenarios.issueUrlIcon, scenarios.title, scenarios.errorMessage, " +
+            "scenarios.interactions.status, scenarios.interactions.description, " +
+            "scenarios.interactions.stackTrace, scenarios.interactions.errorMessage")
+    public Map<String, Object> result() {
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("scenarios", result);
+        Map<String, String> err = new HashMap<>();
+        if (null != this.error) {
+            err.put("message", this.error.getMessage());
+            err.put("stackTrace", E.stackTrace(this.error));
+            ret.put("error", err);
+        }
+        return ret;
     }
 
     public List<Scenario> run(App app, Keyword testId, boolean shutdownApp, ProgressGauge gauge) {
@@ -295,6 +309,7 @@ public class Test extends LogSupport {
         int exitCode = 0;
         EventBus eventBus = app.eventBus();
         STARTED.set(true);
+        this.error = null;
         this.result = C.list();
         this.gauge = gauge;
         try {
@@ -392,6 +407,7 @@ public class Test extends LogSupport {
             this.result = list;
             return list;
         } catch (Exception e) {
+            this.error = e;
             exitCode = -1;
             throw e;
         } finally {
