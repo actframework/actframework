@@ -354,7 +354,7 @@ public class Scenario implements ScenarioPart {
     }
 
     public String title() {
-        S.Buffer buf = S.buffer("[").a(name).a("]");
+        S.Buffer buf = S.buffer("[").a(issueKey).a("]");
         if (S.notBlank(description)) {
             buf.a(" ").a(description);
         }
@@ -453,11 +453,11 @@ public class Scenario implements ScenarioPart {
         return func.apply();
     }
 
-    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
-        start(scenarioManager, requestTemplateManager, true, gauge);
+    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean forceClearFixtures) {
+        start(scenarioManager, requestTemplateManager, true, gauge, forceClearFixtures);
     }
 
-    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset, ProgressGauge gauge) {
+    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset, ProgressGauge gauge, boolean forceClearFixtures) {
         this.scenarioManager = $.requireNotNull(scenarioManager);
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
@@ -477,7 +477,7 @@ public class Scenario implements ScenarioPart {
                 gauge.step();
             }
         }
-        boolean pass = (!reset || reset(gauge)) && run(gauge);
+        boolean pass = (!reset || reset(gauge)) && run(gauge, forceClearFixtures);
         this.status = TestStatus.of(pass);
         if (TestStatus.FAIL == this.status) {
             for (Interaction interaction : this.interactions) {
@@ -622,28 +622,28 @@ public class Scenario implements ScenarioPart {
         }
     }
 
-    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
+    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean forceClearFixtures) {
         if (null == this.scenarioManager) {
-            this.start(scenarioManager, requestTemplateManager, false, gauge);
+            this.start(scenarioManager, requestTemplateManager, forceClearFixtures, gauge, forceClearFixtures);
             return this.status.pass();
         } else {
-            return run(gauge);
+            return run(gauge, forceClearFixtures);
         }
     }
 
-    private boolean run(ProgressGauge gauge) {
+    private boolean run(ProgressGauge gauge, boolean forceClearFixtures) {
         if (status.finished()) {
             return status.pass();
         }
         Timer timer = metric.startTimer("run");
         try {
-            return runDependents(gauge) && runInteractions(gauge);
+            return runDependents(gauge, forceClearFixtures) && runInteractions(gauge);
         } finally {
             timer.stop();
         }
     }
 
-    private boolean runDependents(ProgressGauge gauge) {
+    private boolean runDependents(ProgressGauge gauge, boolean forceClearFixtures) {
         gauge.incrMaxHintBy(depends.size());
         for (String dependent : depends) {
             try {
@@ -651,7 +651,7 @@ public class Scenario implements ScenarioPart {
                 errorIf(null == scenario, "Dependent not found: " + dependent);
                 Scenario old = current.get();
                 try {
-                    if (!scenario.run(scenarioManager, requestTemplateManager, gauge)) {
+                    if (!scenario.run(scenarioManager, requestTemplateManager, gauge, forceClearFixtures)) {
                         errorMessage = "dependency failure: " + dependent;
                         return false;
                     }
@@ -894,7 +894,7 @@ public class Scenario implements ScenarioPart {
                 return;
             }
             if (value instanceof JSONObject) {
-                errorIfNot(test instanceof Map, "Cannot verify %s value[%s] with test [%s]", name, value, test);
+                errorIfNot(test instanceof Map, "Cannot verify %s value [%s] against test [%s]", name, value, test);
                 JSONObject json = (JSONObject) value;
                 Map<String, ?> testMap = (Map) test;
                 for (Map.Entry<?, ?> entry : testMap.entrySet()) {
@@ -926,12 +926,12 @@ public class Scenario implements ScenarioPart {
                     if (S.isNumeric(S.string(s))) {
                         expected = $.convert(s).to(Double.class);
                     } else {
-                        error("Cannot verify %s value[%s] against test [%s]", name, value, test);
+                        error("Cannot verify %s value [%s] against test [%s]", name, value, test);
                     }
                 }
                 double delta = Math.abs(expected.doubleValue() - found.doubleValue());
                 if ((delta / found.doubleValue()) > 0.001) {
-                    error("Cannot verify %s value[%s] against test [%s]", name, value, test);
+                    error("Cannot verify %s value [%s] against test [%s]", name, value, test);
                 }
             } else {
                 // try convert the test into String
@@ -943,7 +943,7 @@ public class Scenario implements ScenarioPart {
                         verified = verifyStringValue_(processedString, value, test);
                     }
                 }
-                errorIfNot(verified, "Cannot verify %s value[%s] with test [%s]", name, value, test);
+                errorIfNot(verified, "Cannot verify %s value [%s] against test [%s]", name, value, test);
             }
         }
     }
@@ -997,9 +997,9 @@ public class Scenario implements ScenarioPart {
             }
         }
         for (Object test : tests) {
-            errorIfNot(test instanceof Map, "Cannot verify %s value[%s] against test[%s]", name, value, test);
+            errorIfNot(test instanceof Map, "Cannot verify %s value [%s] against test [%s]", name, value, test);
             Map<?, ?> map = (Map) test;
-            errorIfNot(map.size() == 1, "Cannot verify %s value[%s] against test[%s]", name, value, test);
+            errorIfNot(map.size() == 1, "Cannot verify %s value [%s] against test [%s]", name, value, test);
             Map.Entry entry = map.entrySet().iterator().next();
             Object entryValue = entry.getValue();
             if (entryValue instanceof String) {
@@ -1010,8 +1010,8 @@ public class Scenario implements ScenarioPart {
                 }
             }
             Verifier v = $.convert(map).to(Verifier.class);
-            errorIf(null == v, "Cannot verify %s value[%s] against test[%s]", name, value, test);
-            errorIf(!verify(v, value), "Cannot verify %s value[%s] against test[%s]", name, value, v);
+            errorIf(null == v, "Cannot verify %s value [%s] against test [%s]", name, value, test);
+            errorIf(!verify(v, value), "Cannot verify %s value [%s] against test [%s]", name, value, v);
         }
     }
 

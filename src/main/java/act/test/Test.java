@@ -333,6 +333,7 @@ public class Test extends LogSupport {
                     String label = "Testing";
                     pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
                 }
+                boolean fixtureCleared = false;
                 for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager, false))) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
@@ -342,7 +343,10 @@ public class Test extends LogSupport {
                     }
                     if (!scenario.ignore) {
                         try {
-                            scenario.start(scenarioManager, requestTemplateManager, gauge);
+                            scenario.start(scenarioManager, requestTemplateManager, gauge, !fixtureCleared);
+                            if (!fixtureCleared && scenario.clearFixtures) {
+                                fixtureCleared = true;
+                            }
                             if (!scenario.status.pass()) {
                                 gauge.setPayload(PG_PAYLOAD_FAILED, true);
                             }

@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Act Test - fixture not cleared in certain case #1114
+* Validation message - allow developer to specify not prepend bean/property path #1111
 * Act-Test: Add issueKey to Scenario #1108
 * Improve `~/test` page rendering #1105
 * Mock data function for development #1106

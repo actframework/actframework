@@ -622,7 +622,8 @@ public class AppClassLoader
     }
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
-        if (isSystemClass(className)) return bytecode;
+        //if (isSystemClass(className)) return bytecode;
+        if (!app().config().needEnhancement(className)) return bytecode;
         $.Var<ClassWriter> cw = $.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
