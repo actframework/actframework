@@ -49,9 +49,6 @@ public class ActValidationMessageInterpolator extends LogSupportedDestroyableBas
         if (messageTemplate.startsWith("{act.")) {
             return actInterpolate(messageTemplate, locale);
         }
-        if (!messageTemplate.startsWith("{")) {
-            messageTemplate = S.concat("{", messageTemplate, "}");
-        }
         return realInterpolator.interpolate(messageTemplate, context, locale);
     }
 
