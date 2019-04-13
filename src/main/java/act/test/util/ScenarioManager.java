@@ -211,10 +211,20 @@ public class ScenarioManager extends YamlLoader {
             Scenario scenario = entry.getValue();
             scenario.name = key;
             if (S.blank(scenario.issueKey)) {
-                if (key.contains("!")) {
-                    scenario.issueKey = S.beforeLast(key, "!");
+                if (key.contains(" ")) {
+                    scenario.issueKey = S.beforeFirst(key, " ");
                 } else {
                     scenario.issueKey = key;
+                }
+            }
+            if (S.blank(scenario.refId)) {
+                if (key.contains(" ")) {
+                    scenario.refId = S.afterFirst(key, " ");
+                }
+            }
+            if (S.blank(scenario.description)) {
+                if (key.contains(" ")) {
+                    scenario.description = S.afterFirst(key, " ");
                 }
             }
             scenario.source = fileName;
