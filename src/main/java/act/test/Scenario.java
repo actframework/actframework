@@ -304,6 +304,7 @@ public class Scenario implements ScenarioPart {
     private CookieStore cookieStore;
     private App app;
     public String name;
+    public String issueKey;
     // GH1091 - a user friendly name for dependency reference
     public String refId;
     public String description;

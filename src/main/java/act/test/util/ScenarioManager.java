@@ -210,6 +210,11 @@ public class ScenarioManager extends YamlLoader {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
+            if (S.blank(scenario.issueKey)) {
+                scenario.issueKey = key;
+            } else if (key.contains("-")) {
+                scenario.issueKey = S.beforeLast(key, "-");
+            }
             scenario.source = fileName;
             if (hasDefaultUrlContext) {
                 if (S.isBlank(scenario.urlContext)) {
@@ -223,7 +228,7 @@ public class ScenarioManager extends YamlLoader {
                 this.store.put(Keyword.of(scenario.refId), scenario);
             }
             if (S.blank(scenario.issueUrl) && S.notBlank(issueUrlTemplate)) {
-                scenario.issueUrl = S.fmt(issueUrlTemplate, key);
+                scenario.issueUrl = S.fmt(issueUrlTemplate, scenario.issueKey);
                 scenario.issueUrlIcon = issueUrlIcon;
             } else if (S.notBlank(scenario.issueUrl)) {
                 scenario.issueUrlIcon = inferIssueUrlIcon(scenario.issueUrl);

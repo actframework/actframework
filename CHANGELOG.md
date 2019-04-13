@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Act-Test: Add issueKey to Scenario #1108
 * Improve `~/test` page rendering #1105
 * Mock data function for development #1106
 * Add headerNames() to UndertowRequest #1104
