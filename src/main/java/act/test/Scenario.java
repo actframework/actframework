@@ -354,6 +354,9 @@ public class Scenario implements ScenarioPart {
     }
 
     public String title() {
+        if (null == issueKey) {
+            return S.blank(description) ? name : description;
+        }
         S.Buffer buf = S.buffer("[").a(issueKey).a("]");
         if (S.notBlank(description)) {
             buf.a(" ").a(description);

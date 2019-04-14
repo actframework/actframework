@@ -325,7 +325,6 @@ public class Test extends LogSupport {
                 warn("No scenario defined.");
                 list = C.list();
             } else {
-                gauge.updateMaxHint(scenarios.size() + 1);
                 list = new ArrayList<>();
                 ProgressBar pb = null;
                 boolean pbStarted = false;
@@ -334,7 +333,9 @@ public class Test extends LogSupport {
                     pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
                 }
                 boolean fixtureCleared = false;
-                for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager, false))) {
+                Set<Scenario> toBeRun = C.Set(scenarios.values());
+                gauge.updateMaxHint(toBeRun.size() + 1);
+                for (Scenario scenario : C.list(toBeRun).sorted(new ScenarioComparator(scenarioManager, false))) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }

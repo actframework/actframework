@@ -480,6 +480,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             if (sampleData.size() == 1) {
                 payload = sampleData.values().iterator().next();
             }
+            if (null != payload && $.isSimpleType(payload.getClass())) {
+                payload = sampleData;
+            }
             sampleJsonPost = null == payload ? null : JSON.toJSONString(payload, true);
         }
         if (!sampleQuery.isEmpty()) {

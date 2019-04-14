@@ -12,7 +12,7 @@
           background-color: #222;
           color: #f1f1f1;
           font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-          font-size: 13px;
+          font-size: 14px;
         }
         #test-result {
             display: none;
@@ -24,12 +24,12 @@
             bottom: 0;
             right: 0;
             margin: auto;
-            width: 500px;
+            width: 800px;
             height: 100px;
             text-align: center;
         }
         #gauge-container {
-            width: 500px;
+            width: 800px;
             height: 2px;
             background: #444;
         }
@@ -47,7 +47,7 @@
             font-size: 80%;
             font-family: tahoma, verdana, arial;
             padding: 5px 2px;
-            max-width: 500px;
+            max-width: 800px;
             overflow-x: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -56,13 +56,13 @@
         #progress-text {text-align: right}
         a {color: #00b8b6;}
         h1,h2,h3,h4,h5 {
-          font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
+          font-family: Tahoma, Arial, sans-serif;
         }
         h4 {
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 500;
           margin-bottom: 5px;
-          margin-top: 30px;
+          margin-top: 5px;
           border-bottom: 1px dotted #888;
           padding-bottom: 8px;
         }
@@ -116,8 +116,8 @@
 <body>
 <div id="in-progress">
     <div id="message">
-        <div id="scenario">scenario: <span id="scenario-desc"></span></div>
-        <div id="interaction">interaction: <span id="interaction-desc"></span></div>
+        <div id="scenario"><b>scenario</b>: <span id="scenario-desc"></span></div>
+        <div id="interaction"><b>interaction</b>: <span id="interaction-desc"></span></div>
     </div>
     <div id="gauge-container">
         <div id="progress"></div>
@@ -127,7 +127,7 @@
 <div id="test-result">
     <h1>Test Report</h1>
     <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
-    <div id="scenario-list"></div>
+    <div id="scenario-list" style="margin-top: 30px"></div>
 </div>
 <script type="text/x-jsrender" id="scenario-template">
 {{if error}}
@@ -232,7 +232,7 @@
             var gauge = JSON.parse(event.data)
             if (!gauge) return
             if (gauge.done || gauge.error) {
-                $('#progress').width(500);
+                $('#progress').width(800);
                 $.getJSON('/~/test/result', function(result) {
                     handleResult(result, failed || gauge.error)
                 })
@@ -248,7 +248,7 @@
                     $('#interaction-desc').text(gauge.payload.interaction)
                 }
                 $('#progress-text').text(gauge.currentSteps + '/' + (gauge.maxHint - 1))
-                $('#progress').width(gauge.progressPercent * 500 / 100)
+                $('#progress').width(gauge.progressPercent * 800 / 100)
             }
         }
     })

@@ -333,8 +333,15 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                     if ("param".equals(tag.getTagName())) {
                         String paramName = tag.getName().get();
                         ParamInfo paramInfo = paramLookup.get(paramName);
+                        if (null == paramInfo) {
+                            paramInfo = paramLookup.get(paramName + " (body)");
+                        }
                         if (null != paramInfo) {
-                            paramInfo.setDescription(endpoint.processTypeImplSubstitution(tag.getContent().toText()));
+                            String paramDesc = endpoint.processTypeImplSubstitution(tag.getContent().toText());
+                            if (S.blank(paramDesc)) {
+                                paramDesc = "JSON body of " + paramName;
+                            }
+                            paramInfo.setDescription(paramDesc);
                         }
                     } else if ("return".equals(tag.getTagName())) {
                         returnDesc = tag.getContent().toText();

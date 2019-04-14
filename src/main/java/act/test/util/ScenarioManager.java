@@ -27,6 +27,7 @@ import act.app.RuntimeDirs;
 import act.conf.AppConfig;
 import act.test.Scenario;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.Keyword;
@@ -203,7 +204,15 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void parseOne(String content, String fileName) {
-        Map<String, Object> map = parse(content, NULL_DAO);
+        Map<String, Object> map = null;
+        try {
+            map = parse(content, NULL_DAO);
+        } catch (Exception e) {
+            if (fileName.contains("/")) {
+                fileName = ".../" + S.afterLast(fileName, "/");
+            }
+            throw new UnexpectedException(e, "Error parsing yaml file: %s", fileName);
+        }
         Map<String, Scenario> loaded = $.cast(map);
         boolean hasDefaultUrlContext = S.notBlank(urlContext);
         for (Map.Entry<String, Scenario> entry : loaded.entrySet()) {
@@ -213,6 +222,9 @@ public class ScenarioManager extends YamlLoader {
             if (S.blank(scenario.issueKey)) {
                 if (key.contains(" ")) {
                     scenario.issueKey = S.beforeFirst(key, " ");
+                    if (scenario.issueKey.startsWith("!") || scenario.issueKey.endsWith("!")) {
+                        scenario.issueKey = null;
+                    }
                 } else {
                     scenario.issueKey = key;
                 }
@@ -240,8 +252,8 @@ public class ScenarioManager extends YamlLoader {
                 this.store.put(Keyword.of(scenario.refId), scenario);
             }
             if (S.blank(scenario.issueUrl) && S.notBlank(issueUrlTemplate)) {
-                scenario.issueUrl = S.fmt(issueUrlTemplate, scenario.issueKey);
-                scenario.issueUrlIcon = issueUrlIcon;
+                scenario.issueUrl = S.notBlank(scenario.issueKey) ? S.fmt(issueUrlTemplate, scenario.issueKey) : null;
+                scenario.issueUrlIcon = S.notBlank(scenario.issueKey) ? issueUrlIcon : null;
             } else if (S.notBlank(scenario.issueUrl)) {
                 scenario.issueUrlIcon = inferIssueUrlIcon(scenario.issueUrl);
             }
