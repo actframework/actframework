@@ -1,0 +1,9 @@
+Scenario(1116):
+  description: Configurable URL router support
+  interactions:
+  - description: test
+    request:
+      get: 1116/2
+    response:
+      json:
+        result: 1116

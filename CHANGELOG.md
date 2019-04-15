@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Configurable URL router support #1116
 * Act Test - running duplicated scenarios due to introduce of RefId #1115
 * Act Test - fixture not cleared in certain case #1114
 * Act Test - intelligent scenario name #1113

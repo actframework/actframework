@@ -337,11 +337,49 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
     }
 
+    private String evalConf(String s) {
+        Object o = appConfig.getIgnoreCase(s);
+        if (null == o) {
+            warn("Missing configuration for path substitution: %s", s);
+            return s;
+        }
+        return S.string(o);
+    }
+
+    private String processStringSubstitution(String s) {
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        if (n == 0 && s.endsWith(")}")) {
+            s = s.substring(2);
+            s = s.substring(0, s.length() - 1);
+            return evalConf(s);
+        }
+        int a = 0;
+        int z = n;
+        S.Buffer buf = S.buffer();
+        while (true) {
+            buf.append(s.substring(a, z));
+            n = s.indexOf("}", z);
+            a = n;
+            String part = s.substring(z + 2, a);
+            buf.append(evalConf(part));
+            n = s.indexOf("${", a);
+            if (n < 0) {
+                buf.append(s.substring(a + 1));
+                return buf.toString();
+            }
+            z = n;
+        }
+    }
+
     @SuppressWarnings("FallThrough")
-    public void addMapping(final H.Method method, final String path, RequestHandler handler, final RouteSource source) {
+    public void addMapping(final H.Method method, String path, RequestHandler handler, final RouteSource source) {
         if (isTraceEnabled()) {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
+        path = processStringSubstitution(path);
         if (!app().config().builtInReqHandlerEnabled()) {
             String sPath = path;
             if (sPath.startsWith("/~/")) {
