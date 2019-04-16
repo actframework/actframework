@@ -90,6 +90,8 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
     Node _DEL;
     Node _PATCH;
 
+    List<Node> roots;
+
     private Map<String, RequestHandlerResolver> resolvers = new HashMap<>();
 
     private RequestHandlerResolver handlerLookup;
@@ -131,15 +133,14 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         _POST = Node.newRoot("POST", appConfig);
         _DEL = Node.newRoot("DELETE", appConfig);
         _PATCH = Node.newRoot("PATCH", appConfig);
+        roots = C.list(_GET, _PUT, _POST, _DEL, _PATCH);
     }
 
     @Override
     protected void releaseResources() {
-        _GET.destroy();
-        _DEL.destroy();
-        _POST.destroy();
-        _PUT.destroy();
-        _PATCH.destroy();
+        for (Node root : roots) {
+            root.destroy();
+        }
         handlerLookup.destroy();
         actionNames.clear();
         appConfig = null;
@@ -157,12 +158,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
 
     @Override
     public List<TreeNode> children() {
-        List<TreeNode> l = new ArrayList<>();
-        l.add(_GET);
-        l.add(_POST);
-        l.add(_PUT);
-        l.add(_DEL);
-        return l;
+        return $.cast(roots);
     }
 
     public String portId() {
