@@ -120,8 +120,12 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         for (Method m: ma) {
             buildPropertyPath(context, m, c, retLst, circularReferenceDetector, typeImplLookup);
         }
-        Field[] fa = c.getFields();
+        List<Field> fa = $.fieldsOf(c);
         for (Field f: fa) {
+            int mod = f.getModifiers();
+            if (Modifier.isTransient(mod) || !Modifier.isPublic(mod)) {
+                continue;
+            }
             buildPropertyPath(context, f, retLst, circularReferenceDetector, typeImplLookup);
         }
         Collections.sort(retLst);
@@ -129,6 +133,9 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
     }
 
     private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+        if (Modifier.isStatic(m.getModifiers())) {
+            return;
+        }
         if (m.getParameterTypes().length > 0) {
             return;
         }
