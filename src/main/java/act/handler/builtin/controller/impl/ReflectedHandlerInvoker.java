@@ -1078,7 +1078,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         boolean hasTemplate = invoker.checkTemplate(context);
         if (!hasTemplate && hasReturn && null != returnValueAdvice) {
             if (transformRetVal) {
-                PropertySpec.MetaInfo propertySpec = handlerMetaInfo.propertySpec();
+                PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(handlerMetaInfo, context);
                 if (null != propertySpec) {
                     Lang._MappingStage stage = propertySpec.applyTo(Lang.map(retVal), context);
                     Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();

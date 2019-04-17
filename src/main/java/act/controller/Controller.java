@@ -1925,6 +1925,7 @@ public @interface Controller {
             } else if (v instanceof ISObject) {
                 return inferResult((ISObject) v, context);
             } else {
+                PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                 if (requireJSON || H.Format.UNKNOWN == context.req().accept()) {
                     boolean isIterable = v instanceof Iterable;
                     if (isIterable) {
@@ -1936,19 +1937,15 @@ public @interface Controller {
                     } else if (v instanceof $.Func0) {
                         return RenderJSON.of(status, ($.Func0) v);
                     }
-                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     boolean possibleLargeResponse = context.isLargeResponse();
                     JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
                     return possibleLargeResponse ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
                 } else if (context.acceptXML()) {
-                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return new FilteredRenderXML(status, v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
-                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
-                    PropertySpec.MetaInfo.withCurrent(meta, context);
                     return inferPrimitiveResult(v, context, false, requireXML, isArray, shouldUseToString);
                 }
             }

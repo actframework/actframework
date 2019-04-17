@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Request handler - error output when ReturnValueAdvice and PropertySpec presented for Iterable type return #1118
 * `UnexpectedException` triggered executing CLI command in TSCPP project #1117
 * Configurable URL router support #1116
 * Act Test - running duplicated scenarios due to introduce of RefId #1115

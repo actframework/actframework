@@ -247,6 +247,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     boolean isAllowIgnoreParamNamespace();
 
+    boolean isPropertySpecConsumed();
+
+    CTX_TYPE markPropertySpecConsumed();
 
     interface Listener {
         void onDestroy(ActContext context);
@@ -282,6 +285,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private SerializerFeature[] fastjsonFeatures;
         private String dateFormatPattern;
         private boolean disableCircularReferenceDetect = true;
+        private boolean propertySpecConsumed;
 
         public Base(App app) {
             this.app = $.requireNotNull(app);
@@ -682,6 +686,17 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         @Override
         public boolean isAllowIgnoreParamNamespace() {
             return false;
+        }
+
+        @Override
+        public boolean isPropertySpecConsumed() {
+            return propertySpecConsumed;
+        }
+
+        @Override
+        public CTX markPropertySpecConsumed() {
+            propertySpecConsumed = true;
+            return me();
         }
 
         public void setJobId(String jobId) {

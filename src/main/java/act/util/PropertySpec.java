@@ -317,6 +317,11 @@ public @interface PropertySpec {
         }
 
         public static MetaInfo withCurrent(HandlerMethodMetaInfo methodMetaInfo, ActContext context) {
+            // see https://github.com/actframework/actframework/issues/1118
+            if (context.isPropertySpecConsumed()) {
+                return null;
+            }
+            context.markPropertySpecConsumed();
             MetaInfo builtIn = null == methodMetaInfo ? null : methodMetaInfo.propertySpec();
             return withCurrent(builtIn, context);
         }
