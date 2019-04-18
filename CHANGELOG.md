@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.20**
+* Act-Test - Add alias `assign` to `cache'; improve explicit issueKey handling #1120
 * Request handler - error output when ReturnValueAdvice and PropertySpec presented for Iterable type return #1118
 * `UnexpectedException` triggered executing CLI command in TSCPP project #1117
 * Configurable URL router support #1116

@@ -305,6 +305,11 @@ public class Scenario implements ScenarioPart {
     private App app;
     public String name;
     public String issueKey;
+    public boolean noIssue;
+    public boolean notIssue;
+    // whether this scenario is a
+    // setup fixture for a partition
+    public boolean setup;
     // GH1091 - a user friendly name for dependency reference
     public String refId;
     public String description;
@@ -321,7 +326,7 @@ public class Scenario implements ScenarioPart {
     public Throwable cause;
     public boolean clearFixtures = true;
     public String urlContext;
-    public String partition = "DEFAULT";
+    public String partition = "__DEFAULT";
     public String source;
     private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
@@ -647,15 +652,27 @@ public class Scenario implements ScenarioPart {
     }
 
     private boolean runDependents(ProgressGauge gauge, boolean forceClearFixtures) {
-        gauge.incrMaxHintBy(depends.size());
+        List<Scenario> partitionSetups = scenarioManager.getPartitionSetups(partition);
+        List<Scenario> allDeps = new ArrayList<>();
+        for (Scenario scenario : partitionSetups) {
+            if (scenario == this) {
+                break;
+            }
+            allDeps.add(scenario);
+        }
         for (String dependent : depends) {
+            Scenario scenario = scenarioManager.get(dependent);
+            errorIf(null == scenario, "Dependent not found: " + dependent);
+            allDeps.add(scenario);
+        }
+        Collections.sort(allDeps, new ScenarioComparator(scenarioManager, partition));
+        gauge.incrMaxHintBy(allDeps.size());
+        for (Scenario scenario : allDeps) {
             try {
-                Scenario scenario = scenarioManager.get(dependent);
-                errorIf(null == scenario, "Dependent not found: " + dependent);
                 Scenario old = current.get();
                 try {
                     if (!scenario.run(scenarioManager, requestTemplateManager, gauge, forceClearFixtures)) {
-                        errorMessage = "dependency failure: " + dependent;
+                        errorMessage = "dependency failure: " + scenario.name;
                         return false;
                     }
                     inheritFrom(scenario);

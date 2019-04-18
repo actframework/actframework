@@ -54,6 +54,8 @@ public class Interaction implements ScenarioPart {
     public ResponseSpec response;
     public List<Macro> postActions = new ArrayList<>();
     public Map<String, String> cache = new LinkedHashMap<>();
+    // see https://github.com/actframework/actframework/issues/1119
+    public Map<String, String> assign = new LinkedHashMap<>();
     public String errorMessage;
     public transient Throwable cause;
     public TestStatus status = PENDING;
@@ -87,6 +89,9 @@ public class Interaction implements ScenarioPart {
 
     public boolean run() {
         act.metric.Timer timer = metric.startTimer("run");
+        if (!assign.isEmpty()) {
+            cache.putAll(assign);
+        }
         try {
             boolean pass = run(preActions) && verify() && run(postActions);
             status = TestStatus.of(pass);

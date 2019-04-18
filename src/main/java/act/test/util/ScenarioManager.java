@@ -38,8 +38,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -48,6 +47,7 @@ public class ScenarioManager extends YamlLoader {
     private static DaoLocator NULL_DAO = new NullDaoLocator();
 
     private Map<Keyword, Scenario> store = new LinkedHashMap<>();
+    private Map<Keyword, List<Scenario>> partitionSetups = new HashMap<>();
 
     private String urlContext;
     private String issueUrlTemplate;
@@ -73,6 +73,11 @@ public class ScenarioManager extends YamlLoader {
 
     public Scenario get(Keyword testId) {
         return store.get(testId);
+    }
+
+    public List<Scenario> getPartitionSetups(String partition) {
+        List<Scenario> list = partitionSetups.get(Keyword.of(partition));
+        return null != list ? list : C.<Scenario>list();
     }
 
     public Map<String, Scenario> load() {
@@ -219,25 +224,42 @@ public class ScenarioManager extends YamlLoader {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
-            if (S.blank(scenario.issueKey)) {
+            boolean inferIssueKey = !scenario.noIssue && S.blank(scenario.issueKey) && S.notBlank(issueUrlTemplate);
+            if (inferIssueKey) {
                 if (key.contains(" ")) {
                     scenario.issueKey = S.beforeFirst(key, " ");
                     if (scenario.issueKey.startsWith("!") || scenario.issueKey.endsWith("!")) {
                         scenario.issueKey = null;
+                        scenario.noIssue = true;
+                        if (S.blank(scenario.refId)) {
+                            scenario.refId = S.afterFirst(key, " ");
+                        }
+                        if (S.blank(scenario.description)) {
+                            scenario.description = S.afterFirst(key, " ");
+                        }
                     }
                 } else {
                     scenario.issueKey = key;
                 }
             }
+            String issueKey = scenario.issueKey;
+            boolean noIssue = scenario.noIssue || scenario.notIssue
+                    || Keyword.eq("noIssue", issueKey)
+                    || Keyword.eq("noIssueKey", issueKey)
+                    || Keyword.eq("notAnIssue", issueKey)
+                    || Keyword.eq("notIssue", issueKey);
+            scenario.noIssue = noIssue;
+            if (noIssue) {
+                scenario.issueKey = null;
+            }
+            int issueKeyLen = noIssue ? 0 : S.string(scenario.issueKey).length();
+            boolean namePrefixedWithIssueKey = 0 < issueKeyLen &&
+                    (key.startsWith(scenario.issueKey + " ") || key.startsWith(scenario.issueKey + "-") || key.startsWith(scenario.issueKey + ":"));
             if (S.blank(scenario.refId)) {
-                if (key.contains(" ")) {
-                    scenario.refId = S.afterFirst(key, " ");
-                }
+                scenario.refId = namePrefixedWithIssueKey ? key.substring(issueKeyLen + 1) : key;
             }
             if (S.blank(scenario.description)) {
-                if (key.contains(" ")) {
-                    scenario.description = S.afterFirst(key, " ");
-                }
+                scenario.description = namePrefixedWithIssueKey ? key.substring(issueKeyLen + 1) : key;
             }
             scenario.source = fileName;
             if (hasDefaultUrlContext) {
@@ -248,6 +270,16 @@ public class ScenarioManager extends YamlLoader {
                 }
             }
             this.store.put(Keyword.of(key), scenario);
+            this.store.put(Keyword.of(scenario.name), scenario);
+            if (scenario.setup) {
+                List<Scenario> list = partitionSetups.get(Keyword.of(scenario.partition));
+                if (null == list) {
+                    list = new ArrayList<>();
+                    partitionSetups.put(Keyword.of(scenario.partition), list);
+                }
+                list.add(scenario);
+                Collections.sort(list, new ScenarioComparator(this, false));
+            }
             if (S.notBlank(scenario.refId)) {
                 this.store.put(Keyword.of(scenario.refId), scenario);
             }

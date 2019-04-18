@@ -22,6 +22,8 @@ package act.test.util;
 
 import act.test.Scenario;
 import org.osgl.$;
+import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,11 +32,18 @@ import java.util.List;
 public class ScenarioComparator implements Comparator<Scenario> {
 
     private ScenarioManager scenarioManager;
+    private String finalPartition; // any test scenario fall into this partition shall be run last
     private boolean finished;
 
     public ScenarioComparator(ScenarioManager manager, boolean finished) {
         scenarioManager = $.requireNotNull(manager);
         this.finished = finished;
+    }
+
+    public ScenarioComparator(ScenarioManager manager, String finalPartition) {
+        this.scenarioManager = $.requireNotNull(manager);
+        this.finished = false;
+        this.finalPartition = S.requireNotBlank(finalPartition);
     }
 
     @Override
@@ -63,18 +72,28 @@ public class ScenarioComparator implements Comparator<Scenario> {
         }
         int n = o1.partition.compareTo(o2.partition);
         if (n != 0) {
+            if (null != finalPartition) {
+                if (S.eq(o1.partition, finalPartition)) {
+                    return 1;
+                } else if (S.eq(o2.partition, finalPartition)) {
+                    return -1;
+                }
+            }
             return n;
         }
-        n = d1.size() - d2.size();
-        if (n != 0) {
-            return n;
+        if (o1.setup && !o2.setup) {
+            return -1;
         }
-        return o1.name.compareTo(o2.name);
+        if (!o1.setup && o2.setup) {
+            return 1;
+        }
+        return o1.title().compareTo(o2.title());
     }
 
     private List<Scenario> depends(Scenario s, List<Scenario> depends) {
         for (String name : s.depends) {
             Scenario scenario = scenarioManager.get(name);
+            E.unexpectedIf(null == scenario, "dependent scenario[%s] not found in scenario[%s]", name, s.name);
             depends(scenario, depends);
             depends.add(scenario);
         }
