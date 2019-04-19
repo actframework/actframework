@@ -143,7 +143,8 @@ public class JsonUtilConfig {
 
         private FastJsonPropertyPreFilter initPropertyPreFilter(Object v, PropertySpec.MetaInfo spec, ActContext context) {
             if (null != context) {
-                spec = PropertySpec.MetaInfo.withCurrent(spec, context);
+                PropertySpec.MetaInfo withCurrent = PropertySpec.MetaInfo.withCurrent(spec, context);
+                spec = null == withCurrent ? spec : withCurrent;
             }
             if (null == spec) {
                 return null;
