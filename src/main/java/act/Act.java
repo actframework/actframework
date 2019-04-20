@@ -317,9 +317,9 @@ public final class Act {
     public static void startup(AppDescriptor descriptor) {
         long start = descriptor.getStart();
         processEnvironment(descriptor);
-        Banner.print(descriptor);
         registerTypeConverters();
         loadConfig();
+        Banner.print(descriptor);
         initMetricPlugin();
         initPluginManager();
         initAppServicePluginManager();

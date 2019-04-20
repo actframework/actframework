@@ -17,7 +17,7 @@
 
   <properties>
     <!-- remove the following line if you are on Java 7-->
-    <java.version>1.8</java.version>
+<!--    <java.version>1.8</java.version>-->
     <app.entry>ghissues.AppEntry</app.entry>
   </properties>
 
@@ -37,11 +37,6 @@
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
-      <artifactId>act-sql-common</artifactId>
-      <version>1.4.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
       <artifactId>act-jpa-common</artifactId>
       <version>1.5.7-SNAPSHOT</version>
     </dependency>
@@ -58,11 +53,6 @@
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>
       <version>[4.1.12,)</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>27.0.1-jre</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>

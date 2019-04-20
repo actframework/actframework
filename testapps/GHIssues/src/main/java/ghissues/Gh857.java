@@ -3,6 +3,7 @@ package ghissues;
 import act.annotations.Order;
 import act.annotations.Sorted;
 import act.controller.annotation.UrlContext;
+import org.osgl.$;
 import org.osgl.inject.annotation.TypeOf;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
@@ -48,7 +49,12 @@ public class Gh857 extends BaseController {
 
     @GetAction
     public List<String> test() {
-        return C.list(services).map(Service857::name);
+        return C.list(services).map(new $.Transformer<Service857, String>() {
+            @Override
+            public String transform(Service857 service857) {
+                return service857.name();
+            }
+        });
     }
 
 }
