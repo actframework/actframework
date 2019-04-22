@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.21** 
+* Update jQuery to 3.4.0 #1123
 * Add String to LocalDate and String to LocalTime type converter #1124
 
 **1.8.20** 20/Apr/2019
