@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.21** 
+* Add String to LocalDate and String to LocalTime type converter #1124
+
 **1.8.20** 20/Apr/2019
 * Act-Test - Add alias `assign` to `cache'; improve explicit issueKey handling #1120
 * Request handler - error output when ReturnValueAdvice and PropertySpec presented for Iterable type return #1118

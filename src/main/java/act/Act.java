@@ -859,6 +859,58 @@ public final class Act {
             public Long convert(ReadableInstant o) {
                 return o.getMillis();
             }
+        }).register(new $.TypeConverter<String, LocalTime>() {
+            @Override
+            public LocalTime convert(String s) {
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalTime.class);
+                }
+                AppConfig config = Act.appConfig();
+                String pattern = config.localizedTimePattern(locale());
+                return (DateTimeFormat.forPattern(pattern)).parseLocalTime(s);
+            }
+            @Override
+            public LocalTime convert(String s, Object hint) {
+                if (null == hint) {
+                    return convert(s);
+                }
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalTime.class);
+                }
+                String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTime().parseLocalTime(s);
+                }
+                return (DateTimeFormat.forPattern(pattern)).parseLocalTime(s);
+            }
+        }).register(new $.TypeConverter<String, LocalDate>() {
+            @Override
+            public LocalDate convert(String s) {
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalDate.class);
+                }
+                AppConfig config = Act.appConfig();
+                String pattern = config.localizedDatePattern(locale());
+                return (DateTimeFormat.forPattern(pattern)).parseLocalDate(s);
+            }
+            @Override
+            public LocalDate convert(String s, Object hint) {
+                if (null == hint) {
+                    return convert(s);
+                }
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalDate.class);
+                }
+                String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTime().parseLocalDate(s);
+                }
+                return (DateTimeFormat.forPattern(pattern)).parseLocalDate(s);
+            }
         }).register(new $.TypeConverter<String, DateTime>() {
             @Override
             public DateTime convert(String s) {
