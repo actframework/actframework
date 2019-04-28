@@ -56,6 +56,8 @@ public class Interaction implements ScenarioPart {
     public Map<String, String> cache = new LinkedHashMap<>();
     // see https://github.com/actframework/actframework/issues/1119
     public Map<String, String> assign = new LinkedHashMap<>();
+    public Map<String, String> store = new LinkedHashMap<>();
+    public Map<String, String> save = new LinkedHashMap<>();
     public String errorMessage;
     public transient Throwable cause;
     public TestStatus status = PENDING;
@@ -91,6 +93,12 @@ public class Interaction implements ScenarioPart {
         act.metric.Timer timer = metric.startTimer("run");
         if (!assign.isEmpty()) {
             cache.putAll(assign);
+        }
+        if (!store.isEmpty()) {
+            cache.putAll(store);
+        }
+        if (!save.isEmpty()) {
+            cache.putAll(save);
         }
         try {
             boolean pass = run(preActions) && verify() && run(postActions);
