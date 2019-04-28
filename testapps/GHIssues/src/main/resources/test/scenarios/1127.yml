@@ -1,0 +1,11 @@
+Scenario(1127):
+  description: "Allow type convert deserializing JSON data"
+  interactions:
+  - description: test
+    request:
+      post: 1127
+      json:
+        n: "123"
+    response:
+      json:
+        n: 123
