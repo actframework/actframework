@@ -1,0 +1,9 @@
+Scenario(1128):
+  description: "Upload file issue"
+  interactions:
+    - request:
+        post: 1128
+        parts:
+          file: test.txt
+      response:
+        status: 201

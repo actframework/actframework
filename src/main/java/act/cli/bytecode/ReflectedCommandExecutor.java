@@ -33,6 +33,7 @@ import act.inject.param.ParamValueLoaderManager;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.util.*;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -66,6 +67,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private String dateFormatPattern;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private PropertyNamingStrategy propertyNamingStrategy;
     private boolean enableCircularReferenceDetect = false;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
@@ -86,6 +88,10 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
             if (null != featureAnno) {
                 features = featureAnno.value();
+            }
+            FastJsonPropertyNamingStrategy propertyNamingStrategyAnno = ReflectedInvokerHelper.getAnnotation(FastJsonPropertyNamingStrategy.class, method);
+            if (null != propertyNamingStrategyAnno) {
+                propertyNamingStrategy = propertyNamingStrategyAnno.value();
             }
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
@@ -117,6 +123,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             context.dateFormatPattern(dateFormatPattern);
         }
         context.fastjsonFeatures(features);
+        context.fastjsonPropertyNamingStrategy(propertyNamingStrategy);
         context.fastjsonFilters(filters);
         context.prepare(parsingContext);
         if (enableCircularReferenceDetect) {

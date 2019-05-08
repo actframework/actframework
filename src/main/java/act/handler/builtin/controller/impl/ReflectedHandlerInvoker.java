@@ -139,6 +139,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean forceSmallResponse;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private PropertyNamingStrategy propertyNamingStrategy;
     private $.Function<ActionContext, Result> pluginBeforeHandler;
     private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
     private Map<String, Object> attributes = new HashMap<>();
@@ -283,6 +284,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
         if (null != featureAnno) {
             features = featureAnno.value();
+        }
+        FastJsonPropertyNamingStrategy propertyNamingStrategyAnno = ReflectedInvokerHelper.getAnnotation(FastJsonPropertyNamingStrategy.class, method);
+        if (null != propertyNamingStrategyAnno) {
+            propertyNamingStrategy = propertyNamingStrategyAnno.value();
         }
         enableCircularReferenceDetect = hasAnnotation(EnableCircularReferenceDetect.class);
 
@@ -557,6 +562,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         if (null != features) {
             context.fastjsonFeatures(features);
+        }
+
+        if (null != propertyNamingStrategy) {
+            context.fastjsonPropertyNamingStrategy(propertyNamingStrategy);
         }
 
         if (null != dateFormatPattern) {

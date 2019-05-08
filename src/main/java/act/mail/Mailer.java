@@ -21,6 +21,7 @@ package act.mail;
  */
 
 import act.app.ActionContext;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -57,9 +58,7 @@ public @interface Mailer {
      */
     String value() default "default";
 
-    class Util {
-
-        protected static final Logger logger = L.get(Mailer.class);
+    class Util extends LogSupport {
 
         public static Future<Boolean> send(Object... args) {
             throw E.unsupport("to be enhanced");

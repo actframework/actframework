@@ -97,6 +97,10 @@
     <appender-ref ref="DB_FILE" />
   </logger>
 
+  <logger name="org.mongodb.morphia" level="TRACE" additivity="false">
+    <appender-ref ref="STDOUT" />
+  </logger>
+
   <logger name="act.test" level="INFO" additivity="false">
     <appender-ref ref="E2E_STDOUT"/>
     <appender-ref ref="E2E_FILE"/>

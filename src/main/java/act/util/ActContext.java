@@ -31,6 +31,7 @@ import act.conf.AppConfig;
 import act.i18n.I18n;
 import act.mail.MailerContext;
 import act.view.Template;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
@@ -239,6 +240,10 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     SerializerFeature[] fastjsonFeatures();
 
+    CTX_TYPE fastjsonPropertyNamingStrategy(PropertyNamingStrategy strategy);
+
+    PropertyNamingStrategy fastjsonPropertyNamingStrategy();
+
     CTX_TYPE dateFormatPattern(String pattern);
 
     String dateFormatPattern();
@@ -283,6 +288,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, ConstraintViolation> violations;
         private Class<? extends SerializeFilter>[] fastjsonFilters;
         private SerializerFeature[] fastjsonFeatures;
+        private PropertyNamingStrategy fastJsonPropertyNamingStrategy;
         private String dateFormatPattern;
         private boolean disableCircularReferenceDetect = true;
         private boolean propertySpecConsumed;
@@ -373,14 +379,23 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.fastjsonFeatures = features;
             return me();
         }
-        
-        public SerializerFeature[] fastjsonFeatures() {
-            return fastjsonFeatures;
+
+        public CTX fastjsonPropertyNamingStrategy(PropertyNamingStrategy strategy) {
+            this.fastJsonPropertyNamingStrategy = strategy;
+            return me();
         }
 
         public CTX dateFormatPattern(String pattern) {
             this.dateFormatPattern = pattern;
             return me();
+        }
+
+        public SerializerFeature[] fastjsonFeatures() {
+            return fastjsonFeatures;
+        }
+
+        public PropertyNamingStrategy fastjsonPropertyNamingStrategy() {
+            return fastJsonPropertyNamingStrategy;
         }
 
         public String dateFormatPattern() {

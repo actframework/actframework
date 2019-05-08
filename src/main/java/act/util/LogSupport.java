@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.inject.param.NoBind;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;

@@ -208,7 +208,11 @@ public class ReflectedInvokerHelper {
             return true;
         }
         for (Field field : fields) {
-            if (!isGlobalOrStateless(field, circularReferenceDetector)) {
+            if (Modifier.isFinal(field.getModifiers())) {
+                // suppose final field
+                continue;
+            }
+            if (!Modifier.isFinal(field.getModifiers()) && !isGlobalOrStateless(field, circularReferenceDetector)) {
                 return false;
             }
         }

@@ -1,5 +1,11 @@
 # ActFramework Change Log
 
+**1.8.22**
+* Allow developer to specify property naming convention for JSON output #1130
+* Upload file issue #1128
+* Act-Test add synonyms to cache/assign #1126
+* Act-Test add `startsIgnoreCase` and `endsIgnoreCase` verifier #1125
+
 **1.8.21** 26/Apr/2019
 * Update jQuery to 3.4.0 #1123
 * Add String to LocalDate and String to LocalTime type converter #1124
