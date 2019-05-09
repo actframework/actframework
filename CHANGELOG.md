@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.22**
+* Enhance AdaptiveBean - better support to inheritance #1131
 * Allow developer to specify property naming convention for JSON output #1130
 * Upload file issue #1128
 * Act-Test add synonyms to cache/assign #1126

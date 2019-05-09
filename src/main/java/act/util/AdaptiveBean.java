@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Data
-public class AdaptiveBean implements SimpleBean, EnhancedAdaptiveMap<AdaptiveBean> {
+public class AdaptiveBean<T extends AdaptiveBean> implements SimpleBean, EnhancedAdaptiveMap<T> {
 
     @NoBind
     private transient JSONObject kv = new JSONObject();
@@ -42,17 +42,21 @@ public class AdaptiveBean implements SimpleBean, EnhancedAdaptiveMap<AdaptiveBea
         return kv;
     }
 
+    protected T me() {
+        return (T) this;
+    }
+
     // --- implement KV
     @Override
-    public AdaptiveBean putValue(String key, Object val) {
+    public T putValue(String key, Object val) {
         Util.putValue(this, key, val);
-        return this;
+        return me();
     }
 
     @Override
-    public AdaptiveBean mergeValue(String key, Object val) {
+    public T mergeValue(String key, Object val) {
         Util.mergeValue(this, key, val);
-        return this;
+        return me();
     }
 
     @Override
@@ -61,15 +65,15 @@ public class AdaptiveBean implements SimpleBean, EnhancedAdaptiveMap<AdaptiveBea
     }
 
     @Override
-    public AdaptiveBean putValues(Map<String, Object> map) {
+    public T putValues(Map<String, Object> map) {
         Util.putValues(this, map);
-        return this;
+        return me();
     }
 
     @Override
-    public AdaptiveBean mergeValues(Map<String, Object> map) {
+    public T mergeValues(Map<String, Object> map) {
         Util.mergeValues(this, map);
-        return this;
+        return me();
     }
 
     @Override
