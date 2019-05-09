@@ -729,6 +729,13 @@ public enum AppConfigKey implements ConfigKey {
     JWT_ISSUER("jwt.issuer"),
 
     /**
+     * `json_body_patch` - enable/disable JSON body patch
+     *
+     * Default value: `true`
+     */
+    JSON_BODY_PATCH("json_body_patch.enabled"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */

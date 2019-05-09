@@ -1718,6 +1718,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean jsonBodyPatch;
+    protected T jsonBodyPatch(boolean enabled) {
+        jsonBodyPatch = enabled;
+        return me();
+    }
+    public boolean allowJsonBodyPatch() {
+        if (null == jsonBodyPatch) {
+            jsonBodyPatch = get(JSON_BODY_PATCH, true);
+        }
+        return jsonBodyPatch;
+    }
+    private void _mergeJsonBodyPatch(AppConfig conf) {
+        if (!hasConfiguration(JSON_BODY_PATCH)) {
+            jsonBodyPatch = conf.jsonBodyPatch;
+        }
+    }
+
     private int httpExternalPort = -1;
 
     protected T httpExternalPort(int port) {

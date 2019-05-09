@@ -804,7 +804,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
      */
     private String patchedJsonBody(ActionContext context) {
         String body = context.body();
-        if (S.blank(body)) {
+        if (!config.allowJsonBodyPatch() || S.blank(body)) {
             return body;
         }
         if (context.xmlEncoded()) {
