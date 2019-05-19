@@ -308,24 +308,24 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         }
         for (Endpoint endpoint : endpoints) {
             Javadoc javadoc = javadocOf(endpoint, methodJavaDocs);
+            List<ParamInfo> params = endpoint.getParams();
+            Map<String, ParamInfo> paramLookup = new HashMap<>();
+            for (ParamInfo param : params) {
+                String paramName = param.bindName;
+                paramLookup.put(paramName, param);
+                String fieldKey = param.fieldKey;
+                Javadoc fieldJavadoc = fieldJavaDocs.get(fieldKey);
+                if (null != fieldJavadoc) {
+                    JavadocDescription fieldJavadocDesc = fieldJavadoc.getDescription();
+                    if (null != fieldJavadocDesc) {
+                        param.setDescription(endpoint.processTypeImplSubstitution(fieldJavadocDesc.toText()));
+                    }
+                }
+            }
             if (null != javadoc) {
                 String desc = javadoc.getDescription().toText();
                 if (S.notBlank(desc)) {
                     endpoint.setDescription(desc);
-                }
-                List<ParamInfo> params = endpoint.getParams();
-                Map<String, ParamInfo> paramLookup = new HashMap<>();
-                for (ParamInfo param : params) {
-                    String paramName = param.getName();
-                    paramLookup.put(paramName, param);
-                    String fieldKey = S.concat(SimpleEndpointIdProvider.className(endpoint.controllerClass), ".", paramName);
-                    Javadoc fieldJavadoc = fieldJavaDocs.get(fieldKey);
-                    if (null != fieldJavadoc) {
-                        JavadocDescription fieldJavadocDesc = fieldJavadoc.getDescription();
-                        if (null != fieldJavadocDesc) {
-                            param.setDescription(endpoint.processTypeImplSubstitution(fieldJavadocDesc.toText()));
-                        }
-                    }
                 }
                 List<JavadocBlockTag> blockTags = javadoc.getBlockTags();
                 String returnDesc = null;

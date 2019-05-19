@@ -87,8 +87,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public boolean sessionVariable;
         public boolean headerVariable;
         public List<String> options;
+        public String fieldKey;
 
-        private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
+        private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
             this.description = description;
@@ -97,6 +98,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             this.sessionVariable = checkSessionVariable(beanSpec);
             this.headerVariable = checkHeaderVariable(beanSpec);
             this.options = checkOptions(beanSpec);
+            this.fieldKey = fieldKey;
         }
 
         public String getName() {
@@ -488,7 +490,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         for (int i = 0; i < paramCount; ++i) {
             Type type = paramTypes[i];
             Annotation[] annos = allAnnos[i];
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null, body);
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null, null, body);
             if (null != info) {
                 params.add(info);
                 if (path.contains("{" + info.getName() + "}")) {
@@ -540,14 +542,15 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         for (Field field : fields) {
             Type type = field.getGenericType();
             Annotation[] annos = field.getAnnotations();
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName(), body);
+            String fieldKey = field.getDeclaringClass().getName().replace('$', '.') + "." + field.getName();
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName(), fieldKey, body);
             if (null != info) {
                 params.add(info);
             }
         }
     }
 
-    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name, boolean body) {
+    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name, String fieldKey, boolean body) {
         if (isLoginUser(annos)) {
             return null;
         }
@@ -559,14 +562,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             if (org.osgl.util.S.blank(name)) {
                 name = spec.name();
             }
-            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id");
+            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey);
         }
         String description = "";
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();
         }
-        return new ParamInfo(body ? spec.name() + " (body)" : spec.name(), spec, description);
+        return new ParamInfo(body ? spec.name() + " (body)" : spec.name(), spec, description, fieldKey);
     }
 
     private boolean isLoginUser(Annotation[] annos) {
