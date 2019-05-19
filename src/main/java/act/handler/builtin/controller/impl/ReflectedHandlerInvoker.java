@@ -834,10 +834,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                     continue;
                 }
                 if (startCheckName) {
+                    int id = i - nameStart - 1;
                     if (c == '"') {
+                        if (id < theNameLen) {
+                            needPatch = true;
+                        }
                         break;
                     }
-                    int id = i - nameStart - 1;
                     if (id >= theNameLen || theName.charAt(i - nameStart - 1) != c) {
                         needPatch = true;
                         break;

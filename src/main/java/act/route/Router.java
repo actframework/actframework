@@ -1312,12 +1312,27 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             return S.pathConcat(pPath, '/', id());
         }
 
+        String debugPath() {
+            if (null == parent) return "/";
+            String pPath = parent.path();
+            return S.pathConcat(pPath, '/', debugId());
+        }
+
+        private String debugId() {
+            return null == name ? "~" + keyword.dashed() + "~" : name;
+        }
+
         void debug(H.Method method, PrintStream ps) {
             if (null != handler) {
-                ps.printf("%s %s %s\n", method, path(), handler);
+                ps.printf("%s %s %s\n", method, debugPath(), handler);
+            }
+            for (Node node : keywordMatchingChildren.values()) {
+                node.debug(method, ps);
             }
             for (Node node : staticChildren.values()) {
-                node.debug(method, ps);
+                if (null != node.name) {
+                    node.debug(method, ps);
+                }
             }
             for (Node node : dynamicChildren) {
                 node.debug(method, ps);
@@ -1326,10 +1341,15 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
 
         void debug(H.Method method, List<RouteInfo> routes) {
             if (null != handler) {
-                routes.add(new RouteInfo(method, path(), handler));
+                routes.add(new RouteInfo(method, debugPath(), handler));
+            }
+            for (Node node : keywordMatchingChildren.values()) {
+                node.debug(method, routes);
             }
             for (Node node : staticChildren.values()) {
-                node.debug(method, routes);
+                if (null != node.name) {
+                    node.debug(method, routes);
+                }
             }
             for (Node node : dynamicChildren) {
                 node.debug(method, routes);

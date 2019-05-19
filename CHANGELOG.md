@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.22**
+* `route.print` not handle keyword matching routes correctly #1136
 * Allow developer to disable JSON body patch #1134
 * Enhance AdaptiveBean - better support to inheritance #1131
 * Allow developer to specify property naming convention for JSON output #1130
