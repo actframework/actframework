@@ -3,6 +3,7 @@
 **1.8.22**
 * `route.print` not handle keyword matching routes correctly #1136
 * Allow developer to disable JSON body patch #1134
+* API Doc - treat session variable as a special param #1133
 * Enhance AdaptiveBean - better support to inheritance #1131
 * Allow developer to specify property naming convention for JSON output #1130
 * Upload file issue #1128

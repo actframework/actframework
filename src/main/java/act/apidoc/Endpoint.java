@@ -34,6 +34,8 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
+import act.inject.HeaderVariable;
+import act.inject.SessionVariable;
 import act.inject.param.NoBind;
 import act.inject.param.ParamValueLoaderService;
 import act.util.*;
@@ -82,6 +84,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public String description;
         public String defaultValue;
         public boolean required;
+        public boolean sessionVariable;
+        public boolean headerVariable;
         public List<String> options;
 
         private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
@@ -90,11 +94,28 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             this.description = description;
             this.defaultValue = checkDefaultValue(beanSpec);
             this.required = checkRequired(beanSpec);
+            this.sessionVariable = checkSessionVariable(beanSpec);
+            this.headerVariable = checkHeaderVariable(beanSpec);
             this.options = checkOptions(beanSpec);
         }
 
         public String getName() {
+            if (sessionVariable) {
+                return bindName + "[S]";
+            } else if (headerVariable) {
+                return bindName + "[H]";
+            }
             return bindName;
+        }
+
+        public String getTooltip() {
+            if (sessionVariable) {
+                return "Session variable: " + bindName;
+            } else if (headerVariable) {
+                return "Header variable: " + bindName;
+            } else {
+                return "Bind name: " + bindName;
+            }
         }
 
         public String getType() {
@@ -102,6 +123,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
 
         public String getDescription() {
+            if (S.blank(description)) {
+                if (sessionVariable) {
+                    return "Session variable";
+                } else if (headerVariable) {
+                    return "Header variable";
+                }
+            }
             return description;
         }
 
@@ -138,6 +166,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return (spec.hasAnnotation(NotNull.class)
                     || spec.hasAnnotation(NotBlank.class)
                     || spec.hasAnnotation(NotEmpty.class));
+        }
+
+        private boolean checkSessionVariable(BeanSpec spec) {
+            return spec.hasAnnotation(SessionVariable.class);
+        }
+
+        private boolean checkHeaderVariable(BeanSpec spec) {
+            return spec.hasAnnotation(HeaderVariable.class);
         }
 
         private List<String> checkOptions(BeanSpec spec) {

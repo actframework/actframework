@@ -21,7 +21,7 @@
                     </thead>
                     <tbody>
                     <tr each={ endpoint.params }>
-                        <td>{ name }</td>
+                        <td title={ tooltip }>{ name }</td>
                         <td>{ type }</td>
                         <td>{ required }</td>
                         <td>
