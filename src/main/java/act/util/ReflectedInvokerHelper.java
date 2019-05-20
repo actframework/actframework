@@ -157,6 +157,9 @@ public class ReflectedInvokerHelper {
         if ($.isSimpleType(type)) {
             return false;
         }
+        if (type.getAnnotation(Stateful.class) != null) {
+            return false;
+        }
         if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _hasGlobalOrStatelessAnnotations(type)) {
             return true;
         }
