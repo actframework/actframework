@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -50,6 +51,7 @@ public abstract class RouterTestBase extends ActTestBase {
         AppConfig config = appConfig();
         app = mock(App.class);
         when(app.config()).thenReturn(config);
+        when(app.cuid()).thenReturn(S.random());
         when(app.file(anyString())).thenAnswer(new Answer<File>() {
             @Override
             public File answer(InvocationOnMock invocation) throws Throwable {
