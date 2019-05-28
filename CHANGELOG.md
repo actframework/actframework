@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.23**
+* Router - debug routing list missing certain routes #1137
+
 **1.8.22** 20/May/2019
 * `route.print` not handle keyword matching routes correctly #1136
 * Allow developer to disable JSON body patch #1134

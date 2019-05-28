@@ -760,7 +760,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
     public void debug(List<RouteInfo> routes) {
         for (H.Method method : supportedHttpMethods()) {
             Node node = root(method);
-            node.debug(method, routes);
+            node.debug(method, routes, new HashSet<Node>());
         }
     }
 
@@ -945,6 +945,8 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
 
         static String MATCH_ALL = "(.*?)";
 
+        private String uid = Act.cuid();
+
         private int id;
 
         private boolean isDynamic;
@@ -1012,17 +1014,12 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
 
         @Override
         public int hashCode() {
-            return id;
+            return uid.hashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (obj instanceof Node) {
-                Node that = (Node) obj;
-                return that.id == id && that.name.equals(name);
-            }
-            return false;
+            return obj == this;
         }
 
         @Override
@@ -1339,20 +1336,27 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             }
         }
 
-        void debug(H.Method method, List<RouteInfo> routes) {
+        private void debug(H.Method method, List<RouteInfo> routes, Set<Node> circularReferenceDetector) {
+            if (circularReferenceDetector.contains(this)) {
+                return;
+            }
+            circularReferenceDetector.add(this);
             if (null != handler) {
                 routes.add(new RouteInfo(method, debugPath(), handler));
             }
             for (Node node : keywordMatchingChildren.values()) {
-                node.debug(method, routes);
+                node.debug(method, routes, circularReferenceDetector);
             }
             for (Node node : staticChildren.values()) {
                 if (null != node.name) {
-                    node.debug(method, routes);
+                    node.debug(method, routes, circularReferenceDetector);
                 }
             }
             for (Node node : dynamicChildren) {
-                node.debug(method, routes);
+                node.debug(method, routes, circularReferenceDetector);
+            }
+            for (Node node : dynamicAliases.values()) {
+                node.debug(method, routes, circularReferenceDetector);
             }
         }
 
