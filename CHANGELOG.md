@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.23**
+* `@Every` annotation not working as expected if `@OnAppStart` annotation presented #1138
 * Router - debug routing list missing certain routes #1137
 
 **1.8.22** 20/May/2019

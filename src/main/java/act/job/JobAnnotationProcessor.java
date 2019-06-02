@@ -163,6 +163,6 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         String id = method.id();
         JobManager jobManager = app().jobManager();
         Job job = jobManager.jobById(id, false);
-        return null == job ? new Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), false) : job;
+        return null == job ? new Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), true) : job;
     }
 }

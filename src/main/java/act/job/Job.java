@@ -72,8 +72,8 @@ public class Job extends DestroyableBase implements Runnable {
         }
 
         synchronized Job add(Job thatJob) {
-            if (parent.isOneTime()) {
-                thatJob.setOneTime();
+            if (!parent.isOneTime()) {
+                thatJob.setNonOneTime();
             }
             if (parent.done() || iterating) {
                 parent.manager.now(thatJob, sysJob);
@@ -132,7 +132,7 @@ public class Job extends DestroyableBase implements Runnable {
     private final String id;
     private final String jobProgressTag;
     private App app;
-    private boolean oneTime;
+    private boolean oneTime = true;
     private boolean executed;
     private JobManager manager;
     private JobTrigger trigger;
@@ -169,7 +169,6 @@ public class Job extends DestroyableBase implements Runnable {
     Job(String id, JobManager manager, final Callable<?> callable) {
         this.id = id;
         this.manager = $.requireNotNull(manager);
-        this.oneTime = true;
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
@@ -294,9 +293,8 @@ public class Job extends DestroyableBase implements Runnable {
         }
     }
 
-    Job setOneTime() {
-        oneTime = true;
-        return this;
+    void setNonOneTime() {
+        oneTime = false;
     }
 
     boolean done() {
