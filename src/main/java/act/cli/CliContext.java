@@ -373,8 +373,13 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             Thread.yield();
             flush();
         }
-        pb.stepTo(pb.getMax());
-        pb.stop();
+        if (progressGauge.hasError()) {
+            pb.stop();
+            println(progressGauge.error());
+        } else {
+            pb.stepTo(pb.getMax());
+            pb.stop();
+        }
     }
 
     public void printText(ProgressGauge progressGauge) {
@@ -393,6 +398,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 print("Interrupted");
                 break;
             }
+        }
+        if (progressGauge.hasError()) {
+            println(progressGauge.error());
         }
         println();
     }

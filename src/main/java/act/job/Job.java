@@ -348,7 +348,11 @@ public class Job extends DestroyableBase implements Runnable {
                     cause = cause.getCause();
                 }
             }
-            progress.fail(t.getMessage());
+            String msg = t.getLocalizedMessage();
+            if (S.blank(msg)) {
+                msg = S.fmt("Unexpected exception encountered: %s, please check console log", t.getClass().getSimpleName());
+            }
+            progress.fail(msg);
             if (isFatal) {
                 if (Act.isDev()) {
                     app.setBlockIssue(t);

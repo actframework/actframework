@@ -126,6 +126,14 @@ public interface ProgressGauge {
     Map<String, Object> getPayload();
 
     /**
+     * Return error message if any
+     * @return error message
+     */
+    String error();
+
+    boolean hasError();
+
+    /**
      * Add an listener to this gauge that monitors the progress update
      * @param listener the listener
      */

@@ -23,6 +23,7 @@ package act.util;
 import act.Destroyable;
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -239,6 +240,14 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     public void fail(String error) {
         this.error = error;
         triggerUpdateEvent(true);
+    }
+
+    public String error() {
+        return error;
+    }
+
+    public boolean hasError() {
+        return S.notBlank(error);
     }
 
     @Override

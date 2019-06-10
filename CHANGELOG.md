@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.23**
+* Improve async CLI command error reporting #1139
 * `@Every` annotation not working as expected if `@OnAppStart` annotation presented #1138
 * Router - debug routing list missing certain routes #1137
 
