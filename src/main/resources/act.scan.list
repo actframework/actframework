@@ -32,6 +32,7 @@ act.job.JobExceptionListenerFinder
 act.meta.ClassMetaInfoManager
 act.util.FastJsonEnhancedAdaptiveMapCodec
 act.util.FastJson
+act.util.TopLevelDomainList
 act.util.TypeConverterRegister
 act.validation.ValidationPlugin
 act.Zen

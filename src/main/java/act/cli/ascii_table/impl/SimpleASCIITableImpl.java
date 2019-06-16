@@ -39,6 +39,8 @@ package act.cli.ascii_table.impl;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
+import act.util.Banner;
+import org.fusesource.jansi.Ansi;
 import org.osgl.util.S;
 
 import java.io.PrintWriter;
@@ -227,7 +229,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 			/**
 			 * 2. Header line
 			 */
-			tableBuf.append(getRowDataBuf(colCount, colMaxLenList, header, headerObjs, true));
+			tableBuf.append(getRowDataBuf(colCount, colMaxLenList, header, headerObjs, true, -1));
 		}
 		
 		/**
@@ -250,7 +252,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 				}
 			}
 			
-			tableBuf.append(getRowDataBuf(colCount, colMaxLenList, rowData, headerObjs, false));
+			tableBuf.append(getRowDataBuf(colCount, colMaxLenList, rowData, headerObjs, false, i));
 		}
 		
 		/**
@@ -261,7 +263,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	}
 	
 	private String getRowDataBuf(int colCount, List<Integer> colMaxLenList, 
-			String[] row, ASCIITableHeader[] headerObjs, boolean isHeader) {
+			String[] row, ASCIITableHeader[] headerObjs, boolean isHeader, int rowNo) {
 		
 		S.Buffer rowBuilder = S.buffer();
 		String formattedData;
@@ -292,7 +294,13 @@ public class SimpleASCIITableImpl implements IASCIITable {
 			rowBuilder.append(formattedData);
 		}
 		
-		return rowBuilder.append("\n").toString();
+		String raw = rowBuilder.toString();
+		if (rowNo % 2 == 0) {
+			raw = Ansi.ansi().render("@|NEGATIVE_ON,FAINT " + raw + "|@").toString();
+		} else {
+			raw = Ansi.ansi().render("@|BOLD " + raw + "|@").toString();
+		}
+		return raw + "\n";
 	}
 	
 	private String getFormattedData(int maxLength, String data, int align) {

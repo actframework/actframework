@@ -1,17 +1,17 @@
-package act;
+package act.annotations;
 
 /*-
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,12 +20,20 @@ package act;
  * #L%
  */
 
-public enum Constants {
-    ;
-    public static final String ACT_HOME = "ACT_HOME";
-    public static final String ACT_PKG = Constants.class.getPackage().getName();
-    public static final String ASM_PKG = ACT_PKG + ".asm";
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public static final String LIST_SEPARATOR = "[\\s,;:]+";
-
+/**
+ * Used to provide label for a field/getter when output to CLI table or Excel/CSV etc.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface Label {
+    /**
+     * Specify the label
+     * @return the label of the field or getter method
+     */
+    String value();
 }

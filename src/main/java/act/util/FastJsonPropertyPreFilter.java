@@ -55,16 +55,24 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
                 addIncludes(outputs);
                 if (FastJsonPropertyPreFilter.hasPattern(outputs)) {
                     // TODO: handle the case when result is an Iterable
-                    setFullPaths(dataPropertyRepository.propertyListOf(beanClass));
+                    setFullPaths(fromPairs(dataPropertyRepository.propertyListOf(beanClass)));
                 }
             }
         } else {
             addExcludes(excluded);
             if (FastJsonPropertyPreFilter.hasPattern(excluded)) {
                 // TODO: handle the case when result is an Iterable
-                setFullPaths(dataPropertyRepository.propertyListOf(beanClass));
+                setFullPaths(fromPairs(dataPropertyRepository.propertyListOf(beanClass)));
             }
         }
+    }
+
+    private List<String> fromPairs(List<S.Pair> pairs) {
+        List<String> list = new ArrayList<>();
+        for (S.Pair pair : pairs) {
+            list.add(pair._1);
+        }
+        return list;
     }
 
     public FastJsonPropertyPreFilter(String... properties) {

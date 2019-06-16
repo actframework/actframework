@@ -86,7 +86,7 @@ public @interface PropertySpec {
      * {@literal @}PropertySpec({"firstName","lastName","email"})
      * </pre>
      * You can specify multiple fields in one string, with fields
-     * separated with one of the following character: {@code ,;:|}
+     * separated with one of the following character: {@code ,;|}
      * <pre>
      * {@literal @}PropertySpec("firstName,lastName,email")
      * </pre>
@@ -206,7 +206,7 @@ public @interface PropertySpec {
         }
 
         private void _on(String string, Spec spec) {
-            String[] sa = string.split("[,;:]+");
+            String[] sa = string.split("[,;]+");
             for (String s: sa) {
                 s = s.trim();
                 if (s.startsWith("-")) {
@@ -237,6 +237,20 @@ public @interface PropertySpec {
             return null == spec ? C.<String>list() : spec.outputs();
         }
 
+        public List<S.Pair> outputFieldsAndLabel(ActContext context) {
+            Spec spec = spec(context);
+            if (null == spec) {
+                return C.list();
+            }
+            List<String> outputs = spec.outputs();
+            List<S.Pair> pairs = new ArrayList<>();
+            for (String f : outputs) {
+                S.Pair pair = S.pair(f, spec.labels().get(f));
+                pairs.add(pair);
+            }
+            return pairs;
+        }
+
         public List<String> outputFieldsForHttp() {
             Spec spec = httpSpec();
             return null == spec ? C.<String>list() : spec.outputs();
@@ -246,6 +260,14 @@ public @interface PropertySpec {
             List<String> retList = new ArrayList<>();
             for (String f : outputs) {
                 retList.add(label(f, context));
+            }
+            return retList;
+        }
+
+        public List<String> labels2(List<S.Pair> outputs, ActContext context) {
+            List<String> retList = new ArrayList<>();
+            for (S.Pair pair : outputs) {
+                retList.add(label(pair, context));
             }
             return retList;
         }
@@ -273,6 +295,22 @@ public @interface PropertySpec {
             return null == lbl ? field : lbl;
         }
 
+        public String label(S.Pair field, ActContext context) {
+            String lbl = spec(context).labels().get(field._1);
+            String defLabel = field._2;
+            if (null == defLabel) {
+                defLabel = field._1;
+            }
+            return null == lbl ? defLabel : lbl;
+        }
+
+        public void setLabelIfNotFound(String field, String label, ActContext context) {
+            Map<String, String> map = spec(context).labels();
+            if (!map.containsKey(field)) {
+                map.put(field, label);
+            }
+        }
+
         public Lang._MappingStage applyTo(Lang._MappingStage mappingStage, ActContext context) {
             return spec(context).applyTo(mappingStage);
         }
@@ -292,9 +330,17 @@ public @interface PropertySpec {
             }
         }
 
+        public static MetaInfo withCurrentNoConsume(MetaInfo builtIn, ActContext context) {
+            return _withCurrent(builtIn, context, false);
+        }
+
         public static MetaInfo withCurrent(MetaInfo builtIn, ActContext context) {
+            return _withCurrent(builtIn, context, true);
+        }
+
+        private static MetaInfo _withCurrent(MetaInfo builtIn, ActContext context, boolean consume) {
             // see https://github.com/actframework/actframework/issues/1118
-            if (null != context) {
+            if (consume && null != context) {
                 if (context.isPropertySpecConsumed()) {
                     return null;
                 }

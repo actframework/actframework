@@ -64,6 +64,7 @@ public class ResourceGetter extends FastRequestHandler {
     private boolean preloadFailure;
     private boolean preloaded;
     private String etag;
+    private boolean filterResourceOnDevMode;
     private volatile RequestHandler indexHandler;
     private ConcurrentMap<String, RequestHandler> subFolderIndexHandlers = new ConcurrentHashMap<>();
 
@@ -251,8 +252,6 @@ public class ResourceGetter extends FastRequestHandler {
                 long len = file.length();
                 if (Act.isProd()) {
                     etags.put(path, String.valueOf(len));
-                }
-                if (Act.isProd()) {
                     boolean smallResource = len < config.resourcePreloadSizeLimit();
                     if (smallResource) {
                         $.Var<String> etagBag = $.var();
@@ -266,7 +265,12 @@ public class ResourceGetter extends FastRequestHandler {
                         return;
                     }
                 }
-                resp.send(file);
+                if (!filterResourceOnDevMode || Act.isProd() || FileGetter.isBinary(contentType)) {
+                    resp.send(file);
+                } else {
+                    String content = IO.readContentAsString(file);
+                    // TODO filter content line by line
+                }
             } else if (largeResource.contains(path)) {
                 resp.send(target);
             } else {

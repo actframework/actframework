@@ -1164,6 +1164,9 @@ public class Scenario implements ScenarioPart {
         try {
             return evalFunc(key);
         } catch (Exception e) {
+            if (!"last".equals(key)) {
+                return getVal("last", key);
+            }
             return null;
         }
     }

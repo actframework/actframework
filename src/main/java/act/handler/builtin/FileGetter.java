@@ -28,9 +28,11 @@ import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.FastStr;
+import org.osgl.util.MimeType;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class FileGetter extends FastRequestHandler {
 
@@ -111,6 +113,14 @@ public class FileGetter extends FastRequestHandler {
             retVal = H.Format.of(s.toString());
         }
         return null == retVal ? H.Format.BINARY : retVal;
+    }
+
+    public static boolean isText(H.Format format) {
+        return MimeType.findByContentType(format.contentType()).test(MimeType.Trait.text);
+    }
+
+    public static boolean isBinary(H.Format format) {
+        return !isText(format);
     }
 
     @Override

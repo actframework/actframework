@@ -62,6 +62,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private CliHandler handler;
     private boolean daemon;
     private CliContext cliContext;
+    private boolean started;
     /**
      * Allow user command to attach data to the context and fetched for later use.
      * <p>
@@ -137,7 +138,7 @@ public class CliSession extends DestroyableBase implements Runnable {
      */
     public boolean expired(int expiration) {
         if (null == cliContext) {
-            return true;
+            return started; // see GH #1140
         }
         if ((daemon || cliContext.inProgress()) && !cliContext.disconnected()) {
             return false;
@@ -175,11 +176,13 @@ public class CliSession extends DestroyableBase implements Runnable {
                 if (exit) {
                     console.println("session terminated");
                     console.flush();
+                    started = true;
                     return;
                 }
                 ts = $.ms();
                 if (app.checkUpdatesNonBlock(true)) {
                     console.print("app reloading ...");
+                    started = true;
                     return;
                 }
                 if (S.blank(line)) {
@@ -190,6 +193,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                     CliContext context = new CliContext(line, app, console, this);
                     cliContext = context;
                     JobContext.init(id());
+                    started = true;
                     context.handle();
                 } catch ($.Break b) {
                     Object payload = b.get();

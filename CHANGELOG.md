@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
 **1.8.23**
+* CLI Table view - print line interlaced with revert color/bg color #1143
+* Add `@Label` annotation for bean field marking #1142
+* Email validation handler - not able to valid email at `thinking.studio` #1141
+* CLI - session exit immediately #1140
 * Improve async CLI command error reporting #1139
 * `@Every` annotation not working as expected if `@OnAppStart` annotation presented #1138
 * Router - debug routing list missing certain routes #1137

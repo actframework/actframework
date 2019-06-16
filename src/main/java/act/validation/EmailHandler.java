@@ -20,6 +20,8 @@ package act.validation;
  * #L%
  */
 
+import act.Act;
+import act.util.TopLevelDomainList;
 import org.osgl.util.S;
 
 import javax.validation.ConstraintValidator;
@@ -27,8 +29,11 @@ import javax.validation.ConstraintValidatorContext;
 
 public class EmailHandler implements ConstraintValidator<Email, CharSequence> {
 
+    private TopLevelDomainList tldList;
+
     @Override
     public void initialize(Email email) {
+        tldList = Act.getInstance(TopLevelDomainList.class);
     }
 
     @Override
@@ -38,6 +43,12 @@ public class EmailHandler implements ConstraintValidator<Email, CharSequence> {
 
     private boolean isValid(Object val) {
         String s = S.string(val);
-        return (S.isBlank(s) || s.toLowerCase().matches("^[_a-z0-9-']+(\\.[_a-z0-9-']+)*(\\+[0-9]+)?@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})$"));
+        boolean valid = (S.isBlank(s) || s.toLowerCase().matches("^[_a-z0-9-']+(\\.[_a-z0-9-']+)*(\\+[0-9]+)?@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,64})$"));
+        if (!valid) {
+            return false;
+        }
+        // check tld
+        String tld = S.cut(s).afterLast(".");
+        return tldList.isTld(tld);
     }
 }

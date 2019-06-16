@@ -21,6 +21,7 @@ package act.app;
  */
 
 import static act.app.event.SysEventId.*;
+import static act.util.TopLevelDomainList.CRON_TLD_RELOAD;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.util.S.F.contains;
 import static org.osgl.util.S.F.endsWith;
@@ -1384,6 +1385,10 @@ public class App extends LogSupportedDestroyableBase {
         registerValueObjectCodec();
         if (config.i18nEnabled()) {
             MvcConfig.enableLocalizedErrorMsg();
+        }
+        String tldReloadCron = (String) config.get(CRON_TLD_RELOAD);
+        if (S.isBlank(tldReloadCron)) {
+            config.setDefaultTldReloadCron();
         }
     }
 

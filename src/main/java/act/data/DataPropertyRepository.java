@@ -20,6 +20,7 @@ package act.data;
  * #L%
  */
 
+import act.annotations.Label;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.util.ActContext;
@@ -27,11 +28,9 @@ import act.util.PropertySpec;
 import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
-import org.rythmengine.utils.S;
+import org.osgl.util.S;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -42,8 +41,6 @@ import java.util.*;
  * Keep the property information of Data class
  */
 public class DataPropertyRepository extends AppServiceBase<DataPropertyRepository> {
-
-    private static final Logger LOGGER = LogManager.get(DataPropertyRepository.class);
 
     /**
      * all classes that can NOT be decomposed in terms of get properties
@@ -58,7 +55,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
     /**
      * Map a list of property path to class name
      */
-    private Map<String, List<String>> repo = new HashMap<>();
+    private Map<String, List<S.Pair>> repo = new HashMap<>();
 
     private OutputFieldsCache outputFieldsCache = new OutputFieldsCache();
 
@@ -79,9 +76,9 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
      * @param c the class
      * @return the property list of the class
      */
-    public synchronized List<String> propertyListOf(Class<?> c) {
+    public synchronized List<S.Pair> propertyListOf(Class<?> c) {
         String cn = c.getName();
-        List<String> ls = repo.get(cn);
+        List<S.Pair> ls = repo.get(cn);
         if (ls != null) {
             return ls;
         }
@@ -91,11 +88,11 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return ls;
     }
 
-    public List<String> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
+    public List<S.Pair> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
         return outputFieldsCache.getOutputFields(spec, componentClass, context);
     }
 
-    private List<String> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+    private List<S.Pair> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         if (null == typeImplLookup) {
             typeImplLookup = Generics.buildTypeParamImplLookup(c);
         } else {
@@ -106,17 +103,23 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         }
         circularReferenceDetector.add(c);
         try {
-            List<String> ls = buildPropertyList(c, circularReferenceDetector, typeImplLookup);
-            return ls;
+            return buildPropertyList(c, circularReferenceDetector, typeImplLookup);
         } finally {
             circularReferenceDetector.remove(c);
         }
     }
 
-    private List<String> buildPropertyList(Class c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+    private static final Comparator<S.Pair> pairComp = new Comparator<S.Pair>() {
+        @Override
+        public int compare(S.Pair o1, S.Pair o2) {
+            return o1._1.compareTo(o2._1);
+        }
+    };
+
+    private List<S.Pair> buildPropertyList(Class c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         Method[] ma = c.getMethods();
         String context = "";
-        List<String> retLst = new ArrayList<>();
+        List<S.Pair> retLst = new ArrayList<>();
         for (Method m: ma) {
             buildPropertyPath(context, m, c, retLst, circularReferenceDetector, typeImplLookup);
         }
@@ -128,11 +131,11 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             }
             buildPropertyPath(context, f, retLst, circularReferenceDetector, typeImplLookup);
         }
-        Collections.sort(retLst);
+        Collections.sort(retLst, pairComp);
         return retLst;
     }
 
-    private void buildPropertyPath(String context, Method m, Class<?> c, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+    private void buildPropertyPath(String context, Method m, Class<?> c, List<S.Pair> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         if (Modifier.isStatic(m.getModifiers())) {
             return;
         }
@@ -153,41 +156,45 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return;
         }
         Class returnType = Generics.getReturnType(m, c);
-        buildPropertyPath(returnType, m.getGenericReturnType(), context, propName, repo, circularReferenceDetector, typeImplLookup);
+        Label label = m.getAnnotation(Label.class);
+        String labelString = null == label ? null : label.value();
+        buildPropertyPath(returnType, m.getGenericReturnType(), labelString, context, propName, repo, circularReferenceDetector, typeImplLookup);
     }
 
 
-    private void buildPropertyPath(String context, Field field, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
-        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo, circularReferenceDetector, typeImplLookup);
+    private void buildPropertyPath(String context, Field field, List<S.Pair> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+        Label label = field.getAnnotation(Label.class);
+        String labelString = null == label ? null : label.value();
+        buildPropertyPath(field.getType(), field.getGenericType(), labelString, context, field.getName(), repo, circularReferenceDetector, typeImplLookup);
     }
 
-    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
+    private void buildPropertyPath(Class<?> c, Type genericType, String label, String context, String propName, List<S.Pair> repo, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {
         if (Class.class.equals(c)) {
             return;
         }
         if (c.isArray()) {
             Class componentType = c.getComponentType();
-            List<String> retTypeProperties = propertyListOf(componentType, circularReferenceDetector, typeImplLookup);
+            List<S.Pair> retTypeProperties = propertyListOf(componentType, circularReferenceDetector, typeImplLookup);
             context = context + propName + ".";
-            for (String s: retTypeProperties) {
-                String s0 = context + s;
-                if (!repo.contains(s0)) {
-                    repo.add(s0);
+            for (S.Pair pair: retTypeProperties) {
+                pair = S.pair(context + pair._1, pair._2);
+                if (!repo.contains(pair)) {
+                    repo.add(pair);
                 }
             }
             return;
         }
         if ($.isSimpleType(c)) {
             String s0 = context + propName;
-            if (!repo.contains(s0)) {
-                repo.add(s0);
+            S.Pair pair = S.pair(s0, label);
+            if (!repo.contains(pair)) {
+                repo.add(pair);
             }
             return;
         }
         if (Iterable.class.isAssignableFrom(c)) {
-            Type t = genericType;
-            if (t instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType) t;
+            if (genericType instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) genericType;
                 Type[] ta = pt.getActualTypeArguments();
                 for (Type t0: ta) {
                     Class<?> c0;
@@ -199,12 +206,12 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
                     } else {
                         throw new UnexpectedException("Unknown type: " + t0);
                     }
-                    List<String> retTypeProperties = propertyListOf(c0, circularReferenceDetector, typeImplLookup);
-                    context = context + propName + ".";
-                    for (String s: retTypeProperties) {
-                        String s0 = context + s;
-                        if (!repo.contains(s0)) {
-                            repo.add(s0);
+                    List<S.Pair> retTypeProperties = propertyListOf(c0, circularReferenceDetector, typeImplLookup);
+                    context = S.buffer(context).append(propName).append(".").toString();
+                    for (S.Pair pair: retTypeProperties) {
+                        pair = S.pair(context + pair._1, pair._2);
+                        if (!repo.contains(pair)) {
+                            repo.add(pair);
                         }
                     }
                 }
@@ -213,19 +220,28 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         }
         if (terminators.contains(c) || extendedTerminators.contains(c.getName())) {
             String s0 = context + propName;
-            if (!repo.contains(s0)) {
-                repo.add(s0);
+            S.Pair pair = S.pair(s0, label);
+            if (!repo.contains(pair)) {
+                repo.add(pair);
             }
             return;
         }
-        List<String> retTypeProperties = propertyListOf(c, circularReferenceDetector, typeImplLookup);
+        List<S.Pair> retTypeProperties = propertyListOf(c, circularReferenceDetector, typeImplLookup);
         context = context + propName + ".";
-        for (String s : retTypeProperties) {
-            String s0 = context + s;
-            if (!repo.contains(s0)) {
-                repo.add(s0);
+        for (S.Pair pair : retTypeProperties) {
+            pair = S.pair(context + pair._1, pair._2);
+            if (!repo.contains(pair)) {
+                repo.add(pair);
             }
         }
+    }
+
+    public static List<String> getFields(List<S.Pair> fieldsAndLabels) {
+        List<String> l = new ArrayList<>(fieldsAndLabels.size());
+        for (S.Pair pair : fieldsAndLabels) {
+            l.add(pair._1);
+        }
+        return l;
     }
 
     private static String getPropName(String name) {
