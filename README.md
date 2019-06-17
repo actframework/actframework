@@ -153,7 +153,7 @@ For RESTful service project
 
 - **[Powerful view architecture with multiple render engine support](http://actframework.org/doc/templating.md)**
 
-- **[A great automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)
+- **[A great automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)**
 
 - **Commonly used tools**
 
