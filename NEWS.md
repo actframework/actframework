@@ -1,5 +1,19 @@
 <ul>
 <li>
+    <span class="news-date">17 Jun 2019</span>
+    <span class="news-text">
+        act-morphia-1.7.2 released with big improvement on aggregation framework
+    </span>
+</li>
+<li>
+    <span class="news-date">17 Jun 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/71?closed=1">
+            act-1.8.23 released along with lots of plugin updates
+        </a>
+    </span>
+</li>
+<li>
     <span class="news-date">21 May 2019</span>
     <span class="news-text">
         <a href="https://github.com/actframework/actframework/milestone/70?closed=1">act-1.8.22 released</a>
