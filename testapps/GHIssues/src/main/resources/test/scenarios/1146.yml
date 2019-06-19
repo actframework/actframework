@@ -1,0 +1,12 @@
+Scenario(1146):
+  description: "Resource loader - handle comment in files for map loading"
+  interactions:
+    - request:
+        get: 1146
+      response:
+        json:
+          size: 1
+          foo: bar
+          '#comment':
+            - exists: false
+

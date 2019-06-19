@@ -30,6 +30,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
 import org.osgl.util.S;
 
+import java.io.StringWriter;
 import java.io.Writer;
 
 /**
@@ -100,9 +101,9 @@ public class RenderCSV extends RenderContent {
             payload.stringContentProducer(new $.Func0<String>() {
                 @Override
                 public String apply() throws NotAppliedException, $.Break {
-                    S.Buffer buf = S.buffer();
-                    render($.convert(buf).to(Writer.class), v, spec, context);
-                    return buf.toString();
+                    StringWriter writer = new StringWriter();
+                    render(writer, v, spec, context);
+                    return writer.toString();
                 }
             });
         }

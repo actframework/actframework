@@ -9,9 +9,9 @@ package act.inject.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package act.inject.util;
 
 import act.Act;
 import act.app.App;
+import act.app.DevModeClassLoader;
 import act.app.data.StringValueResolverManager;
 import act.util.HeaderMapping;
 import act.util.Jars;
@@ -94,7 +95,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      *
      * @param path the relative path to the resource
      * @param type the return value type
-     * @param <T> generic type of return value
+     * @param <T>  generic type of return value
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, Class<T> type) {
@@ -110,9 +111,9 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      *
      * If any exception encountered during resource load, this method returns `null`
      *
-     * @param path the relative path to the resource
+     * @param path          the relative path to the resource
      * @param typeReference the return value type
-     * @param <T> generic type of return value
+     * @param <T>           generic type of return value
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, TypeReference<T> typeReference) {
@@ -130,7 +131,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      * type specified by `spec`.
      *
      * @param resourcePath the resource path
-     * @param spec {@link BeanSpec} specifies the return value type
+     * @param spec         {@link BeanSpec} specifies the return value type
      * @return the resource content in a specified type or `null` if resource not found
      * @throws UnexpectedException if return value type not supported
      */
@@ -153,6 +154,10 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 LOGGER.warn("resource not found: " + resourcePath);
             }
             return null;
+        }
+        if (Act.isDev()) {
+            DevModeClassLoader classLoader = $.cast(Act.app().classLoader());
+            classLoader.registerResourceFileDetector(resourcePath);
         }
         return _load(url, spec, hint);
     }
@@ -356,10 +361,11 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 return $.map(properties).targetGenericType(spec.type()).to(rawType);
             } else {
                 // try my best
-                List<String> lines = IO.readLines(url);
+                C.List<String> lines = C.newList(IO.readLines(url));
                 if (lines.isEmpty()) {
                     return C.Map();
                 }
+                lines = lines.filter(S.F.startsWith("#").negate());
                 ListIterator<String> itr = lines.listIterator();
                 String firstLine = itr.next();
                 while (itr.hasNext()) {
@@ -376,17 +382,29 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 } else {
                     throw new UnexpectedException("Unable to load resource into Map: " + resourcePath);
                 }
-                Map<String, String> map = new HashMap<>();
+                Map map = new HashMap<>();
+                List<Type> mapTypeParams = spec.typeParams();
+                Class<?> keyType = String.class;
+                Class<?> valType = String.class;
+                if (null != mapTypeParams && mapTypeParams.size() == 2) {
+                    keyType = (Class) mapTypeParams.get(0);
+                    valType = (Class) mapTypeParams.get(1);
+                }
                 for (String line : lines) {
                     S.Pair pair = S.binarySplit(line, sep);
-                    map.put(pair.left(), pair.right());
+                    String key = pair.left();
+                    String val = pair.right();
+                    if (val.contains("#")) {
+                        val = S.cut(val).beforeFirst("#").trim();
+                    }
+                    map.put($.convert(key).to(keyType), $.convert(val).to(valType));
                 }
                 return map;
             }
         } else if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
             if (!typeParams.isEmpty()) {
-                Collection col = (Collection)Act.getInstance(rawType);
+                Collection col = (Collection) Act.getInstance(rawType);
                 if (String.class == typeParams.get(0)) {
                     col.addAll(IO.readLines(url));
                     return col;

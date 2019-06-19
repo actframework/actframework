@@ -1,0 +1,18 @@
+Scenario(1145):
+  description: "Downloading a big CSV file the second time failed"
+  interactions:
+    - description: get checksum
+      request:
+        get: 1145/checksum
+      cache:
+        checksum: result
+    - description: fetch csv file for the first time
+      request:
+        get: 1145/csv
+      response:
+        checksum: ${checksum}
+    - description: fetch csv file for the second time
+      request:
+        get: 1145/csv
+      response:
+        checksum: ${checksum}

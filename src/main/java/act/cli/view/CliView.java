@@ -135,7 +135,7 @@ public enum CliView {
 
         private void buildTree(Writer writer, TreeNode node, String prefix, boolean isTrail) {
             StringBuilder sb = S.newBuilder().append(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
-            IO.write(sb, writer);
+            IO.write(sb, writer, false);
             List<TreeNode> children = node.children();
             int sz = children.size();
             if (sz == 0) {
@@ -247,13 +247,16 @@ public enum CliView {
             if (outputFields.isEmpty()) {
                 return;
             }
-            IO.write(buildHeaderLine(outputFields, spec.labelMapping(context)), writer);
-            IO.write($.OS.lineSeparator(), writer);
-            IO.write(buildDataLine(firstElement, outputFields), writer);
+            IO.write(buildHeaderLine(outputFields, spec.labelMapping(context)), writer, false);
+            IO.write($.OS.lineSeparator(), writer, false);
+            IO.write(buildDataLine(firstElement, outputFields), writer, false);
+            boolean isCli = context instanceof CliContext;
             while (iterator.hasNext()) {
-                IO.write($.OS.lineSeparator(), writer);
-                IO.write(buildDataLine(iterator.next(), outputFields), writer);
-                IO.flush(writer);
+                IO.write($.OS.lineSeparator(), writer, false);
+                IO.write(buildDataLine(iterator.next(), outputFields), writer, false);
+                if (isCli) {
+                    IO.flush(writer);
+                }
             }
         }
 
@@ -272,8 +275,8 @@ public enum CliView {
             if ("this".equals(prop._1)) {
                 return (escape(data));
             } else {
-                if (data instanceof AdaptiveRecord) {
-                    return escape(S.string(((AdaptiveRecord) data).getValue(prop._1)));
+                if (data instanceof AdaptiveMap) {
+                    return escape(S.string(((AdaptiveMap) data).getValue(prop._1)));
                 }
                 return escape($.getProperty(data, prop._1));
             }

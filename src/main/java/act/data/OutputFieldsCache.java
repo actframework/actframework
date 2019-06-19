@@ -25,6 +25,7 @@ import act.data.util.StringOrPattern;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
+import org.osgl.util.AdaptiveMap;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -144,6 +145,9 @@ class OutputFieldsCache {
                 return finalOutputs;
             }
         } else {
+            if (AdaptiveMap.class.isAssignableFrom(k.componentType)) {
+                return k.outputs;
+            }
             List<S.Pair> pairs = new ArrayList<>(k.outputs.size());
             for (S.Pair pair : k.outputs) {
                 if (null != pair._2) {

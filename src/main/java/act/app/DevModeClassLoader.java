@@ -350,6 +350,11 @@ public class DevModeClassLoader extends AppClassLoader {
         super.detectChanges();
     }
 
+    public void registerResourceFileDetector(String resourcePath) {
+        ProjectLayout layout = app().layout();
+        addDetector(layout.resource(app().base()), S.F.endsWith(resourcePath), confChangeListener);
+    }
+
     private void detectChanges(FsChangeDetector detector) {
         if (null != detector) {
             detector.detectChanges();
@@ -367,7 +372,7 @@ public class DevModeClassLoader extends AppClassLoader {
             addDetector(layout.lib(base), JAR_FILE, libChangeListener);
             File rsrc = layout.resource(base);
             addDetector(rsrc, CONF_FILE.or(ROUTES_FILE), confChangeListener);
-            addDetector(rsrc, null, resourceChangeListener);
+            //addDetector(rsrc, null, resourceChangeListener);
 
             if (isTest) {
                 addDetector(layout.testSource(base), JAVA_SOURCE, sourceChangeListener);

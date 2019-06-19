@@ -36,6 +36,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.util.ArrayList;
@@ -51,7 +52,8 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private static Logger logger = LogManager.get(CliDispatcher.class);
     private static final String NAME_PART_SEPARATOR = "[\\.\\-_]+";
 
-    private Map<String, CliHandler> registry = new HashMap<>();
+    private Map<Keyword, CliHandler> registry = new HashMap<>();
+    private Map<Keyword, String> rawNameRepo = new HashMap<>();
     private Map<String, String> shortCuts = new HashMap<>();
     private Map<String, List<CliHandler>> ambiguousShortCuts = new HashMap<>();
     private Map<CliHandler, List<String>> nameMap = new HashMap<>();
@@ -95,9 +97,10 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         if (null == command) {
             command = command0;
         }
-        CliHandler handler = registry.get(command);
+        Keyword keyword = Keyword.of(command);
+        CliHandler handler = registry.get(keyword);
         if (null == handler && !command.startsWith("act.")) {
-            handler = registry.get("act." + command);
+            handler = registry.get(Keyword.of("act." + command));
         }
 
         Act.Mode mode = Act.mode();
@@ -135,7 +138,8 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         C.List<String> list = C.newList();
         Act.Mode mode = Act.mode();
         boolean all = !sys && !app;
-        for (String s : registry.keySet()) {
+        for (Keyword keyword : registry.keySet()) {
+            String s = rawNameRepo.get(keyword);
             boolean isSysCmd = s.startsWith("act.");
             if (isSysCmd && !sys && !all) {
                 continue;
@@ -143,7 +147,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             if (!isSysCmd && !app && !all) {
                 continue;
             }
-            CliHandler h = registry.get(s);
+            CliHandler h = registry.get(keyword);
             if (h.appliedIn(mode)) {
                 list.add(s);
             }
@@ -178,23 +182,25 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     private void addToRegistry0(String name, CliHandler handler) {
-        registry.put(name, handler);
+        Keyword keyword = Keyword.of(name);
+        registry.put(keyword, handler);
+        rawNameRepo.put(keyword, name);
     }
 
     private void addToRegistry(String name, CliHandler handler) {
-        registry.put(name, handler);
+        addToRegistry0(name, handler);
         Help.updateMaxWidth(name.length());
         updateNameIndex(name, handler);
         registerShortCut(name, handler);
     }
 
     private void resolveCommandPrefix() {
-        Map<String, CliHandler> temp = new HashMap<>();
-        temp.putAll(registry);
+        Map<Keyword, CliHandler> temp = new HashMap<>(registry);
         registry.clear();
         App app = app();
-        for (Map.Entry<String, CliHandler> pair : temp.entrySet()) {
-            String name = pair.getKey();
+        for (Map.Entry<Keyword, CliHandler> pair : temp.entrySet()) {
+            Keyword keyword = pair.getKey();
+            String name = rawNameRepo.get(keyword);
             CliHandler handler = pair.getValue();
             if (handler instanceof CliHandlerProxy) {
                 CliHandlerProxy proxy = $.cast(handler);
@@ -203,7 +209,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 if (null != prefix) {
                     String pre = prefix.value();
                     if (S.notBlank(pre)) {
-                        name = S.pathConcat(pre, '.', name);
+                        name = S.pathConcat(pre, '.', rawNameRepo.get(keyword));
                     }
                 }
             }

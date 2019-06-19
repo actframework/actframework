@@ -372,6 +372,9 @@ public class Job extends DestroyableBase implements Runnable {
 
             JobExceptionListenerManager manager = Act.jobManager().exceptionListenerManager();
             manager.handleJobException(id(), (Exception) t);
+            if (app.isMainThread()) {
+                throw t;
+            }
         } finally {
             if (!isDestroyed()) {
                 executed = true;

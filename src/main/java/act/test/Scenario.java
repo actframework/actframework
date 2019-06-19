@@ -738,6 +738,9 @@ public class Scenario implements ScenarioPart {
     }
 
     void verifyDownloadChecksum(Response response, String checksumExpected) {
+        if (checksumExpected.startsWith("${")) {
+            checksumExpected = S.string(evalStr(checksumExpected));
+        }
         Object o = cached(checksumExpected);
         if (null == o) {
             o = cached("checksum-last");

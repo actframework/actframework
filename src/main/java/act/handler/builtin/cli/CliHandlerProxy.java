@@ -111,7 +111,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     @SuppressWarnings("unchecked")
-    private void onResult(Object result, CliContext context) {
+    private void onResult(Object result, CliContext context) throws Exception {
         if (null == result) {
             return;
         }

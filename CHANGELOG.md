@@ -1,5 +1,14 @@
 # ActFramework Change Log
 
+**1.8.24**
+* CSV view - support AdaptiveBeanBase typed data #1149
+* App halt when there are block issue on startup #1148 
+* Resource loader - improve Map loading - support different key val types #1147
+* Resource loader - handle comment in files for map loading #1146
+* Downloading a big CSV file the second time failed #1145
+* CLI - Async progress bar reporting eat up CPU #1144
+
+
 **1.8.23** 16/May/2019
 * CLI Table view - print line interlaced with revert color/bg color #1143
 * Add `@Label` annotation for bean field marking #1142

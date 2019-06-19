@@ -1,0 +1,10 @@
+Scenario(1147):
+  description: "Resource loader - improve Map loading - support different key val types"
+  interactions:
+    - request:
+        get: 1147
+        params:
+          key: two
+      response:
+        json:
+          result: 4

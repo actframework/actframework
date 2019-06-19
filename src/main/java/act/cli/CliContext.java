@@ -337,7 +337,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return pw.checkError();
     }
 
-    public void print(CommandMethodMetaInfo methodMetaInfo, ProgressGauge progressGauge) {
+    public void print(CommandMethodMetaInfo methodMetaInfo, ProgressGauge progressGauge) throws Exception {
         ReportProgress reportProgress = attribute(ReportProgress.CTX_ATTR_KEY);
         if (null == reportProgress) {
             reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
@@ -362,15 +362,25 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
     }
 
-    public void printBar(ProgressGauge progressGauge) {
+    public void printBar(ProgressGauge progressGauge) throws Exception {
         PrintStream os = new PrintStream(new WriterOutputStream(rawPrint ? pw : console.getOutput()));
         String label = app().config().i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
         ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, ProgressBarStyle.UNICODE_BLOCK);
         pb.start();
+        int lastMaxHint = -1;
+        int lastSteps = -1;
         while (!progressGauge.isDone()) {
-            pb.maxHint(progressGauge.maxHint());
-            pb.stepTo(progressGauge.currentSteps());
-            Thread.yield();
+            int maxHint = progressGauge.maxHint();
+            int steps = progressGauge.currentSteps();
+            if (maxHint != lastMaxHint) {
+                pb.maxHint(maxHint);
+                lastMaxHint = maxHint;
+            }
+            if (steps != lastSteps) {
+                pb.stepTo(steps);
+                lastSteps = steps;
+            }
+            Thread.sleep(1000);
             flush();
         }
         if (progressGauge.hasError()) {
