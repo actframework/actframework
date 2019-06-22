@@ -32,6 +32,7 @@ import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.util.$$;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
@@ -80,6 +81,7 @@ public class ResourceGetter extends FastRequestHandler {
         String path = base.charAt(0) == SEP ? base.substring(1) : base;
         this.base = path;
         this.app = Act.app();
+        this.filterResourceOnDevMode = app.config().resourceFiltering();
         this.baseUrl = app.getResource(path);
         this.delegate = verifyBase(this.baseUrl, base);
         if (null == delegate) {
@@ -269,7 +271,8 @@ public class ResourceGetter extends FastRequestHandler {
                     resp.send(file);
                 } else {
                     String content = IO.readContentAsString(file);
-                    // TODO filter content line by line
+                    content = $$.processStringSubstitution(content);
+                    resp.writeContent(content);
                 }
             } else if (largeResource.contains(path)) {
                 resp.send(target);

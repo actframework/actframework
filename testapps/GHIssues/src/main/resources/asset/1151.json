@@ -1,0 +1,5 @@
+{
+  "buildNumber": "${buildNumber}",
+  "cliPort": "${cli.port}"
+}
+

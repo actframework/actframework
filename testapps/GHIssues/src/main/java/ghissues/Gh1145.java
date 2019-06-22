@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-@UrlContext("1146")
+@UrlContext("1145")
 @Singleton
 public class Gh1145 extends BaseController {
 

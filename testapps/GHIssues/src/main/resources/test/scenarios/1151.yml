@@ -1,0 +1,10 @@
+Scenario(1151):
+  description: Allows resource filtering in dev mode
+  interactions:
+    - request:
+        get: /asset/1151.json
+      response:
+        json:
+          buildNumber:
+            - exists: true
+          cliPort: 5461

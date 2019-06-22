@@ -3473,6 +3473,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean resourceFiltering;
+
+    protected T resourceFiltering(boolean b) {
+        resourceFiltering = b;
+        return me();
+    }
+
+    public boolean resourceFiltering() {
+        if (null == resourceFiltering) {
+            resourceFiltering = get(RESOURCE_FILTERING, false);
+        }
+        return resourceFiltering;
+    }
+
+    private void _mergeResourceFiltering(AppConfig conf) {
+        if (!hasConfiguration(RESOURCE_FILTERING)) {
+            this.resourceFiltering = conf.resourceFiltering;
+        }
+    }
+
     private Integer uploadInMemoryCacheThreshold;
 
     protected T uploadInMemoryCacheThreshold(int l) {

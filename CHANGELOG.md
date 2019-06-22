@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.24**
+* Allows resource filtering in dev mode #1151
 * CSV view - support AdaptiveBeanBase typed data #1149
 * App halt when there are block issue on startup #1148 
 * Resource loader - improve Map loading - support different key val types #1147

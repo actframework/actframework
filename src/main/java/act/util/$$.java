@@ -68,4 +68,42 @@ public class $$ {
         return ($.isSimpleType(type) && !type.isArray()) || isDateTimeType(type);
     }
 
+    private static $.Transformer<String, String> evaluator = new $.Transformer<String, String>() {
+        @Override
+        public String transform(String s) {
+            return S.string(Act.appConfig().getIgnoreCase(s));
+        }
+    };
+
+    public static String processStringSubstitution(String s) {
+        return processStringSubstitution(s, evaluator);
+    }
+
+    public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
+        if (S.blank(s)) {
+            return "";
+        }
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        int a = 0;
+        int z = n;
+        S.Buffer buf = S.buffer();
+        while (true) {
+            buf.append(s.substring(a, z));
+            n = s.indexOf("}", z);
+            a = n;
+            String key = s.substring(z + 2, a);
+            buf.append(evaluator.apply(key));
+            n = s.indexOf("${", a);
+            if (n < 0) {
+                buf.append(s.substring(a + 1));
+                return buf.toString();
+            }
+            z = n;
+        }
+    }
+
+
 }

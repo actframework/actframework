@@ -926,6 +926,15 @@ public enum AppConfigKey implements ConfigKey {
     RESOLVER_TEMPLATE_PATH("resolver.template_path.impl"),
 
     /**
+     *  `resource.filtering`
+     *
+     *  Enable/disable resource filtering (only impact dev mode)
+     *
+     *  Default value: `false`
+     */
+    RESOURCE_FILTERING("resource.filtering.enabled"),
+
+    /**
      * `resource.preload.size.limit`
      *
      * Specifies the maximum number of bytes of a resource that can be preload into memory.
