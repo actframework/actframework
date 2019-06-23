@@ -15,7 +15,7 @@ Add `act-starter-parent` into into your pom.xml file
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.23.2</version>
+    <version>1.8.24.0</version>
   </parent>
 ```
 
@@ -27,7 +27,7 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.8.23.0
+    -DarchetypeVersion=1.8.24.0
 ```
 
 To start an new project for RESTful service:
@@ -38,19 +38,19 @@ mvn archetype:generate -B \
     -DartifactId=helloservice \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-simple-restful-service \
-    -DarchetypeVersion=1.8.23.0
+    -DarchetypeVersion=1.8.24.0
 ```
 
 **tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.23.0
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.24.0
 ```
 
 Or 
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.23.0
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.24.0
 ```
 
 For RESTful service project
@@ -77,8 +77,6 @@ For RESTful service project
   - [Built-in CORS support](http://actframework.org/doc/configuration.md#cors)
   - [Session/Header mapping](http://actframework.org/doc/configuration#session_mapper_impl) so you are not limited to cookie
   - Built-in JWT support
-  
-- **
 
 - **Uncompromising Security**
 
@@ -153,7 +151,7 @@ For RESTful service project
 
 - **[Powerful view architecture with multiple render engine support](http://actframework.org/doc/templating.md)**
 
-- **[A great automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)**
+- **[An unbelievable automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)**
 
 - **Commonly used tools**
 

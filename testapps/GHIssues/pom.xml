@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.24-SNAPSHOT</version>
+      <version>1.8.24</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
