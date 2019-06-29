@@ -111,8 +111,8 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     protected void releaseResources() {
-        maxHint = 100;
-        currentSteps = 0;
+        listeners.clear();
+        payload.clear();
         Destroyable.Util.tryDestroy(delegate);
     }
 
@@ -231,6 +231,9 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public boolean isDone() {
+        if (isDestroyed()) {
+            return true;
+        }
         if (null != delegate) {
             return delegate.isDone();
         }

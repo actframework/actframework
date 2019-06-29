@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.24.0-SNAPSHOT</version>
+  <version>1.8.25.0-SNAPSHOT</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.23.2</version>
+    <version>1.8.24.0</version>
   </parent>
 
   <properties>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.24</version>
+      <version>1.8.24a-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>

@@ -369,6 +369,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         pb.start();
         int lastMaxHint = -1;
         int lastSteps = -1;
+
         while (!progressGauge.isDone()) {
             int maxHint = progressGauge.maxHint();
             int steps = progressGauge.currentSteps();

@@ -241,12 +241,9 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             return UnknownHttpMethodHandler.INSTANCE;
         }
         node = search(node, Path.tokenizer(Unsafe.bufOf(path)), context);
-        RequestHandler handler = getInvokerFrom(node);
+        RequestHandler handler = getInvokerFrom(node, context);
         RequestHandler blockIssueHandler = app().blockIssueHandler();
         if (null == blockIssueHandler || (handler instanceof FileGetter || handler instanceof ResourceGetter)) {
-            if (null != node) {
-                context.routeSource(node.routeSource);
-            } // otherwise handler is always 404
             return handler;
         }
         return blockIssueHandler;
@@ -265,18 +262,20 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         return null == node ? null : node.handler;
     }
 
-    private RequestHandler getInvokerFrom(Node node) {
+    private RequestHandler getInvokerFrom(Node node, ActionContext context) {
         if (null == node) {
             return notFound();
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
             for (Node targetNode : node.dynamicChildren) {
-                if (Node.MATCH_ALL == targetNode.patternTrait || targetNode.pattern.matcher("").matches()) {
-                    return getInvokerFrom(targetNode);
+                if (Node.MATCH_ALL.equals(targetNode.patternTrait) || targetNode.pattern.matcher("").matches()) {
+                    return getInvokerFrom(targetNode, context);
                 }
             }
             return notFound();
+        } else {
+            context.routeSource(node.routeSource);
         }
         return handler;
     }
@@ -943,7 +942,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             return node;
         }
 
-        static String MATCH_ALL = "(.*?)";
+        static final String MATCH_ALL = "(.*?)";
 
         private String uid = Act.cuid();
 

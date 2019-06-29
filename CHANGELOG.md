@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+**1.8.24a**
+
+* NPE on creating controller instance #1152
+
 **1.8.24** 22/Jun/2019
 * Allows resource filtering in dev mode #1151
 * CSV view - support AdaptiveBeanBase typed data #1149
