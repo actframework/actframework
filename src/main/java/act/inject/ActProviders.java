@@ -27,7 +27,10 @@ import act.cli.CliOverHttpContext;
 import act.cli.CliSession;
 import act.conf.AppConfig;
 import act.crypto.AppCrypto;
+import act.db.DB;
 import act.db.Dao;
+import act.db.DbPlugin;
+import act.db.DbService;
 import act.event.EventBus;
 import act.job.JobContext;
 import act.mail.MailerContext;
@@ -249,6 +252,20 @@ public final class ActProviders {
         @Override
         public CacheService get() {
             return app().cache();
+        }
+    };
+
+    public static final Provider<DbService> DB_SERVICE_PROVIDER = new Provider<DbService>() {
+        @Override
+        public DbService get() {
+            return app().dbServiceManager().dbService(DB.DEFAULT);
+        }
+    };
+
+    public static final NamedProvider<DbService> NAMED_DB_SERVICE_PROVIDER = new NamedProvider<DbService>() {
+        @Override
+        public DbService get(String name) {
+            return app().dbServiceManager().dbService(name);
         }
     };
 

@@ -34,6 +34,8 @@ import java.util.Set;
 
 public abstract class DbService extends AppHolderBase<DbService> {
 
+    public static final String DEFAULT = DB.DEFAULT;
+
     /**
      * This is deprecated, please use {@link #logger} instead
      */
