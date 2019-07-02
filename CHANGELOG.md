@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.25**
+**1.8.25** 2/Jul/2019
 
 * Allow inject DbService #1153
 * NPE on creating controller instance #1152
