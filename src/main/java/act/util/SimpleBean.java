@@ -35,10 +35,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -65,14 +62,16 @@ public interface SimpleBean {
         private Set<String> sensitiveFields;
         private Set<String> passwordFields;
         private Map<String, String> fieldAliases;
+        private Map<String, String> fieldLabels;
 
         @Inject
-        MetaInfo(String className, Map<String, $.T2<String, String>> publicFields, Map<String, String> aliases) {
+        MetaInfo(String className, Map<String, $.T2<String, String>> publicFields, Map<String, String> aliases, Map<String, String> labels) {
             this.className = className;
             this.publicFields = publicFields;
             this.sensitiveFields = new HashSet<>();
             this.passwordFields = new HashSet<>();
             this.fieldAliases = aliases;
+            this.fieldLabels = labels;
         }
 
         public String getClassName() {
@@ -103,6 +102,11 @@ public interface SimpleBean {
 
         public String aliasOf(String fieldName) {
             String s = fieldAliases.get(fieldName);
+            return null == s ? fieldName : s;
+        }
+
+        public String labelOf(String fieldName) {
+            String s = fieldLabels.get(fieldName);
             return null == s ? fieldName : s;
         }
 
@@ -187,11 +191,13 @@ public interface SimpleBean {
         private static class SimpleBeanByteCodeVisitor extends ByteCodeVisitor {
 
             private static final String ALIAS_DESC = Type.getType(Alias.class).getDescriptor();
+            private static final String LABEL_DESC = Type.getType(Label.class).getDescriptor();
             private String className;
             private boolean isPublicClass;
             // key: (desc, signature)
-            private Map<String, $.T2<String, String>> publicFields = new HashMap<>();
-            private Map<String, String> aliases = new HashMap<>();
+            private Map<String, $.T2<String, String>> publicFields = new LinkedHashMap<>();
+            private Map<String, String> aliases = new LinkedHashMap<>();
+            private Map<String, String> labels = new LinkedHashMap<>();
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -209,6 +215,7 @@ public interface SimpleBean {
                     publicFields.put(name, $.T2(desc, signature));
                     return new FieldVisitor(ASM5, fv) {
                         private String alias;
+                        private String label;
                         @Override
                         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                             AnnotationVisitor av = super.visitAnnotation(desc, visible);
@@ -217,6 +224,13 @@ public interface SimpleBean {
                                     @Override
                                     public void visit(String name, Object value) {
                                         alias = S.string(value);
+                                    }
+                                };
+                            } else if (LABEL_DESC.equals(desc)) {
+                                return new AnnotationVisitor(ASM5, av) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        label = S.string(value);
                                     }
                                 };
                             }
@@ -228,6 +242,10 @@ public interface SimpleBean {
                             if (null != alias && S.neq(name, alias)) {
                                 aliases.put(name, alias);
                                 aliases.put(alias, name);
+                            }
+                            if (null != label && S.neq(name, label)) {
+                                labels.put(name, label);
+                                labels.put(label, name);
                             }
                             super.visitEnd();
                         }
@@ -244,7 +262,7 @@ public interface SimpleBean {
                         public void run() {
                             SimpleBean.MetaInfoManager metaInfoManager = Act.app().classLoader().simpleBeanInfoManager();
                             if (metaInfoManager.isSimpleBean(className)) {
-                                MetaInfo metaInfo = new MetaInfo(className, publicFields, aliases);
+                                MetaInfo metaInfo = new MetaInfo(className, publicFields, aliases, labels);
                                 metaInfoManager.register(metaInfo);
                             }
                         }
@@ -263,8 +281,9 @@ public interface SimpleBean {
         private ClassInfoRepository classInfoRepository;
         private boolean isSimpleBean = false;
         private boolean hasPublicFields = false;
-        private Map<String, $.T2<String, String>> getters = new HashMap<>();
-        private Map<String, $.T2<String, String>> setters = new HashMap<>();
+        private Set<String> aliases = new HashSet<>();
+        private Map<String, $.T2<String, String>> getters = new LinkedHashMap<>();
+        private Map<String, $.T2<String, String>> setters = new LinkedHashMap<>();
         private boolean needDefaultConstructor = false;
         private String classDesc;
         private String superClassDesc;
@@ -294,6 +313,7 @@ public interface SimpleBean {
         protected void reset() {
             this.isSimpleBean = false;
             this.hasPublicFields = false;
+            this.aliases.clear();
             this.getters.clear();
             this.setters.clear();
             this.needDefaultConstructor = false;
@@ -359,13 +379,13 @@ public interface SimpleBean {
             if (null != getter) {
                 // found getter for the field
                 getters.remove(getter);
-                getters.remove(metaInfo.aliasOf(getter));
+                //getters.remove(metaInfo.aliasOf(getter));
             }
             String setter = fieldNameFromGetterSetter(name, false);
             if (null != setter) {
                 // found setter for the field
                 setters.remove(setter);
-                setters.remove(metaInfo.aliasOf(setter));
+                ///setters.remove(metaInfo.aliasOf(setter));
             }
             return mv;
         }

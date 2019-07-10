@@ -105,7 +105,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         if (null == fullName) {
             synchronized (this) {
                 if (null == fullName) {
-                    fullName = S.concat(classInfo().className(), ".", name);
+                    fullName = S.concat(classInfo().className(), ":", name);
                 }
             }
         }

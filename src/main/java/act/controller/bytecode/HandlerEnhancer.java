@@ -254,6 +254,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     }
                     lbl = lblList.get(--pos);
                 }
+                logger.warn("Unable to locate var name for param #%n, possibly because source is compiled without debug info", index);
                 return null;
             }
 
@@ -295,9 +296,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             @SuppressWarnings("FallThrough")
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
-                if (!segment.meta.hasLocalVariableTable()) {
-                    logger.warn("local variable table info not found. ActionContext render args might not be automatically populated");
-                }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = new ArrayList<>();
                 String templateLiteral = null;
@@ -342,6 +340,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 case ICONST_3:
                                 case ICONST_4:
                                 case ICONST_5:
+                                    break;
+                                case POP: // inline template
+                                    invalidParam = true;
                                     break;
                                 default:
                                     logger.warn("Invalid render argument found in %s: unknow opcode: %s", segment.meta.fullName(), node.getOpcode());

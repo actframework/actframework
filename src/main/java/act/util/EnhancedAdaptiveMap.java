@@ -145,7 +145,7 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
 
         public static Map<String, Object> toMap(final EnhancedAdaptiveMap ar) {
             Map<String, Object> kv = ar.internalMap();
-            Map<String, Object> map = new HashMap<>(kv);
+            Map<String, Object> map = new LinkedHashMap<>(kv);
             for (Map.Entry<String, $.Function> entry : ar.metaInfo().fieldGetters.entrySet()) {
                 map.put(entry.getKey(), entry.getValue().apply(ar));
             }
@@ -181,7 +181,7 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
             if (!hasFields(ar)) {
                 return kv.entrySet();
             }
-            Set<Map.Entry<String, Object>> set = new HashSet<Map.Entry<String, Object>>(kv.entrySet());
+            Set<Map.Entry<String, Object>> set = new LinkedHashSet<Map.Entry<String, Object>>(kv.entrySet());
             MetaInfo metaInfo = ar.metaInfo();
             boolean filter = null != function;
             for (Map.Entry<String, $.Function> entry: metaInfo.fieldGetters.entrySet()) {
@@ -314,6 +314,37 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
             this.metaInfo = Act.app().classLoader().simpleBeanInfoManager().get(className);
             this.arClass = clazz;
             this.discoverProperties(clazz);
+            this.orderIndexByFields();
+        }
+
+        private void orderIndexByFields() {
+            List<Field> fields = $.fieldsOf(arClass);
+            if (fields.isEmpty()) {
+                return;
+            }
+            List<String> names = new ArrayList<>(fields.size());
+            for (Field field : fields) {
+                names.add(field.getName());
+            }
+            orderIndex(names, getterFieldSpecs);
+            orderIndex(names, getterFieldClasses);
+            orderIndex(names, setterFieldSpecs);
+            orderIndex(names, setterFieldClasses);
+            orderIndex(names, fieldGetters);
+            orderIndex(names, fieldMergers);
+        }
+
+        // pre-assumption index map is LinkedHashMap
+        private void orderIndex(List<String> order, Map index) {
+            LinkedHashMap bak = new LinkedHashMap<>(index);
+            index.clear();
+            for (String s : order) {
+                Object val = bak.remove(s);
+                if (null != val) {
+                    index.put(s, val);
+                }
+            }
+            index.putAll(bak);
         }
 
         @Deprecated
@@ -341,28 +372,30 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
         }
 
         private void discoverProperties(Class<? extends EnhancedAdaptiveMap> clazz) {
-            getterFieldSpecs = new HashMap<>();
-            getterFieldClasses = new HashMap<>();
-            setterFieldSpecs = new HashMap<>();
-            setterFieldClasses = new HashMap<>();
-            fieldGetters = new HashMap<>();
-            fieldSetters = new HashMap<>();
-            fieldMergers = new HashMap<>();
+            getterFieldSpecs = new LinkedHashMap<>();
+            getterFieldClasses = new LinkedHashMap<>();
+            setterFieldSpecs = new LinkedHashMap<>();
+            setterFieldClasses = new LinkedHashMap<>();
+            fieldGetters = new LinkedHashMap<>();
+            fieldSetters = new LinkedHashMap<>();
+            fieldMergers = new LinkedHashMap<>();
             Injector injector = Act.app().injector();
             for (final Method m : clazz.getMethods()) {
                 String name = propertyName(m);
-                String alias;
-                final boolean hasAlias;
+                String alias, label;
+                final boolean hasAlias, hasLabel;
                 if (S.blank(name)) {
                     continue;
                 } else {
                     name = S.lowerFirst(name);
-                    alias = null == metaInfo ? name : metaInfo.aliasOf(name);
-                    hasAlias = name != alias;
                     if ("idAsStr".equals(name)) {
                         // special case for MorphiaModel
                         continue;
                     }
+                    alias = null == metaInfo ? name : metaInfo.aliasOf(name);
+                    hasAlias = S.neq(name, alias);
+                    label = null == metaInfo ? name : metaInfo.labelOf(name);
+                    hasLabel = S.neq(name, label);
                 }
                 final Class returnClass = Generics.getReturnType(m, clazz);
                 Type returnType = m.getGenericReturnType();
@@ -387,10 +420,17 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                         getterFieldSpecs.put(alias, spec);
                         getterFieldClasses.put(alias, fieldClass);
                     }
+                    if (hasLabel) {
+                        getterFieldSpecs.put(label, spec);
+                        getterFieldClasses.put(label, fieldClass);
+                    }
                 } else {
                     BeanInfo existingSpec = setterFieldSpecs.get(name);
                     if (null == existingSpec && hasAlias) {
                         existingSpec = setterFieldSpecs.get(alias);
+                    }
+                    if (null == existingSpec && hasLabel) {
+                        existingSpec = setterFieldSpecs.get(label);
                     }
                     if (null != existingSpec) {
                         // we need to infer the type from field in this case
@@ -403,6 +443,10 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                                 setterFieldSpecs.put(alias, spec);
                                 setterFieldClasses.put(alias, field.getType());
                             }
+                            if (hasLabel) {
+                                setterFieldSpecs.put(label, spec);
+                                setterFieldClasses.put(label, field.getType());
+                            }
                         } else {
                             if (fieldClass == Object.class) {
                                 // ignore
@@ -413,6 +457,10 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                                 if (hasAlias) {
                                     setterFieldSpecs.put(alias, spec);
                                     setterFieldClasses.put(alias, fieldClass);
+                                }
+                                if (hasLabel) {
+                                    setterFieldSpecs.put(label, spec);
+                                    setterFieldClasses.put(label, field.getType());
                                 }
                             }
                         }
@@ -433,6 +481,10 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                         if (hasAlias) {
                             setterFieldSpecs.put(alias, spec);
                             setterFieldClasses.put(alias, fieldClass);
+                        }
+                        if (hasLabel) {
+                            setterFieldSpecs.put(label, spec);
+                            setterFieldClasses.put(label, field.getType());
                         }
                     }
                 }
@@ -456,6 +508,9 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                     fieldSetters.put(name, fn);
                     if (hasAlias) {
                         fieldSetters.put(alias, fn);
+                    }
+                    if (hasLabel) {
+                        fieldSetters.put(label, fn);
                     }
                     fn = new $.Func2() {
                         @Override
@@ -481,6 +536,9 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                     if (hasAlias) {
                         fieldMergers.put(alias, fn);
                     }
+                    if (hasLabel) {
+                        fieldMergers.put(label, fn);
+                    }
                 } else {
                     $.F1 fn = new $.F1() {
                         @Override
@@ -491,6 +549,9 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
                     fieldGetters.put(name, fn);
                     if (hasAlias) {
                         fieldGetters.put(alias, fn);
+                    }
+                    if (hasLabel) {
+                        fieldGetters.put(label, fn);
                     }
                 }
             }
@@ -617,7 +678,7 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
             if (value instanceof AdaptiveRecord) {
                 return mergeMapIntoMap(map, ((AdaptiveRecord) value).asMap());
             }
-            Map retval = new HashMap(map);
+            Map retval = new LinkedHashMap(map);
             List<Field> fields = $.fieldsOf(value.getClass(), true);
             for (Field f : fields) {
                 f.setAccessible(true);

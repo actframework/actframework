@@ -9,9 +9,9 @@ package act.mail;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,18 +24,18 @@ import act.app.App;
 import act.app.AppHolderBase;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.http.H;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
-import org.osgl.util.*;
+import org.osgl.util.C;
+import org.osgl.util.E;
+import org.osgl.util.S;
 
-import java.util.*;
-import javax.mail.*;
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import java.util.*;
 
 public class MailerConfig extends AppHolderBase {
-
-    public static final Logger logger = LogManager.get(MailerConfig.class);
 
     public static final String FROM = "from";
     public static final String CONTENT_TYPE = "content_type";
@@ -88,7 +88,7 @@ public class MailerConfig extends AppHolderBase {
             if (S.notBlank(this.username) && this.username.endsWith("gmail.com")) {
                 this.host = "smtp.gmail.com";
             } else {
-                logger.warn("smtp host configuration not found, will use mock smtp to send email");
+                info("smtp host configuration not found, will use mock smtp to send email");
                 mock = true;
             }
         }
@@ -98,7 +98,7 @@ public class MailerConfig extends AppHolderBase {
             this.port = getPortConfig(properties);
             this.password = getProperty(SMTP_PASSWORD, properties);
             if (null == username || null == password) {
-                logger.warn("Either smtp.username or smtp.password is not configured for mailer[%s]", id);
+                warn("Either smtp.username or smtp.password is not configured for mailer[%s]", id);
             }
         }
         this.toList = getEmailListConfig(TO, properties);
@@ -149,7 +149,7 @@ public class MailerConfig extends AppHolderBase {
             } else {
                 port = "587";
             }
-            logger.warn("No smtp.port found for mailer[%s] configuration will use the default number: ", id, port);
+            warn("No smtp.port found for mailer[%s] configuration will use the default number: ", id, port);
         } else {
             try {
                 Integer.parseInt(port);

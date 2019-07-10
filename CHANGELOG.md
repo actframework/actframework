@@ -1,5 +1,12 @@
 # ActFramework Change Log
 
+**1.8.26**
+
+* Keep field definition order when output entity list into Excel file #1157
+* Make `AppServicePlugin` extends `LogSupport` #1156
+* False alarm caused by render inline template #1155
+* False alarm message about local variable table not found on app start #1154
+
 **1.8.25** 2/Jul/2019
 
 * Allow inject DbService #1153

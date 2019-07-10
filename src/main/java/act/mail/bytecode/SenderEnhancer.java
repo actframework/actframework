@@ -245,9 +245,6 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
 
             @SuppressWarnings("FallThrough")
             private boolean injectRenderArgSetCode(AbstractInsnNode invokeNode) {
-                if (!segment.meta.hasLocalVariableTable()) {
-                    logger.warn("local variable table info not found. AppContext render args will not be automatically populated");
-                }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = new ArrayList<>();
                 String templateLiteral = null;
@@ -496,6 +493,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     }
                     lbl = lblList.get(--pos);
                 }
+                logger.warn("Unable to locate var name for param #%n, possibly because source is compiled without debug info", index);
                 return null;
             }
 

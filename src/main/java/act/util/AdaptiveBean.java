@@ -33,7 +33,7 @@ import java.util.Set;
 public class AdaptiveBean extends AdaptiveBeanBase<AdaptiveBean> {
 
     @NoBind
-    private transient JSONObject kv = new JSONObject();
+    private transient JSONObject kv = new JSONObject(true);
 
     private transient volatile EnhancedAdaptiveMap.MetaInfo metaInfo;
 

@@ -30,8 +30,6 @@ import act.event.*;
 import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.lang.reflect.Modifier;
@@ -41,8 +39,6 @@ import javax.inject.Inject;
 
 @ApplicationScoped
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
-
-    private static Logger logger = LogManager.get(DbServiceManager.class);
 
     public static final String DEFAULT = DB.DEFAULT;
 
@@ -102,7 +98,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                             dao = dbService.newDaoInstance(daoType);
                             modelDaoMap.put(modelType, dao);
                         } catch (Exception e) {
-                            logger.warn(e, "error loading DAO: %s", daoType);
+                            warn(e, "error loading DAO: %s", daoType);
                         }
                     }
                 });
@@ -199,17 +195,17 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     private void initServices(AppConfig config) {
         DbManager dbManager = Act.dbManager();
         if (!dbManager.hasPlugin()) {
-            logger.warn("DB service not initialized: No DB plugin found");
+            info("DB service not initialized: No DB plugin found");
             return;
         }
         DbPlugin db = dbManager.theSolePlugin();
         Map<String, String> dbConf = config.subSet("db.");
         if (dbConf.isEmpty()) {
             if (null == db) {
-                logger.warn("DB service not initialized: need to specify default db service implementation");
+                warn("DB service not initialized: need to specify default db service implementation");
                 return;
             } else {
-                logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
+                info("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
                 DbService svc = db.initDbService(DEFAULT, app(), new HashMap<String, String>());
                 serviceMap.put(DEFAULT, svc);
                 return;
@@ -239,13 +235,13 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         } else if (serviceMap.size() == 1) {
             DbService svc = serviceMap.values().iterator().next();
             serviceMap.put(DEFAULT, svc);
-            logger.warn("db service configuration not found. Use the sole one db service[%s] as default service", svc.id());
+            warn("db service configuration not found. Use the sole one db service[%s] as default service", svc.id());
         } else {
             if (serviceMap.isEmpty()) {
                 if (null == db) {
-                    logger.warn("DB service not initialized: need to specify default db service implementation");
+                    warn("DB service not initialized: need to specify default db service implementation");
                 } else {
-                    logger.info("Init default service with the sole db plugin: %s", db);
+                    info("Init default service with the sole db plugin: %s", db);
                     Map<String, String> svcConf = new HashMap<>();
                     String prefix = "db.";
                     for (String key : dbConf.keySet()) {
@@ -258,7 +254,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     serviceMap.put(DEFAULT, svc);
                 }
             } else {
-                logger.warn("Default service not specified. Use the first db instance as default service: %s", firstInstance);
+                warn("Default service not specified. Use the first db instance as default service: %s", firstInstance);
                 serviceMap.put(DEFAULT, serviceMap.get(firstInstance));
             }
         }
@@ -284,7 +280,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         }
         DbService svc = plugin.initDbService(S.blank(dbId) ? DEFAULT : dbId, app(), svcConf);
         serviceMap.put(svcId, svc);
-        logger.info("db service[%s] initialized", svcId);
+        info("db service[%s] initialized", svcId);
     }
 
     public static String dbId(Class<?> modelClass) {
