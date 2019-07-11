@@ -45,7 +45,11 @@ public class TestWsProgress implements WebSocketConnectionListener {
     @Override
     public void onConnect(final WebSocketContext context) {
         if (null == test.gauge) {
-            context.sendJsonToSelf(C.Map("error", true));
+            if (test.result().isEmpty()) {
+                context.sendJsonToSelf(C.Map("error", true));
+            } else {
+                context.sendJsonToSelf(C.Map("done", true));
+            }
             return;
         }
         E.illegalStateIfNot(Test.inProgress() || test.gauge.isDone());

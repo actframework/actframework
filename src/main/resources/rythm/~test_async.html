@@ -179,10 +179,10 @@
 
 {{if (!ignore && status !== 'PASS' && errorMessage && !errorMessage.includes('Interaction[')) }}
 <div class="{{:status}}">
-  [{{:status}}] {{:errorMessage}}
+  [{{:status}}] {{>errorMessage}}
   {{if (stackTrace) }}
   <pre>
-{{:stackTrace}}
+    {{:stackTrace}}
   </pre>
   {{/if}}
 </div>
@@ -194,7 +194,7 @@
   <li class="{{:status}}">
     [{{:status}}] {{:description}}
     {{if errorMessage}}
-    <div class="error-message">- {{:errorMessage}}</div>
+    <div class="error-message">- {{>errorMessage}}</div>
       {{if stackTrace }}
         <pre>
         {{:stackTrace}}
@@ -237,7 +237,7 @@
           }
         });
     }
-    $.postJSON('/~/test/@testId', function(data) {
+    function testCallback(data) {
         var ws = $.createWebSocket('/~/ws/test/progress', function(e) {
             alert("error")
         })
@@ -272,7 +272,8 @@
                 $('#progress').width(gauge.progressPercent * 800 / 100)
             }
         }
-    })
+    }
+    $.postJSON('/~/test/@testId', testCallback)
 </script>
 </body>
 </html>
