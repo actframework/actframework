@@ -23,11 +23,14 @@ package act.test;
 import act.util.AdaptiveBeanBase;
 import act.util.EnhancedAdaptiveMap;
 import com.alibaba.fastjson.JSON;
+import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements InteractionPart {
@@ -57,6 +60,35 @@ public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements Inte
     }
 
     private void checkForEmpty(Interaction interaction) {
+        if (size() == 0) {
+            throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
+        }
+        Map<String, Object> map = this.toMap();
+        String accept;
+        if (null != __type) {
+            accept = __type.name();
+        } else {
+            RequestSpec req = interaction.request;
+            accept = req.accept;
+            if (null == accept) {
+                accept = "json";
+            } else {
+                accept = accept.toLowerCase();
+            }
+        }
+        List<Field> fields = $.fieldsOf(ResponseSpec.class, ResponseSpec.class, true, true);
+        for (Field f : fields) {
+            map.remove(f.getName());
+        }
+        if (accept.contains("json")) {
+            json.putAll(map);
+        } else if (accept.contains("html")) {
+            html.putAll(map);
+        } else if (accept.contains("xml")) {
+            xml.putAll(map);
+        } else if (accept.contains("header")) {
+            headers.putAll(map);
+        }
         if (null != status) {
             return;
         }
@@ -78,34 +110,7 @@ public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements Inte
         if (S.notBlank(downloadFilename)) {
             return;
         }
-        if (size() == 0) {
-            throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
-        }
-        Map<String, Object> map = this.toMap();
-        String accept;
-        if (null != __type) {
-            accept = __type.name();
-        } else {
-            RequestSpec req = interaction.request;
-            accept = req.accept;
-            if (null == accept) {
-                accept = "json";
-            } else {
-                accept = accept.toLowerCase();
-            }
-        }
-        map.remove("__type");
-        if (accept.contains("json")) {
-            json.putAll(map);
-        } else if (accept.contains("html")) {
-            html.putAll(map);
-        } else if (accept.contains("xml")) {
-            xml.putAll(map);
-        } else if (accept.contains("header")) {
-            headers.putAll(map);
-        } else {
-            throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
-        }
+        throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
     }
 
 }
