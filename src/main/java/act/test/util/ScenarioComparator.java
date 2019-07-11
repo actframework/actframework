@@ -56,9 +56,9 @@ public class ScenarioComparator implements Comparator<Scenario> {
             } else if (p1 && !p2) {
                 return 1;
             }
-            if (o1.ignore && !o2.ignore) {
+            if ($.bool(o1.ignore) && $.not(o2.ignore)) {
                 return -1;
-            } else if (o2.ignore) {
+            } else if ($.bool(o2.ignore)) {
                 return 1;
             }
         }

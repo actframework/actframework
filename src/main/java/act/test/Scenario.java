@@ -313,7 +313,7 @@ public class Scenario implements ScenarioPart {
     public String description;
     public String issueUrl;
     public String issueUrlIcon;
-    public boolean ignore = false;
+    public String ignore;
     public List<String> fixtures = new ArrayList<>();
     public Object generateTestData;
     public List<String> depends = new ArrayList<>();
@@ -374,6 +374,10 @@ public class Scenario implements ScenarioPart {
      */
     public String getTitle() {
         return title();
+    }
+
+    public String getIgnoreReason() {
+        return S.eq("true", ignore, S.IGNORECASE) ? "ignored" : ignore;
     }
 
     public void cache(String name, Object payload) {

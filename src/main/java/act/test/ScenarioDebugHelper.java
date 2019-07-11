@@ -32,6 +32,7 @@ import act.util.Async;
 import act.util.ProgressGauge;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.*;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
@@ -129,7 +130,7 @@ public class ScenarioDebugHelper {
         List<Scenario> results = test.run(app, null, false, gauge);
         boolean failure = false;
         for (Scenario scenario : results) {
-            if (!scenario.ignore && !scenario.status.pass()) {
+            if ($.not(scenario.ignore) && !scenario.status.pass()) {
                 failure = true;
                 break;
             }
@@ -147,7 +148,7 @@ public class ScenarioDebugHelper {
         List<Scenario> results = test.run(app, testId, false, gauge);
         boolean failure = false;
         for (Scenario scenario : results) {
-            if (!scenario.ignore && !scenario.status.pass()) {
+            if ($.not(scenario.ignore) && !scenario.status.pass()) {
                 failure = true;
                 break;
             }

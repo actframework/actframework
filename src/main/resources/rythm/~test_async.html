@@ -96,7 +96,6 @@
         }
         h4.ignore {
           color: #aaa;
-          text-decoration: line-through;
         }
         ul.interactions li {
           margin-bottom: 8px;
@@ -153,6 +152,11 @@
     <a class="issue-url" href="{{:issueUrl}}" target="issue-{{:name}}" style="text-decoration: none" title="jump to issue page">
         <img src="/~/asset/img/{{:issueUrlIcon}}.png" style="height: 16px; padding-left: 1px;"></img>
     </a>
+    {{/if}}
+    {{if ignore}}
+    <ul style="list-style-type: none;margin:0">
+        <li> - {{:ignoreReason}}</li>
+    </ul>
     {{/if}}
     {{if (!ignore && status !== 'PASS')}}
   <br/>

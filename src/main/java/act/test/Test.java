@@ -26,14 +26,14 @@ import act.app.App;
 import act.app.DbServiceManager;
 import act.app.event.SysEventId;
 import act.db.Dao;
-import act.db.DaoBase;
 import act.db.DbService;
 import act.event.EventBus;
 import act.inject.DefaultValue;
 import act.inject.param.NoBind;
-import act.job.*;
+import act.job.Job;
+import act.job.JobManager;
+import act.job.OnSysEvent;
 import act.metric.MeasureTime;
-import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.sys.Env;
 import act.test.func.Func;
@@ -42,11 +42,6 @@ import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
 import act.util.*;
-import act.ws.WebSocketConnectionListener;
-import act.ws.WebSocketConnectionManager;
-import act.ws.WebSocketContext;
-import act.ws.WsEndpoint;
-import com.alibaba.fastjson.JSON;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.fusesource.jansi.Ansi;
@@ -56,19 +51,15 @@ import org.osgl.mvc.annotation.DeleteAction;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
-import org.xnio.streams.WriterOutputStream;
 
-import java.io.PrintStream;
+import javax.inject.Inject;
+import javax.persistence.MappedSuperclass;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.inject.Inject;
-import javax.persistence.MappedSuperclass;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Env.RequireMode(Act.Mode.DEV)
 @Stateless
@@ -287,7 +278,7 @@ public class Test extends LogSupport {
     }
 
     @GetAction("test/result")
-    @PropertySpec("error, scenarios.name, scenarios.ignore, scenarios.source, scenarios.status, " +
+    @PropertySpec("error, scenarios.name, scenarios.ignoreReason, scenarios.ignore, scenarios.source, scenarios.status, " +
             "scenarios.issueUrl, scenarios.issueUrlIcon, scenarios.title, scenarios.errorMessage, " +
             "scenarios.interactions.status, scenarios.interactions.description, " +
             "scenarios.interactions.stackTrace, scenarios.interactions.errorMessage")
@@ -340,9 +331,9 @@ public class Test extends LogSupport {
                         continue;
                     }
                     if (null != testId) {
-                        scenario.ignore = false;
+                        scenario.ignore = null;
                     }
-                    if (!scenario.ignore) {
+                    if ($.not(scenario.ignore)) {
                         try {
                             scenario.start(scenarioManager, requestTemplateManager, gauge, !fixtureCleared);
                             if (!fixtureCleared && scenario.clearFixtures) {
@@ -377,7 +368,7 @@ public class Test extends LogSupport {
             }
             if (shutdownApp) {
                 for (Scenario scenario : list) {
-                    if (!scenario.ignore && !scenario.status.pass()) {
+                    if ($.not(scenario.ignore) && !scenario.status.pass()) {
                         exitCode = -1;
                     }
                     output(scenario);
@@ -400,7 +391,7 @@ public class Test extends LogSupport {
                         if (null != scenario.cause) {
                             logError(ansi, "cause: \n" + E.stackTrace(scenario.cause));
                         }
-                    } else if (scenario.ignore) {
+                    } else if ($.bool(scenario.ignore)) {
                         logIgnore(ansi, "[ignored] %s", scenario.title());
                     }
                 }
@@ -444,7 +435,7 @@ public class Test extends LogSupport {
     }
 
     private void output(Scenario scenario) {
-        if (scenario.ignore) {
+        if ($.bool(scenario.ignore)) {
             return;
         }
         printBanner(scenario);

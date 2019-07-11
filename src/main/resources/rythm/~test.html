@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+@import org.osgl.Lang
 @import act.test.Scenario
 @import act.test.Interaction
 @args List<Scenario> result, boolean failure
@@ -81,7 +82,10 @@
   <img src="/~/asset/img/@(scenario.issueUrlIcon).png" style="height: 16px; padding-left: 1px;"></img>
      </a>
   }
-  @if(!scenario.ignore && !scenario.status.pass()) {
+  <ul style="list-style-type:none">
+    <li> - @scenario.getIgnoreReason()</li>
+  </ul>
+  @if(Lang.not(scenario.ignore) && !scenario.status.pass()) {
     @if(scenario.source) {
   <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
     <li style="margin-bottom: 5px">
@@ -110,7 +114,7 @@
 </h4>
 
 
-@if(!scenario.ignore && !scenario.status.pass() && null != scenario.errorMessage && !scenario.errorMessage.contains("Interaction[")) {
+@if(Lang.not(scenario.ignore) && !scenario.status.pass() && null != scenario.errorMessage && !scenario.errorMessage.contains("Interaction[")) {
 <div class="@scenario.status">
   [@scenario.status] @scenario.errorMessage
   @if(null != scenario.cause && (!(scenario.cause instanceof act.test.util.ErrorMessage))) {

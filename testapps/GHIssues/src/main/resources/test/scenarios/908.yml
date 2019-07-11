@@ -1,6 +1,5 @@
-# TODO redefine the test case
 Scenario(908):
-  ignore: true
+  ignore: TODO redefine the test case
   description: Test - allow setting precision of ${now()} function
   constants:
     startTs0: ${now()}   # default: low precision
