@@ -109,6 +109,14 @@ public interface ProgressGauge {
     void markAsDone();
 
     /**
+     * Reset payload to the gauge.
+     *
+     * Once this method is called, there is no payload in the gauge.
+     * This method shall not trigger update event
+]     */
+    void clearPayload();
+
+    /**
      * Set payload to the gauge.
      *
      * This method could be used to pass additional message to

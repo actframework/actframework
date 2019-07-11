@@ -348,9 +348,7 @@ public class Test extends LogSupport {
                             if (!fixtureCleared && scenario.clearFixtures) {
                                 fixtureCleared = true;
                             }
-                            if (!scenario.status.pass()) {
-                                gauge.setPayload(PG_PAYLOAD_FAILED, true);
-                            }
+                            gauge.setPayload(PG_PAYLOAD_FAILED, !scenario.status.pass());
                         } catch (Exception e) {
                             gauge.setPayload(PG_PAYLOAD_FAILED, true);
                             String message = e.getMessage();

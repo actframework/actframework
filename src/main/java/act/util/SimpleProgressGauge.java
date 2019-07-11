@@ -262,6 +262,11 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     @Override
+    public void clearPayload() {
+        this.payload.clear();
+    }
+
+    @Override
     public void setPayload(String key, Object val) {
         this.payload.put(key, val);
         this.triggerUpdateEvent(true);

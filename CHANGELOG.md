@@ -2,6 +2,8 @@
 
 **1.8.26**
 
+* Act-Test - list failed scenario names in the splash page #1162
+* When uploaded an empty file, the parameter injected is `null` #1160
 * Keep field definition order when output entity list into Excel file #1157
 * Make `AppServicePlugin` extends `LogSupport` #1156
 * False alarm caused by render inline template #1155

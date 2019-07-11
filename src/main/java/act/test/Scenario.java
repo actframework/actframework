@@ -22,7 +22,6 @@ package act.test;
 
 import static act.test.TestStatus.PENDING;
 import static act.test.util.ErrorMessage.*;
-import static act.util.ProgressGauge.PAYLOAD_MESSAGE;
 import static org.osgl.http.H.Header.Names.ACCEPT;
 import static org.osgl.http.H.Header.Names.X_REQUESTED_WITH;
 import static org.osgl.http.H.Method.POST;
@@ -30,7 +29,6 @@ import static org.osgl.http.H.Method.POST;
 import act.Act;
 import act.app.App;
 import act.handler.builtin.FileGetter;
-import act.metric.MeasureTime;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
@@ -470,6 +468,7 @@ public class Scenario implements ScenarioPart {
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
         current.set(this);
+        gauge.clearPayload();
         gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, title());
         gauge.incrMaxHint();
         try {
@@ -700,6 +699,7 @@ public class Scenario implements ScenarioPart {
         gauge.incrMaxHintBy(interactions.size());
         for (Interaction interaction : interactions) {
             try {
+                gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, title());
                 gauge.setPayload(Test.PG_PAYLOAD_INTERACTION, interaction.description);
                 boolean pass = run(interaction);
                 if (!pass) {
