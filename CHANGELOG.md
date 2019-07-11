@@ -2,6 +2,7 @@
 
 **1.8.26**
 
+* LoadConfig - suppress warning messages #1163
 * Act-Test - list failed scenario names in the splash page #1162
 * When uploaded an empty file, the parameter injected is `null` #1160
 * Keep field definition order when output entity list into Excel file #1157

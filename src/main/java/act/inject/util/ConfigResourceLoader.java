@@ -53,15 +53,18 @@ public class ConfigResourceLoader extends ResourceLoader {
         if (path.startsWith("config/")) {
             path = path.substring(7);
         }
-        resource = ResourceLoader._load(profileConfig(path), spec, hint, ignoreResourceNotFound);
+        resource = ResourceLoader._load(profileConfig(path), spec, hint, true);
         if (null == resource) {
-            resource = ResourceLoader._load(commonConfig(path), spec, hint, ignoreResourceNotFound);
+            resource = ResourceLoader._load(commonConfig(path), spec, hint, true);
         }
         if (null == resource) {
-            resource = ResourceLoader._load(confConfig(path), spec, hint, ignoreResourceNotFound);
+            resource = ResourceLoader._load(confConfig(path), spec, hint, true);
         }
         if (null == resource) {
-            resource = ResourceLoader._load(path, spec, hint, ignoreResourceNotFound);
+            resource = ResourceLoader._load(path, spec, hint, true);
+        }
+        if (null == resource && !ignoreResourceNotFound) {
+            LOGGER.warn("config resource not found: %s", path);
         }
     }
 
