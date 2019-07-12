@@ -392,7 +392,11 @@ public class Test extends LogSupport {
                             logError(ansi, "cause: \n" + E.stackTrace(scenario.cause));
                         }
                     } else if ($.bool(scenario.ignore)) {
-                        logIgnore(ansi, "[ignored] %s", scenario.title());
+                        if ("true".equalsIgnoreCase(scenario.ignore)) {
+                            logIgnore(ansi, "[ignored] %s", scenario.title());
+                        } else {
+                            logIgnore(ansi, "[ignored] %s\n\t - %s", scenario.title(), scenario.getIgnoreReason());
+                        }
                     }
                 }
                 info("================================================================================");

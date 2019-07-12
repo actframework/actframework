@@ -82,9 +82,13 @@
   <img src="/~/asset/img/@(scenario.issueUrlIcon).png" style="height: 16px; padding-left: 1px;"></img>
      </a>
   }
+
+  @if(scenario.ignore) {
   <ul style="list-style-type:none">
     <li> - @scenario.getIgnoreReason()</li>
   </ul>
+  }
+
   @if(Lang.not(scenario.ignore) && !scenario.status.pass()) {
     @if(scenario.source) {
   <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">

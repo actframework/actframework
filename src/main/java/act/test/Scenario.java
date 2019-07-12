@@ -200,7 +200,7 @@ public class Scenario implements ScenarioPart {
                         entry.setValue(getLastVal(ref));
                     } else if (sVal.contains("${")) {
                         sVal = processStringSubstitution(sVal);
-                        entry.setValue(S.isInt(sVal) ? Integer.parseInt(sVal) : sVal);
+                        entry.setValue(S.isInt(sVal) ? Long.parseLong(sVal) : sVal);
                     }
                 } else if (val instanceof Map) {
                     processParamSubstitution((Map) val);
@@ -221,7 +221,7 @@ public class Scenario implements ScenarioPart {
                         ret.add(getLastVal(ref));
                     } else if (sVal.contains("${")) {
                         sVal = processStringSubstitution(sVal);
-                        ret.add(S.isInt(sVal) ? Integer.parseInt(sVal) : sVal);
+                        ret.add(S.isInt(sVal) ? Long.parseLong(sVal) : sVal);
                     } else {
                         ret.add(sVal);
                     }
