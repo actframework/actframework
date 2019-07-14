@@ -463,11 +463,15 @@ public class Scenario implements ScenarioPart {
         return func.apply();
     }
 
-    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean forceClearFixtures) {
-        start(scenarioManager, requestTemplateManager, true, gauge, forceClearFixtures);
-    }
-
-    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset, ProgressGauge gauge, boolean forceClearFixtures) {
+    /**
+     * Start running this scenario.
+     *
+     * @param scenarioManager scenario manager
+     * @param requestTemplateManager request template manager
+     * @param gauge progress gauge
+     * @param isDependent is this a dependent scenario run or direct scenario run
+     */
+    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean isDependent) {
         this.scenarioManager = $.requireNotNull(scenarioManager);
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
@@ -488,7 +492,15 @@ public class Scenario implements ScenarioPart {
                 gauge.step();
             }
         }
-        boolean pass = (!reset || reset(gauge)) && run(gauge, forceClearFixtures);
+        boolean pass = true;
+        if (!isDependent) {
+            gauge.incrMaxHint();
+            clearSession();
+            pass = pass && clearFixtures();
+        }
+        if (pass) {
+            pass = runDependents(gauge) && run(gauge);
+        }
         this.status = TestStatus.of(pass);
         if (TestStatus.FAIL == this.status) {
             for (Interaction interaction : this.interactions) {
@@ -501,7 +513,6 @@ public class Scenario implements ScenarioPart {
             }
         }
     }
-
     public void clearSession() {
         if (depends.isEmpty()) {
             cookieStore().clear();
@@ -633,28 +644,28 @@ public class Scenario implements ScenarioPart {
         }
     }
 
-    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean forceClearFixtures) {
+    private boolean runAsDependent(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
         if (null == this.scenarioManager) {
-            this.start(scenarioManager, requestTemplateManager, forceClearFixtures, gauge, forceClearFixtures);
+            this.start(scenarioManager, requestTemplateManager, gauge, true);
             return this.status.pass();
         } else {
-            return run(gauge, forceClearFixtures);
+            return run(gauge);
         }
     }
 
-    private boolean run(ProgressGauge gauge, boolean forceClearFixtures) {
+    private boolean run(ProgressGauge gauge) {
         if (status.finished()) {
             return status.pass();
         }
         Timer timer = metric.startTimer("run");
         try {
-            return runDependents(gauge, forceClearFixtures) && runInteractions(gauge);
+            return runDependents(gauge) && createFixtures() && generateTestData() && runInteractions(gauge);
         } finally {
             timer.stop();
         }
     }
 
-    private boolean runDependents(ProgressGauge gauge, boolean forceClearFixtures) {
+    private boolean runDependents(ProgressGauge gauge) {
         List<Scenario> partitionSetups = scenarioManager.getPartitionSetups(partition);
         List<Scenario> allDeps = new ArrayList<>();
         for (Scenario scenario : partitionSetups) {
@@ -674,7 +685,7 @@ public class Scenario implements ScenarioPart {
             try {
                 Scenario old = current.get();
                 try {
-                    if (!scenario.run(scenarioManager, requestTemplateManager, gauge, forceClearFixtures)) {
+                    if (!scenario.runAsDependent(scenarioManager, requestTemplateManager, gauge)) {
                         errorMessage = "dependency failure: " + scenario.name;
                         return false;
                     }
@@ -705,7 +716,7 @@ public class Scenario implements ScenarioPart {
             try {
                 gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, title());
                 gauge.setPayload(Test.PG_PAYLOAD_INTERACTION, interaction.description);
-                boolean pass = run(interaction);
+                boolean pass = run0(interaction);
                 if (!pass) {
                     //errorMessage = S.fmt("interaction[%s] failure", interaction.description);
                     return false;
@@ -717,7 +728,7 @@ public class Scenario implements ScenarioPart {
         return true;
     }
 
-    private boolean run(Interaction interaction) {
+    private boolean run0(Interaction interaction) {
         boolean okay = interaction.run();
         if (!okay) {
             return false;

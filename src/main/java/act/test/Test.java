@@ -335,7 +335,7 @@ public class Test extends LogSupport {
                     }
                     if ($.not(scenario.ignore)) {
                         try {
-                            scenario.start(scenarioManager, requestTemplateManager, gauge, !fixtureCleared);
+                            scenario.start(scenarioManager, requestTemplateManager, gauge, false);
                             if (!fixtureCleared && scenario.clearFixtures) {
                                 fixtureCleared = true;
                             }

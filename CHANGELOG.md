@@ -1,10 +1,11 @@
 # ActFramework Change Log
 
 **1.8.26**
-
+* View plugin get initialised twice #1166
 * Scenario spec - cannot specify long value for substitution #1164
 * LoadConfig - suppress warning messages #1163
 * Act-Test - list failed scenario names in the splash page #1162
+* Act-Test - fixture clearing issue with multiple level dependencies bug #1161
 * When uploaded an empty file, the parameter injected is `null` #1160
 * Test Scenario - allow specify response spec without type block #1159
 * Test Scenario - allow specify ignore reason #1158
