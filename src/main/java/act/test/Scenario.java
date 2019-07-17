@@ -324,7 +324,7 @@ public class Scenario implements ScenarioPart {
     public Throwable cause;
     public boolean clearFixtures = true;
     public String urlContext;
-    public String partition = "__DEFAULT";
+    public String partition = "_default_";
     public String source;
     private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
@@ -669,35 +669,63 @@ public class Scenario implements ScenarioPart {
         List<Scenario> partitionSetups = scenarioManager.getPartitionSetups(partition);
         List<Scenario> allDeps = new ArrayList<>();
         for (Scenario scenario : partitionSetups) {
-            if (scenario == this) {
+            if (scenario == this || scenario.isDependOn(this, scenarioManager)) {
                 break;
             }
-            allDeps.add(scenario);
+            if (!allDeps.contains(scenario)) {
+                allDeps.add(scenario);
+            }
         }
         for (String dependent : depends) {
             Scenario scenario = scenarioManager.get(dependent);
             errorIf(null == scenario, "Dependent not found: " + dependent);
-            allDeps.add(scenario);
+            if (!allDeps.contains(scenario)) {
+                allDeps.add(scenario);
+            }
         }
         Collections.sort(allDeps, new ScenarioComparator(scenarioManager, partition));
         gauge.incrMaxHintBy(allDeps.size());
-        for (Scenario scenario : allDeps) {
+        for (Scenario depScenario : allDeps) {
             try {
                 Scenario old = current.get();
+                Scenario s = null == old ? this : old;
+                TestStatus oldStatus = null;
+                if (depScenario.status == TestStatus.PASS && S.neq(depScenario.partition, s.partition)) {
+                    oldStatus = depScenario.status;
+                    depScenario.status = PENDING; // reset scenario status if run dependents across partition
+                }
                 try {
-                    if (!scenario.runAsDependent(scenarioManager, requestTemplateManager, gauge)) {
-                        errorMessage = "dependency failure: " + scenario.name;
+                    if (!depScenario.runAsDependent(scenarioManager, requestTemplateManager, gauge)) {
+                        errorMessage = "dependency failure: " + depScenario.name;
                         return false;
                     }
-                    inheritFrom(scenario);
+                    inheritFrom(depScenario);
                 } finally {
                     current.set(old);
+                    if (null != oldStatus) {
+                        depScenario.status = oldStatus;
+                    }
                 }
             } finally {
                 gauge.step();
             }
         }
         return true;
+    }
+
+    private boolean isDependOn(Scenario that, ScenarioManager scenarioManager) {
+        if (depends.contains(that.refId) || depends.contains(that.name)) {
+            return true;
+        }
+        for (String s : depends) {
+            Scenario scenario = scenarioManager.get(s);
+            if (null != scenario) {
+                if (scenario.isDependOn(that, scenarioManager)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void inheritFrom(Scenario dependent) {
@@ -763,7 +791,9 @@ public class Scenario implements ScenarioPart {
         if (null == o) {
             o = checksumExpected;
         }
-        String downloadChecksum = IO.checksum(response.body().byteStream());
+        ResponseBody body = response.body();
+        errorIf(null == body, "No download found");
+        String downloadChecksum = IO.checksum(body.byteStream());
         errorIfNot($.eq(downloadChecksum, o), "Download checksum not match");
     }
 

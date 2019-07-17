@@ -1911,11 +1911,12 @@ public @interface Controller {
                 return null;
             }
             Class vCls = v.getClass();
+            boolean isSimpleType = $.isSimpleType(vCls);
             boolean shouldUseToString = $$.shouldUseToString(vCls);
             if (accept == H.Format.HTML && !shouldUseToString) {
                 requireJSON = true;
             }
-            if ($.isSimpleType(vCls) || shouldUseToString) {
+            if (isSimpleType || shouldUseToString) {
                 boolean isArray = vCls.isArray();
                 return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, shouldUseToString);
             } else if (v instanceof InputStream) {

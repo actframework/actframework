@@ -296,7 +296,8 @@ public class Test extends LogSupport {
 
     public List<Scenario> run(App app, Keyword testId, boolean shutdownApp, ProgressGauge gauge) {
         E.illegalStateIf(inProgress());
-        info("Start running test scenarios\n");
+        info("Start running test scenarios");
+        info("---------------------------------------------------------------");
         int exitCode = 0;
         EventBus eventBus = app.eventBus();
         STARTED.set(true);
@@ -334,6 +335,7 @@ public class Test extends LogSupport {
                         scenario.ignore = null;
                     }
                     if ($.not(scenario.ignore)) {
+                        info("running [%s]%s", scenario.partition, scenario.name);
                         try {
                             scenario.start(scenarioManager, requestTemplateManager, gauge, false);
                             if (!fixtureCleared && scenario.clearFixtures) {

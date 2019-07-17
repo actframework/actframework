@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.26**
+* Act-Test - when dependent scenario is running in a different partition it shall be run anyway even it has been finished before #1169
+* Act-Test download checksum verification might cause NPE #1168
+* Act-Test - circular dependency caused by `setup` #1167
 * View plugin get initialised twice #1166
 * Scenario spec - cannot specify long value for substitution #1164
 * LoadConfig - suppress warning messages #1163
@@ -162,7 +165,7 @@
 * Test - allow it post body for DELETE request #1024
 * Annotations with ValueLoader cannot work if post with json #1016
 * Routing issue with dynamic aliases and keyword matching #1022
-* Make CLI help command default to display application commands 1018#
+* Make CLI help command default to display application commands #1018
 * CLI - execute `conf.trace-handler -e` trigger `IllegalAccessError` #1019
 
 **1.8.16** 09/Dec/2018
