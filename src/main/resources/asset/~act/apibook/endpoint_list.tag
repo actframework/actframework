@@ -252,6 +252,12 @@
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);
                 self.patchPreCode()
+                if(window.location.hash) {
+                    var anchor = document.getElementById(window.location.hash.substr(1))
+                    if (anchor) {
+                         anchor.scrollIntoView();
+                    }
+                }
             })
         }
         riot.store.on('module-selected', function(modules) {
