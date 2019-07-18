@@ -116,6 +116,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         return (HTML == fmt
                 || CSV == fmt
                 || H.Format.JSON == fmt
+                || H.Format.TXT == fmt
                 || XML == fmt);
     }
 
