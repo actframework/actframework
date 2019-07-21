@@ -335,7 +335,9 @@ public class Test extends LogSupport {
                         scenario.ignore = null;
                     }
                     if ($.not(scenario.ignore)) {
-                        info("running [%s]%s", scenario.partition, scenario.name);
+                        if (S.neq(Act.profile(), "test")) {
+                            info("running [%s]%s", scenario.partition, scenario.name);
+                        }
                         try {
                             scenario.start(scenarioManager, requestTemplateManager, gauge, false);
                             if (!fixtureCleared && scenario.clearFixtures) {

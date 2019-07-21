@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.26**
+* update osgl-tool to 1.20.0
+* update genie to 1.11.0
 * API doc - allow landing to specific part when open link with hash #1171
 * Act-Test - when dependent scenario is running in a different partition it shall be run anyway even it has been finished before #1169
 * Act-Test download checksum verification might cause NPE #1168
