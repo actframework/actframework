@@ -1,5 +1,13 @@
 <ul>
 <li>
+    <span class="news-date">21 Jul 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/74?closed=1">
+            act-1.8.26 released
+        </a>
+    </span>
+</li>
+<li>
     <span class="news-date">03 Jul 2019</span>
     <span class="news-text">
         <a href="https://github.com/actframework/actframework/milestone/73?closed=1">
