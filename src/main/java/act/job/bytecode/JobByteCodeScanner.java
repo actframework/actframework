@@ -223,7 +223,11 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
                         if (this.currentInfo.annotationType == FixtureLoader.class) {
-                            method.id(S.string(value));
+                            String id = S.string(value);
+                            if (S.blank(id)) {
+                                id = methodName;
+                            }
+                            method.id(id);
                         } else {
                             this.currentInfo.value = value.toString();
                         }

@@ -1,5 +1,10 @@
 # ActFramework Change Log
 
+**1.8.27**
+* `FixtureLoader` not effective after called #1177
+* NPE triggered in `requestThrottleExpireScale` after hot reload #1175
+* Act-Test - NPE encountered when scenario is parsed after scenario depend on it parsed #1176
+
 **1.8.26**
 * update osgl-tool to 1.20.0
 * update genie to 1.11.0

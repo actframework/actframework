@@ -785,6 +785,9 @@ public class App extends LogSupportedDestroyableBase {
                         initHttpConfig();
                         initViewManager();
 
+                        registerMetricProvider();
+                        config().preloadConfigurations();
+
                         // let's any emit the dependency injector loaded event
                         // in case some other service depend on this event.
                         // If any DI plugin e.g. guice has emitted this event
@@ -792,8 +795,6 @@ public class App extends LogSupportedDestroyableBase {
                         // because once app event is consumed the event listeners
                         // are cleared
                         emit(DEPENDENCY_INJECTOR_PROVISIONED);
-                        registerMetricProvider();
-                        config().preloadConfigurations();
                         initSessionManager();
                         emit(SINGLETON_PROVISIONED);
                     }
