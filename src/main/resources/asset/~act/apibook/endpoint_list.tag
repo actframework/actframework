@@ -41,7 +41,9 @@
         </div>
         <div class="post-sample" if="{ endpoint.sampleJsonPost }">
             <h5>Json body example</h5>
-            <pre class="code">{ endpoint.sampleJsonPost }</pre>
+            <pre class="code">
+                <code class="language-json">{ endpoint.sampleJsonPost }</code>
+            </pre>
         </div>
         <div class="return" if={ endpoint.returnDescription }>
             <h5>Return</h5>
@@ -49,7 +51,9 @@
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
             <h5>Return value sample</h5>
-            <pre class="code">{ endpoint.returnSample }</pre>
+            <pre class="code">
+                <code class="language-json">{ endpoint.returnSample }</code>
+            </pre>
         </div>
     </div>
     <div id='bottom-padding'>&nbsp;</div>

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.27**
+* ConcurrentModificationException when output to csv with PropertySpec specified #1178
 * `FixtureLoader` not effective after called #1177
 * NPE triggered in `requestThrottleExpireScale` after hot reload #1175
 * Act-Test - NPE encountered when scenario is parsed after scenario depend on it parsed #1176

@@ -97,7 +97,7 @@ class OutputFieldsCache {
                 boolean excludeHasPattern = hasPattern(excluded, lsp);
                 if (!excludeHasPattern) {
                     List<S.Pair> ret = new ArrayList<>(allFields);
-                    for (S.Pair pair : ret) {
+                    for (S.Pair pair : allFields) {
                         for (String s : excluded) {
                             if (pair._1.equals(s)) {
                                 ret.remove(pair);
