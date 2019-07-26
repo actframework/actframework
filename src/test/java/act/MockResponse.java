@@ -84,7 +84,7 @@ public class MockResponse extends ActResponse<MockResponse> {
     }
 
     @Override
-    public void commit() {
+    protected void doCommit() {
 
     }
 

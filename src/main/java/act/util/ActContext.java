@@ -317,7 +317,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.renderArgs.clear();
             this.template = null;
             this.app = null;
-            this.template = null;
+            this.handlerMethod = null;
+            this.currentMethod = null;
             this.listenerList.clear();
             this.destroyableList.clear();
             this.violations.clear();

@@ -23,6 +23,7 @@ package act.xio.undertow;
 import act.ActResponse;
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import io.undertow.io.DefaultIoCallback;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
@@ -148,7 +149,18 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse send(URL url) {
         Resource resource = new URLResource(url, "");
-        resource.serve(sender(), hse, IoCallback.END_EXCHANGE);
+        resource.serve(sender(), hse, new DefaultIoCallback() {
+            @Override
+            public void onComplete(HttpServerExchange exchange, Sender sender) {
+                super.onComplete(exchange, sender);
+                afterWritingContent();
+                if (!blocking()) {
+                    ActionContext context = context();
+                    context.destroy();
+                }
+            }
+
+        });
         return me();
     }
 
@@ -162,6 +174,11 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
                 public void onComplete(HttpServerExchange exchange, Sender sender) {
                     IO.close(channel);
                     IoCallback.END_EXCHANGE.onComplete(exchange, sender);
+                    afterWritingContent();
+                    if (!blocking()) {
+                        ActionContext context = context();
+                        context.destroy();
+                    }
                 }
 
                 @Override
@@ -171,7 +188,6 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
                 }
             });
             endAsync = !blocking();
-            afterWritingContent();
         } catch (IOException e) {
             endAsync = false;
             afterWritingContent();
@@ -191,7 +207,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
-    public void commit() {
+    protected void doCommit() {
         if (null != this.output) {
             IO.close(output);
         } else if (null != this.outputStream) {

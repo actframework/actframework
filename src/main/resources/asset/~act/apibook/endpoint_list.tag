@@ -41,19 +41,15 @@
         </div>
         <div class="post-sample" if="{ endpoint.sampleJsonPost }">
             <h5>Json body example</h5>
-            <pre class="code">
-                <code class="language-json">{ endpoint.sampleJsonPost }</code>
-            </pre>
+            <raw html={ endpoint.sampleJsonPost}>
+            <pre class="code"><code class="json">{ endpoint.sampleJsonPost }</code></pre>
         </div>
         <div class="return" if={ endpoint.returnDescription }>
             <h5>Return</h5>
-            <div class="return-desc"><raw html={ endpoint.richReturnDescription }></raw></div>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
             <h5>Return value sample</h5>
-            <pre class="code">
-                <code class="language-json">{ endpoint.returnSample }</code>
-            </pre>
+            <raw html={endpoint.returnSample}>
         </div>
     </div>
     <div id='bottom-padding'>&nbsp;</div>
@@ -226,6 +222,11 @@
                 return self.endpoints.filter(x => x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter))
             }
         }
+        highlightjs(s) {
+            if (!s) return ''
+            s = "```json\n" + s + "\n```"
+            return riot.md.render(s)
+        }
         fetchEndpoints() {
             $.getJSON('/~/apibook/endpoints', function(endpoints) {
                 for(var i = 0, j = endpoints.length; i < j; ++i) {
@@ -238,6 +239,8 @@
                     } else {
                         endpoint.richReturnDescription = ''
                     }
+                    endpoint.sampleJsonPost = self.highlightjs(endpoint.sampleJsonPost)
+                    endpoint.returnSample = self.highlightjs(endpoint.returnSample)
                     for (var pi = 0, pj = endpoint.params.length; pi < pj; ++pi) {
                         var param = endpoint.params[pi]
                         if (param && param.description) {

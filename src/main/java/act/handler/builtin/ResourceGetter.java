@@ -221,10 +221,12 @@ public class ResourceGetter extends FastRequestHandler {
                 loadPath = S.pathConcat(base, SEP, path);
                 target = app.getResource(loadPath);
                 if (null == target) {
-                    throw NotFound.get();
+                    AlwaysNotFound.INSTANCE.handle(context);
+                    return;
                 }
             }
             if (preventFolderAccess(target, loadPath, context)) {
+                AlwaysForbidden.INSTANCE.handle(context);
                 return;
             }
             ActResponse resp = context.prepareRespForResultEvaluation();
@@ -279,6 +281,7 @@ public class ResourceGetter extends FastRequestHandler {
             } else {
                 try {
                     int n = IO.copy(target.openStream(), resp.outputStream());
+                    resp.afterWritingContent();
                     boolean smallResource = n < config.resourcePreloadSizeLimit();
                     if (!smallResource) {
                         largeResource.add(path);

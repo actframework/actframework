@@ -202,9 +202,11 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     }
                     if (ctx.isReadyForDestroy()) {
                         ctx.destroy();
-                        // otherwise the ctx get transferred to another thread
+                        // current has already been cleared
+                    } else {
+                        // the ctx get transferred to another thread
+                        ActionContext.clearCurrent();
                     }
-                    ActionContext.clearCurrent();
                     timer.stop();
                 }
             }

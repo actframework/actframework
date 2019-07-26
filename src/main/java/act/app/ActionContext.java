@@ -1422,6 +1422,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             ParamValueLoaderService.clearParamTree();
             sessionManager = null;
             this.allParams = null;
+            this.extraParams.clear();
             this.extraParams = null;
             this.requestParamCache = null;
             this.router = null;
@@ -1430,9 +1431,26 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             // xio impl might need this this.response = null;
             this.flash = null;
             this.session = null;
-            this.controllerInstances = null;
             this.result = null;
             this.uploads.clear();
+            this.uploads = null;
+            this.request = null;
+            this.response = null;
+            this.actionPath = null;
+            this.urlContext = null;
+            this.urlPath = null;
+            if (null != this.pathVarNames) {
+                this.pathVarNames.clear();
+                this.pathVarNames = null;
+            }
+            if (null != this.controllerInstances) {
+                this.controllerInstances.clear();
+                this.controllerInstances = null;
+            }
+            this.reflectedHandlerInvoker = null;
+            this.handlerClass = null;
+            this.encodedSessionToken = null;
+            this.localeResolver = null;
             ActionContext.clearLocal();
         }
         this.state = State.DESTROYED;

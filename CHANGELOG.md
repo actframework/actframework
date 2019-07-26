@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.27**
+* ApiDoc - add syntax highlight for JSON samples #1181
+* ResourceGetter - accessing folder that access is not allowed cause response never close #1180
+* ActionContext not released when `ResourceGetter` is handling request #1179
 * ConcurrentModificationException when output to csv with PropertySpec specified #1178
 * `FixtureLoader` not effective after called #1177
 * NPE triggered in `requestThrottleExpireScale` after hot reload #1175

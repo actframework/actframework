@@ -364,7 +364,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     }
 
     @Override
-    public void commit() {
+    protected void doCommit() {
         if (null != outputCache) {
             outputCache.commit();
         } else if (null != osCache) {
