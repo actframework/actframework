@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.27**
+* Command register - it shall not register a command on abstract class #1183
+* CommandBytecodeScanner - it needs to register command by name along with prefix #1182
 * ApiDoc - add syntax highlight for JSON samples #1181
 * ResourceGetter - accessing folder that access is not allowed cause response never close #1180
 * ActionContext not released when `ResourceGetter` is handling request #1179
@@ -95,7 +97,7 @@
 * DataPropertyRepository - StackOverflowError building property path for model with circular reference #1093
 * Error encountered with customised Unique validator when working with JPA #1069
 * Act-Test - add refId property to Scenario #1091
-* Add switch to disable auto hot deploy in DEV mode #1090
+* Add switch to disable auto hot reload in DEV mode #1090
 * GH 1078 - Log warn message when `@Global` is found on instance method of an abstract class
 * API Doc - handle `@inheritDoc` tag #1089
 * ReflectedInvokerHelper treated `Set` as stateless type #1088

@@ -67,12 +67,6 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 registerBuiltInHandlers();
             }
         });
-        app.jobManager().on(SysEventId.PRE_START, new Runnable() {
-            @Override
-            public void run() {
-                resolveCommandPrefix();
-            }
-        });
     }
 
     public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {
@@ -81,7 +75,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             if (registry.containsKey(s)) {
                 throw E.invalidConfiguration("Command %s already registered", command);
             }
-            addToRegistry0(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
+            addToRegistry(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
             logger.debug("Command registered: %s", s);
         }
         return this;

@@ -122,6 +122,14 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
                 classInfo.view(CliView.JSON);
                 return av;
+            } else if ($.eq(AsmTypes.CMD_PREFIX.asmType(), type)) {
+                return new AnnotationVisitor(ASM5, av) {
+                    @Override
+                    public void visit(String name, Object value) {
+                        classInfo.contextPath(S.string(value));
+                        super.visit(name, value);
+                    }
+                };
             }
             return av;
         }
@@ -144,8 +152,15 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public void visitEnd() {
-            for (CommandMethodMetaInfo commandMethodMetaInfo : classInfo.commandList()) {
-                dispatcher.registerCommandHandler(commandMethodMetaInfo.commandName(), commandMethodMetaInfo, classInfo);
+            if (!classInfo.isAbstract()) {
+                for (CommandMethodMetaInfo commandMethodMetaInfo : classInfo.commandList()) {
+                    String prefix = classInfo.contextPath();
+                    String commandName = commandMethodMetaInfo.commandName();
+                    if (S.notBlank(prefix)) {
+                        commandName = S.pathConcat(prefix, '.', commandName);
+                    }
+                    dispatcher.registerCommandHandler(commandName, commandMethodMetaInfo, classInfo);
+                }
             }
             super.visitEnd();
         }
