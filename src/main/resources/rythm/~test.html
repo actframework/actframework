@@ -62,6 +62,14 @@
     .open-source {
       display:none;
     }
+    h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 5px;
+      margin-top: 5px;
+      border-bottom: 1px dotted #888;
+      padding-bottom: 8px;
+    }
     h4.ignore {
       color: #aaa;
       text-decoration: line-through;
@@ -73,8 +81,9 @@
   @render(head)
 </head>
 <body>
-<h1>Test Report</h1>
-<div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
+<h1 style="margin-bottom: 4px">Test Report</h1>
+<div class="version">@(_app.name())-@(_app.version().getVersion())</div>
+<br/>
 @for(Scenario scenario: result) {
 <h4 @if(scenario.ignore) {class="ignore"}>
   @scenario.title() @if(scenario.issueUrl) {

@@ -118,16 +118,16 @@ public class ScenarioDebugHelper {
     private Test test;
 
     @GetAction({"e2e", "test", "tests"})
-    public Result testForm(ActionContext context) {
+    public Result testForm(String partition, ActionContext context) {
         context.templatePath("/~test_async.html");
-        return render();
+        return render(partition);
     }
 
     @PostAction({"e2e", "test", "tests"})
     @PropertySpec("name, ignore, source, status, issueUrl, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
     @Async
-    public List<Scenario> run(App app, ActionContext context, ProgressGauge gauge) {
-        List<Scenario> results = test.run(app, null, false, gauge);
+    public List<Scenario> run(App app, String partition, ActionContext context, ProgressGauge gauge) {
+        List<Scenario> results = test.run(app, null, partition, false, gauge);
         boolean failure = false;
         for (Scenario scenario : results) {
             if ($.not(scenario.ignore) && !scenario.status.pass()) {
@@ -145,7 +145,7 @@ public class ScenarioDebugHelper {
         if (context.accept() == H.Format.HTML) {
             context.templatePath("/~test.html");
         }
-        List<Scenario> results = test.run(app, testId, false, gauge);
+        List<Scenario> results = test.run(app, testId, null, false, gauge);
         boolean failure = false;
         for (Scenario scenario : results) {
             if ($.not(scenario.ignore) && !scenario.status.pass()) {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-@args String testId
+@args String testId, String partition
 <head>
     <meta charset="UTF-8">
     <link id="favicon-link" rel="icon" type="image/png" href="/~/asset/img/testing.ico?v=@act.Act.VERSION.getBuildNumber()">
@@ -274,7 +274,11 @@
             }
         }
     }
-    $.postJSON('/~/test/@testId', testCallback)
+    @if(partition) {
+        $.postJSON('/~/test/@testId?partition=@partition', testCallback)
+    } else {
+        $.postJSON('/~/test/@testId', testCallback)
+    }
 </script>
 </body>
 </html>

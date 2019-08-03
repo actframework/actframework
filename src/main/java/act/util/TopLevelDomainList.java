@@ -20,6 +20,8 @@ package act.util;
  * #L%
  */
 
+import act.Act;
+import act.app.event.SysEventId;
 import act.inject.util.LoadResource;
 import act.job.Cron;
 import act.job.OnAppStart;
@@ -65,6 +67,15 @@ public class TopLevelDomainList extends LogSupport {
      */
     @PostConstruct
     public void filter() {
+        Act.app().jobManager().beforeAppStart(new Runnable() {
+            @Override
+            public void run() {
+                doFilter();
+            }
+        });
+    }
+
+    private void doFilter() {
         if (list.get(0).startsWith("#")) {
             list.remove(0);
         }
@@ -79,6 +90,16 @@ public class TopLevelDomainList extends LogSupport {
      */
     @Cron(CRON_TLD_RELOAD)
     public void refresh() {
+        if (!Act.app().isStarted()) {
+            // in very rare case that cron job running while app is hot-reloading
+            Act.app().jobManager().on(SysEventId.POST_STARTED, new Runnable() {
+                @Override
+                public void run() {
+                    refresh();
+                }
+            });
+            return;
+        }
         try {
             downloadTld();
         } catch (Exception e) {

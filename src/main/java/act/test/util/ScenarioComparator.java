@@ -31,17 +31,14 @@ import java.util.List;
 
 public class ScenarioComparator implements Comparator<Scenario> {
 
-    private ScenarioManager scenarioManager;
     private String finalPartition; // any test scenario fall into this partition shall be run last
     private boolean finished;
 
-    public ScenarioComparator(ScenarioManager manager, boolean finished) {
-        scenarioManager = $.requireNotNull(manager);
+    public ScenarioComparator(boolean finished) {
         this.finished = finished;
     }
 
-    public ScenarioComparator(ScenarioManager manager, String finalPartition) {
-        this.scenarioManager = $.requireNotNull(manager);
+    public ScenarioComparator(String finalPartition) {
         this.finished = false;
         this.finalPartition = S.requireNotBlank(finalPartition);
     }
@@ -62,12 +59,10 @@ public class ScenarioComparator implements Comparator<Scenario> {
                 return 1;
             }
         }
-        List<Scenario> d1 = depends(o1, new ArrayList<Scenario>());
-        List<Scenario> d2 = depends(o2, new ArrayList<Scenario>());
-        if (d1.contains(o2)) {
+        if (o1.allDepends.contains(o2)) {
             return 1;
         }
-        if (d2.contains(o1)) {
+        if (o2.allDepends.contains(o1)) {
             return -1;
         }
         int n = o1.partition.compareTo(o2.partition);
@@ -81,22 +76,7 @@ public class ScenarioComparator implements Comparator<Scenario> {
             }
             return n;
         }
-        if (o1.setup && !o2.setup) {
-            return -1;
-        }
-        if (!o1.setup && o2.setup) {
-            return 1;
-        }
         return o1.title().compareTo(o2.title());
     }
 
-    private List<Scenario> depends(Scenario s, List<Scenario> depends) {
-        for (String name : s.depends) {
-            Scenario scenario = scenarioManager.get(name);
-            E.unexpectedIf(null == scenario, "dependent scenario[%s] not found in scenario[%s]", name, s.name);
-            depends(scenario, depends);
-            depends.add(scenario);
-        }
-        return depends;
-    }
 }

@@ -599,7 +599,14 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public boolean isStarted() {
-        return currentState == POST_START || currentState == ACT_START;
+        switch (currentState) {
+            case POST_START:
+            case POST_STARTED:
+            case ACT_START:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -636,14 +643,16 @@ public class App extends LogSupportedDestroyableBase {
             return;
         }
         info("App shutting down ....");
-        for (HotReloadListener listener : hotReloadListeners) {
-            listener.preHotReload();
-        }
-        if (null != classLoader && config().i18nEnabled()) {
-            // clear resource bundle cache for Act I18n
-            ResourceBundle.clearCache(classLoader);
-            // clear resource bundle cache for Rythm I18n
-            ResourceBundle.clearCache(I18N.class.getClassLoader());
+        if (Act.isDev()) {
+            for (HotReloadListener listener : hotReloadListeners) {
+                listener.preHotReload();
+            }
+            if (null != classLoader && config().i18nEnabled()) {
+                // clear resource bundle cache for Act I18n
+                ResourceBundle.clearCache(classLoader);
+                // clear resource bundle cache for Rythm I18n
+                ResourceBundle.clearCache(I18N.class.getClassLoader());
+            }
         }
 
         for (Daemon d : daemonRegistry.values()) {

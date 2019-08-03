@@ -58,7 +58,9 @@ import java.util.regex.Pattern;
 
 public class Scenario implements ScenarioPart {
 
-    private static final Logger LOGGER = LogManager.get(Test.class);
+    private static final Logger LOGGER = LogManager.get(Scenario.class);
+
+    public static final String PARTITION_DEFAULT = "_default_";
 
     private static final ThreadLocal<Scenario> current = new ThreadLocal<>();
 
@@ -315,8 +317,10 @@ public class Scenario implements ScenarioPart {
     public String issueUrlIcon;
     public String ignore;
     public List<String> fixtures = new ArrayList<>();
+    public List<String> forceFixtures = new ArrayList<>();
     public Object generateTestData;
     public List<String> depends = new ArrayList<>();
+    public Set<Scenario> allDepends = new HashSet<>();
     public List<Interaction> interactions = new ArrayList<>();
     public Map<String, Object> constants = new HashMap<>();
     public TestStatus status = PENDING;
@@ -324,15 +328,15 @@ public class Scenario implements ScenarioPart {
     public Throwable cause;
     public boolean clearFixtures = true;
     public String urlContext;
-    public String partition = "_default_";
+    public String partition = PARTITION_DEFAULT;
     public String source;
     private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
 
-    ScenarioManager scenarioManager;
-    RequestTemplateManager requestTemplateManager;
+    public ScenarioManager scenarioManager;
+    public RequestTemplateManager requestTemplateManager;
 
     private Map<String, Object> cache = new HashMap<>();
 
@@ -357,13 +361,20 @@ public class Scenario implements ScenarioPart {
     }
 
     public String title() {
-        if (null == issueKey) {
-            return S.blank(description) ? name : description;
+        boolean hasIssueKey = S.notBlank(issueKey);
+        boolean nonDefaultPartition = S.neq(PARTITION_DEFAULT, partition);
+        S.Buffer buf = S.buffer();
+        if (hasIssueKey || nonDefaultPartition) {
+            buf.append("[");
+            if (hasIssueKey) {
+                buf.append(issueKey);
+            }
+            if (nonDefaultPartition) {
+                buf.append("«").append(partition).append("»");
+            }
+            buf.append("]").append(" ");
         }
-        S.Buffer buf = S.buffer("[").a(issueKey).a("]");
-        if (S.notBlank(description)) {
-            buf.a(" ").a(description);
-        }
+        buf.append(S.blank(description) ? name : description);
         return buf.toString();
     }
 
@@ -396,6 +407,42 @@ public class Scenario implements ScenarioPart {
         return interaction.errorMessage;
     }
 
+    public void resolveDependencies() {
+        if (!allDepends.isEmpty()) {
+            // already resolved
+            return;
+        }
+        for (String name : depends) {
+            Scenario depend = scenarioManager.get(name);
+            E.unexpectedIf(null == depend, "cannot find dependent scenario by name: " + name);
+            if (this == depend) {
+                LOGGER.warn("Scenario cannot depend on it self: %s", name);
+                continue;
+            }
+            E.unexpectedIf(this == depend, "Circular dependency found");
+            allDepends.add(depend);
+            depend.resolveDependencies();
+            E.unexpectedIf(depend.allDepends.contains(this), "Circular dependency found from %s on %s", this.name, name);
+            allDepends.addAll(depend.allDepends);
+        }
+    }
+
+    public void resolveSetupDependencies() {
+        if (setup) {
+            return;
+        }
+        for (Scenario setupScenario : scenarioManager.getPartitionSetups(partition)) {
+            if (!setupScenario.allDepends.contains(this)) {
+                allDepends.add(setupScenario);
+                allDepends.addAll(setupScenario.allDepends);
+            }
+        }
+    }
+
+    public void validate() throws UnexpectedException {
+        validate(this);
+    }
+
     @Override
     public void validate(Scenario scenario) throws UnexpectedException {
         errorIf(S.blank(name), "Scenario name not defined");
@@ -413,6 +460,7 @@ public class Scenario implements ScenarioPart {
             if (sVal.startsWith("${")) {
                 String expr = S.strip(sVal).of("${", "}");
                 value = eval(expr);
+                E.unexpectedIf(null == value, "Error evaluating constant: %s", expr);
             } else if (sVal.contains("${")) {
                 value = processStringSubstitution(sVal);
             }
@@ -466,24 +514,14 @@ public class Scenario implements ScenarioPart {
     /**
      * Start running this scenario.
      *
-     * @param scenarioManager scenario manager
-     * @param requestTemplateManager request template manager
      * @param gauge progress gauge
      * @param isDependent is this a dependent scenario run or direct scenario run
      */
-    public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge, boolean isDependent) {
-        this.scenarioManager = $.requireNotNull(scenarioManager);
-        this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
+    public void start(ProgressGauge gauge, boolean isDependent) {
         this.status = PENDING;
         current.set(this);
         gauge.clearPayload();
         gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, title());
-        gauge.incrMaxHint();
-        try {
-            validate(this);
-        } finally {
-            gauge.step();
-        }
         if (null == http) {
             gauge.incrMaxHint();
             try {
@@ -552,6 +590,19 @@ public class Scenario implements ScenarioPart {
         timer.stop();;
         lastHeaders.set(resp.headers());
         return resp;
+    }
+
+    private boolean createForceFixtures() {
+        if (forceFixtures.isEmpty()) {
+            return true;
+        }
+        Timer timer = metric.startTimer("create-fixtures");
+        try {
+            RequestSpec req = RequestSpec.loadFixtures(forceFixtures);
+            return verify(req, "creating force fixtures");
+        } finally {
+            timer.stop();
+        }
     }
 
     private boolean createFixtures() {
@@ -644,17 +695,17 @@ public class Scenario implements ScenarioPart {
         }
     }
 
-    private boolean runAsDependent(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, ProgressGauge gauge) {
-        if (null == this.scenarioManager) {
-            this.start(scenarioManager, requestTemplateManager, gauge, true);
-            return this.status.pass();
-        } else {
-            return run(gauge);
+    private boolean runAsDependent(ProgressGauge gauge) {
+        if (null == http) {
+            start(gauge, true);
+            return status.pass();
         }
+        return run(gauge);
     }
 
     private boolean run(ProgressGauge gauge) {
         if (status.finished()) {
+            createForceFixtures();
             return status.pass();
         }
         Timer timer = metric.startTimer("run");
@@ -683,7 +734,7 @@ public class Scenario implements ScenarioPart {
                 allDeps.add(scenario);
             }
         }
-        Collections.sort(allDeps, new ScenarioComparator(scenarioManager, partition));
+        Collections.sort(allDeps, new ScenarioComparator(partition));
         gauge.incrMaxHintBy(allDeps.size());
         for (Scenario depScenario : allDeps) {
             try {
@@ -695,7 +746,7 @@ public class Scenario implements ScenarioPart {
                     depScenario.status = PENDING; // reset scenario status if run dependents across partition
                 }
                 try {
-                    if (!depScenario.runAsDependent(scenarioManager, requestTemplateManager, gauge)) {
+                    if (!depScenario.runAsDependent(gauge)) {
                         errorMessage = "dependency failure: " + depScenario.name;
                         return false;
                     }
@@ -1213,7 +1264,11 @@ public class Scenario implements ScenarioPart {
             return evalFunc(key);
         } catch (Exception e) {
             if (!"last".equals(key)) {
-                return getVal("last", key);
+                try {
+                    return getVal("last", key);
+                } catch (Exception e1) {
+                    throw E.unexpected("Unable to get value by key: %s", key);
+                }
             }
             return null;
         }

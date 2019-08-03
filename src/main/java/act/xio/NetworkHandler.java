@@ -99,6 +99,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         final boolean isDev = Act.isDev();
         if (isDev && !Act.conf().hotReloadDisabled()) {
             try {
+                // important as app.checkUpdates(boolean) might trigger
+                // an app hotreload, which might refer to ActionContext.current()
+                ctx.saveLocal();
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
                     app.jobManager().post(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {

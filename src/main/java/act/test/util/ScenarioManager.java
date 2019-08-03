@@ -52,6 +52,7 @@ public class ScenarioManager extends YamlLoader {
     private String urlContext;
     private String issueUrlTemplate;
     private String issueUrlIcon = "external-link";
+    private RequestTemplateManager requestTemplateManager;
 
     public ScenarioManager() {
         super("act.test");
@@ -83,13 +84,20 @@ public class ScenarioManager extends YamlLoader {
     public Map<String, Scenario> load() {
         loadDefault();
         searchScenarioFolder();
-        ScenarioComparator comparator = new ScenarioComparator(this, false);
-        for (List<Scenario> list : partitionSetups.values()) {
-            Collections.sort(list, comparator);
-        }
         Map<String, Scenario> scenarioMap = new LinkedHashMap<>();
         for (Map.Entry<Keyword, Scenario> entry : store.entrySet()) {
             scenarioMap.put(entry.getKey().hyphenated(), entry.getValue());
+        }
+        for (Scenario scenario : scenarioMap.values()) {
+            scenario.resolveDependencies();
+        }
+        for (Scenario scenario : scenarioMap.values()) {
+            scenario.resolveSetupDependencies();
+            scenario.validate();
+        }
+        ScenarioComparator comparator = new ScenarioComparator(false);
+        for (List<Scenario> list : partitionSetups.values()) {
+            Collections.sort(list, comparator);
         }
         return scenarioMap;
     }
@@ -105,6 +113,8 @@ public class ScenarioManager extends YamlLoader {
         if (S.notBlank(issueUrlTemplate)) {
             issueUrlIcon = inferIssueUrlIcon(issueUrlTemplate);
         }
+        requestTemplateManager = new RequestTemplateManager();
+        requestTemplateManager.load();
     }
 
     private String inferIssueUrlIcon(String issueUrl) {
@@ -213,7 +223,7 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void parseOne(String content, String fileName) {
-        Map<String, Object> map = null;
+        Map<String, Object> map;
         try {
             map = parse(content, NULL_DAO);
         } catch (Exception e) {
@@ -227,6 +237,8 @@ public class ScenarioManager extends YamlLoader {
         for (Map.Entry<String, Scenario> entry : loaded.entrySet()) {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
+            scenario.scenarioManager = this;
+            scenario.requestTemplateManager = this.requestTemplateManager;
             scenario.name = key;
             boolean inferIssueKey = !scenario.noIssue && S.blank(scenario.issueKey) && S.notBlank(issueUrlTemplate);
             if (inferIssueKey) {

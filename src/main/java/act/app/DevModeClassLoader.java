@@ -344,6 +344,8 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     public void detectChanges() {
+        // #1194 - prevent ConcurrentModificationException
+        List<FsChangeDetector> detectors = new ArrayList<>(this.detectors);
         for (FsChangeDetector detector : detectors) {
             detectChanges(detector);
         }

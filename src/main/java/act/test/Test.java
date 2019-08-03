@@ -255,7 +255,7 @@ public class Test extends LogSupport {
                         app.jobManager().delay(new Runnable() {
                             @Override
                             public void run() {
-                                Test.this.run(app, null, true, gauge);
+                                Test.this.run(app, null, null, true, gauge);
                                 gauge.markAsDone();
                             }
                         }, delay.get(), TimeUnit.SECONDS);
@@ -263,7 +263,7 @@ public class Test extends LogSupport {
                         app.jobManager().now(new Runnable() {
                             @Override
                             public void run() {
-                                Test.this.run(app, null, true, gauge);
+                                Test.this.run(app, null, null, true, gauge);
                                 gauge.markAsDone();
                             }
                         });
@@ -278,7 +278,7 @@ public class Test extends LogSupport {
     }
 
     @GetAction("test/result")
-    @PropertySpec("error, scenarios.name, scenarios.ignoreReason, scenarios.ignore, scenarios.source, scenarios.status, " +
+    @PropertySpec("error, scenario.partition, scenarios.name, scenarios.ignoreReason, scenarios.ignore, scenarios.source, scenarios.status, " +
             "scenarios.issueUrl, scenarios.issueUrlIcon, scenarios.title, scenarios.errorMessage, " +
             "scenarios.interactions.status, scenarios.interactions.description, " +
             "scenarios.interactions.stackTrace, scenarios.interactions.errorMessage")
@@ -294,7 +294,7 @@ public class Test extends LogSupport {
         return ret;
     }
 
-    public List<Scenario> run(App app, Keyword testId, boolean shutdownApp, ProgressGauge gauge) {
+    public List<Scenario> run(App app, Keyword testId, String partition, boolean shutdownApp, ProgressGauge gauge) {
         E.illegalStateIf(inProgress());
         info("Start running test scenarios");
         info("---------------------------------------------------------------");
@@ -325,12 +325,24 @@ public class Test extends LogSupport {
                     pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
                 }
                 boolean fixtureCleared = false;
-                Set<Scenario> toBeRun = C.Set(scenarios.values());
-                gauge.updateMaxHint(toBeRun.size() + 1);
-                for (Scenario scenario : C.list(toBeRun).sorted(new ScenarioComparator(scenarioManager, false))) {
+                List<Scenario> toBeRun = new ArrayList<>(scenarios.size());
+                for (Scenario scenario : scenarios.values()) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }
+                    if (S.notBlank(partition) && S.neq(partition, scenario.partition)) {
+                        continue;
+                    }
+                    if (scenario.interactions.isEmpty()) {
+                        continue;
+                    }
+                    if (!toBeRun.contains(scenario)) {
+                        toBeRun.add(scenario);
+                    }
+                }
+                Collections.sort(toBeRun, new ScenarioComparator(false));
+                gauge.updateMaxHint(toBeRun.size() + 1);
+                for (Scenario scenario : toBeRun) {
                     if (null != testId) {
                         scenario.ignore = null;
                     }
@@ -339,7 +351,7 @@ public class Test extends LogSupport {
                             info("running [%s]%s", scenario.partition, scenario.name);
                         }
                         try {
-                            scenario.start(scenarioManager, requestTemplateManager, gauge, false);
+                            scenario.start(gauge, false);
                             if (!fixtureCleared && scenario.clearFixtures) {
                                 fixtureCleared = true;
                             }
@@ -378,7 +390,7 @@ public class Test extends LogSupport {
                     output(scenario);
                 }
             }
-            Collections.sort(list, new ScenarioComparator(scenarioManager, true));
+            Collections.sort(list, new ScenarioComparator(true));
             if (shutdownApp) {
                 boolean ansi = Banner.supportAnsi();
                 String msg = ansi ? Ansi.ansi().render("@|bold FAILED/IGNORED SCENARIOS:|@").toString() : "FAILED/IGNORED SCENARIOS:";

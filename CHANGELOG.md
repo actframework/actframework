@@ -1,6 +1,18 @@
 # ActFramework Change Log
 
 **1.8.27**
+* Act-Test - dependency order not maintained when setup is true #1195
+* ConcurrentModificationException on detecting file changes #1194
+* Hotreload logic - it shall save ActionContext to local before checking file changes #1193
+* TopLevelDomainList - fix NPE caused when job executing during app hotreload process #1192
+* FastJsonJodaDateCodec - allow it to deserialize timestamp (long) data #1191
+* Act-Test - add randDouble and randFloat function #1190
+* Act-Test - allow run scenarios for specific partition #1189
+* Add new `force-fixtures' to scenario #1188
+* Act-Test - display partition name in the title #1187
+* Update to osgl-tool-1.20.1 and osgl-cache-1.7.1 #1186
+* No need to invoke hotreload listener if app is not running in DEV mode #1185
+* Once add ehcache dependency `maven package` process will never end #1184
 * Command register - it shall not register a command on abstract class #1183
 * CommandBytecodeScanner - it needs to register command by name along with prefix #1182
 * ApiDoc - add syntax highlight for JSON samples #1181

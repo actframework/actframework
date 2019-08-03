@@ -500,6 +500,86 @@ public abstract class Func extends NamedLogic {
         }
     }
 
+
+    /**
+     * Generate random double value.
+     *
+     * If initVal is provided then
+     * - if there is 1 init val, it specify the ceiling of the random integer
+     * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
+     */
+    public static class RandomDouble extends Func {
+        @Override
+        public Object apply() {
+            int max = 0;
+            boolean positive = true;
+            int min = 0;
+            if (null != initVal) {
+                Object ceilling = initVal;
+                if (initVal instanceof List) {
+                    List list = (List) initVal;
+                    Object bottom = list.get(0);
+                    min = $.convert(bottom).toInt();
+                    ceilling = list.get(1);
+                }
+                try {
+                    max = $.convert(ceilling).toInt();
+                    if (max < 0) {
+                        positive = false;
+                        if (max > min) {
+                            int tmp = min;
+                            min = max;
+                            max = tmp;
+                        }
+                        max = min - max;
+                    } else {
+                        if (max < min) {
+                            int tmp = min;
+                            min = max;
+                            max = tmp;
+                        }
+                        max = max - min;
+                    }
+                } catch (Exception e) {
+                    warn(e, "RandomDouble func init value (max) shall be evaluated to an integer, found: " + initVal);
+                }
+            }
+            if (max == 0) {
+                max = 100;
+            }
+            double retVal = N.randDouble();
+            if (!positive) {
+                retVal = -retVal;
+            }
+            if (retVal < min) {
+                retVal = retVal + min;
+            }
+            if (retVal > max) {
+                retVal = retVal - (max - min);
+            }
+            return retVal;
+        }
+
+        @Override
+        protected List<String> aliases() {
+            return C.list("randDbl", "randDouble", "randomDbl");
+        }
+    }
+
+    /**
+     * Generate random double value.
+     *
+     * If initVal is provided then
+     * - if there is 1 init val, it specify the ceiling of the random integer
+     * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
+     */
+    public static class RandomFloat extends RandomDouble {
+        @Override
+        protected List<String> aliases() {
+            return C.list("randFloat", "randFlt", "randomFlt");
+        }
+    }
+
     /**
      * Generate random `true`, `false`
      */
