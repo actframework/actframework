@@ -881,7 +881,7 @@ public final class Act {
                 }
                 String pattern = S.string(hint);
                 if (pattern.toLowerCase().contains("iso")) {
-                    return ISODateTimeFormat.dateTime().parseLocalTime(s);
+                    return ISODateTimeFormat.dateTimeParser().parseLocalTime(s);
                 }
                 return (DateTimeFormat.forPattern(pattern)).parseLocalTime(s);
             }
@@ -907,7 +907,7 @@ public final class Act {
                 }
                 String pattern = S.string(hint);
                 if (pattern.toLowerCase().contains("iso")) {
-                    return ISODateTimeFormat.dateTime().parseLocalDate(s);
+                    return ISODateTimeFormat.dateTimeParser().parseLocalDate(s);
                 }
                 return (DateTimeFormat.forPattern(pattern)).parseLocalDate(s);
             }
@@ -933,7 +933,7 @@ public final class Act {
                 }
                 String pattern = S.string(hint);
                 if (pattern.toLowerCase().contains("iso")) {
-                    return ISODateTimeFormat.dateTime().parseDateTime(s);
+                    return ISODateTimeFormat.dateTimeParser().parseDateTime(s);
                 }
                 return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }

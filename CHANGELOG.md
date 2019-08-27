@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.27**
+* Change Content-Type header for JSON error response #1173
 * Act-Test - dependency order not maintained when setup is true #1195
 * ConcurrentModificationException on detecting file changes #1194
 * Hotreload logic - it shall save ActionContext to local before checking file changes #1193

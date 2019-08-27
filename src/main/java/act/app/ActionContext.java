@@ -21,6 +21,7 @@ package act.app;
  */
 
 import static act.controller.Controller.Util.*;
+import static org.osgl.http.H.Format.*;
 import static org.osgl.http.H.Header.Names.*;
 
 import act.*;
@@ -668,7 +669,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean jsonEncoded() {
-        return req().contentType() == H.Format.JSON;
+        return req().contentType() == JSON;
     }
 
     public boolean xmlEncoded() {
@@ -676,7 +677,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean acceptJson() {
-        return accept() == H.Format.JSON;
+        return accept() == JSON;
     }
 
     public boolean acceptXML() {
@@ -887,7 +888,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         } else {
             if (req().method() == H.Method.POST) {
                 H.Format accept = accept();
-                if (H.Format.JSON == accept) {
+                if (JSON == accept) {
                     return CREATED_JSON;
                 } else if (H.Format.XML == accept) {
                     return CREATED_XML;
@@ -939,17 +940,24 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return applyContentType(contentTypeForErrorResult(req()));
     }
 
+    private static boolean isErrorCompatible(H.Format fmt) {
+        return JSON == fmt || HTML == fmt || CSV == fmt || TXT == fmt || XML == fmt;
+    }
+
     public static H.Format contentTypeForErrorResult(H.Request<?> req) {
         H.Format fmt = req.accept();
         if (req.isAjax()) {
             if (H.Format.UNKNOWN == fmt) {
                 fmt = req.contentType();
             }
-            if (H.Format.JSON == fmt || H.Format.XML == fmt) {
+            if (JSON == fmt || H.Format.XML == fmt) {
                 return fmt;
             }
         }
-        return fmt.isText() ? fmt : H.Format.HTML;
+        if (!isErrorCompatible(fmt)) {
+            fmt = JSON;
+        }
+        return fmt;
     }
 
     public ActionContext applyContentType() {

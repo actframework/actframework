@@ -44,11 +44,12 @@
             <raw html={ endpoint.sampleJsonPost}>
             <pre class="code"><code class="json">{ endpoint.sampleJsonPost }</code></pre>
         </div>
-        <div class="return" if={ endpoint.returnDescription }>
+        <div class="return" if="{ endpoint.returnDescription }">
             <h5>Return</h5>
+            <div style="margin-top:10px"><raw html={ endpoint.returnDescription}></div>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
-            <h5>Return value sample</h5>
+            <h5 if="{ !endpoint.returnDescription }">Return value sample</h5>
             <raw html={endpoint.returnSample}>
         </div>
     </div>

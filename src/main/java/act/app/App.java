@@ -599,6 +599,9 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public boolean isStarted() {
+        if (null == currentState) {
+            return false;
+        }
         switch (currentState) {
             case POST_START:
             case POST_STARTED:
