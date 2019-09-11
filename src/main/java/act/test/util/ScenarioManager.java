@@ -93,7 +93,6 @@ public class ScenarioManager extends YamlLoader {
         }
         for (Scenario scenario : scenarioMap.values()) {
             scenario.resolveSetupDependencies();
-            scenario.validate();
         }
         ScenarioComparator comparator = new ScenarioComparator(false);
         for (List<Scenario> list : partitionSetups.values()) {

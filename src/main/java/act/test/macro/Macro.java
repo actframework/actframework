@@ -22,6 +22,7 @@ package act.test.macro;
 
 import act.Act;
 import act.test.Scenario;
+import act.test.TestSession;
 import act.test.util.NamedLogic;
 import org.osgl.$;
 import org.osgl.util.*;
@@ -33,7 +34,7 @@ import java.util.List;
 
 public abstract class Macro extends NamedLogic {
 
-    public abstract void run(Scenario scenario);
+    public abstract void run(TestSession session);
 
     @Override
     protected final Class<? extends NamedLogic> type() {
@@ -43,8 +44,8 @@ public abstract class Macro extends NamedLogic {
     public static class ClearFixture extends Macro {
 
         @Override
-        public void run(Scenario scenario) {
-            scenario.clearFixtures();
+        public void run(TestSession session) {
+            session.clearFixtures();
         }
 
         @Override
@@ -55,8 +56,8 @@ public abstract class Macro extends NamedLogic {
 
     public static class ClearSession extends Macro {
         @Override
-        public void run(Scenario scenario) {
-            scenario.clearSession();
+        public void run(TestSession session) {
+            session.clearSession();
         }
     }
 
@@ -79,8 +80,8 @@ public abstract class Macro extends NamedLogic {
         }
 
         @Override
-        public void run(Scenario scenario) {
-            scenario.cache(resourcePath, tryRead());
+        public void run(TestSession session) {
+            session.cache(resourcePath, tryRead());
         }
 
         private String tryRead() {
@@ -112,7 +113,7 @@ public abstract class Macro extends NamedLogic {
         }
 
         @Override
-        public void run(Scenario scenario) {
+        public void run(TestSession session) {
             try {
                 Thread.sleep(time);
             } catch (InterruptedException e) {

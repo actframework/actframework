@@ -324,7 +324,6 @@ public class Test extends LogSupport {
                     String label = "Testing";
                     pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
                 }
-                boolean fixtureCleared = false;
                 List<Scenario> toBeRun = new ArrayList<>(scenarios.size());
                 for (Scenario scenario : scenarios.values()) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
@@ -351,11 +350,7 @@ public class Test extends LogSupport {
                             info("running [%s]%s", scenario.partition, scenario.name);
                         }
                         try {
-                            scenario.start(gauge, false);
-                            if (!fixtureCleared && scenario.clearFixtures) {
-                                fixtureCleared = true;
-                            }
-                            gauge.setPayload(PG_PAYLOAD_FAILED, !scenario.status.pass());
+                            new TestSession(scenario, requestTemplateManager).run(gauge);
                         } catch (Exception e) {
                             gauge.setPayload(PG_PAYLOAD_FAILED, true);
                             String message = e.getMessage();

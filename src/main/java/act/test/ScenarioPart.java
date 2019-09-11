@@ -30,5 +30,7 @@ public interface ScenarioPart {
      *
      * @throws {@link UnexpectedException} if the data is not valid
      */
-    void validate(Scenario scenario) throws UnexpectedException;
+    void validate(TestSession session) throws UnexpectedException;
+
+    void reset();
 }

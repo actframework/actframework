@@ -35,6 +35,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.IO;
+import org.osgl.util.N;
 import org.osgl.util.S;
 
 import java.io.IOException;
@@ -64,12 +65,12 @@ public class Interaction implements ScenarioPart {
     private transient Metric metric = Act.metricPlugin().metric(ACT_TEST_INTERACTION);
 
     @Override
-    public void validate(Scenario scenario) throws UnexpectedException {
+    public void validate(TestSession session) throws UnexpectedException {
         E.unexpectedIf(null == request, "request spec not specified in interaction[%s]", this);
         //E.unexpectedIf(null == response, "response spec not specified");
         act.metric.Timer timer = metric.startTimer("validate");
         try {
-            scenario.resolveRequest(request);
+            request.resolveParent(session.requestTemplateManager);
             request.validate(this);
             if (null != response) {
                 response.validate(this);
@@ -79,6 +80,8 @@ public class Interaction implements ScenarioPart {
             timer.stop();
         }
     }
+
+
 
     @Override
     public String toString() {
@@ -113,9 +116,10 @@ public class Interaction implements ScenarioPart {
         return null == cause ? null: E.stackTrace(cause);
     }
 
-    private void reset() {
+    public void reset() {
         errorMessage = null;
         cause = null;
+        status = PENDING;
     }
 
     private boolean verify() {
@@ -124,7 +128,7 @@ public class Interaction implements ScenarioPart {
             if (S.notBlank(request.email)) {
                 doVerifyEmail(request.email);
             } else {
-                resp = Scenario.get().sendRequest(request);
+                resp = TestSession.current().sendRequest(request);
                 doVerify(resp);
             }
             return true;
@@ -152,11 +156,11 @@ public class Interaction implements ScenarioPart {
     }
 
     private void doVerifyEmail(String email) throws Exception {
-        email = Scenario.get().processStringSubstitution(email);
+        email = TestSession.current().processStringSubstitution(email);
         Inbox inbox = Act.getInstance(Inbox.class);
         Inbox.Reader reader = inbox.getReader();
         String content = reader.readLatest(email);
-        Scenario.get().verifyBody(content, response);
+        TestSession.current().verifyBody(content, response);
     }
 
     private boolean run(List<Macro> macros) {
@@ -171,7 +175,7 @@ public class Interaction implements ScenarioPart {
 
     private boolean run(Macro macro) {
         try {
-            macro.run(Scenario.get());
+            macro.run(TestSession.current());
             return true;
         } catch (Exception e) {
             errorMessage = e.getMessage();
@@ -202,7 +206,7 @@ public class Interaction implements ScenarioPart {
                         }
                     }
                     if (msg.contains("<html>")) {
-                        Document doc = Jsoup.parse(msg, S.concat("http://localhost:", Scenario.get().port(), "/"));
+                        Document doc = Jsoup.parse(msg, S.concat("http://localhost:", TestSession.current().port(), "/"));
                         Elements elements = doc.select(".error-message");
                         if (elements.hasText()) {
                             msg = elements.text();
@@ -235,25 +239,25 @@ public class Interaction implements ScenarioPart {
             String headerName = entry.getKey();
             String headerVal = resp.header(headerName);
             try {
-                Scenario.get().verifyValue(headerName, headerVal, entry.getValue());
+                TestSession.current().verifyValue(headerName, headerVal, entry.getValue());
             } catch (Exception e) {
                 error(e, S.concat("Failed verifying header[", headerName, "]: ", e.getMessage()));
             }
         }
-        Scenario.get().lastHeaders.set(resp.headers());
+        TestSession.current().lastHeaders.set(resp.headers());
     }
 
     private void verifyBody(Response rs) throws Exception {
         if (null != response && S.notBlank(response.checksum)) {
-            Scenario.get().verifyDownloadChecksum(rs, response.checksum);
+            TestSession.current().verifyDownloadChecksum(rs, response.checksum);
             if (S.notBlank(response.downloadFilename)) {
-                Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
+                TestSession.current().verifyDownloadFilename(rs, response.downloadFilename);
             }
         } else if (null != response && S.notBlank(response.downloadFilename)) {
-            Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
+            TestSession.current().verifyDownloadFilename(rs, response.downloadFilename);
         } else {
             String bodyString = S.string(rs.body().string()).trim();
-            Scenario.get().verifyBody(bodyString, response);
+            TestSession.current().verifyBody(bodyString, response);
         }
     }
 
