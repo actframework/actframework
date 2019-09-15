@@ -9,9 +9,9 @@ package act.xio;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import act.event.EventBus;
 import act.handler.RequestHandler;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.handler.builtin.controller.HotReloading;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.PostHandle;
 import act.handler.event.PreHandle;
@@ -45,6 +46,11 @@ import org.osgl.mvc.result.*;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 /**
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
  * there are network event (e.g. an HTTP request) incoming
@@ -58,6 +64,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
     private Metric metric;
     private $.Func2<H.Request, String, String> contentSuffixProcessor;
     private $.Func2<H.Request, String, String> urlContextProcessor;
+    private ScheduledExecutorService hotReloadExecutor;
 
     public NetworkHandler(App app) {
         E.NPE(app);
@@ -70,6 +77,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 initUrlProcessors();
             }
         });
+        if (app.isDev()) {
+            hotReloadExecutor = Executors.newScheduledThreadPool(2);
+        }
     }
 
     private void initUrlProcessors() {
@@ -102,6 +112,10 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 // important as app.checkUpdates(boolean) might trigger
                 // an app hotreload, which might refer to ActionContext.current()
                 ctx.saveLocal();
+                if (app.isLoading()) {
+                    HotReloading.INSTANCE.handle(ctx);
+                    return;
+                }
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
                     app.jobManager().post(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {

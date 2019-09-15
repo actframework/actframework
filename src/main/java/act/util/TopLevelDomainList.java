@@ -67,12 +67,7 @@ public class TopLevelDomainList extends LogSupport {
      */
     @PostConstruct
     public void filter() {
-        Act.app().jobManager().beforeAppStart(new Runnable() {
-            @Override
-            public void run() {
-                doFilter();
-            }
-        });
+        doFilter();
     }
 
     private void doFilter() {

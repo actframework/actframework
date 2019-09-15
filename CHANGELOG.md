@@ -1,7 +1,9 @@
 # ActFramework Change Log
 
-**1.8.27**
-* Change Content-Type header for JSON error response #1173
+**1.8.27** 15/Sep/2019
+* Hotreload error - Provider has already registered for spec: class act.aaa.AAAService #1201
+* Act-Test - Improve dependency/fixture management #1198
+* Act-Test - dependency order not maintained when setup is true #1197
 * Act-Test - dependency order not maintained when setup is true #1195
 * ConcurrentModificationException on detecting file changes #1194
 * Hotreload logic - it shall save ActionContext to local before checking file changes #1193
@@ -21,10 +23,11 @@
 * ActionContext not released when `ResourceGetter` is handling request #1179
 * ConcurrentModificationException when output to csv with PropertySpec specified #1178
 * `FixtureLoader` not effective after called #1177
-* NPE triggered in `requestThrottleExpireScale` after hot reload #1175
 * Act-Test - NPE encountered when scenario is parsed after scenario depend on it parsed #1176
+* NPE triggered in `requestThrottleExpireScale` after hot reload #1175
+* Change Content-Type header for JSON error response #1173
 
-**1.8.26**
+**1.8.26** 21/Jul/2019
 * update osgl-tool to 1.20.0
 * update genie to 1.11.0
 * API doc - allow landing to specific part when open link with hash #1171

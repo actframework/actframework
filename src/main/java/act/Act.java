@@ -73,6 +73,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
 import java.net.*;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -1322,5 +1323,28 @@ public final class Act {
 //    }
 
     public static void main(String[] args) throws Exception {
+        String text = "abc[[UC_FLD_APPLICATIONEFFECTIVEDATE]]xyz\t[[UC_FLD_NDV123985]]dsa[[UC_FLD_NDV123981]]adf";
+        String text0 = text;
+        int pos = text.indexOf("[[");
+        int pos0 = 0;
+        StringBuilder buf = new StringBuilder();
+        buf.append(text.substring(pos0, pos));
+        while (pos >= 0) {
+            int bpos = text.indexOf("]]", pos);
+            E.illegalStateIf(bpos < 0, "Invalid template content: " + text0);
+            String varName = text.substring(pos + 2, bpos);
+            String varVal = "<<" + S.cut(varName).after("UC_FLD_") + ">>";
+            buf.append(varVal);
+            pos0 = bpos + 2;
+            pos = text.indexOf("[[", bpos);
+            if (pos > 0) {
+                buf.append(text.substring(pos0, pos));
+            } else {
+                buf.append(text.substring(pos0, text.length()));
+            }
+        }
+        System.out.println(text);
+        System.out.println(buf.toString());
+
     }
 }

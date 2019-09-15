@@ -6,8 +6,20 @@
 
 @ifNot(_error instanceof act.util.ActError) {
 @section(head){
+<style>
+    .error-message {
+      padding: 8px;
+      border: 1px solid #888;
+      font-size: 11pt;
+      margin-bottom: 20px;
+      color: #f54400;
+    }
+</style>
 @render(moreStyles)
 }
+<pre class="error-message" style="white-space: pre-wrap;">
+  @_error.getLocalizedMessage()
+</pre>
 @return
 }
 @{

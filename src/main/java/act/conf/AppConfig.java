@@ -3736,6 +3736,6 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public void setDefaultTldReloadCron() {
-        raw.put(canonical(TopLevelDomainList.CRON_TLD_RELOAD), "0 2 * * * *");
+        raw.put(canonical(TopLevelDomainList.CRON_TLD_RELOAD), "0 0 2 * * *");
     }
 }

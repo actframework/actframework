@@ -81,6 +81,7 @@ import act.view.ImplicitVariableProvider;
 import act.view.rythm.*;
 import act.ws.*;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.cache.CacheService;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
@@ -203,7 +204,7 @@ public class App extends LogSupportedDestroyableBase {
         this.appHome = RuntimeDirs.home(this);
         this.config = new AppConfig<>().app(this);
         INST = this;
-        $.setFieldValue("metricPlugin", Act.class, new SimpleMetricPlugin());
+        Lang.setFieldValue("metricPlugin", Act.class, new SimpleMetricPlugin());
         this.eventEmitted = new HashSet<>();
         this.eventBus = new EventBus(this);
         this.jobManager = new JobManager(this);
@@ -620,8 +621,8 @@ public class App extends LogSupportedDestroyableBase {
         return hasStarted;
     }
 
-    public boolean hotReloading() {
-        return hasStarted;
+    public boolean isLoading() {
+        return loading.get();
     }
 
     public boolean isMainThread() {
@@ -718,6 +719,7 @@ public class App extends LogSupportedDestroyableBase {
             emit(EVENT_BUS_INITIALIZED);
 
             loadConfig();
+            profile(); // ensure profile get loaded
             emit(CONFIG_LOADED);
 
             initDataPropertyRepository();
@@ -784,6 +786,9 @@ public class App extends LogSupportedDestroyableBase {
                 final Runnable runnable1 = new Runnable() {
                     @Override
                     public void run() {
+                        if ($.bool("false")) {
+                            $.nil();
+                        }
                         initJsonDtoClassManager();
                         initParamValueLoaderManager();
                         initMailerConfigManager();
@@ -1269,14 +1274,15 @@ public class App extends LogSupportedDestroyableBase {
         }
         appServiceRegistry.register(service);
         if (null != eventBus && !noDiBinder) {
+            final Class serviceType = service.getClass();
             eventBus.bind(SysEventId.DEPENDENCY_INJECTOR_LOADED, new SysEventListenerBase() {
                 @Override
-                public void on(EventObject event) throws Exception {
+                public void on(EventObject event) {
                     final App app = App.this;
-                    eventBus.emit(new DependencyInjectionBinder(app, service.getClass()) {
+                    eventBus.emit(new DependencyInjectionBinder(app, serviceType) {
                         @Override
                         public Object resolve(App app) {
-                            return app.service(service.getClass());
+                            return app.service(serviceType);
                         }
                     });
                 }

@@ -336,7 +336,19 @@ public class Test extends LogSupport {
                         continue;
                     }
                     if (!toBeRun.contains(scenario)) {
-                        toBeRun.add(scenario);
+                        boolean shouldAdd = true;
+                        for (Scenario other : scenarios.values()) {
+                            if (other == scenario) {
+                                continue;
+                            }
+                            if (other.allDepends.contains(scenario)) {
+                                shouldAdd = false;
+                                break;
+                            }
+                        }
+                        if (shouldAdd) {
+                            toBeRun.add(scenario);
+                        }
                     }
                 }
                 Collections.sort(toBeRun, new ScenarioComparator(false));
@@ -361,6 +373,9 @@ public class Test extends LogSupport {
                     }
                     gauge.step();
                     addToList(scenario, list, scenarioManager);
+                    for (Scenario dep : scenario.allDepends) {
+                        addToList(dep, list, scenarioManager);
+                    }
                     if (null != pb) {
                         if (!pbStarted) {
                             pb.start();
