@@ -1,9 +1,11 @@
 # ActFramework Change Log
 
+**1.8.27** 21/Sep/2019
+* Session resolve issue for concurrent incoming requests #1204
+
 **1.8.27** 15/Sep/2019
 * Hotreload error - Provider has already registered for spec: class act.aaa.AAAService #1201
 * Act-Test - Improve dependency/fixture management #1198
-* Act-Test - dependency order not maintained when setup is true #1197
 * Act-Test - dependency order not maintained when setup is true #1195
 * ConcurrentModificationException on detecting file changes #1194
 * Hotreload logic - it shall save ActionContext to local before checking file changes #1193
@@ -11,7 +13,6 @@
 * FastJsonJodaDateCodec - allow it to deserialize timestamp (long) data #1191
 * Act-Test - add randDouble and randFloat function #1190
 * Act-Test - allow run scenarios for specific partition #1189
-* Add new `force-fixtures' to scenario #1188
 * Act-Test - display partition name in the title #1187
 * Update to osgl-tool-1.20.1 and osgl-cache-1.7.1 #1186
 * No need to invoke hotreload listener if app is not running in DEV mode #1185
