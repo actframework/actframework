@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.8.27** 21/Sep/2019
+**1.8.29**
+* Update FastJSON to 1.2.61 #1205
+
+**1.8.28** 21/Sep/2019
 * Session resolve issue for concurrent incoming requests #1204
 
 **1.8.27** 15/Sep/2019
