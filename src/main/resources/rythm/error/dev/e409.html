@@ -1,0 +1,14 @@
+@import act.view.HotReloading
+
+@extends(errorPage)
+
+@if(_error instanceof HotReloading) {
+
+@args int delay
+
+@section(moreStyles){
+<meta http-equiv="refresh" content="@delay">
+}
+
+
+}

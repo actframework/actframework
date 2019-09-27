@@ -25,6 +25,7 @@ import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 
 import act.Act;
 import act.Constants;
+import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
 import act.app.event.SysEventId;
@@ -112,15 +113,14 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         MvcConfig.messageTranslater(new $.Transformer<String, String>() {
             @Override
             public String transform(String message) {
-                if (Act.appConfig().i18nEnabled()) {
-                    String translated = I18n.i18n(message);
-                    if (message == translated) {
-                        translated = I18n.i18n(MvcConfig.class, message);
-                        message = translated;
-                    }
-                    return message;
+                String translated = I18n.i18n(message);
+                if (message == translated) {
+                    translated = I18n.i18n(MvcConfig.class, message);
                 }
-                return message;
+                if (message == translated) {
+                    translated = I18n.i18n(act_messages.class, message);
+                }
+                return translated;
             }
         });
     }

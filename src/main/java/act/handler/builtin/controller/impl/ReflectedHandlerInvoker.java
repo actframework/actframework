@@ -231,7 +231,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
         this.isStatic = handlerMetaInfo.isStatic();
         if (!this.isStatic) {
-            //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {

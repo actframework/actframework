@@ -29,7 +29,7 @@ import act.event.EventBus;
 import act.handler.RequestHandler;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.FastRequestHandler;
-import act.handler.builtin.controller.HotReloading;
+import act.handler.builtin.controller.HotReloadingHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.PostHandle;
 import act.handler.event.PreHandle;
@@ -46,10 +46,8 @@ import org.osgl.mvc.result.*;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
@@ -113,7 +111,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 // an app hotreload, which might refer to ActionContext.current()
                 ctx.saveLocal();
                 if (app.isLoading()) {
-                    HotReloading.INSTANCE.handle(ctx);
+                    HotReloadingHandler.INSTANCE.handle(ctx);
                     return;
                 }
                 boolean updated = app.checkUpdates(false);
@@ -241,6 +239,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
 
     private void handleException(Exception exception, final ActionContext ctx, String errorMessage) {
         logger.error(exception, errorMessage);
+        if (ctx.resp().isClosed()) {
+            return;
+        }
         Result r;
         try {
             r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(exception, ctx);
