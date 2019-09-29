@@ -143,11 +143,19 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void incrMaxHint() {
+        if (null != delegate) {
+            delegate.incrMaxHint();
+            return;
+        }
         this.maxHint++;
     }
 
     @Override
     public void incrMaxHintBy(int number) {
+        if (null != delegate) {
+            delegate.incrMaxHintBy(number);
+            return;
+        }
         this.maxHint += number;
     }
 
@@ -241,20 +249,34 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     public void fail(String error) {
+        if (null != delegate) {
+            delegate.fail(error);
+            return;
+        }
         this.error = error;
         triggerUpdateEvent(true);
     }
 
     public String error() {
+        if (null != delegate) {
+            return delegate.error();
+        }
         return error;
     }
 
-    public boolean hasError() {
+    public boolean isFailed() {
+        if (null != delegate) {
+            return delegate.isFailed();
+        }
         return S.notBlank(error);
     }
 
     @Override
     public void markAsDone() {
+        if (null != delegate) {
+            delegate.markAsDone();
+            return;
+        }
         if (!markedAsDown) {
             markedAsDown = true;
             stepTo(maxHint);
@@ -263,17 +285,28 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void clearPayload() {
+        if (null != delegate) {
+            delegate.clearPayload();
+            return;
+        }
         this.payload.clear();
     }
 
     @Override
     public void setPayload(String key, Object val) {
+        if (null != delegate) {
+            delegate.setPayload(key, val);
+            return;
+        }
         this.payload.put(key, val);
         this.triggerUpdateEvent(true);
     }
 
     @Override
     public Map<String, Object> getPayload() {
+        if (null != delegate) {
+            return delegate.getPayload();
+        }
         return this.payload;
     }
 

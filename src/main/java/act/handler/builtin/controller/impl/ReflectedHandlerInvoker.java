@@ -43,6 +43,7 @@ import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
 import act.inject.SessionVariable;
 import act.inject.param.*;
+import act.job.Job;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.plugin.ControllerPlugin;
@@ -659,9 +660,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 protected void run(ProgressGauge progressGauge) {
                     try {
                         Object o = invoke(context, controller, params);
+                        if (null == o) {
+                            o = "done";
+                        }
                         jobManager.cacheResult(jobId, o, method);
                     } catch (Exception e) {
                         warn(e, "Error executing async handler: " + method);
+                        context.progress().fail(e.getMessage());
+                        jobManager.cacheResult(jobId, C.Map("failed", true), method);
                     }
                 }
             });
@@ -669,7 +675,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            return new RenderJSON(C.Map("jobId", jobId));
+            if (context.req().accept() == H.Format.HTML) {
+                context.templatePath("/act/asyncJob.html");
+                context.renderArg("jobId", jobId);
+                return RenderTemplate.get();
+            } else {
+                return new RenderJSON(C.Map("jobId", jobId, "jobResultUrl", S.concat("/~/jobs/", jobId, "/result")));
+            }
         }
 
         try {

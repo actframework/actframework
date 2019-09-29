@@ -384,7 +384,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             Thread.sleep(1000);
             flush();
         }
-        if (progressGauge.hasError()) {
+        if (progressGauge.isFailed()) {
             pb.stop();
             println(progressGauge.error());
         } else {
@@ -410,7 +410,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 break;
             }
         }
-        if (progressGauge.hasError()) {
+        if (progressGauge.isFailed()) {
             println(progressGauge.error());
         }
         println();

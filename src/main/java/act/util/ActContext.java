@@ -277,7 +277,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Locale locale;
         private int fieldOutputVarCount;
         private boolean noTemplateCache;
-        private volatile SimpleProgressGauge progress;
+        private volatile ProgressGauge progress;
         protected String jobId;
         private Method handlerMethod;
         private Method currentMethod;
