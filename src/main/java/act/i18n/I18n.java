@@ -88,21 +88,26 @@ public class I18n {
             bundleName = act_messages.class.getName();
         }
         ResourceBundle bundle;
+        String msg = msgId;
         try {
             bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), Act.app().classLoader());
         } catch (MissingResourceException e) {
-            return msgId;
-        }
-        String msg = msgId;
-        if (ignoreError) {
-            if (bundle.containsKey(msgId)) {
-                msg = bundle.getString(msgId);
+            if (ignoreError) {
+                logger.warn("Cannot find bundle: %s", bundleName);
             }
-        } else {
-            try {
-                msg = bundle.getString(msgId);
-            } catch (MissingResourceException e) {
-                logger.warn("Cannot find i18n message key: %s", msgId);
+            bundle = null;
+        }
+        if (null != bundle) {
+            if (ignoreError) {
+                if (bundle.containsKey(msgId)) {
+                    msg = bundle.getString(msgId);
+                }
+            } else {
+                try {
+                    msg = bundle.getString(msgId);
+                } catch (MissingResourceException e) {
+                    logger.warn("Cannot find i18n message key: %s", msgId);
+                }
             }
         }
         int len = args.length;
@@ -114,6 +119,13 @@ public class I18n {
                     resolvedArgs[i] = _i18n(true, locale, bundleName, (String) arg);
                 } else {
                     resolvedArgs[i] = arg;
+                }
+            }
+            if (msg.contains("%")) {
+                // try String.format first
+                String result = S.fmt(msg, resolvedArgs);
+                if (S.neq(result, msg)) {
+                    return result;
                 }
             }
             MessageFormat formatter = new MessageFormat(msg, locale);

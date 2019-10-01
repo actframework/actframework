@@ -28,6 +28,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.cli.CliContext;
 import act.conf.AppConfig;
+import act.handler.builtin.controller.ControllerProgressGauge;
 import act.i18n.I18n;
 import act.mail.MailerContext;
 import act.view.Template;
@@ -277,7 +278,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Locale locale;
         private int fieldOutputVarCount;
         private boolean noTemplateCache;
-        private volatile ProgressGauge progress;
+        private volatile ControllerProgressGauge progress;
         protected String jobId;
         private Method handlerMethod;
         private Method currentMethod;
@@ -720,11 +721,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             app().jobManager().setJobProgressGauge(jobId, progress());
         }
 
-        public ProgressGauge progress() {
+        public ControllerProgressGauge progress() {
             if (null == progress) {
                 synchronized (this) {
                     if (null == progress) {
-                        progress = new SimpleProgressGauge();
+                        progress = new ControllerProgressGauge();
                     }
                 }
             }

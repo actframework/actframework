@@ -83,12 +83,12 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     private String id;
     private boolean markedAsDown;
-    private int maxHint;
-    private int currentSteps;
-    private String error;
+    protected int maxHint;
+    protected int currentSteps;
+    protected String error;
     private Map<String, Object> payload = new HashMap<>();
     private transient int percent;
-    private ProgressGauge delegate;
+    protected ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
     private ReadWriteLock listenerListLock = new ReentrantReadWriteLock();
 
@@ -161,12 +161,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void step() {
-        if (null != delegate) {
-            delegate.step();
-        } else {
-            currentSteps++;
-            triggerUpdateEvent();
-        }
+        this.stepBy(1);
     }
 
     @Override
@@ -310,11 +305,11 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         return this.payload;
     }
 
-    private void triggerUpdateEvent() {
+    protected void triggerUpdateEvent() {
         triggerUpdateEvent(false);
     }
 
-    private void triggerUpdateEvent(boolean forceTriggerEvent) {
+    protected void triggerUpdateEvent(boolean forceTriggerEvent) {
         if (forceTriggerEvent || percentageChanged()) {
             Lock lock = listenerListLock.readLock();
             lock.lock();

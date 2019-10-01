@@ -15,7 +15,7 @@
           font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
           font-size: 14px;
         }
-        #test-result {
+        #job-result {
             display: none;
         }
         #in-progress {
@@ -120,10 +120,17 @@
             font-weight: bold;
             margin-top: 4px;
         }
-        pre#result {
+        #result-detail {
+          margin-top: 30px;
           padding: 10px;
           border: 1px solid #aaa;
           font-family: "Envy Code R", "Fira Code", "Source Code Pro Semibold", Monaco, Courier, monospace;
+          font-weight: bold;
+          font-size: 13px;
+        }
+        #result-detail.error {
+          border-color: #ff4848;
+          color: #ff4848;
         }
   </style>
 </head>
@@ -136,44 +143,14 @@
     <div id="progress"></div>
     <div id="progress-text"></div>
   </div>
-  <ul id="error-scenario-list" class="FAIL">
-  </ul>
 </div>
-<div id="test-result">
+<div id="job-result">
   <h1>Job Result</h1>
   <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
-  <pre id="result" style="margin-top: 30px"></pre>
+  <pre id="result-detail"></pre>
 </div>
 <script>
-  var getResultHandle = false
-  function testCallback(data) {
-    var ws = $.createWebSocket('/~/ws/jobs/@jobId/progress', function(e) {
-      alert("Unknown error")
-    })
-    ws.onmessage = function(msg) {
-      if (getResultHandle) {
-        clearTimeout(getResultHandle)
-        getResultHandle = false
-      }
-      if (!msg.data) {
-        alert("no job progress")
-        return
-      }
-      var data = JSON.parse(msg.data)
-      var gauge = data.act_job_progress
-      if (gauge.done || gauge.isFailed) {
-        $('#progress-text').text('100/100')
-        $('#progress').width(800)
-        setTimeout(getResult, 100)
-        getResult()
-      } else {
-        $('#progress-text').text((gauge.currentSteps + 1) + '/' + (gauge.maxHint))
-        $('#progress').width(gauge.progressPercent * 800 / 100)
-      }
-    }
-  }
-  testCallback()
-  function getResult() {
+  function getResult(fail) {
     $.getJSON('/~/jobs/@jobId/result', function(data) {
       if (data.failed) {
           favicon = '/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()'
@@ -182,12 +159,30 @@
       }
       $('#favicon-link').attr('href', favicon)
       var result = JSON.stringify(data, null, 2)
-      $('#result').text(result)
+      $('#result-detail').text(result)
       $('#in-progress').hide()
-      $('#test-result').show()
+      if (fail) {
+        $('#result-detail').addClass('error')
+      }
+      $('#job-result').show()
     })
   }
-  getResultHandle = setTimeout(getResult, 1000)
+  function monitorProgress() {
+    var ws = $.createWebSocket('/~/ws/jobs/@jobId/progress')
+    ws.onmessage = function(msg) {
+      var data = JSON.parse(msg.data)
+      var gauge = data.act_job_progress
+      if (gauge.done || gauge.failed) {
+        $('#progress-text').text('100/100')
+        $('#progress').width(800)
+        getResult(gauge.failed)
+      } else {
+        $('#progress-text').text((gauge.currentSteps + 1) + '/' + (gauge.maxHint))
+        $('#progress').width(gauge.progressPercent * 800 / 100)
+      }
+    }
+  }
+  monitorProgress()
 </script>
 </body>
 </html>

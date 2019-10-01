@@ -73,6 +73,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.ConstraintViolation;
 
@@ -655,19 +656,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (async) {
             final JobManager jobManager = context.app().jobManager();
             final String jobId = jobManager.randomJobId();
+            final String reqInfo = context.req().toString();
             jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
+                    if (isTraceEnabled()) {
+                        trace("about invoking request handler[%s] asynchronously: %s", reqInfo, jobId);
+                    }
                     try {
                         Object o = invoke(context, controller, params);
                         if (null == o) {
                             o = "done";
                         }
                         jobManager.cacheResult(jobId, o, method);
+                        context.progress().commitFinalState();
                     } catch (Exception e) {
-                        warn(e, "Error executing async handler: " + method);
-                        context.progress().fail(e.getMessage());
-                        jobManager.cacheResult(jobId, C.Map("failed", true), method);
+                        String errMsg = S.buffer("Error handling request: ").append(reqInfo).toString();
+                        warn(e, errMsg);
+                        ControllerProgressGauge gauge = context.progress();
+                        gauge.fail(errMsg);
+                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method);
+                        gauge.commitFinalState();
                     }
                 }
             });
@@ -675,12 +684,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            if (context.req().accept() == H.Format.HTML) {
+            boolean isHtml = context.req().accept() == H.Format.HTML;
+            if (isHtml) {
                 context.templatePath("/act/asyncJob.html");
                 context.renderArg("jobId", jobId);
                 return RenderTemplate.get();
             } else {
-                return new RenderJSON(C.Map("jobId", jobId, "jobResultUrl", S.concat("/~/jobs/", jobId, "/result")));
+                String resultUrl = context.router().fullUrl("/~/jobs/%s/result", jobId);
+                    return new RenderJSON(C.Map("jobId", jobId, "resultUrl", resultUrl));
             }
         }
 
