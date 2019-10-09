@@ -7,7 +7,7 @@
 * Provide a default HTML page for async controller response #1209
 * Allow it auto refresh when got 409 error during hot-reloading #1207
 * "The response has already been started" error #1208
-* Update FastJSON to 1.2.61 #1205
+* Update FastJSON to 1.2.62 #1205
 
 **1.8.28** 21/Sep/2019
 * Session resolve issue for concurrent incoming requests #1204
