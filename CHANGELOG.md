@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Create built-in CLI session history mechanism #1214
 * Allow app to configure CLI progress bar style #1212
 * Incorrect message returned by `ActContext.i18n(template, args)` #1211
 * Provide a default HTML page for async controller response #1209
