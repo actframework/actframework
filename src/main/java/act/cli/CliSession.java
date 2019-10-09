@@ -154,12 +154,29 @@ public class CliSession extends DestroyableBase implements Runnable {
         Destroyable.Util.tryDestroyAll(attributes.values(), ApplicationScoped.class);
     }
 
+    private void tryTuneTelnetOptions(OutputStream os) throws IOException {
+        // placeholder - if we can tell the incoming connection is from
+        // a telnet program we can negotiate the stty options here
+//        Writer w = new OutputStreamWriter(os, "ISO-8859-1");
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)1);
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)3);
+//        w.write((char)255);
+//        w.write((char)252);
+//        w.write((char)34);
+//        w.flush();
+    }
+
     @Override
     public void run() {
         runningThread = Thread.currentThread();
         try {
             app.eventBus().emitSync(new CliSessionStart(this));
             OutputStream os = socket.getOutputStream();
+            tryTuneTelnetOptions(os);
             console = new ConsoleReader(socket.getInputStream(), os);
             String banner = Banner.cachedBanner();
             printBanner(banner, console);

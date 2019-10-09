@@ -32,6 +32,7 @@ import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
+import act.conf.AppConfig;
 import act.handler.CliHandler;
 import act.job.JobManager;
 import act.util.*;
@@ -195,7 +196,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     private Map<String, String> preparsedOptionValues;
 
     public CliContext(String line, App app, ConsoleReader console, CliSession session) {
-        this(line, app, console, session, null == System.getenv("cli-no-raw-print"));
+        this(line, app, console, session, null == System.getenv("ACT_CLI_NO_RAW_PRINT"));
     }
 
     protected CliContext(String line, App app, ConsoleReader console, CliSession session, boolean rawPrint) {
@@ -364,8 +365,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     public void printBar(ProgressGauge progressGauge) throws Exception {
         PrintStream os = new PrintStream(new WriterOutputStream(rawPrint ? pw : console.getOutput()));
-        String label = app().config().i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
-        ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, ProgressBarStyle.UNICODE_BLOCK);
+        AppConfig config = app().config();
+        String label = config.i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
+        ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, config.cliProgressBarStyle());
         pb.start();
         int lastMaxHint = -1;
         int lastSteps = -1;
@@ -381,7 +383,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 pb.stepTo(steps);
                 lastSteps = steps;
             }
-            Thread.sleep(1000);
+            Thread.sleep(200);
             flush();
         }
         if (progressGauge.isFailed()) {

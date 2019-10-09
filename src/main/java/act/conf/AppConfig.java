@@ -51,6 +51,7 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
@@ -797,6 +798,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeCliOverHttp(AppConfig config) {
         if (!hasConfiguration(CLI_OVER_HTTP)) {
             cliOverHttp = config.cliOverHttp;
+        }
+    }
+
+    private ProgressBarStyle cliProgressBarStyle;
+
+    protected T cliProgressBarStyle(ProgressBarStyle style) {
+        this.cliProgressBarStyle = style;
+        return me();
+    }
+
+    public ProgressBarStyle cliProgressBarStyle() {
+        if (null == cliProgressBarStyle) {
+            String s = get(CLI_PROGRESS_BAR_STYLE, "unicode");
+            cliProgressBarStyle = S.eq("ascii", s) ? ProgressBarStyle.ASCII : ProgressBarStyle.UNICODE_BLOCK;
+        }
+        return cliProgressBarStyle;
+    }
+
+    private void _mergeCliProgressBarStyle(AppConfig config) {
+        if (!hasConfiguration(CLI_PROGRESS_BAR_STYLE)) {
+            cliProgressBarStyle = config.cliProgressBarStyle;
         }
     }
 

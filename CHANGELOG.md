@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Allow app to configure CLI progress bar style #1212
 * Incorrect message returned by `ActContext.i18n(template, args)` #1211
 * Provide a default HTML page for async controller response #1209
 * Allow it auto refresh when got 409 error during hot-reloading #1207

@@ -202,6 +202,17 @@ public enum AppConfigKey implements ConfigKey {
     CLI_PAGE_SIZE_TABLE("cli.page.size.table"),
 
     /**
+     * {@code act.cli.progress-bar.style}
+     * Specify the CLI progress bar style, available styles are:
+     *
+     * * block
+     * * ascii
+     *
+     * Default value: `block`
+     */
+    CLI_PROGRESS_BAR_STYLE("cli.progress-bar.style"),
+
+    /**
      * {@code cli.session.ttl} specifies the number of seconds
      * a cli session can exists after last user interaction
      *
