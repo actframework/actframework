@@ -38,6 +38,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.Socket;

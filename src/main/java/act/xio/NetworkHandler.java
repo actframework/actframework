@@ -319,7 +319,8 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
 
         private static final char[] avi = {'a', 'v'};
 
-        private static final char[] xml = {'x', 'm'};
+        private static final char[] xml = {};
+        private static final char[] yml = {};
 
         private static final char[] json = {'j', 's', 'o'};
 
@@ -335,6 +336,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         private static final char[] mov = {'m'};
 
         private static final char[] xlsx = {'x', 'l', 's'};
+        private static final char[] yaml = {'y'};
 
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, $.Break {
@@ -433,8 +435,32 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     fmt = H.Format.AVI;
                     break;
                 case 'l':
-                    trait = xml;
-                    fmt = H.Format.XML;
+                    c = url.charAt(start - 1);
+                    switch (c) {
+                        case 'm':
+                            c = url.charAt(start - 2);
+                            initPos = 3;
+                            switch (c) {
+                                case 'x':
+                                    trait = xml;
+                                    fmt = H.Format.XML;
+                                    break;
+                                case 'y':
+                                    trait = yml;
+                                    fmt = H.Format.YAML;
+                                    break;
+                                case 'a':
+                                    sepPos = 4;
+                                    trait = yaml;
+                                    fmt = H.Format.YAML;
+                                    break;
+                                default:
+                                    return url;
+                            }
+                            break;
+                        default:
+                            return url;
+                    }
                     break;
                 case 'n':
                     sepPos = 4;

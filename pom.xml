@@ -66,19 +66,19 @@
     <!-- last version support java7 -->
     <okhttp.version>3.12.1</okhttp.version>
 
-    <osgl-tool.version>1.20.1</osgl-tool.version>
+    <osgl-tool.version>1.21.0-SNAPSHOT</osgl-tool.version>
     <osgl-cache.version>1.7.1</osgl-cache.version>
     <osgl-genie.version>1.11.0</osgl-genie.version>
-    <osgl-http.version>1.10.0</osgl-http.version>
-    <osgl-mvc.version>1.10.0</osgl-mvc.version>
+    <osgl-http.version>1.11.0-SNAPSHOT</osgl-http.version>
+    <osgl-mvc.version>1.11.0-SNAPSHOT</osgl-mvc.version>
     <osgl-storage.version>1.9.0</osgl-storage.version>
     <osgl-tool-ext.version>1.4.0</osgl-tool-ext.version>
     <patcha.version>0.0.1</patcha.version>
-    <reflectasm.version>1.11.8</reflectasm.version>
+    <reflectasm.version>1.11.9</reflectasm.version>
     <rythmengine.version>1.3.0</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <undertow.version>1.4.27.Final</undertow.version>
-    <snakeyaml.version>1.23</snakeyaml.version>
+    <snakeyaml.version>1.25</snakeyaml.version>
     <zxing.javase.version>3.3.3</zxing.javase.version>
   </properties>
 

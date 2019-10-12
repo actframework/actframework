@@ -30,7 +30,10 @@ import act.util.*;
 import act.util.JsonUtilConfig.JsonWriter;
 import act.view.*;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -1743,13 +1746,13 @@ public @interface Controller {
 
         public static Result inferPrimitiveResult(
                 Object v, ActionContext actionContext, boolean requireJSON,
-                boolean requireXML, boolean isArray, boolean shouldUseToString) {
+                boolean requireXML, boolean requireYAML, boolean isArray, boolean shouldUseToString) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
                 if (isArray) {
                     if (byte[].class == v.getClass()) {
                         // otherwise it get encoded with base64
-                        return RenderJSON.of(JSON.toJSON(v).toString());
+                        return RenderJSON.of(status, JSON.toJSON(v).toString());
                     }
                     return RenderJSON.of(status, v);
                 }
@@ -1768,6 +1771,8 @@ public @interface Controller {
                 return RenderJSON.of(status, C.Map("result", v));
             } else if (requireXML) {
                 return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
+            } else if (requireYAML) {
+                return RenderYAML.of(status, v);
             } else if (v instanceof byte[]) {
                 H.Format fmt = actionContext.accept();
                 if (H.Format.UNKNOWN == fmt) {
@@ -1904,6 +1909,7 @@ public @interface Controller {
             H.Format accept = context.accept();
             boolean requireJSON = (accept == H.Format.JSON) || (accept == H.Format.UNKNOWN);
             boolean requireXML = !requireJSON && accept == H.Format.XML;
+            boolean requireYAML = (!requireJSON && !requireXML) && accept == H.Format.YAML;
 
             if (null == v) {
                 // the following code breaks before handler without returning result
@@ -1918,7 +1924,7 @@ public @interface Controller {
             }
             if (isSimpleType || shouldUseToString) {
                 boolean isArray = vCls.isArray();
-                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, shouldUseToString);
+                return inferPrimitiveResult(v, context, requireJSON, requireXML, requireYAML, isArray, shouldUseToString);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
@@ -1941,13 +1947,22 @@ public @interface Controller {
                     boolean possibleLargeResponse = context.isLargeResponse();
                     JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
                     return possibleLargeResponse ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
-                } else if (context.acceptXML()) {
+                } else if (requireXML) {
                     return new FilteredRenderXML(status, v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
                     return RenderCSV.of(status, v, propertySpec, context);
+                } else if (requireYAML) {
+                    if (null != propertySpec) {
+                        boolean isArray = vCls.isArray();
+                        boolean isIterable = isArray || v instanceof Iterable;
+                        Lang._MappingStage stage = propertySpec.applyTo(Lang.map(v), context);
+                        Object newRetVal = isIterable ? new JSONArray() : new JSONObject();
+                        v = stage.to(newRetVal);
+                    }
+                    return RenderYAML.of(status, v);
                 } else {
                     boolean isArray = vCls.isArray();
-                    return inferPrimitiveResult(v, context, false, requireXML, isArray, shouldUseToString);
+                    return inferPrimitiveResult(v, context, false, requireXML, requireYAML, isArray, shouldUseToString);
                 }
             }
         }
