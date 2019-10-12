@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Incorrect XML output for iterable type #1216
 * Support output yaml response #1215
 * Create built-in CLI session history mechanism #1214
 * Allow app to configure CLI progress bar style #1212
