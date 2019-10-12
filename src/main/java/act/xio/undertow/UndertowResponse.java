@@ -74,6 +74,11 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
+    public void removeCookie(String name) {
+
+    }
+
+    @Override
     public boolean containsHeader(String name) {
         return hse.getResponseHeaders().contains(HEADER_NAMES.get(name));
     }
