@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* CLI table view layout broken due to multi-bytes characters #1217
 * Incorrect XML output for iterable type #1216
 * Support output yaml response #1215
 * Create built-in CLI session history mechanism #1214

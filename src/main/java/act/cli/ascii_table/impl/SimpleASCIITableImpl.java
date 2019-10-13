@@ -304,14 +304,16 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	}
 	
 	private String getFormattedData(int maxLength, String data, int align) {
+
+		int width = widthOf(data);
 		
-		if (data.length() > maxLength) {
+		if (width > maxLength) {
 			return data;
 		}
 		
 		boolean toggle = true;
 		
-		while (data.length() < maxLength) {
+		while (widthOf(data) < maxLength) {
 			
 			if (align == ALIGN_LEFT) {
 				data = data + " ";
@@ -369,7 +371,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	private int getMaxItemLength(List<String> colData) {
 		int maxLength = 0;
 		for (int i = 0 ; i < colData.size() ; i ++) {
-			maxLength = Math.max(colData.get(i).length(), maxLength);
+			maxLength = Math.max(widthOf(colData.get(i)), maxLength);
 		}
 		return maxLength;
 	}
@@ -421,6 +423,16 @@ public class SimpleASCIITableImpl implements IASCIITable {
 		}
 		
 		return header;
+	}
+
+	private int widthOf(String s) {
+		// mult-bytes char occupies 2 column in CLI, so we need to count that in
+		int width = 0, len = s.length();
+		for (int i = 0; i < len; ++i) {
+			char c = s.charAt(i);
+			width += (c > 255) ? 2 : 1;
+		}
+		return width;
 	}
 
 }

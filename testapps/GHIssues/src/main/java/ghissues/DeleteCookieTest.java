@@ -1,6 +1,5 @@
 package ghissues;
 
-import act.app.ActionContext;
 import act.controller.annotation.UrlContext;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.DeleteAction;
@@ -19,15 +18,15 @@ public class DeleteCookieTest extends BaseController  {
     }
 
     @PostAction
-    public void add(String cookieName, String cookieValue, ActionContext context) {
+    public void add(String cookieName, String cookieValue, H.Response resp) {
         H.Cookie cookie = new H.Cookie(cookieName, cookieValue).httpOnly(false);
-        context.resp().addCookie(cookie);
+        resp.addCookie(cookie);
         redirect("/cookies");
     }
 
     @DeleteAction
-    public void delete(String cookieName, ActionContext context) {
-        context.resp().removeCookie(cookieName);
+    public void delete(String cookieName, H.Response resp) {
+        resp.removeCookie(cookieName);
         redirect("/cookies");
     }
 
