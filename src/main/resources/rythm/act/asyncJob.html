@@ -123,14 +123,19 @@
         #result-detail {
           margin-top: 30px;
           padding: 10px;
-          border: 1px solid #aaa;
           font-family: "Envy Code R", "Fira Code", "Source Code Pro Semibold", Monaco, Courier, monospace;
           font-weight: bold;
           font-size: 13px;
+          border: 1px solid #666;
+          background-color: #666;
+          color: #000;
+          display: inline-block;
+          min-width: 640px;
         }
         #result-detail.error {
-          border-color: #ff4848;
-          color: #ff4848;
+          border-color: #ee4444;
+          background: transparent;
+          color: #ee4444;
         }
   </style>
 </head>
@@ -152,7 +157,10 @@
 <script>
   function getResult(fail) {
     $.getJSON('/~/jobs/@jobId/result', function(data) {
-      if (data.failed) {
+      if (data && data.error) {
+        fail = true
+      }
+      if (fail) {
           favicon = '/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()'
       } else {
           favicon = '/~/asset/img/test-success.ico?v=@act.Act.VERSION.getBuildNumber()'

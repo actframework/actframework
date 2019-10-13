@@ -27,6 +27,7 @@ import act.Act;
 import act.Trace;
 import act.annotations.*;
 import act.app.*;
+import act.cli.ReportProgress;
 import act.conf.AppConfig;
 import act.controller.*;
 import act.controller.annotation.*;
@@ -135,6 +136,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private MissingAuthenticationHandler csrfFailureHandler;
     private ThrottleFilter throttleFilter;
     private boolean async;
+    private boolean reportAsyncProgress;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
     private boolean isLargeResponse;
@@ -231,6 +233,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.disabled = this.disabled || !Env.matches(method);
         this.forceDataBinding = ReflectedInvokerHelper.isAnnotationPresent(RequireDataBind.class, method);
         this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
+        this.reportAsyncProgress = null != ReflectedInvokerHelper.getAnnotation(ReportProgress.class, method);
         this.isStatic = handlerMetaInfo.isStatic();
         if (!this.isStatic) {
             methodAccess = MethodAccess.get(controllerClass);
@@ -684,8 +687,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            boolean isHtml = context.req().accept() == H.Format.HTML;
-            if (isHtml) {
+            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept() == H.Format.HTML);
+            if (renderAsyncJobPage) {
                 context.templatePath("/act/asyncJob.html");
                 context.renderArg("jobId", jobId);
                 return RenderTemplate.get();

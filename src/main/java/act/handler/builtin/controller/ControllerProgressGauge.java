@@ -54,6 +54,5 @@ public class ControllerProgressGauge extends SimpleProgressGauge {
 
     public void commitFinalState() {
         triggerUpdateEvent(true);
-        Act.LOGGER.info("!!!!!!!!!!!!!!!!! final state committed");
     }
 }
