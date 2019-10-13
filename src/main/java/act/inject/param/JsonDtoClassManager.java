@@ -115,7 +115,8 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
     public static final $.Predicate<Field> FIELD_FILTER = new $.Predicate<Field>() {
         @Override
         public boolean test(Field field) {
-            if (Modifier.isStatic(field.getModifiers())) {
+            int mod = field.getModifiers();
+            if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
                 return false;
             }
             if (ReflectedInvokerHelper.isGlobalOrStateless(field)) {

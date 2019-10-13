@@ -92,7 +92,7 @@ public class I18n {
         try {
             bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), Act.app().classLoader());
         } catch (MissingResourceException e) {
-            if (ignoreError) {
+            if (!ignoreError) {
                 logger.warn("Cannot find bundle: %s", bundleName);
             }
             bundle = null;
