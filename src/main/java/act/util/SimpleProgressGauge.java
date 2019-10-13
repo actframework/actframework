@@ -345,7 +345,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     private static int percentage(int currentSteps, int maxHint) {
-        int n = currentSteps * 100 / maxHint;
+        int n = maxHint > 10000 ? (currentSteps / (maxHint / 100)) :  (currentSteps * 100 / maxHint);
         return (100 <= n) && (currentSteps < (maxHint - 1)) ? 99 : n;
     }
 }

@@ -17,9 +17,11 @@
 </style>
 @render(moreStyles)
 }
+@if(_error.getLocalizedMessage()) {
 <pre class="error-message" style="white-space: pre-wrap;">
   @_error.getLocalizedMessage()
 </pre>
+}
 @return
 }
 @{
