@@ -3504,7 +3504,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean resourceFiltering() {
         if (null == resourceFiltering) {
-            resourceFiltering = get(RESOURCE_FILTERING, false);
+            if (app.isDev()) {
+                resourceFiltering = get(RESOURCE_FILTERING, true);
+            } else {
+                resourceFiltering = false;
+            }
         }
         return resourceFiltering;
     }

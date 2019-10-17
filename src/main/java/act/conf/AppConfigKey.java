@@ -941,7 +941,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      *  Enable/disable resource filtering (only impact dev mode)
      *
-     *  Default value: `false`
+     *  Default value: `true`
      */
     RESOURCE_FILTERING("resource.filtering.enabled"),
 

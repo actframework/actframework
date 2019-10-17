@@ -252,6 +252,9 @@ public class ViewManager extends LogSupportedDestroyableBase {
                 }
             }
         }
+        if (null != template && context.accept() == H.Format.HTML && path.endsWith(".md") && template instanceof TemplateBase) {
+            template = new MarkdownToHtmlTranslator((TemplateBase) template);
+        }
         if (null != template && template.supportCache()) {
             context.cacheTemplate(template);
             cache(path, template);

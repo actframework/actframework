@@ -1921,6 +1921,7 @@ public @interface Controller {
             boolean shouldUseToString = $$.shouldUseToString(vCls);
             if (accept == H.Format.HTML && !shouldUseToString) {
                 requireJSON = true;
+                context.resp().contentType(H.Format.JSON);
             }
             if (isSimpleType || shouldUseToString) {
                 boolean isArray = vCls.isArray();

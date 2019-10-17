@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* $$.processStringSubstitution` issue #1223
 * `UnexpectedException: type not recognized: ? extends T` - JsonDtoPatch logic issue #1218
 * CLI table view layout broken due to multi-bytes characters #1217
 * Incorrect XML output for iterable type #1216
