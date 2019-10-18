@@ -65,7 +65,7 @@ public class ResourceGetter extends FastRequestHandler {
     private boolean preloadFailure;
     private boolean preloaded;
     private String etag;
-    private boolean filterResourceOnDevMode;
+    private boolean filterResource;
     private volatile RequestHandler indexHandler;
     private ConcurrentMap<String, RequestHandler> subFolderIndexHandlers = new ConcurrentHashMap<>();
 
@@ -81,7 +81,7 @@ public class ResourceGetter extends FastRequestHandler {
         String path = base.charAt(0) == SEP ? base.substring(1) : base;
         this.base = path;
         this.app = Act.app();
-        this.filterResourceOnDevMode = app.config().resourceFiltering();
+        this.filterResource = app.config().resourceFiltering();
         this.baseUrl = app.getResource(path);
         this.delegate = verifyBase(this.baseUrl, base);
         if (null == delegate) {
@@ -269,7 +269,7 @@ public class ResourceGetter extends FastRequestHandler {
                         return;
                     }
                 }
-                if (!filterResourceOnDevMode || Act.isProd() || FileGetter.isBinary(contentType)) {
+                if (!filterResource || FileGetter.isBinary(contentType)) {
                     resp.send(file);
                 } else {
                     String content = IO.readContentAsString(file);

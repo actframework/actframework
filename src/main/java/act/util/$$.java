@@ -25,6 +25,7 @@ import act.data.*;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.*;
 
 import java.sql.Time;
@@ -84,6 +85,5 @@ public class $$ {
     public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
         return StringUtils.processStringSubstitution(s, evaluator);
     }
-
 
 }

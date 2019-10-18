@@ -21,8 +21,15 @@ package act.util;
  */
 
 import act.Act;
+import com.alibaba.fastjson.JSON;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.S;
+import org.osgl.util.TypeReference;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 class StringUtils {
 
@@ -63,5 +70,25 @@ class StringUtils {
             z = n;
         }
     }
+
+    public static class Foo {
+        public String name;
+    }
+
+    private static <T> List<T> convert(List<Map> source, Class<T> targetType) {
+        List<T> sink = new ArrayList<>();
+        return $.deepCopy(source).targetGenericType(new TypeReference<List<T>>() {
+        }).to(sink);
+    }
+
+    public static void main(String[] args) {
+        Map map = C.Map("name", "foo");
+        List<Map> source = C.newList(map);
+        List<Foo> sink = convert(source, Foo.class);
+        Foo foo = sink.get(0);
+        System.out.println(JSON.toJSONString(foo));
+
+    }
+
 
 }
