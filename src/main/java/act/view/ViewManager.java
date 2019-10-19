@@ -173,6 +173,14 @@ public class ViewManager extends LogSupportedDestroyableBase {
                         context.templatePath(amendedPath);
                     }
                 }
+                if (null == template) {
+                    // what if we want to render html from md?
+                    if (path.endsWith(".html")) {
+                        path = S.cut(path).beforeLast(".html");
+                        path = path + ".md";
+                        template = getTemplate(context, config, path);
+                    }
+                }
             }
         }
         return template;
@@ -251,9 +259,6 @@ public class ViewManager extends LogSupportedDestroyableBase {
                     break;
                 }
             }
-        }
-        if (null != template && context.accept() == H.Format.HTML && path.endsWith(".md") && template instanceof TemplateBase) {
-            template = new MarkdownToHtmlTranslator((TemplateBase) template);
         }
         if (null != template && template.supportCache()) {
             context.cacheTemplate(template);

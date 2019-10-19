@@ -1,7 +1,9 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Markdown response support #1219
 * $$.processStringSubstitution` issue #1223
+* `@LoadResource` mechanism not doing resource filtering even `resource.filtering` is set to `true` #1222
 * `UnexpectedException: type not recognized: ? extends T` - JsonDtoPatch logic issue #1218
 * CLI table view layout broken due to multi-bytes characters #1217
 * Incorrect XML output for iterable type #1216
