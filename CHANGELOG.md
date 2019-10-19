@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* ApiDoc - missing description for classes extends from `SimpleRestfulServiceBase` #1224
 * Markdown response support #1219
 * $$.processStringSubstitution` issue #1223
 * `@LoadResource` mechanism not doing resource filtering even `resource.filtering` is set to `true` #1222

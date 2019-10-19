@@ -89,6 +89,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public List<String> options;
         public String fieldKey;
 
+        private ParamInfo() {}
+
         private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
@@ -381,6 +383,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     public String processTypeImplSubstitution(String s) {
+        if (null == s) {
+            return null;
+        }
         int n = s.indexOf("${");
         if (n < 0) {
             return s;

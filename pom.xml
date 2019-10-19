@@ -96,6 +96,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.version</include>
+          <include>**/*.api-book</include>
           <include>**/*.properties</include>
           <include>**/*.css</include>
           <include>**/*.csv</include>

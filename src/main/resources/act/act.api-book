@@ -1,0 +1,112 @@
+{
+  "SimpleRestfulServiceBase": [
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "List all ${MODEL_TYPE} records.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.list",
+      "httpMethod": "GET",
+      "id": "act.app.util.SimpleRestfulServiceBase.list",
+      "params": [
+      ],
+      "returnDescription": "all ${MODEL_TYPE} records",
+      "scheme": "HTTP",
+      "xid": "GETact_app_util_SimpleRestfulServiceBase_list"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Create a ${MODEL_TYPE} record.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.create",
+      "httpMethod": "POST",
+      "id": "act.app.util.SimpleRestfulServiceBase.create",
+      "params": [
+        {
+          "bindName": "model (body)",
+          "description": "the data for the new ${MODEL_TYPE} record.",
+          "headerVariable": false,
+          "name": "model (body)",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model (body)",
+          "type": "Bookmark"
+        }
+      ],
+      "returnDescription": "the id of the new ${MODEL_TYPE} record.",
+      "scheme": "HTTP",
+      "xid": "POSTact_app_util_SimpleRestfulServiceBase_create"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Delete a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.delete",
+      "httpMethod": "DELETE",
+      "id": "act.app.util.SimpleRestfulServiceBase.delete",
+      "params": [
+        {
+          "bindName": "id",
+          "description": "the URL path variable specifies the id of the record to be deleted.",
+          "headerVariable": false,
+          "name": "id",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: id",
+          "type": "number"
+        }
+      ],
+      "scheme": "HTTP",
+      "xid": "DELETEact_app_util_SimpleRestfulServiceBase_delete"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Returns a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.get",
+      "httpMethod": "GET",
+      "id": "act.app.util.SimpleRestfulServiceBase.get",
+      "params": [
+        {
+          "bindName": "model",
+          "description": "a URL path variable specify the id of the record to be returned",
+          "headerVariable": false,
+          "name": "model",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model",
+          "type": "String"
+        }
+      ],
+      "returnDescription": "a ${MODEL_TYPE} record specified by URL path variable `model`",
+      "scheme": "HTTP",
+      "xid": "GETact_app_util_SimpleRestfulServiceBase_get"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Update a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.update",
+      "httpMethod": "PUT",
+      "id": "act.app.util.SimpleRestfulServiceBase.update",
+      "params": [
+        {
+          "bindName": "model",
+          "description": "the URL path variable specifies the id of the record to be updated.",
+          "headerVariable": false,
+          "name": "model",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model",
+          "type": "String"
+        },
+        {
+          "bindName": "data",
+          "description": "the update data that will be applied to the ${MODEL_TYPE} record",
+          "headerVariable": false,
+          "name": "data",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: data",
+          "type": "Bookmark"
+        }
+      ],
+      "scheme": "HTTP",
+      "xid": "PUTact_app_util_SimpleRestfulServiceBase_update"
+    }
+  ]
+}

@@ -33,6 +33,7 @@ import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.inject.util.ResourceLoader;
 import act.route.RouteSource;
 import act.route.Router;
 import com.alibaba.fastjson.JSON;
@@ -55,6 +56,7 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -135,6 +137,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 return;
             }
         }
+        loadActAppDocs();
         Router router = app.router();
         AppConfig config = app.config();
         Set<Class> controllerClasses = new HashSet<>();
@@ -157,6 +160,13 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         LOGGER.info("API book compiled");
     }
 
+    private void loadActAppDocs() {
+        URL url = ApiManager.class.getResource("/act/act.api-book");
+        if (null != url) {
+            deserialize(IO.read(url).toString(), true);
+        }
+    }
+
     private void serialize() {
         File file = new File(FILENAME);
         IO.write(JSON.toJSONString(moduleLookup)).to(file);
@@ -167,7 +177,12 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         if (!file.exists() || !file.canRead()) {
             return;
         }
-        JSONObject jsonObject = JSON.parseObject(IO.readContentAsString(file));
+        deserialize(IO.readContentAsString(file), false);
+    }
+
+    private void deserialize(String content, boolean actDoc) {
+        SortedMap<String, List<Endpoint>> moduleLookup = actDoc ? new TreeMap<String, List<Endpoint>>() : this.moduleLookup;
+        JSONObject jsonObject = JSON.parseObject(content);
         $.map(jsonObject).instanceFactory(new Lang.Function<Class, Object>() {
             @Override
             public Object apply(Class aClass) throws NotAppliedException, Lang.Break {
@@ -175,11 +190,19 @@ public class ApiManager extends AppServiceBase<ApiManager> {
             }
         }).targetGenericType(new TypeReference<TreeMap<String, List<Endpoint>>>() {
         }).to(moduleLookup);
-        for (List<Endpoint> list : moduleLookup.values()) {
-            endpoints.addAll(list);
-        }
-        for (Endpoint endpoint : endpoints) {
-            endpointLookup.put(endpoint.getId(), endpoint);
+        if (!actDoc) {
+            for (List<Endpoint> list : moduleLookup.values()) {
+                endpoints.addAll(list);
+            }
+            for (Endpoint endpoint : endpoints) {
+                endpointLookup.put(endpoint.getId(), endpoint);
+            }
+        } else {
+            for (List<Endpoint> list : moduleLookup.values()) {
+                for (Endpoint endpoint : list) {
+                    endpointLookup.put(endpoint.getId(), endpoint);
+                }
+            }
         }
     }
 
@@ -325,7 +348,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
             if (null != javadoc) {
                 String desc = javadoc.getDescription().toText();
                 if (S.notBlank(desc)) {
-                    endpoint.setDescription(desc);
+                    endpoint.description = endpoint.processTypeImplSubstitution(desc);
                 }
                 List<JavadocBlockTag> blockTags = javadoc.getBlockTags();
                 String returnDesc = null;
@@ -349,6 +372,23 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 }
                 if (null != returnDesc) {
                     endpoint.returnDescription = endpoint.processTypeImplSubstitution(returnDesc);
+                }
+            } else {
+                // try check if we have Act built-in super class
+                Endpoint parentEndpoint = endpointLookup.get(endpoint.getParentId());
+                if (null != parentEndpoint) {
+                    endpoint.description = endpoint.processTypeImplSubstitution(parentEndpoint.description);
+                    endpoint.returnDescription = endpoint.processTypeImplSubstitution(parentEndpoint.returnDescription);
+                    Map<String, ParamInfo> parentEndpointParamLookup = new HashMap<>();
+                    for (ParamInfo param : parentEndpoint.params) {
+                        parentEndpointParamLookup.put(param.getName(), param);
+                    }
+                    for (ParamInfo param : endpoint.params) {
+                        ParamInfo parentParam = parentEndpointParamLookup.get(param.getName());
+                        if (null != parentParam) {
+                            param.description = endpoint.processTypeImplSubstitution(parentParam.description);
+                        }
+                    }
                 }
             }
         }
