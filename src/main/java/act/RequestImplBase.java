@@ -32,6 +32,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     private AppConfig cfg;
     private H.Method method;
     private Boolean secure;
+    private H.Format accept;
 
     protected RequestImplBase(AppConfig config) {
         E.NPE(config);
@@ -76,6 +77,30 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
             }
         }
         return method;
+    }
+
+    @Override
+    public H.Format accept() {
+        if (null == this.accept) {
+            String s = paramVal("_accept");
+            if (null != s) {
+                try {
+                    this.accept = H.Format.of(s);
+                    if (null == this.accept) {
+                        this.accept = H.Format.resolve(s);
+                        if (this.accept == H.Format.UNKNOWN) {
+                            this.accept = null;
+                        }
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+        if (null == this.accept) {
+            this.accept = super.accept();
+        }
+        return this.accept;
     }
 
     @Override
