@@ -354,7 +354,29 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         boolean isYaml = (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
         if (isYaml) {
             Object o = new Yaml().load(readStage.toString());
-            return $.map(o).targetGenericType(spec.type()).to(rawType);
+            if (List.class.isAssignableFrom(rawType)) {
+                List<Type> typeParams = spec.typeParams();
+                Class<?> listElementType = (Class<?>) typeParams.get(0);
+                if (o instanceof Map) {
+                    Map src = (Map)o;
+                    List sink = new ArrayList(src.size());
+                    for (Object val : src.values()) {
+                        sink.add($.map(val).to(listElementType));
+                    }
+                    return sink;
+                } else if (o instanceof List) {
+                    List src = (List) o;
+                    List sink = new ArrayList(src.size());
+                    for (Object val : src) {
+                        sink.add($.map(val).to(listElementType));
+                    }
+                    return sink;
+                } else {
+                    return $.map(o).targetGenericType(spec.type()).to(rawType);
+                }
+            } else {
+                return $.map(o).targetGenericType(spec.type()).to(rawType);
+            }
         }
         boolean isXml = resourcePath.endsWith(".xml");
         if (isXml) {
@@ -371,7 +393,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return readStage.toString();
         } else if (List.class.equals(rawType)) {
             List<Type> typeParams = spec.typeParams();
-            List<String> lines = readStage.toLines();
+            List<String> lines = C.newList(readStage.toLines());
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
                     return lines;

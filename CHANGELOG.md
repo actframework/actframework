@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.29**
+* SimpleRestfulServiceBase - support filtering/pagingation/sorting #1226
+* ResourceLoader - Error loading Yaml data into List of entities #1225
 * ApiDoc - missing description for classes extends from `SimpleRestfulServiceBase` #1224
 * Markdown response support #1219
 * $$.processStringSubstitution` issue #1223
