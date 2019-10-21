@@ -471,7 +471,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders() {
         if (null == corsHeaders) {
-            corsHeaders = get(CORS_HEADERS, "Content-Type, X-HTTP-Method-Override, X-Requested-With");
+            corsHeaders = get(CORS_HEADERS,
+                    "Content-Type, X-HTTP-Method-Override, X-Requested-With, Location, " +
+                            "Authorization, X-XSRF-Token, X-CSRF-Token, Act-Session-Expires, Content-Length");
         }
         return corsHeaders;
     }

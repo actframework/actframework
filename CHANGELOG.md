@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* CORS - update default allowed headers #1228
 * Allow using query parameter `_accept` to overwrite the `Accept` HTTP header #1227
 * SimpleRestfulServiceBase - support filtering/pagingation/sorting #1226
 * ResourceLoader - Error loading Yaml data into List of entities #1225
