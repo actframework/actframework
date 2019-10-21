@@ -3367,15 +3367,20 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 cacheServiceProvider = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
                 if (null != cacheServiceProvider) {
                     set(AppConfigKey.CACHE_IMPL, cacheServiceProvider);
-                    return cacheServiceProvider.get(name);
+                } else {
+                    throw e;
                 }
-                throw e;
             }
             if (null == cacheServiceProvider) {
                 cacheServiceProvider = CacheServiceProvider.Impl.Auto;
             }
         }
-        return cacheServiceProvider.get(name);
+        CacheService cacheService = cacheServiceProvider.get(name);
+        E.illegalStateIf(cacheService.state().isShutdown(), "Cache service[%s] already shutdown.", name);
+        if (!cacheService.state().isStarted()) {
+            cacheService.startup();
+        }
+        return cacheService;
     }
 
     public void resetCacheServices(CacheService sample) {

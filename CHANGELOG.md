@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Ehcache not working in Act since 1.8.27 #1220
 * CORS - update default allowed headers #1228
 * Allow using query parameter `_accept` to overwrite the `Accept` HTTP header #1227
 * SimpleRestfulServiceBase - support filtering/pagingation/sorting #1226
