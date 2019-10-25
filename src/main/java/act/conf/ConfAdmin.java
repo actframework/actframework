@@ -86,15 +86,6 @@ public class ConfAdmin {
         return list;
     }
 
-    @GetAction({"csrf", "xsrf"})
-    public JSONObject csrfConf() {
-        JSONObject retVal = new JSONObject();
-        retVal.put("cookieName", appConfig.csrfCookieName());
-        retVal.put("headerName", appConfig.csrfHeaderName());
-        retVal.put("paramName", appConfig.csrfParamName());
-        return retVal;
-    }
-
     @Command("act.conf.trace-handler")
     public void toggleTraceHandler(@Required boolean enabled) {
         appConfig.toggleTraceHandler(enabled);

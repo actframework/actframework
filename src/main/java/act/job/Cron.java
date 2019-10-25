@@ -43,4 +43,14 @@ public @interface Cron {
      * @return the job id
      */
     String id() default "";
+
+    String CRON_12AM = "0 0 0 * * *";
+    String CRON_MIDNIGHT = CRON_12AM;
+    String CRON_2AM = "0 0 2 * * *";
+    String CRON_8AM = "0 0 8 * * *";
+    String CRON_MORNING = CRON_8AM;
+    String CRON_12PM = "0 0 12 * * *";
+    String CRON_NOON = CRON_12PM;
+    String CRON_6PM = "0 0 18 * * *";
+    String CRON_10PM = "0 0 22 * * *";
 }

@@ -317,6 +317,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                     s = S.cut(s).afterLast(".");
                 }
             }
+            if (S.blank(s)) {
+                s = S.cut(actionPath).afterLast(".");
+            }
             attachmentName = s;
         }
         return attachmentName + "." + accept().name();

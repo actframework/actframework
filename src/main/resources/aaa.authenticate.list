@@ -4,6 +4,7 @@
 -act.i18n.EnumService
 -act.Zen.
 -act.monitor.
+-act.conf.CsrfConfAdmin
 
 # The following endpoints are only public on dev mode
 [dev]-act.apidoc.

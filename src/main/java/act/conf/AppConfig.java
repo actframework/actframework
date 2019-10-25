@@ -471,9 +471,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders() {
         if (null == corsHeaders) {
-            corsHeaders = get(CORS_HEADERS,
-                    "Content-Type, X-HTTP-Method-Override, X-Requested-With, Location, " +
-                            "Authorization, X-XSRF-Token, X-CSRF-Token, Act-Session-Expires, Content-Length");
+            corsHeaders = get(CORS_HEADERS, "");
         }
         return corsHeaders;
     }
@@ -493,7 +491,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            corsHeadersExpose = get(CORS_HEADERS_EXPOSE, corsHeaders());
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,
+                    "Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, " +
+                            "Location, Link, Content-Disposition, Content-Length");
         }
         return corsHeadersExpose;
     }
@@ -533,7 +533,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsAllowHeaders() {
         if (null == corsHeadersAllowed) {
-            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, corsHeaders());
+            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED,
+                    "X-HTTP-Method-Override, X-Requested-With, " +
+                            "Authorization, X-XSRF-Token, X-CSRF-Token");
         }
         return corsHeadersAllowed;
     }
@@ -3358,6 +3360,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public CacheService cacheService(String name) {
+        CacheService cacheService = cacheServiceProvider().get(name);
+        E.illegalStateIf(cacheService.state().isShutdown(), "Cache service[%s] already shutdown.", name);
+        if (!cacheService.state().isStarted()) {
+            cacheService.startup();
+        }
+        return cacheService;
+    }
+
+    public CacheServiceProvider cacheServiceProvider() {
         if (null == cacheServiceProvider) {
             CacheServiceProvider.Impl.setClassLoader(app().classLoader());
             try {
@@ -3375,22 +3386,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 cacheServiceProvider = CacheServiceProvider.Impl.Auto;
             }
         }
-        CacheService cacheService = cacheServiceProvider.get(name);
-        E.illegalStateIf(cacheService.state().isShutdown(), "Cache service[%s] already shutdown.", name);
-        if (!cacheService.state().isStarted()) {
-            cacheService.startup();
-        }
-        return cacheService;
+        return cacheServiceProvider;
     }
 
-    public void resetCacheServices(CacheService sample) {
+    public void resetCacheServices() {
         if (!Act.isDev()) {
             return;
         }
         OsglConfig.internalCache().clear();
-        if (sample instanceof SimpleCacheService) {
-            SimpleCacheServiceProvider.reset();
-        }
+
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
