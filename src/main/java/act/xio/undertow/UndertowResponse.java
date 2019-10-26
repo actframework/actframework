@@ -100,7 +100,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse writeContent(String s) {
         beforeWritingContent();
-        if ("" == s) {
+        if (s.length() == 0) {
             afterWritingContent();
         } else {
             try {
@@ -275,8 +275,13 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected OutputStream createOutputStream() {
-        ensureBlocking();
-        return hse.getOutputStream();
+        if (blocking()) {
+            return hse.getOutputStream();
+        } else {
+            endAsync = true;
+            final NonBlockOutput senderOutput = new NonBlockOutput(sender());
+            return BufferedOutput.wrap(senderOutput).asOutputStream();
+        }
     }
 
     @Override

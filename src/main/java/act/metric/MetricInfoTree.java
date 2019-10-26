@@ -129,11 +129,31 @@ public class MetricInfoTree {
     public static class NodeDecorator {
         $.Function<MetricInfo, String> labelGetter;
 
+        private static final TreeNode NULL = new TreeNode() {
+            @Override
+            public String id() {
+                return "";
+            }
+
+            @Override
+            public String label() {
+                return "";
+            }
+
+            @Override
+            public List<TreeNode> children() {
+                return C.list();
+            }
+        };
+
         NodeDecorator($.Function<MetricInfo, String> labelGetter) {
             this.labelGetter = $.requireNotNull(labelGetter);
         }
 
         TreeNode decorate(final MetricInfoNode node) {
+            if (null == node) {
+                return NULL;
+            }
             return new TreeNode() {
 
                 @Override

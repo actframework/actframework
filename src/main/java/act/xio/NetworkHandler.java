@@ -161,11 +161,14 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         NetworkJob job = new NetworkJob() {
             @Override
             public void run() {
-                Timer timer = Metric.NULL_METRIC.startTimer("null");
+                Timer timer;
                 if (metric != Metric.NULL_METRIC) {
                     String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
                     timer = metric.startTimer(key);
+                } else {
+                    timer = Metric.NULL_METRIC.startTimer("null");
                 }
+                ctx.handleTimer = timer;
                 EventBus eventBus = app.eventBus();
                 // need to set ActionContext.current before calling ctx.skipEvents() as the later
                 //      one will call into ReflectedHandlerInvoker.init() will in turn try to
@@ -222,13 +225,13 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                         // the ctx get transferred to another thread
                         ActionContext.clearCurrent();
                     }
-                    timer.stop();
                 }
             }
         };
         if (method.unsafe() || !requestHandler.express(ctx)) {
             dispatcher.dispatch(job);
         } else {
+            ctx.markAsNonBlock();
             job.run();
         }
     }

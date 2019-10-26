@@ -1289,7 +1289,7 @@ public @interface Controller {
 
         /**
          * Returns a {@link RenderJsonMap} result with any object. This method will
-         * generate a JSON object out from the {@link ActionContext#renderArgs}.
+         * generate a JSON object out from the {@link ActionContext#renderArgs()}.
          * The response is always in JSON format and ignores the HTTP `Accept`
          * header setting
          *
@@ -1945,9 +1945,10 @@ public @interface Controller {
                     } else if (v instanceof $.Func0) {
                         return RenderJSON.of(status, ($.Func0) v);
                     }
-                    boolean possibleLargeResponse = context.isLargeResponse();
                     JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
-                    return possibleLargeResponse ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
+                    return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
+                    //return RenderJSON.of(status, jsonWriter);
+                    //return RenderJSON.of(status, jsonWriter.asContentProducer());
                 } else if (requireXML) {
                     return new FilteredRenderXML(status, v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
