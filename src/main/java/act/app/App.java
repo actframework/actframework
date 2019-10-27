@@ -1374,7 +1374,9 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private synchronized void loadingDone() {
-        SystemAvailabilityMonitor.start();
+        if (config.selfHealing()) {
+            SystemAvailabilityMonitor.start();
+        }
         loading.set(false);
         this.notifyAll();
     }

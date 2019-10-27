@@ -38,22 +38,6 @@ class NonBlockOutput implements Output {
     private final AtomicBoolean sending = new AtomicBoolean(false);
     private final ConcurrentLinkedQueue<ByteBuffer> pending = new ConcurrentLinkedQueue<>();
 
-    private IoCallback resume = new IoCallback() {
-        @Override
-        public void onComplete(HttpServerExchange exchange, Sender sender) {
-            ByteBuffer next = pending.poll();
-            if (null == next) {
-                sending.set(false);
-            } else {
-                sender.send(next, this);
-            }
-        }
-
-        @Override
-        public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
-        }
-    };
-
     private Sender sender;
 
     NonBlockOutput(Sender sender) {
@@ -116,14 +100,6 @@ class NonBlockOutput implements Output {
         return this;
     }
 
-    private void send(ByteBuffer buffer) {
-        if (sending.compareAndSet(false, true)) {
-            sender.send(buffer, resume);
-        } else {
-            pending.offer(buffer);
-        }
-    }
-
     @Override
     public OutputStream asOutputStream() {
         return Adaptors.asOutputStream(this);
@@ -132,5 +108,33 @@ class NonBlockOutput implements Output {
     @Override
     public Writer asWriter() {
         return Adaptors.asWriter(this);
+    }
+
+    private IoCallback resume = new IoCallback() {
+        @Override
+        public void onComplete(HttpServerExchange exchange, Sender sender) {
+            ByteBuffer next = pending.poll();
+            if (null == next) {
+                sending.set(false);
+            } else {
+                sender.send(next, this);
+            }
+        }
+
+        @Override
+        public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+        }
+    };
+
+    private void send(ByteBuffer buffer) {
+        if (sending.compareAndSet(false, true)) {
+            sender.send(buffer, resume);
+        } else {
+            pending.offer(buffer);
+            if (sending.compareAndSet(false, true)) {
+                pending.poll();
+                sender.send(buffer, resume);
+            }
+        }
     }
 }

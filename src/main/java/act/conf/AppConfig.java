@@ -2395,6 +2395,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean selfHealing;
+    protected T selfHealing(boolean on) {
+        selfHealing = on;
+        return me();
+    }
+    public boolean selfHealing() {
+        if (null == selfHealing) {
+            selfHealing = get(SYS_SELF_HEALING, false);
+        }
+        return selfHealing;
+    }
+    private void _mergeSelfHealing(AppConfig conf) {
+        if (!hasConfiguration(SYS_SELF_HEALING)) {
+            selfHealing = conf.selfHealing;
+        }
+    }
+
     private String targetVersion = null;
 
     protected T targetVersion(JavaVersion version) {

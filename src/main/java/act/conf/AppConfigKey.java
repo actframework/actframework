@@ -1212,6 +1212,15 @@ public enum AppConfigKey implements ConfigKey {
     SSL("ssl.enabled"),
 
     /**
+     * `system.self-healing`
+     *
+     * Turn on/off System Self Healing. Refer GH1234
+     *
+     * Default value: `false`
+     */
+    SYS_SELF_HEALING("system.self-healing"),
+
+    /**
      * `target.version` specifies the java version of the compile
      * target code. This configuration is used only in dev mode.
      *

@@ -1947,8 +1947,6 @@ public @interface Controller {
                     }
                     JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
                     return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
-                    //return RenderJSON.of(status, jsonWriter);
-                    //return RenderJSON.of(status, jsonWriter.asContentProducer());
                 } else if (requireXML) {
                     return new FilteredRenderXML(status, v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
