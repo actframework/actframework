@@ -74,6 +74,7 @@ import act.plugin.PrincipalProvider;
 import act.route.*;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
+import act.sys.SystemAvailabilityMonitor;
 import act.util.*;
 import act.validation.Password;
 import act.view.ActErrorResult;
@@ -1373,6 +1374,7 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private synchronized void loadingDone() {
+        SystemAvailabilityMonitor.start();
         loading.set(false);
         this.notifyAll();
     }

@@ -24,11 +24,14 @@ import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
+import act.sys.SystemAvailabilityMonitor;
 import act.xio.NetworkHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.osgl.http.H;
 import org.osgl.util.E;
+
+import java.nio.ByteBuffer;
 
 /**
  * Dispatch undertow request to Act application
@@ -37,13 +40,20 @@ public class ActHttpHandler implements HttpHandler {
 
     private final NetworkHandler client;
 
+    private static final ByteBuffer SERVICE_UNAVAILABLE = ByteBuffer.wrap("503 Service Unavailable".getBytes());
+
     public ActHttpHandler(NetworkHandler client) {
         E.NPE(client);
         this.client = client;
     }
 
     @Override
-    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+    public void handleRequest(final HttpServerExchange exchange) {
+        if (!SystemAvailabilityMonitor.isAvailable()) {
+            exchange.setStatusCode(503);
+            exchange.getResponseSender().send(SERVICE_UNAVAILABLE.duplicate());
+            return;
+        }
         ActionContext ctx = createActionContext(exchange);
         client.handle(ctx, new UndertowNetworkDispatcher(exchange));
     }

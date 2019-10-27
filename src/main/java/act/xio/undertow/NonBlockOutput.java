@@ -117,10 +117,10 @@ class NonBlockOutput implements Output {
     }
 
     private void send(ByteBuffer buffer) {
-        if (sending.get()) {
-            pending.offer(buffer);
-        } else {
+        if (sending.compareAndSet(false, true)) {
             sender.send(buffer, resume);
+        } else {
+            pending.offer(buffer);
         }
     }
 

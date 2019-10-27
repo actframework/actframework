@@ -35,6 +35,7 @@ import act.handler.event.PostHandle;
 import act.handler.event.PreHandle;
 import act.metric.*;
 import act.route.Router;
+import act.sys.SystemAvailabilityMonitor;
 import act.util.LogSupportedDestroyableBase;
 import act.view.ActErrorResult;
 import org.osgl.$;
@@ -48,6 +49,7 @@ import org.osgl.util.S;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
@@ -63,6 +65,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
     private $.Func2<H.Request, String, String> contentSuffixProcessor;
     private $.Func2<H.Request, String, String> urlContextProcessor;
     private ScheduledExecutorService hotReloadExecutor;
+    private AtomicBoolean pause = new AtomicBoolean();
 
     public NetworkHandler(App app) {
         E.NPE(app);
@@ -78,6 +81,10 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         if (app.isDev()) {
             hotReloadExecutor = Executors.newScheduledThreadPool(2);
         }
+    }
+
+    public boolean paused() {
+        return pause.get();
     }
 
     private void initUrlProcessors() {
@@ -209,6 +216,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     }
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
+                } catch (OutOfMemoryError error) {
+                    error("Out of memory");
+                    SystemAvailabilityMonitor.pauseNow();
                 } catch (Error t) {
                     fatal(t, "Fatal Error encountered handling request: ", ctx.req());
                     if (Act.isProd()) {
