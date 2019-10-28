@@ -25,6 +25,7 @@ import act.app.AppHolderBase;
 import act.db.meta.EntityClassMetaInfo;
 import act.db.meta.EntityFieldMetaInfo;
 import act.db.meta.EntityMetaInfoRepo;
+import act.db.meta.MasterEntityMetaInfoRepo;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -45,7 +46,7 @@ public abstract class DbService extends AppHolderBase<DbService> {
     @Deprecated
     protected static final Logger _logger = LogManager.get(DbService.class);
 
-    protected EntityMetaInfoRepo entityMetaInfoRepo;
+    private volatile EntityMetaInfoRepo entityMetaInfoRepo;
 
     protected final Logger logger = LogManager.get(getClass());
 
@@ -60,7 +61,6 @@ public abstract class DbService extends AppHolderBase<DbService> {
         super(app);
         E.NPE(id);
         this.id = id;
-        this.entityMetaInfoRepo = app().entityMetaInfoRepo().forDb(id);
     }
 
     /**
@@ -77,8 +77,7 @@ public abstract class DbService extends AppHolderBase<DbService> {
      * @return model classes talk to this datasource
      */
     public Set<Class> entityClasses() {
-        EntityMetaInfoRepo repo = app().entityMetaInfoRepo().forDb(id);
-        return null == repo ? C.<Class>set() : repo.entityClasses();
+        return entityMetaInfoRepo().entityClasses();
     }
 
     @Override
@@ -116,7 +115,7 @@ public abstract class DbService extends AppHolderBase<DbService> {
     }
 
     protected final EntityClassMetaInfo classInfo(Class<?> modelClass) {
-        return entityMetaInfoRepo.classMetaInfo(modelClass);
+        return entityMetaInfoRepo().classMetaInfo(modelClass);
     }
 
     public final String lastModifiedColumn(Class<?> modelClass) {
@@ -143,9 +142,6 @@ public abstract class DbService extends AppHolderBase<DbService> {
         return classInfo(field.getDeclaringClass()).fieldInfo(field.getName()).columnName();
     }
 
-
-
-
     /**
      * Utility method to find the ID type from Model type. Could be used by sub class on {@link #defaultDao(Class)}
      * method implementation
@@ -166,6 +162,17 @@ public abstract class DbService extends AppHolderBase<DbService> {
             curClass = curClass.getSuperclass();
         }
         return null;
+    }
+
+    protected EntityMetaInfoRepo entityMetaInfoRepo() {
+        if (null == entityMetaInfoRepo || MasterEntityMetaInfoRepo.EMPTY() == entityMetaInfoRepo) {
+            synchronized (this) {
+                if (null == entityMetaInfoRepo) {
+                    entityMetaInfoRepo = app().entityMetaInfoRepo().forDb(id);
+                }
+            }
+        }
+        return entityMetaInfoRepo;
     }
 
 }

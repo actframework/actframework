@@ -201,4 +201,8 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         }
         return null != repo ? repo : EMPTY;
     }
+
+    public static EntityMetaInfoRepo EMPTY() {
+        return EMPTY;
+    }
 }

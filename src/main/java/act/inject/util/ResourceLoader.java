@@ -263,12 +263,16 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
         IO.ReadStageBase readStage;
         if (Act.appConfig().resourceFiltering()) {
-            if (isBinary(spec)) {
+            if (isBinary(url, spec)) {
                 readStage = new IO.UrlReadStage(url);
             } else {
                 String content = IO.readContentAsString(url);
                 content = $$.processStringSubstitution(content);
                 readStage = new IO.CharSequenceReadStage(content);
+                MimeType mimeType = MimeType.findByFileExtension(S.fileExtension(url.getFile()));
+                if (null != mimeType) {
+                    readStage.contentType(mimeType);
+                }
             }
         } else {
             readStage = new IO.UrlReadStage(url);
@@ -532,6 +536,13 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else {
             return app.classLoader().getResource(path);
         }
+    }
+
+    private static boolean isBinary(URL url, BeanSpec spec) {
+        if (isBinary(spec)) {
+            return true;
+        }
+        return SObject.of(url).isBinary();
     }
 
     public static boolean isBinary(BeanSpec spec) {

@@ -21,6 +21,7 @@ package act.util;
  */
 
 import act.Act;
+import act.app.App;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -36,7 +37,8 @@ class StringUtils {
     static $.Transformer<String, String> evaluator = new $.Transformer<String, String>() {
         @Override
         public String transform(String s) {
-            return S.string(System.getProperty(s));
+            App app = Act.app();
+            return S.string(null != app ? app.config().get(s) : System.getProperty(s));
         }
     };
 
@@ -60,7 +62,7 @@ class StringUtils {
             buf.append(s.substring(a, z));
             n = s.indexOf("}", z);
             a = n + 1;
-            String key = s.substring(z + 2, a);
+            String key = s.substring(z + 2, a - 1);
             buf.append(evaluator.apply(key));
             n = s.indexOf("${", a);
             if (n < 0) {
@@ -71,23 +73,13 @@ class StringUtils {
         }
     }
 
-    public static class Foo {
-        public String name;
-    }
-
-    private static <T> List<T> convert(List<Map> source, Class<T> targetType) {
-        List<T> sink = new ArrayList<>();
-        return $.deepCopy(source).targetGenericType(new TypeReference<List<T>>() {
-        }).to(sink);
-    }
-
     public static void main(String[] args) {
-        Map map = C.Map("name", "foo");
-        List<Map> source = C.newList(map);
-        List<Foo> sink = convert(source, Foo.class);
-        Foo foo = sink.get(0);
-        System.out.println(JSON.toJSONString(foo));
-
+        String s = "{\n" +
+                "  \"buildNumber\": \"${1151.buildNumber}\",\n" +
+                "  \"cliPort\": \"${cli.port}\"\n" +
+                "}\n";
+        System.setProperty("cli.port", "5461");
+        System.out.println(processStringSubstitution(s));
     }
 
 
