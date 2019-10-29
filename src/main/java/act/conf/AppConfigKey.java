@@ -313,8 +313,14 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.cors.headers} specifies both `Access-Control-Expose-Headers`
      * and `Access-Control-Allow-Headers`
      *
+     * This configuration is deprecated, it is replaced by
+     *
+     * * {@link #CORS_HEADERS_EXPOSE}
+     * * {@link #CORS_HEADERS_ALLOWED}
+     *
      * Default value: `Content-Type, X-HTTP-Method-Override`
      */
+    @Deprecated
     CORS_HEADERS("cors.headers"),
 
     /**
@@ -322,7 +328,7 @@ public enum AppConfigKey implements ConfigKey {
      * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
      * it is set
      *
-     * Default value: empty
+     * Default value: `Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, Location, Link, Content-Disposition, Content-Length`
      */
     CORS_HEADERS_EXPOSE("cors.headers.expose"),
 
@@ -331,7 +337,7 @@ public enum AppConfigKey implements ConfigKey {
      * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
      * it is set
      *
-     * Default value: empty
+     * Default value: `X-HTTP-Method-Override, X-Requested-With, Authorization, X-XSRF-Token, X-CSRF-Token`
      */
     CORS_HEADERS_ALLOWED("cors.headers.allowed"),
 

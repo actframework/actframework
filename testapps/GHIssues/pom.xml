@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.28.1</version>
+    <version>1.8.29.0-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -25,7 +25,6 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.29-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
@@ -35,11 +34,6 @@
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-jpa-common</artifactId>
-      <version>1.7.0-SNAPSHOT</version>
-    </dependency>
     <!--<dependency>-->
       <!--<groupId>org.actframework</groupId>-->
       <!--<artifactId>act-eclipselink</artifactId>-->
@@ -48,7 +42,6 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-hibernate</artifactId>
-      <version>1.7.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>

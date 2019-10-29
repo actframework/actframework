@@ -67,8 +67,8 @@ public class SystemAvailabilityMonitor extends $.Visitor<GcInfo> implements Runn
     @Override
     public void visit(GcInfo gcInfo) throws Lang.Break {
         currentCounter.incrementAndGet();
-        if (smallWindowSum.incrementAndGet() > 2) {
-            // there are at least 3 gc hapened within last 2s
+        if (smallWindowSum.incrementAndGet() > 10) {
+            // there are at least 11 gc happened within last 2s
             pauseNow();
             wakeUp();
         }

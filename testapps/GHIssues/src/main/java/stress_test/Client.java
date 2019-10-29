@@ -1,5 +1,7 @@
 package stress_test;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,10 +26,10 @@ public class Client {
                 @Override
                 public void run() {
                     while (backlog.getAndDecrement() > 0) {
-                        //String url = "http://localhost:5460/x0";
+                        String url = "http://localhost:5460/y";
                         //String url = "http://localhost:8080/y";
                         //String url = "http://localhost:5460/y";
-                        String url = "http://localhost:8080/x";
+                        //String url = "http://localhost:8080/x";
                         Request request = new Request.Builder().url(url).get().build();
                         try {
                             Response resp = http.newCall(request).execute();

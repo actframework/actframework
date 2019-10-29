@@ -28,6 +28,7 @@ import act.Constants;
 import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppConfigLoaded;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
@@ -37,6 +38,7 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
+import act.event.SysEventListenerBase;
 import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
@@ -136,7 +138,6 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
-        routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
     public AppConfig() {
@@ -147,6 +148,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
+        app.eventBus().bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+            @Override
+            public void on(AppConfigLoaded event) throws Exception {
+                routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
+            }
+        });
         return this;
     }
 
@@ -464,6 +471,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders;
 
+    @Deprecated
     protected T corsHeaders(String s) {
         this.corsHeaders = s;
         return me();
@@ -491,9 +499,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,
-                    "Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, " +
-                            "Location, Link, Content-Disposition, Content-Length");
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,"");
+            if (S.blank(corsHeadersExpose)) {
+                corsHeadersExpose = corsHeaders();
+                if (S.notBlank(corsHeadersExpose)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.expose` instead");
+                } else {
+                    corsHeadersExpose = "Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, Location, Link, Content-Disposition, Content-Length";
+                }
+            }
         }
         return corsHeadersExpose;
     }
@@ -527,15 +541,21 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private String corsHeadersAllowed;
 
     protected T corsAllowHeaders(String s) {
-        this.corsHeadersExpose = s;
+        this.corsHeadersAllowed = s;
         return me();
     }
 
     public String corsAllowHeaders() {
         if (null == corsHeadersAllowed) {
-            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED,
-                    "X-HTTP-Method-Override, X-Requested-With, " +
-                            "Authorization, X-XSRF-Token, X-CSRF-Token");
+            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, "");
+            if (S.isBlank(corsHeadersAllowed)) {
+                corsHeadersAllowed = corsHeaders();
+                if (S.notBlank(corsHeadersAllowed)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.allowed` instead");
+                } else {
+                    corsHeadersAllowed = "X-HTTP-Method-Override, X-Requested-With, Authorization, X-XSRF-Token, X-CSRF-Token";
+                }
+            }
         }
         return corsHeadersAllowed;
     }
