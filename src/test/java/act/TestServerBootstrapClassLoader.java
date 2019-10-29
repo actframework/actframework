@@ -51,6 +51,10 @@ public class TestServerBootstrapClassLoader extends ServerBootstrapClassLoader {
 
     @Override
     protected URL findResource(String name) {
-        return Thread.currentThread().getContextClassLoader().getResource(name);
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == this) {
+            cl = Act.class.getClassLoader();
+        }
+        return cl.getResource(name);
     }
 }

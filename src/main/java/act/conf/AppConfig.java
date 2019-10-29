@@ -140,8 +140,10 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         super(configuration);
     }
 
+    // for unit test
     public AppConfig() {
         this((Map) System.getProperties());
+        this.routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
     public AppConfig<T> app(App app) {
