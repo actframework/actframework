@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.29**
+* Allow app to specify sample data provider for any field #1236
+* Enable render QRCode using pseudo accept parameter #1235
 * Creating a system self healing mechanism to handle OOM caused by too many dangling connention #1234
 * Add commonly used cron expression constants #1229
 * Ehcache not working in Act since 1.8.27 #1220

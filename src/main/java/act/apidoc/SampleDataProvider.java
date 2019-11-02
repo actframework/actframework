@@ -23,10 +23,11 @@ package act.apidoc;
 import act.util.LogSupport;
 import org.osgl.util.Generics;
 
+import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public abstract class SampleDataProvider<T> extends LogSupport {
+public abstract class SampleDataProvider<T> extends LogSupport implements Provider<T> {
 
     private Class<T> targetType;
 
@@ -34,6 +35,10 @@ public abstract class SampleDataProvider<T> extends LogSupport {
         exploreType();
     }
 
+    /**
+     * Return the sample data
+     * @return the sample data
+     */
     public abstract T get();
 
     public Class<T> targetType() {

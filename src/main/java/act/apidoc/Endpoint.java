@@ -659,6 +659,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return bindName + "=<datetime>";
         }
         if (null != stringValueResolver(type)) {
+            SampleData.ProvidedBy annoProvided = spec.getAnnotation(SampleData.ProvidedBy.class);
+            if (null != annoProvided) {
+                return bindName + "=" + Act.getInstance(annoProvided.value()).get();
+            }
             SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
             SampleDataCategory category = null != anno ? anno.value() : null;
             return bindName + "=" + sampleDataProviderManager.getSampleData(category, bindName, String.class);
@@ -721,9 +725,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 return null;
             }
         }
-        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
-        SampleDataCategory category = null != anno ? anno.value() : null;
         Class<?> classType = spec.rawType();
+        SampleData.ProvidedBy annoProvided = spec.getAnnotation(SampleData.ProvidedBy.class);
+        if (null != annoProvided) {
+            return Act.getInstance(annoProvided.value()).get();
+        }
+        SampleData.Category annoCateogry = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != annoCateogry ? annoCateogry.value() : null;
         SampleDataProviderManager sampleDataProviderManager = Act.app().sampleDataProviderManager();
         Object o = sampleDataProviderManager.getSampleData(category, name, classType, false);
         if (null != o) {

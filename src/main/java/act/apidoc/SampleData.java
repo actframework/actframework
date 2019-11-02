@@ -20,6 +20,7 @@ package act.apidoc;
  * #L%
  */
 
+import javax.inject.Provider;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,7 +33,17 @@ public abstract class SampleData {
     private SampleData() {}
 
     /**
-     * Marked on an implementation class of {@link SampleDataProvider}
+     * Mark on a field specify the {@link SampleDataProvider} that
+     * should be used to generate sample data for the field been marked
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface ProvidedBy {
+        Class<? extends Provider> value();
+    }
+
+    /**
+     * Mark on an implementation class of {@link SampleDataProvider}
      * to specify the sample data category the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)
@@ -42,7 +53,7 @@ public abstract class SampleData {
     }
 
     /**
-     * Marked on an implementation class of {@link SampleDataProvider}
+     * Mark on an implementation class of {@link SampleDataProvider}
      * to specify the sample data locale the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)

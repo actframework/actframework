@@ -32,6 +32,7 @@ import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.zxing.BarcodeFormat;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.http.H;
@@ -1781,8 +1782,13 @@ public @interface Controller {
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
+                String fmtName = fmt.name();
                 String s = v instanceof String ? (String) v : $$.toString(v, shouldUseToString);
-                if (fmt.isText()) {
+                if (S.eq(fmtName, "qrcode")) {
+                    return new ZXingResult(s, BarcodeFormat.QR_CODE);
+                } else if (S.eq(fmtName, "barcode")) {
+                    return new ZXingResult(s, BarcodeFormat.CODE_128);
+                } else if (fmt.isText()) {
                     return RenderText.of(status, fmt, s);
                 }
                 DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
@@ -1857,6 +1863,7 @@ public @interface Controller {
         }
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
+            H.Format.of("qrcode");
             if (context.acceptJson()) {
                 return RenderJSON.of(context.successStatus(), sobj.asString());
             } else {

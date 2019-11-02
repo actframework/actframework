@@ -79,7 +79,7 @@
     <validation-api.version>1.1.0.Final</validation-api.version>
     <undertow.version>1.4.27.Final</undertow.version>
     <snakeyaml.version>1.25</snakeyaml.version>
-    <zxing.javase.version>3.3.3</zxing.javase.version>
+    <zxing.javase.version>3.4.0</zxing.javase.version>
   </properties>
 
   <scm>
