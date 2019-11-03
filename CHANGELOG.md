@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.29**
+**1.8.29** 03/Nov/2019
 * SimpleRestfulServiceBase - allow developer to inject logic #1237
 * Allow app to specify sample data provider for any field #1236
 * Enable render QRCode using pseudo accept parameter #1235
