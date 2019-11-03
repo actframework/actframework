@@ -38,6 +38,7 @@ import org.osgl.util.Generics;
 import org.osgl.util.N;
 import org.osgl.util.S;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,79 @@ SimpleRestfulServiceBase<
     public SimpleRestfulServiceBase(DAO_TYPE dao) {
         this.dao = $.requireNotNull(dao);
     }
+
+    /**
+     * Sub type can override this method to update the query `q` to ensure
+     * the returned data list is only accessible to the current login user.
+     *
+     * The default implementation return directly.
+     *
+     * @param q the query object to filter entities been listed.
+     */
+    protected void onListingEntities(Dao.Query<MODEL_TYPE, ?> q) {}
+
+    /**
+     * Sub type can override this method to ensure the entity returned is allowed
+     * as per current login user credential.
+     *
+     * In case permission is not allowed, it shall throw out
+     * {@link org.osgl.mvc.result.Forbidden}.
+     *
+     * The default implementation return directly.
+     *
+     * @param entity the entity returned.
+     */
+    protected void onGettingEntity(MODEL_TYPE entity) {}
+
+    /**
+     * Sub type can override this method to ensure creating specified
+     * model entity is allowed as per current login user credential.
+     *
+     * In case permission is not allowed, it shall throw out
+     * {@link org.osgl.mvc.result.Forbidden}.
+     *
+     * It could also add logic to further processing the new entity
+     * before it is persisted. E.g. associate the entity to the
+     * current login user via `email` field etc.
+     *
+     * The default implementation return directly.
+     *
+     * @param entity the entity returned.
+     */
+    protected void onCreatingEntity(MODEL_TYPE entity) {}
+
+    /**
+     * Sub type can override this method to ensure updating specified
+     * model entity is allowed as per current login user credential.
+     *
+     * In case permission is not allowed, it shall throw out
+     * {@link org.osgl.mvc.result.Forbidden}.
+     *
+     * It could also inject customized updating logic here, e.g.
+     * if the updating is not coming from a full fledged updating
+     * data structure, but a simple string, like `description`,
+     * then sub type implementation could get the query
+     * parameter from `ActionContext.current().req()` instance and
+     * finish the updating operation.
+     *
+     * The default implementation return directly.
+     *
+     * @param entity the entity returned.
+     */
+    protected void onUpdatingEntity(MODEL_TYPE entity) {}
+
+    /**
+     * Sub type can override this method to ensure deleting specified
+     * model entity is allowed as per current login user credential.
+     *
+     * In case permission is not allowed, it shall throw out
+     * {@link org.osgl.mvc.result.Forbidden}.
+     *
+     * The default implementation return directly.
+     *
+     * @param entity the entity returned.
+     */
+    protected void onDeletingEntity(MODEL_TYPE entity) {}
 
     /**
      * List ${MODEL_TYPE} records, filtered by simple query specifications optionally.
@@ -106,6 +180,7 @@ SimpleRestfulServiceBase<
         E.illegalArgumentIf(_page < 0, "page number is less than zero");
         E.illegalArgumentIf(_pageSize < 0, "page size is less than zero");
         Dao.Query<MODEL_TYPE, ?> q = filter(dao, ActionContext.current());
+        onListingEntities(q);
         if (_pageSize > 0) {
             q.offset(_page * _pageSize).limit(_pageSize);
         }
@@ -119,46 +194,55 @@ SimpleRestfulServiceBase<
     /**
      * Returns a ${MODEL_TYPE} record by id.
      *
-     * @param model a URL path variable specify the id of the record to be returned
+     * @param entity a URL path variable specify the id of the record to be returned
      * @return a ${MODEL_TYPE} record specified by URL path variable `model`
      */
-    @GetAction("{model}")
-    public MODEL_TYPE get(@DbBind MODEL_TYPE model) {
-        return model;
+    @GetAction("{entity}")
+    public MODEL_TYPE get(@DbBind MODEL_TYPE entity) {
+        onGettingEntity(entity);
+        return entity;
     }
 
     /**
      * Create a ${MODEL_TYPE} record.
      *
-     * @param model the data for the new ${MODEL_TYPE} record.
+     * @param entity the data for the new ${MODEL_TYPE} record.
      * @return the id of the new ${MODEL_TYPE} record.
      */
     @PostAction
     @PropertySpec("id")
-    public MODEL_TYPE create(MODEL_TYPE model) {
-        return dao.save(model);
+    public MODEL_TYPE create(MODEL_TYPE entity) {
+        onCreatingEntity(entity);
+        return dao.save(entity);
     }
 
     /**
      * Update a ${MODEL_TYPE} record by id.
      *
-     * @param model the URL path variable specifies the id of the record to be updated.
+     * @param entity the URL path variable specifies the id of the record to be updated.
      * @param data  the update data that will be applied to the ${MODEL_TYPE} record
      */
-    @PutAction("{model}")
-    public void update(@DbBind MODEL_TYPE model, MODEL_TYPE data) {
-        $.merge(data).filter("-id").to(model);
-        dao.save(model);
+    @PutAction("{entity}")
+    public void update(@DbBind @NotNull MODEL_TYPE entity, MODEL_TYPE data) {
+        onUpdatingEntity(entity);
+        if (null != data) {
+            // we need to check if data is null or not as there are cases that
+            // updating is done by specifying a few query parameter, e.g.
+            // `description`, `age` etc.
+            $.merge(data).filter("-id").to(entity);
+        }
+        dao.save(entity);
     }
 
     /**
      * Delete a ${MODEL_TYPE} record by id.
      *
-     * @param id the URL path variable specifies the id of the record to be deleted.
+     * @param entity the URL path variable specifies the id of the record to be deleted.
      */
-    @DeleteAction("{id}")
-    public void delete(ID_TYPE id) {
-        dao.deleteById(id);
+    @DeleteAction("{entity}")
+    public void delete(@DbBind @NotNull MODEL_TYPE entity) {
+        onDeletingEntity(entity);
+        dao.delete(entity);
     }
 
     private void exploreTypes() {

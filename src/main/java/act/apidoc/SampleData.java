@@ -37,9 +37,39 @@ public abstract class SampleData {
      * should be used to generate sample data for the field been marked
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
     public @interface ProvidedBy {
         Class<? extends Provider> value();
+    }
+
+    /**
+     * Mark on a field specify the list of string that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface StringList {
+        String[] value();
+    }
+
+    /**
+     * Mark on a field specify the list of integer that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface IntList {
+        int[] value();
+    }
+
+    /**
+     * Mark on a field specify the list of double that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface DoubleList {
+        double[] value();
     }
 
     /**
@@ -47,7 +77,7 @@ public abstract class SampleData {
      * to specify the sample data category the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.FIELD})
+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})
     public @interface Category {
         SampleDataCategory value();
     }
@@ -57,7 +87,7 @@ public abstract class SampleData {
      * to specify the sample data locale the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.FIELD})
+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})
     public @interface Locale {
         String value();
     }
