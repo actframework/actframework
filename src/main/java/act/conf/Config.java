@@ -84,7 +84,7 @@ public abstract class Config<E extends ConfigKey> extends LogSupportedDestroyabl
         if (o == NULL) {
             return null;
         } else {
-            if (null != def) {
+            if (null != def && $.isSimpleType(o.getClass())) {
                 return (T) $.convert(o).to(def.getClass());
             } else {
                 return (T) o;

@@ -26,6 +26,8 @@ import act.test.util.NamedLogic;
 import act.test.verifier.DateTimeVerifier;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.*;
@@ -33,6 +35,7 @@ import org.osgl.util.converter.TypeConverterRegistry;
 import org.rythmengine.utils.Time;
 
 import java.lang.reflect.Array;
+import java.text.DateFormat;
 import java.util.Collection;
 import java.util.List;
 
@@ -85,17 +88,43 @@ public abstract class Func extends NamedLogic {
         }
     }
 
-    public static class Today extends Func {
+    public static abstract class _Date extends Func {
+
+        private DateTimeFormatter fmt;
+
+        protected abstract LocalDate getDate();
+
+        @Override
+        public void init(Object param) {
+            String pattern = S.string(param);
+            fmt = DateTimeFormat.forPattern(pattern);
+        }
+
         @Override
         public Object apply() {
+            LocalDate date = getDate();
+            return null == fmt ? date : fmt.print(date);
+        }
+    }
+
+    public static class Today extends _Date {
+        @Override
+        public LocalDate getDate() {
             return LocalDate.now();
         }
     }
 
-    public static class Tomorrow extends Func {
+    public static class Tomorrow extends _Date {
         @Override
-        public Object apply() {
+        public LocalDate getDate() {
             return LocalDate.now().plusDays(1);
+        }
+    }
+
+    public static class Yesterday extends _Date {
+        @Override
+        public LocalDate getDate() {
+            return LocalDate.now().minusDays(1);
         }
     }
 
