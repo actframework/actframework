@@ -365,6 +365,10 @@ public final class Act {
         }, true);
     }
 
+    public static void shutdown() {
+        shutdown(app(), 0);
+    }
+
     public static void shutdown(final App app) {
         shutdown(app, 0);
     }

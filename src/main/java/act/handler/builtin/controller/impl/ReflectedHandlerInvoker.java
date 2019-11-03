@@ -27,6 +27,7 @@ import act.Act;
 import act.Trace;
 import act.annotations.*;
 import act.app.*;
+import act.cli.ReportProgress;
 import act.conf.AppConfig;
 import act.controller.*;
 import act.controller.annotation.*;
@@ -43,6 +44,7 @@ import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
 import act.inject.SessionVariable;
 import act.inject.param.*;
+import act.job.Job;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.plugin.ControllerPlugin;
@@ -72,6 +74,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.ConstraintViolation;
 
@@ -133,6 +136,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private MissingAuthenticationHandler csrfFailureHandler;
     private ThrottleFilter throttleFilter;
     private boolean async;
+    private boolean reportAsyncProgress;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
     private boolean isLargeResponse;
@@ -229,9 +233,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.disabled = this.disabled || !Env.matches(method);
         this.forceDataBinding = ReflectedInvokerHelper.isAnnotationPresent(RequireDataBind.class, method);
         this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
+        this.reportAsyncProgress = null != ReflectedInvokerHelper.getAnnotation(ReportProgress.class, method);
         this.isStatic = handlerMetaInfo.isStatic();
         if (!this.isStatic) {
-            //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
@@ -655,14 +659,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (async) {
             final JobManager jobManager = context.app().jobManager();
             final String jobId = jobManager.randomJobId();
+            final String reqInfo = context.req().toString();
             jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
+                    if (isTraceEnabled()) {
+                        trace("about invoking request handler[%s] asynchronously: %s", reqInfo, jobId);
+                    }
                     try {
                         Object o = invoke(context, controller, params);
+                        if (null == o) {
+                            o = "done";
+                        }
                         jobManager.cacheResult(jobId, o, method);
+                        context.progress().commitFinalState();
                     } catch (Exception e) {
-                        warn(e, "Error executing async handler: " + method);
+                        String errMsg = S.buffer("Error handling request: ").append(reqInfo).toString();
+                        warn(e, errMsg);
+                        ControllerProgressGauge gauge = context.progress();
+                        gauge.fail(errMsg);
+                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method);
+                        gauge.commitFinalState();
                     }
                 }
             });
@@ -670,7 +687,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            return new RenderJSON(C.Map("jobId", jobId));
+            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept() == H.Format.HTML);
+            if (renderAsyncJobPage) {
+                context.templatePath("/act/asyncJob.html");
+                context.renderArg("jobId", jobId);
+                return RenderTemplate.get();
+            } else {
+                String resultUrl = context.router().fullUrl("/~/jobs/%s/result", jobId);
+                    return new RenderJSON(C.Map("jobId", jobId, "resultUrl", resultUrl));
+            }
         }
 
         try {

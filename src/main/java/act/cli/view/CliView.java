@@ -29,6 +29,7 @@ import act.cli.util.TableCursor;
 import act.data.DataPropertyRepository;
 import act.db.AdaptiveRecord;
 import act.util.*;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.*;
@@ -156,13 +157,14 @@ public enum CliView {
     XML() {
         @Override
         public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
-            JSONObject json;
+            Class<?> mappedResultType = (result instanceof Iterable) ? JSONArray.class : JSONObject.class;
+            Object mappedResult;
             if (null != spec) {
-                json = spec.applyTo($.map(result), context).to(JSONObject.class);
+                mappedResult = spec.applyTo($.map(result), context).to(mappedResultType);
             } else {
-                json = $.map(result).to(JSONObject.class);
+                mappedResult = $.map(result).to(mappedResultType);
             }
-            IO.write($.convert(json).to(Document.class)).to(writer);
+            IO.write($.convert(mappedResult).to(Document.class)).to(writer);
         }
     },
 

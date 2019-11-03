@@ -154,8 +154,8 @@ public class JobManager extends AppServiceBase<JobManager> {
         return job.id();
     }
 
-    public void prepare(String jobId, $.Function<ProgressGauge, ?> worker) {
-        wrap(jobId, worker);
+    public Job prepare(String jobId, $.Function<ProgressGauge, ?> worker) {
+        return wrap(jobId, worker);
     }
 
     /**
@@ -367,7 +367,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         return methodIndex.get(method);
     }
 
-    public SimpleProgressGauge progressGauge(String jobId) {
+    public ProgressGauge progressGauge(String jobId) {
         return jobById(jobId).progress();
     }
 

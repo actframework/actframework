@@ -20,7 +20,9 @@ package act.test;
  * #L%
  */
 
+import act.Act;
 import act.job.JobManager;
+import act.sys.Env;
 import act.util.ProgressGauge;
 import act.ws.WebSocketConnectionListener;
 import act.ws.WebSocketContext;
@@ -33,6 +35,7 @@ import javax.inject.Inject;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+@Env.RequireMode(Act.Mode.DEV)
 @WsEndpoint("/~/ws/test/progress")
 public class TestWsProgress implements WebSocketConnectionListener {
 

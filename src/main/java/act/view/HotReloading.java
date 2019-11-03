@@ -1,10 +1,10 @@
-package act.handler.builtin.controller;
+package act.view;
 
 /*-
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2019 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +20,14 @@ package act.handler.builtin.controller;
  * #L%
  */
 
-import act.app.ActionContext;
-import act.handler.ExpressHandler;
 import org.osgl.mvc.result.Conflict;
-import org.osgl.mvc.result.NotImplemented;
 
-public class HotReloading extends FastRequestHandler implements ExpressHandler {
+public class HotReloading extends Conflict {
 
-    public static HotReloading INSTANCE = new HotReloading();
+    private static final String MESSAGE = "e409.hot_reloading";
 
-    private static Conflict conflict = new Conflict("Hot reloading in progress ...");
-
-    @Override
-    public void handle(ActionContext context) {
-        conflict.apply(context.req(), context.prepareRespForResultEvaluation());
+    public HotReloading() {
+        super(MESSAGE);
     }
 
-    @Override
-    public String toString() {
-        return "error: not implemented";
-    }
 }

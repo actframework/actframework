@@ -31,11 +31,14 @@ import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.Terminal;
 import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
+import jline.console.history.PersistentHistory;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.Socket;
@@ -56,6 +59,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private boolean exit;
     private Thread runningThread;
     private ConsoleReader console;
+    private FileHistory history;
     private CliCursor cursor;
     private CommandNameCompleter commandNameCompleter;
     // the current handler
@@ -154,13 +158,40 @@ public class CliSession extends DestroyableBase implements Runnable {
         Destroyable.Util.tryDestroyAll(attributes.values(), ApplicationScoped.class);
     }
 
+    private void tryTuneTelnetOptions(OutputStream os) throws IOException {
+        // placeholder - if we can tell the incoming connection is from
+        // a telnet program we can negotiate the stty options here
+//        Writer w = new OutputStreamWriter(os, "ISO-8859-1");
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)1);
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)3);
+//        w.write((char)255);
+//        w.write((char)252);
+//        w.write((char)34);
+//        w.flush();
+    }
+
+    private File historyFile() {
+        String fileName = System.getProperty("cli.history");
+        if (S.blank(fileName)) {
+            fileName = ".act.cli-history";
+        }
+        return new File(fileName);
+    }
+
     @Override
     public void run() {
         runningThread = Thread.currentThread();
         try {
             app.eventBus().emitSync(new CliSessionStart(this));
             OutputStream os = socket.getOutputStream();
+            tryTuneTelnetOptions(os);
             console = new ConsoleReader(socket.getInputStream(), os);
+            history = new FileHistory(historyFile(), true);
+            console.setHistory(history);
             String banner = Banner.cachedBanner();
             printBanner(banner, console);
             String appName = App.instance().name();
@@ -218,6 +249,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         } catch (Exception e) {
             LOGGER.error(e, "Error processing cli session");
         } finally {
+            IO.flush(history);
             if (null != server) {
                 server.remove(this);
             }

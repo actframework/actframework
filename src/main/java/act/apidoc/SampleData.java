@@ -20,6 +20,7 @@ package act.apidoc;
  * #L%
  */
 
+import javax.inject.Provider;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,21 +33,61 @@ public abstract class SampleData {
     private SampleData() {}
 
     /**
-     * Marked on an implementation class of {@link SampleDataProvider}
+     * Mark on a field specify the {@link SampleDataProvider} that
+     * should be used to generate sample data for the field been marked
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface ProvidedBy {
+        Class<? extends Provider> value();
+    }
+
+    /**
+     * Mark on a field specify the list of string that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface StringList {
+        String[] value();
+    }
+
+    /**
+     * Mark on a field specify the list of integer that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface IntList {
+        int[] value();
+    }
+
+    /**
+     * Mark on a field specify the list of double that
+     * can be randomly choosen as sample data for the field
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
+    public @interface DoubleList {
+        double[] value();
+    }
+
+    /**
+     * Mark on an implementation class of {@link SampleDataProvider}
      * to specify the sample data category the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.FIELD})
+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})
     public @interface Category {
         SampleDataCategory value();
     }
 
     /**
-     * Marked on an implementation class of {@link SampleDataProvider}
+     * Mark on an implementation class of {@link SampleDataProvider}
      * to specify the sample data locale the provider applied
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.FIELD})
+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})
     public @interface Locale {
         String value();
     }

@@ -324,7 +324,7 @@ public class Test extends LogSupport {
                     String label = "Testing";
                     pb = new ProgressBar(label, gauge.maxHint(), 200, System.out, ProgressBarStyle.UNICODE_BLOCK);
                 }
-                List<Scenario> toBeRun = new ArrayList<>(scenarios.size());
+                List<Scenario> candidates = new ArrayList<>(scenarios.size());
                 for (Scenario scenario : scenarios.values()) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
@@ -335,25 +335,26 @@ public class Test extends LogSupport {
                     if (scenario.interactions.isEmpty()) {
                         continue;
                     }
-                    if (!toBeRun.contains(scenario)) {
-                        boolean shouldAdd = true;
-                        for (Scenario other : scenarios.values()) {
-                            if (other == scenario) {
-                                continue;
-                            }
-                            if (other.allDepends.contains(scenario)) {
-                                shouldAdd = false;
-                                break;
-                            }
+                    if (!candidates.contains(scenario)) {
+                        candidates.add(scenario);
+                    }
+                }
+                // some scenarios might be run multiple times as they are dependencies.
+                List<Scenario> toBeRemoved = new ArrayList<>(candidates.size());
+                for (Scenario scenario : candidates) {
+                    for (Scenario other : candidates) {
+                        if (other == scenario) {
+                            continue;
                         }
-                        if (shouldAdd) {
-                            toBeRun.add(scenario);
+                        if (other.allDepends.contains(scenario)) {
+                            toBeRemoved.add(scenario);
                         }
                     }
                 }
-                Collections.sort(toBeRun, new ScenarioComparator(false));
-                gauge.updateMaxHint(toBeRun.size() + 1);
-                for (Scenario scenario : toBeRun) {
+                candidates.removeAll(toBeRemoved);
+                Collections.sort(candidates, new ScenarioComparator(false));
+                gauge.updateMaxHint(candidates.size() + 1);
+                for (Scenario scenario : candidates) {
                     if (null != testId) {
                         scenario.ignore = null;
                     }

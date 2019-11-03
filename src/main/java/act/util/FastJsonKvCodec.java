@@ -261,7 +261,7 @@ public class FastJsonKvCodec extends SerializeFilterable implements ObjectDeseri
                     List<ContextValueFilter> contextValueFilters = this.contextValueFilters;
                     if ((valueFilters != null && valueFilters.size() > 0) //
                             || (contextValueFilters != null && contextValueFilters.size() > 0)) {
-                        value = this.processValue(serializer, null, object, entryKey, value);
+                        value = this.processValue(serializer, null, object, entryKey, value, features);
                     }
                 }
                 {
@@ -269,7 +269,7 @@ public class FastJsonKvCodec extends SerializeFilterable implements ObjectDeseri
                     List<ContextValueFilter> contextValueFilters = this.contextValueFilters;
                     if ((valueFilters != null && valueFilters.size() > 0) //
                             || (contextValueFilters != null && contextValueFilters.size() > 0)) {
-                        value = this.processValue(serializer, null, object, entryKey, value);
+                        value = this.processValue(serializer, null, object, entryKey, value, features);
                     }
                 }
 

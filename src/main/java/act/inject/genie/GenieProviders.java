@@ -195,7 +195,7 @@ class GenieProviders {
                         try {
                             return $.newInstance(val, Act.app().classLoader());
                         } catch (Exception e) {
-                            throw new InjectException("Cannot cast value type[%s] to required type[%s]", val.getClass(), spec);
+                            throw new InjectException(e, "Cannot initialize %s", val, spec);
                         }
                     }
                 }

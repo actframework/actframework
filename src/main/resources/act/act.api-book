@@ -1,0 +1,139 @@
+{
+  "SimpleRestfulServiceBase": [
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "List ${MODEL_TYPE} records, filtered by simple query specifications optionally.\n\n### Filtering\n\nTo list all model entities simply issue a `GET` request without any query parameters.\n\nTo filter model by properties, e.g. name: issue `GET path?name=Tom`;\n\nTo filter model by both name and age, use `GET path?name=Tom&age=5`;\n\nFilter with like, less than, great than etc:\n\n * `GET path?name=~Tom` - use `~` to lead the string for `LIKE` matching\n * `GET age=lt_5` - prefix with `lt_` for 'LESS THAN' matching\n * `GET age=lte_5` - prefix with `lte_` for `LESS THAN OR EQUAL TO` matching\n * `GET age=gt_5` - prefix with `gt_` for 'GREATER THAN' matching\n * `GET age=gte_5` - prefix with `gte_` for `GREATER THAN OR EQUAL TO` matching\n\n### Pagination\n\nUse `_page` and `_pageSize` to specify the offset and limit of return scope.\n\n* `GET path?_page=1&_pageSize=20` - return records starts from 20th, the maximum number returned is 20.\n\n### Sorting\n\nUse `_orderBy` to specify sorting orders.\n\n* `GET path?_orderBy=-score~name` - The returned list must be sorted by\n                                    `score` (descending) and then `name`\n",
+      "handler": "act.app.util.SimpleRestfulServiceBase.list",
+      "httpMethod": "GET",
+      "id": "act.app.util.SimpleRestfulServiceBase.list",
+      "params": [
+        {
+          "bindName": "_page",
+          "description": "the page number - starts from `0`.",
+          "headerVariable": false,
+          "name": "_page",
+          "required": false,
+          "sessionVariable": false,
+          "type": "int"
+        },
+        {
+          "bindName": "_pageSize",
+          "description": "the number of items in a page - if not specified then all records filtered returned.",
+          "headerVariable": false,
+          "name": "_pageSize",
+          "required": false,
+          "sessionVariable": false,
+          "type": "int"
+        },
+        {
+          "bindName": "_orderBy",
+          "description": "the sorting list, separated by `~`; if starts with `-` then sort in descending order.",
+          "headerVariable": false,
+          "name": "_page",
+          "required": false,
+          "sessionVariable": false,
+          "type": "int"
+        },
+      ],
+      "returnDescription": "${MODEL_TYPE} records as specified above.",
+      "scheme": "HTTP",
+      "xid": "GETact_app_util_SimpleRestfulServiceBase_list"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Create a ${MODEL_TYPE} record.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.create",
+      "httpMethod": "POST",
+      "id": "act.app.util.SimpleRestfulServiceBase.create",
+      "params": [
+        {
+          "bindName": "model (body)",
+          "description": "the data for the new ${MODEL_TYPE} record.",
+          "headerVariable": false,
+          "name": "model (body)",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model (body)",
+          "type": "Bookmark"
+        }
+      ],
+      "returnDescription": "the id of the new ${MODEL_TYPE} record.",
+      "scheme": "HTTP",
+      "xid": "POSTact_app_util_SimpleRestfulServiceBase_create"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Delete a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.delete",
+      "httpMethod": "DELETE",
+      "id": "act.app.util.SimpleRestfulServiceBase.delete",
+      "params": [
+        {
+          "bindName": "id",
+          "description": "the URL path variable specifies the id of the record to be deleted.",
+          "headerVariable": false,
+          "name": "id",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: id",
+          "type": "number"
+        }
+      ],
+      "scheme": "HTTP",
+      "xid": "DELETEact_app_util_SimpleRestfulServiceBase_delete"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Returns a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.get",
+      "httpMethod": "GET",
+      "id": "act.app.util.SimpleRestfulServiceBase.get",
+      "params": [
+        {
+          "bindName": "model",
+          "description": "a URL path variable specify the id of the record to be returned",
+          "headerVariable": false,
+          "name": "model",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model",
+          "type": "String"
+        }
+      ],
+      "returnDescription": "a ${MODEL_TYPE} record specified by URL path variable `model`",
+      "scheme": "HTTP",
+      "xid": "GETact_app_util_SimpleRestfulServiceBase_get"
+    },
+    {
+      "controllerClass": "act.app.util.SimpleRestfulServiceBase",
+      "description": "Update a ${MODEL_TYPE} record by id.",
+      "handler": "act.app.util.SimpleRestfulServiceBase.update",
+      "httpMethod": "PUT",
+      "id": "act.app.util.SimpleRestfulServiceBase.update",
+      "params": [
+        {
+          "bindName": "model",
+          "description": "the URL path variable specifies the id of the record to be updated.",
+          "headerVariable": false,
+          "name": "model",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: model",
+          "type": "String"
+        },
+        {
+          "bindName": "data",
+          "description": "the update data that will be applied to the ${MODEL_TYPE} record",
+          "headerVariable": false,
+          "name": "data",
+          "required": false,
+          "sessionVariable": false,
+          "tooltip": "Bind name: data",
+          "type": "Bookmark"
+        }
+      ],
+      "scheme": "HTTP",
+      "xid": "PUTact_app_util_SimpleRestfulServiceBase_update"
+    }
+  ]
+}

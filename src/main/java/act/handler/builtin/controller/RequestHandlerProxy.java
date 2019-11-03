@@ -237,18 +237,22 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             } catch (Exception e0) {
                 logger.error(e0, "Error invoking exception handler");
             }
-            if (null == result) {
-                H.Request req = context.req();
-                result = ActErrorResult.of(e);
-                if (result.status().isServerError()) {
-                    logger.error(e, "Server error encountered on handling request: " + req);
+            if (context.resp().isClosed()) {
+                logger.error(e, "Error committing result");
+            } else {
+                if (null == result) {
+                    H.Request req = context.req();
+                    result = ActErrorResult.of(e);
+                    if (result.status().isServerError()) {
+                        logger.error(e, "Server error encountered on handling request: " + req);
+                    }
                 }
-            }
-            try {
-                onResult(result, context);
-            } catch (Exception e2) {
-                logger.error(e2, "error rendering exception handle result");
-                onResult(ActErrorResult.of(e2), context);
+                try {
+                    onResult(result, context);
+                } catch (Exception e2) {
+                    logger.error(e2, "error rendering exception handle result");
+                    onResult(ActErrorResult.of(e2), context);
+                }
             }
         } finally {
             try {

@@ -1,5 +1,32 @@
 # ActFramework Change Log
 
+**1.8.29** 03/Nov/2019
+* SimpleRestfulServiceBase - allow developer to inject logic #1237
+* Allow app to specify sample data provider for any field #1236
+* Enable render QRCode using pseudo accept parameter #1235
+* Creating a system self healing mechanism to handle OOM caused by too many dangling connention #1234
+* Add commonly used cron expression constants #1229
+* Ehcache not working in Act since 1.8.27 #1220
+* CORS - update default allowed headers #1228
+* Allow using query parameter `_accept` to overwrite the `Accept` HTTP header #1227
+* SimpleRestfulServiceBase - support filtering/pagingation/sorting #1226
+* ResourceLoader - Error loading Yaml data into List of entities #1225
+* ApiDoc - missing description for classes extends from `SimpleRestfulServiceBase` #1224
+* Markdown response support #1219
+* $$.processStringSubstitution` issue #1223
+* `@LoadResource` mechanism not doing resource filtering even `resource.filtering` is set to `true` #1222
+* `UnexpectedException: type not recognized: ? extends T` - JsonDtoPatch logic issue #1218
+* CLI table view layout broken due to multi-bytes characters #1217
+* Incorrect XML output for iterable type #1216
+* Support output yaml response #1215
+* Create built-in CLI session history mechanism #1214
+* Allow app to configure CLI progress bar style #1212
+* Incorrect message returned by `ActContext.i18n(template, args)` #1211
+* Provide a default HTML page for async controller response #1209
+* Allow it auto refresh when got 409 error during hot-reloading #1207
+* "The response has already been started" error #1208
+* Update FastJSON to 1.2.62 #1205
+
 **1.8.28** 21/Sep/2019
 * Session resolve issue for concurrent incoming requests #1204
 

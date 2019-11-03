@@ -97,12 +97,11 @@ public class FilteredRenderJSON extends RenderJSON {
         } else if (v instanceof $.Visitor) {
             touchPayload().contentWriter(($.Visitor) v);
         } else {
-            if (context.isLargeResponse() || v instanceof Iterable) {
-                touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
-            } else {
+            if (context.isNonBlock()) {
                 touchPayload().stringContentProducer(new JsonUtilConfig.JsonWriter(v, spec, false, context).asContentProducer());
+            } else {
+                touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
             }
-            touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
         }
         return _INSTANCE;
     }

@@ -3,8 +3,7 @@ package testapp.endpoint;
 import org.junit.Test;
 
 import static org.osgl.http.H.Header.Names.*;
-import static testapp.TestApp.GLOBAL_CORS.ALLOW_EXPOSE_HEADER;
-import static testapp.TestApp.GLOBAL_CORS.MAX_AGE;
+import static testapp.TestApp.GLOBAL_CORS.*;
 
 public class CORSTest extends EndpointTester {
 
@@ -15,7 +14,7 @@ public class CORSTest extends EndpointTester {
         checkHeader(ACCESS_CONTROL_ALLOW_HEADERS, CORSTestBed.ALLOW_HEADERS);
         checkHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
         checkHeader(ACCESS_CONTROL_MAX_AGE, MAX_AGE);
-        checkHeader(ACCESS_CONTROL_EXPOSE_HEADERS, ALLOW_EXPOSE_HEADER);
+        checkHeader(ACCESS_CONTROL_EXPOSE_HEADERS, EXPOSE_HEADER);
     }
 
     @Test

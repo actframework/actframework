@@ -74,6 +74,7 @@ import act.plugin.PrincipalProvider;
 import act.route.*;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
+import act.sys.SystemAvailabilityMonitor;
 import act.util.*;
 import act.validation.Password;
 import act.view.ActErrorResult;
@@ -1373,6 +1374,9 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private synchronized void loadingDone() {
+        if (config.selfHealing()) {
+            SystemAvailabilityMonitor.start();
+        }
         loading.set(false);
         this.notifyAll();
     }
@@ -1593,18 +1597,11 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void initCache() {
+        if (isDev()) {
+            config().cacheServiceProvider().reset();
+        }
         cache = cache(config().cacheName());
-        cache.startup();
-        if (Act.isDev()) {
-            config.resetCacheServices(cache);
-        }
         CacheService sessionCache = cache(config().cacheNameSession());
-        if (cache != sessionCache) {
-            sessionCache.startup();
-            if (Act.isDev()) {
-                sessionCache.clear();
-            }
-        }
         HttpConfig.setSessionCache(sessionCache);
     }
 

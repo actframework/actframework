@@ -89,6 +89,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public List<String> options;
         public String fieldKey;
 
+        private ParamInfo() {}
+
         private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
@@ -381,6 +383,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
     }
 
     public String processTypeImplSubstitution(String s) {
+        if (null == s) {
+            return null;
+        }
         int n = s.indexOf("${");
         if (n < 0) {
             return s;
@@ -498,10 +503,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                     continue;
                 }
                 Object sample;
-                if (null != info.defaultValue) {
+                sample = generateSampleData(info.beanSpec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), false);
+                if (null == sample && null != info.defaultValue) {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
-                } else {
-                    sample = generateSampleData(info.beanSpec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), false);
                 }
                 if (H.Method.GET == this.httpMethod) {
                     String query = generateSampleQuery(info.beanSpec.withoutName(), typeParamLookup, info.bindName, new HashSet<Type>(), C.<String>newList());
@@ -654,9 +658,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return bindName + "=<datetime>";
         }
         if (null != stringValueResolver(type)) {
-            SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
-            SampleDataCategory category = null != anno ? anno.value() : null;
-            return bindName + "=" + sampleDataProviderManager.getSampleData(category, bindName, String.class);
+            return bindName + "=" + sampleDataFromAnnotation(spec, bindName);
         }
         List<String> queryPairs = new ArrayList<>();
         List<Field> fields = $.fieldsOf(type);
@@ -671,6 +673,29 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             }
         }
         return S.join(queryPairs).by("&").get();
+    }
+
+    private static Object sampleDataFromAnnotation(BeanSpec spec, String bindName) {
+        SampleData.ProvidedBy annoProvided = spec.getAnnotation(SampleData.ProvidedBy.class);
+        if (null != annoProvided) {
+            return Act.getInstance(annoProvided.value()).get();
+        }
+        SampleData.StringList annoStrList = spec.getAnnotation(SampleData.StringList.class);
+        if (null != annoStrList) {
+            return $.random(annoStrList.value());
+        }
+        SampleData.IntList annoIntList = spec.getAnnotation(SampleData.IntList.class);
+        if (null != annoIntList) {
+            int[] ia = annoIntList.value();
+            return $.random(ia);
+        }
+        SampleData.DoubleList annoDblList = spec.getAnnotation(SampleData.DoubleList.class);
+        if (null != annoDblList) {
+            return $.random(annoDblList.value());
+        }
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
+        return Act.getInstance(SampleDataProviderManager.class).getSampleData(category, bindName, spec.rawType());
     }
 
     private static boolean isCollection(Type type) {
@@ -716,14 +741,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 return null;
             }
         }
-        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
-        SampleDataCategory category = null != anno ? anno.value() : null;
-        Class<?> classType = spec.rawType();
-        SampleDataProviderManager sampleDataProviderManager = Act.app().sampleDataProviderManager();
-        Object o = sampleDataProviderManager.getSampleData(category, name, classType, false);
+        Object o = sampleDataFromAnnotation(spec, name);
         if (null != o) {
             return o;
         }
+        Class<?> classType = spec.rawType();
+        SampleDataProviderManager sampleDataProviderManager = Act.getInstance(SampleDataProviderManager.class);
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
         try {
             if (void.class == classType || Void.class == classType || Result.class.isAssignableFrom(classType)) {
                 return null;

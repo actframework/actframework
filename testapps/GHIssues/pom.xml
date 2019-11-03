@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.27.0-SNAPSHOT</version>
+  <version>1.8.29.0-SNAPSHOT</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.27.0</version>
+    <version>1.8.29.0-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -25,19 +25,14 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.28-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
-      <artifactId>act-excel</artifactId>
+      <artifactId>act-excel-java7</artifactId>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-jpa-common</artifactId>
+      <artifactId>HikariCP-java7</artifactId>
     </dependency>
     <!--<dependency>-->
       <!--<groupId>org.actframework</groupId>-->
@@ -52,11 +47,14 @@
       <groupId>org.actframework</groupId>
       <artifactId>act-storage</artifactId>
     </dependency>
+
+    <!--
     <dependency>
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>
       <version>[4.1.12,)</version>
     </dependency>
+    -->
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>

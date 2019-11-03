@@ -29,6 +29,7 @@ import org.osgl.inject.annotation.LoadValue;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.*;
 import javax.persistence.Transient;
 
@@ -54,11 +55,18 @@ public class JsonDtoPatch {
                     continue;
                 }
                 circularReferenceDetector.add(fieldSpec);
-                Class fieldType = fieldSpec.rawType();
-                if (fieldSpec.isTransient() || fieldSpec.hasAnnotation(Transient.class)) {
+                if (fieldSpec.isTransient()
+                        || fieldSpec.hasAnnotation(Transient.class)
+                        || fieldSpec.hasAnnotation(NoBind.class)
+                ) {
                     continue;
                 }
-                if (App.class == fieldType || Class.class == fieldType || Object.class == fieldType || Collection.class.isAssignableFrom(fieldType) || Map.class.isAssignableFrom(fieldType)) {
+                Class fieldType = fieldSpec.rawType();
+                if (App.class == fieldType || Class.class == fieldType || Object.class == fieldType
+                        || Field.class == fieldType || ResourceBundle.class == fieldType
+                        || Collection.class.isAssignableFrom(fieldType)
+                        || Map.class.isAssignableFrom(fieldType)
+                ) {
                     continue;
                 }
                 String fieldName = fieldSpec.name();

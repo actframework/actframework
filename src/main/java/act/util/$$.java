@@ -25,6 +25,7 @@ import act.data.*;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.*;
 
 import java.sql.Time;
@@ -48,6 +49,15 @@ public class $$ {
         return dateTimeTypes.contains(type);
     }
 
+    static {
+        StringUtils.evaluator = new $.Transformer<String, String>() {
+            @Override
+            public String transform(String s) {
+                return S.string(Act.appConfig().getIgnoreCase(s));
+            }
+        };
+    }
+
     public static String toString(Object v, boolean directToString) {
         if (directToString) {
             ValueObject.Codec codec = codecs.get(v.getClass());
@@ -68,42 +78,12 @@ public class $$ {
         return ($.isSimpleType(type) && !type.isArray()) || isDateTimeType(type);
     }
 
-    private static $.Transformer<String, String> evaluator = new $.Transformer<String, String>() {
-        @Override
-        public String transform(String s) {
-            return S.string(Act.appConfig().getIgnoreCase(s));
-        }
-    };
-
     public static String processStringSubstitution(String s) {
-        return processStringSubstitution(s, evaluator);
+        return StringUtils.processStringSubstitution(s);
     }
 
     public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
-        if (S.blank(s)) {
-            return "";
-        }
-        int n = s.indexOf("${");
-        if (n < 0) {
-            return s;
-        }
-        int a = 0;
-        int z = n;
-        S.Buffer buf = S.buffer();
-        while (true) {
-            buf.append(s.substring(a, z));
-            n = s.indexOf("}", z);
-            a = n;
-            String key = s.substring(z + 2, a);
-            buf.append(evaluator.apply(key));
-            n = s.indexOf("${", a);
-            if (n < 0) {
-                buf.append(s.substring(a + 1));
-                return buf.toString();
-            }
-            z = n;
-        }
+        return StringUtils.processStringSubstitution(s, evaluator);
     }
-
 
 }

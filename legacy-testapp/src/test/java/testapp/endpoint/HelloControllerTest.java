@@ -62,8 +62,8 @@ public class HelloControllerTest extends EndpointTester {
     private void verifyGlobalCORS() throws Exception {
         checkHeader(ACCESS_CONTROL_ALLOW_ORIGIN, ALLOW_ORIGIN);
         if (reqBuilder.method() == H.Method.OPTIONS) {
-            checkHeader(ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_EXPOSE_HEADER);
-            checkHeader(ACCESS_CONTROL_EXPOSE_HEADERS, ALLOW_EXPOSE_HEADER);
+            checkHeader(ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_HEADER);
+            checkHeader(ACCESS_CONTROL_EXPOSE_HEADERS, EXPOSE_HEADER);
             checkHeader(ACCESS_CONTROL_MAX_AGE, MAX_AGE);
             checkHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
         }

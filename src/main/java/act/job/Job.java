@@ -142,7 +142,7 @@ public class Job extends DestroyableBase implements Runnable {
     private Method method;
     private boolean sysJob;
     // progress percentage
-    private SimpleProgressGauge progress = new SimpleProgressGauge();
+    private ProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
@@ -227,7 +227,7 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     public void setProgressGauge(ProgressGauge progressGauge) {
-        progress = SimpleProgressGauge.wrap(progressGauge);
+        progress = progressGauge;
         progress.setId(getId());
         progress.addListener(new ProgressGauge.Listener() {
             @Override
@@ -238,7 +238,7 @@ public class Job extends DestroyableBase implements Runnable {
         });
     }
 
-    public SimpleProgressGauge progress() {
+    public ProgressGauge progress() {
         return progress;
     }
 

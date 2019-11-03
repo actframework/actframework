@@ -6,7 +6,9 @@
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta charset="utf-8">
   <title>@title</title>
+  @if(desc) {
   <meta name="description" content="@desc">
+  }
 
   <!-- Mobile Specific Metas
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -14,7 +16,6 @@
 
   <!-- FONT
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link href="//fonts.googleapis.com/css?family=Oswald:700|Roboto+Condensed" rel="stylesheet">
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
   <!-- CSS
@@ -38,6 +39,7 @@
   @render()
 </div>
 <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+<script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
 @render(moreScripts)
 <!-- End Document
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->

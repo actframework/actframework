@@ -25,8 +25,10 @@ import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 
 import act.Act;
 import act.Constants;
+import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppConfigLoaded;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
@@ -36,6 +38,7 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
+import act.event.SysEventListenerBase;
 import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
@@ -50,6 +53,7 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
@@ -112,15 +116,14 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         MvcConfig.messageTranslater(new $.Transformer<String, String>() {
             @Override
             public String transform(String message) {
-                if (Act.appConfig().i18nEnabled()) {
-                    String translated = I18n.i18n(message);
-                    if (message == translated) {
-                        translated = I18n.i18n(MvcConfig.class, message);
-                        message = translated;
-                    }
-                    return message;
+                String translated = I18n.i18n(message);
+                if (message == translated) {
+                    translated = I18n.i18n(MvcConfig.class, message);
                 }
-                return message;
+                if (message == translated) {
+                    translated = I18n.i18n(act_messages.class, message);
+                }
+                return translated;
             }
         });
     }
@@ -135,17 +138,24 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
-        routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
+    // for unit test
     public AppConfig() {
         this((Map) System.getProperties());
+        this.routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
     public AppConfig<T> app(App app) {
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
+        app.eventBus().bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+            @Override
+            public void on(AppConfigLoaded event) throws Exception {
+                routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
+            }
+        });
         return this;
     }
 
@@ -463,6 +473,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders;
 
+    @Deprecated
     protected T corsHeaders(String s) {
         this.corsHeaders = s;
         return me();
@@ -470,7 +481,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders() {
         if (null == corsHeaders) {
-            corsHeaders = get(CORS_HEADERS, "Content-Type, X-HTTP-Method-Override, X-Requested-With");
+            corsHeaders = get(CORS_HEADERS, "");
         }
         return corsHeaders;
     }
@@ -490,7 +501,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            corsHeadersExpose = get(CORS_HEADERS_EXPOSE, corsHeaders());
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,"");
+            if (S.blank(corsHeadersExpose)) {
+                corsHeadersExpose = corsHeaders();
+                if (S.notBlank(corsHeadersExpose)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.expose` instead");
+                } else {
+                    corsHeadersExpose = "Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, Location, Link, Content-Disposition, Content-Length";
+                }
+            }
         }
         return corsHeadersExpose;
     }
@@ -524,13 +543,21 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private String corsHeadersAllowed;
 
     protected T corsAllowHeaders(String s) {
-        this.corsHeadersExpose = s;
+        this.corsHeadersAllowed = s;
         return me();
     }
 
     public String corsAllowHeaders() {
         if (null == corsHeadersAllowed) {
-            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, corsHeaders());
+            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, "");
+            if (S.isBlank(corsHeadersAllowed)) {
+                corsHeadersAllowed = corsHeaders();
+                if (S.notBlank(corsHeadersAllowed)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.allowed` instead");
+                } else {
+                    corsHeadersAllowed = "X-HTTP-Method-Override, X-Requested-With, Authorization, X-XSRF-Token, X-CSRF-Token";
+                }
+            }
         }
         return corsHeadersAllowed;
     }
@@ -797,6 +824,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeCliOverHttp(AppConfig config) {
         if (!hasConfiguration(CLI_OVER_HTTP)) {
             cliOverHttp = config.cliOverHttp;
+        }
+    }
+
+    private ProgressBarStyle cliProgressBarStyle;
+
+    protected T cliProgressBarStyle(ProgressBarStyle style) {
+        this.cliProgressBarStyle = style;
+        return me();
+    }
+
+    public ProgressBarStyle cliProgressBarStyle() {
+        if (null == cliProgressBarStyle) {
+            String s = get(CLI_PROGRESS_BAR_STYLE, "unicode");
+            cliProgressBarStyle = S.eq("ascii", s) ? ProgressBarStyle.ASCII : ProgressBarStyle.UNICODE_BLOCK;
+        }
+        return cliProgressBarStyle;
+    }
+
+    private void _mergeCliProgressBarStyle(AppConfig config) {
+        if (!hasConfiguration(CLI_PROGRESS_BAR_STYLE)) {
+            cliProgressBarStyle = config.cliProgressBarStyle;
         }
     }
 
@@ -2369,6 +2417,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean selfHealing;
+    protected T selfHealing(boolean on) {
+        selfHealing = on;
+        return me();
+    }
+    public boolean selfHealing() {
+        if (null == selfHealing) {
+            selfHealing = get(SYS_SELF_HEALING, false);
+        }
+        return selfHealing;
+    }
+    private void _mergeSelfHealing(AppConfig conf) {
+        if (!hasConfiguration(SYS_SELF_HEALING)) {
+            selfHealing = conf.selfHealing;
+        }
+    }
+
     private String targetVersion = null;
 
     protected T targetVersion(JavaVersion version) {
@@ -3334,6 +3399,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public CacheService cacheService(String name) {
+        CacheService cacheService = cacheServiceProvider().get(name);
+        E.illegalStateIf(cacheService.state().isShutdown(), "Cache service[%s] already shutdown.", name);
+        if (!cacheService.state().isStarted()) {
+            cacheService.startup();
+        }
+        return cacheService;
+    }
+
+    public CacheServiceProvider cacheServiceProvider() {
         if (null == cacheServiceProvider) {
             CacheServiceProvider.Impl.setClassLoader(app().classLoader());
             try {
@@ -3343,25 +3417,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 cacheServiceProvider = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
                 if (null != cacheServiceProvider) {
                     set(AppConfigKey.CACHE_IMPL, cacheServiceProvider);
-                    return cacheServiceProvider.get(name);
+                } else {
+                    throw e;
                 }
-                throw e;
             }
             if (null == cacheServiceProvider) {
                 cacheServiceProvider = CacheServiceProvider.Impl.Auto;
             }
         }
-        return cacheServiceProvider.get(name);
+        return cacheServiceProvider;
     }
 
-    public void resetCacheServices(CacheService sample) {
+    public void resetCacheServices() {
         if (!Act.isDev()) {
             return;
         }
         OsglConfig.internalCache().clear();
-        if (sample instanceof SimpleCacheService) {
-            SimpleCacheServiceProvider.reset();
-        }
+
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
@@ -3482,7 +3554,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean resourceFiltering() {
         if (null == resourceFiltering) {
-            resourceFiltering = get(RESOURCE_FILTERING, false);
+            if (app.isDev()) {
+                resourceFiltering = get(RESOURCE_FILTERING, true);
+            } else {
+                resourceFiltering = false;
+            }
         }
         return resourceFiltering;
     }

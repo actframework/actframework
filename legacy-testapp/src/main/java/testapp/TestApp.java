@@ -15,7 +15,8 @@ public class TestApp extends AppConfigurator<TestApp> {
 
     public static class GLOBAL_CORS {
         public static final String ALLOW_ORIGIN = "google.com";
-        public static final String ALLOW_EXPOSE_HEADER = "X-Header-One";
+        public static final String ALLOW_HEADER = "X-Header-One";
+        public static final String EXPOSE_HEADER = "X-Header-Two";
         public static final String MAX_AGE = "100";
     }
 
@@ -26,7 +27,8 @@ public class TestApp extends AppConfigurator<TestApp> {
         sessionMapper(new CookieAndHeaderSessionMapper(app().config()));
         cors()
                 .allowOrigin(ALLOW_ORIGIN)
-                .allowAndExposeHeaders(ALLOW_EXPOSE_HEADER)
+                .allowHeaders(ALLOW_HEADER)
+                .exposeHeaders(EXPOSE_HEADER)
                 .maxAge(Integer.parseInt(MAX_AGE));
     }
 

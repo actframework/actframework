@@ -121,6 +121,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Class<?> handlerClass;
     private RouteSource routeSource;
     private String patchedJsonBody;
+    private boolean nonBlock;
+    public act.metric.Timer handleTimer;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -297,6 +299,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public ActionContext markAsNonBlock() {
+        this.nonBlock = true;
+        return this;
+    }
+
+    public boolean isNonBlock() {
+        return this.nonBlock;
+    }
+
     public ActionContext processedUrl(String url) {
         this.processedUrl = url;
         return this;
@@ -316,6 +327,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 if (s.contains(".")) {
                     s = S.cut(s).afterLast(".");
                 }
+            }
+            if (S.blank(s)) {
+                s = S.cut(actionPath).afterLast(".");
             }
             attachmentName = s;
         }
@@ -1459,6 +1473,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             this.handlerClass = null;
             this.encodedSessionToken = null;
             this.localeResolver = null;
+            if (null != this.handleTimer) {
+                this.handleTimer.stop();
+                this.handleTimer = null;
+            }
             ActionContext.clearLocal();
         }
         this.state = State.DESTROYED;

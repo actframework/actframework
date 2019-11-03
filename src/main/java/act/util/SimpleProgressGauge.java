@@ -83,12 +83,12 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     private String id;
     private boolean markedAsDown;
-    private int maxHint;
-    private int currentSteps;
-    private String error;
+    protected int maxHint;
+    protected int currentSteps;
+    protected String error;
     private Map<String, Object> payload = new HashMap<>();
     private transient int percent;
-    private ProgressGauge delegate;
+    protected ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
     private ReadWriteLock listenerListLock = new ReentrantReadWriteLock();
 
@@ -143,22 +143,25 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void incrMaxHint() {
+        if (null != delegate) {
+            delegate.incrMaxHint();
+            return;
+        }
         this.maxHint++;
     }
 
     @Override
     public void incrMaxHintBy(int number) {
+        if (null != delegate) {
+            delegate.incrMaxHintBy(number);
+            return;
+        }
         this.maxHint += number;
     }
 
     @Override
     public void step() {
-        if (null != delegate) {
-            delegate.step();
-        } else {
-            currentSteps++;
-            triggerUpdateEvent();
-        }
+        this.stepBy(1);
     }
 
     @Override
@@ -241,20 +244,34 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     public void fail(String error) {
+        if (null != delegate) {
+            delegate.fail(error);
+            return;
+        }
         this.error = error;
         triggerUpdateEvent(true);
     }
 
     public String error() {
+        if (null != delegate) {
+            return delegate.error();
+        }
         return error;
     }
 
-    public boolean hasError() {
+    public boolean isFailed() {
+        if (null != delegate) {
+            return delegate.isFailed();
+        }
         return S.notBlank(error);
     }
 
     @Override
     public void markAsDone() {
+        if (null != delegate) {
+            delegate.markAsDone();
+            return;
+        }
         if (!markedAsDown) {
             markedAsDown = true;
             stepTo(maxHint);
@@ -263,25 +280,36 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public void clearPayload() {
+        if (null != delegate) {
+            delegate.clearPayload();
+            return;
+        }
         this.payload.clear();
     }
 
     @Override
     public void setPayload(String key, Object val) {
+        if (null != delegate) {
+            delegate.setPayload(key, val);
+            return;
+        }
         this.payload.put(key, val);
         this.triggerUpdateEvent(true);
     }
 
     @Override
     public Map<String, Object> getPayload() {
+        if (null != delegate) {
+            return delegate.getPayload();
+        }
         return this.payload;
     }
 
-    private void triggerUpdateEvent() {
+    protected void triggerUpdateEvent() {
         triggerUpdateEvent(false);
     }
 
-    private void triggerUpdateEvent(boolean forceTriggerEvent) {
+    protected void triggerUpdateEvent(boolean forceTriggerEvent) {
         if (forceTriggerEvent || percentageChanged()) {
             Lock lock = listenerListLock.readLock();
             lock.lock();
@@ -317,7 +345,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     private static int percentage(int currentSteps, int maxHint) {
-        int n = currentSteps * 100 / maxHint;
+        int n = maxHint > 10000 ? (currentSteps / (maxHint / 100)) :  (currentSteps * 100 / maxHint);
         return (100 <= n) && (currentSteps < (maxHint - 1)) ? 99 : n;
     }
 }

@@ -20,12 +20,14 @@ package act.util;
  * #L%
  */
 
+import act.Destroyable;
+
 import java.util.Map;
 
 /**
  * Class implement this interface can track progress
  */
-public interface ProgressGauge {
+public interface ProgressGauge extends Destroyable {
 
     String PAYLOAD_MESSAGE = "message";
 
@@ -128,10 +130,22 @@ public interface ProgressGauge {
     void setPayload(String key, Object val);
 
     /**
+     * Returns progress percentage.
+     * @return progress percentage
+     */
+    int currentProgressPercent();
+
+    /**
      * Returns the payload that has been set to this gauge.
      * @return the payload set to this gauge
      */
     Map<String, Object> getPayload();
+
+    /**
+     * Mark the progress has failed with an error message
+     * @param error the error message
+     */
+    void fail(String error);
 
     /**
      * Return error message if any
@@ -139,7 +153,11 @@ public interface ProgressGauge {
      */
     String error();
 
-    boolean hasError();
+    /**
+     * Return if the progress has error or not
+     * @return `true` if the progress is failed
+     */
+    boolean isFailed();
 
     /**
      * Add an listener to this gauge that monitors the progress update

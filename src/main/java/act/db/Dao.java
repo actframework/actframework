@@ -258,6 +258,17 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      */
     QUERY_TYPE createQuery(String fields, Object... values);
 
+    /**
+     * Return an object that could be a SQL LIKE value from original target string `v`.
+     *
+     * E.g. for SQL type database it might check if the v has `%` inside, if not then
+     * wrap with with `%`.
+     *
+     * @param v the target value string
+     * @return a target object subject to SQL LIKE operation.
+     */
+    Object processLikeValue(String v);
+
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
         QUERY_TYPE limit(int limit);
