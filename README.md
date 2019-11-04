@@ -27,18 +27,7 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.8.28.0
-```
-
-To start an new project for RESTful service:
-
-```
-mvn archetype:generate -B \
-    -DgroupId=com.mycom.helloservice \
-    -DartifactId=helloservice \
-    -DarchetypeGroupId=org.actframework \
-    -DarchetypeArtifactId=archetype-simple-restful-service \
-    -DarchetypeVersion=1.8.28.0
+    -DarchetypeVersion=1.8.29.0
 ```
 
 **tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
@@ -47,13 +36,7 @@ mvn archetype:generate -B \
 mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.28.0
 ```
 
-Or 
-
-```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.28.0
-```
-
-For RESTful service project
+**Note** There are more ActFramework application archetypes for use. Please get them [here](ARCHETYPES.md). 
 
 ## Features
 
