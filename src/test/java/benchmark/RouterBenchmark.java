@@ -34,6 +34,7 @@ import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.plugin.GenericPluginManager;
 import act.route.*;
+import act.util.IdGenerator;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,8 +52,13 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Map;
 
-@BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 100 * 100)
+@BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 20)
 public class RouterBenchmark extends BenchmarkBase {
+
+    private static String r24s = S.random(24);
+    private static String r21s = S.random(21);
+    private static int r20n = N.randInt(20);
+    private static String r8s = S.random();
 
     private static Router router;
     private static RouteTableRouterBuilder builder;
@@ -61,7 +67,7 @@ public class RouterBenchmark extends BenchmarkBase {
     private static App app;
 
     @BeforeClass
-    public static void prepare() {
+    public static void prepare() throws Exception {
         try {
             Field f = Act.class.getDeclaredField("pluginManager");
             f.setAccessible(true);
@@ -120,32 +126,32 @@ public class RouterBenchmark extends BenchmarkBase {
 
     @Test
     public void osgl_InvokeBadUrl() {
-        runTest(true, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
+        runTest(true, true, GET, "/badUrl/whatever/%s/abc/136", r8s);
     }
 
     @Test
     public void play_InvokeBadUrl() {
-        runTest(false, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
+        runTest(false, true, GET, "/badUrl/whatever/%s/abc/136", r8s);
     }
 
     @Test
     public void osgl_HitAtBeginning() {
-        runTest(true, GET, "/yemian/%s/", S.random());
+        runTest(true, GET, "/yemian/%s/", r8s);
     }
 
     @Test
     public void play_HitAtBeginning() {
-        runTest(false, GET, "/yemian/%s/", S.random());
+        runTest(false, GET, "/yemian/%s/", r8s);
     }
 
     @Test
     public void osgl_HitAtEnding() {
-        runTest(true, GET, "/adm/weixinyingyong/%s/", S.random());
+        runTest(true, GET, "/adm/weixinyingyong/%s/", r8s);
     }
 
     @Test
     public void play_HitAtEnding() {
-        runTest(false, GET, "/adm/weixinyingyong/%s/", S.random());
+        runTest(false, GET, "/adm/weixinyingyong/%s/", r8s);
     }
 
     @Test
@@ -170,23 +176,23 @@ public class RouterBenchmark extends BenchmarkBase {
 
     @Test
     public void osgl_longDynamicUrl() {
-        runTest(true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
+        runTest(true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", r24s, r24s, r20n);
     }
 
     @Test
     public void play_longDynamicUrl() {
-        runTest(false, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
+        runTest(false, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", r24s, r24s, r20n);
     }
 
 
     @Test
     public void osgl_badUrl2() {
-        runTest(true, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
+        runTest(true, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", r24s, r21s, r20n);
     }
 
     @Test
     public void play_badUrl2() {
-        runTest(false, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
+        runTest(false, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", r24s, r21s, r20n);
     }
 
     private void runTest(boolean osgl, H.Method method, String url, Object... fmtArgs) {
@@ -195,7 +201,7 @@ public class RouterBenchmark extends BenchmarkBase {
 
     private void runTest(boolean osgl, boolean notFoundExpected, H.Method method, String url, Object... fmtArgs) {
         url = S.fmt(url, fmtArgs);
-        final int loop = 1000 * 100;
+        final int loop = 100 * 100;
         if (osgl) {
             for (int i = 0; i < loop; ++i) {
                 try {

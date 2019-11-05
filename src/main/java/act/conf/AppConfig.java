@@ -38,6 +38,7 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
+import act.event.EventBus;
 import act.event.SysEventListenerBase;
 import act.handler.*;
 import act.handler.event.ResultEvent;
@@ -150,12 +151,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
-        app.eventBus().bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
-            @Override
-            public void on(AppConfigLoaded event) throws Exception {
-                routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
-            }
-        });
+        EventBus eventBus = app.eventBus();
+        if (null != eventBus) {
+            eventBus.bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+                @Override
+                public void on(AppConfigLoaded event) throws Exception {
+                    routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
+                }
+            });
+        } // else - must be in routing benchmark unit test
         return this;
     }
 

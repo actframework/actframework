@@ -35,6 +35,7 @@ import act.metric.SimpleMetricPlugin;
 import act.route.Router;
 import act.session.SessionManager;
 import act.util.ClassNames;
+import act.util.IdGenerator;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
 import org.mockito.Matchers;
@@ -89,9 +90,11 @@ public class ActTestBase extends TestBase {
     protected H.Request mockReq;
     protected ActResponse mockResp;
     protected CacheService mockCacheService;
+    protected IdGenerator idGenerator;
 
     protected void setup() throws Exception {
         initActMetricPlugin();
+        idGenerator = new IdGenerator();
         mockApp = mock(App.class);
         Field f = App.class.getDeclaredField("INST");
         f.setAccessible(true);
@@ -111,6 +114,7 @@ public class ActTestBase extends TestBase {
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
         when(mockApp.router(Matchers.same(""))).thenReturn(mockRouter);
+        when(mockApp.cuid()).thenReturn(idGenerator.genId());
         mockCacheService = mock(CacheService.class);
         when(mockApp.getInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override

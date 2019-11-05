@@ -10,7 +10,7 @@ GET /toupiao CMYingyong.toupiao
 GET /tandcdialog CMYingyong.tAndCDialog
 * /weixinyingyong/{yingyongId}/ WeixinAppFuwuqi.jiazai
 * /zhuangzai/yingyong/{yingyongId}/ WeixinAppFuwuqi.jiazai
-POST /tuiguang/{tuiguangId}/ CMYingyong.tijiao
+POST /tuiguang/{tuiguangId}/x CMYingyong.tijiao
 POST /tuiguang/{tuiguangId}/vote CMYingyong.toupiaoJilu
 POST /yemian/{yemianId}/fasongyoujian CMYingyong.fasongyoujian
 POST /shangchuang CMYingyong.wenjianShangChuan
@@ -27,7 +27,7 @@ GET /ushangchuanger CMYingyong.ushangchuanger
 GET /tutu123/token CMYingyong.tutu123Token
 
 # Ziyuan Guanliyuan
-GET / ziyuan.Guanliqi.zhuye
+GET /z ziyuan.Guanliqi.zhuye
 GET /cm ziyuan.Guanliqi.zhuye
 GET /dn/new ziyuan.Guanliqi.createZiyuan
 POST /dn/new ziyuan.Guanliqi.createZiyuan

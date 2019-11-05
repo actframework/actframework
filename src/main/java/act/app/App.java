@@ -216,6 +216,7 @@ public class App extends LogSupportedDestroyableBase {
         this.singletonRegistry.register(SingletonRegistry.class, this.singletonRegistry);
         this.singletonRegistry.register(SessionManager.class, this.sessionManager);
         this.singletonRegistry.register(CookieSessionMapper.class, new CookieSessionMapper(this.config));
+        this.idGenerator = new IdGenerator();
     }
 
     protected App(File appBase, Version version, ProjectLayout layout) {
