@@ -20,9 +20,6 @@ package benchmark;
  * #L%
  */
 
-import static org.osgl.http.H.Method.GET;
-import static org.osgl.http.H.Method.POST;
-
 import act.Act;
 import act.BenchmarkBase;
 import act.app.ActionContext;
@@ -34,7 +31,6 @@ import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.plugin.GenericPluginManager;
 import act.route.*;
-import act.util.IdGenerator;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,7 +48,10 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Map;
 
-@BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 20)
+import static org.osgl.http.H.Method.GET;
+import static org.osgl.http.H.Method.POST;
+
+@BenchmarkOptions(warmupRounds = 10, benchmarkRounds = 1000)
 public class RouterBenchmark extends BenchmarkBase {
 
     private static String r24s = S.random(24);

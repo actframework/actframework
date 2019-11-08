@@ -48,13 +48,11 @@
       <artifactId>act-storage</artifactId>
     </dependency>
 
-    <!--
     <dependency>
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>
       <version>[4.1.12,)</version>
     </dependency>
-    -->
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>
