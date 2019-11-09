@@ -107,7 +107,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (preloaded || null != delegate) {
             return true;
         }
-        String path = context.paramVal(ParamNames.PATH);
+        String path = context.__pathParamVal();
         return Act.isProd() &&
                 (cachedBuffers.containsKey(path)
                         || cachedFailures.containsKey(path)
@@ -136,7 +136,7 @@ public class ResourceGetter extends FastRequestHandler {
     }
 
     protected String path(ActionContext context) {
-        return context.paramVal(ParamNames.PATH);
+        return context.__pathParamVal();
     }
 
     protected void handle(String path, ActionContext context) {

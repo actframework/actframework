@@ -43,7 +43,7 @@ public class RedirectDir extends FastRequestHandler implements ExpressHandler {
         } else {
             resp.status(H.Status.MOVED_PERMANENTLY);
         }
-        String path = context.paramVal(ParamNames.PATH);
+        String path = context.__pathParamVal();
         resp.header(H.Header.Names.LOCATION, url + path);
     }
 

@@ -1,0 +1,10 @@
+Scenario(1241):
+  description: "`__path` param value needs to be sanitized"
+  interactions:
+  - description: test
+    request:
+      get: 1241
+      params:
+        __path: ../../pom.xml
+    response:
+      status: 400

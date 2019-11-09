@@ -26,6 +26,7 @@ import static org.osgl.http.H.Header.Names.*;
 
 import act.*;
 import act.conf.AppConfig;
+import act.controller.ParamNames;
 import act.controller.ResponseCache;
 import act.controller.captcha.CaptchaViolation;
 import act.data.MapUtil;
@@ -772,6 +773,27 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public Set<String> paramNames() {
         return paramKeys();
+    }
+
+    /**
+     * Returns the param value associated with `__path`, i.e. calling to
+     * {@link #paramVal(String)} with `__path` as param name.
+     *
+     * However, this method will do sanity check on the value returned, in case
+     * there are `..` found in the value, an `IllegalArgumentException` will
+     * be thrown out. This is to prevent the insecure direct object reference
+     * attack.
+     *
+     * @return the param value of `__path`
+     * @throws IllegalArgumentException when the value contains string `..`
+     */
+    public String __pathParamVal() {
+        String s = paramVal(ParamNames.PATH);
+        if (null == s) {
+            return s;
+        }
+        E.illegalArgumentIf(s.contains(".."), "`..` found in path which is not allowed");
+        return s;
     }
 
     @Override
