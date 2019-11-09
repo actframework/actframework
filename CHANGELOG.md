@@ -2,6 +2,7 @@
 
 **1.8.30**
 * `__path` param value needs to be sanitized #1241
+* Act-Test - add an `entityId()` function #1240
 
 **1.8.29** 03/Nov/2019
 * SimpleRestfulServiceBase - allow developer to inject logic #1237

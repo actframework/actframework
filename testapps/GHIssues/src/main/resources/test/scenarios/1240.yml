@@ -1,0 +1,10 @@
+Scenario(1240):
+  interactions:
+    - description: Act-Test - add an `entityId()` function
+      request:
+        post: 1240
+        json:
+          id: ${entityId(ghissues.Gh1240$Foo)}
+      response:
+        id:
+          - exists: true

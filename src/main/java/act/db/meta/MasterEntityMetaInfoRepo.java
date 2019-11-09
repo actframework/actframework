@@ -202,6 +202,10 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         return null != repo ? repo : EMPTY;
     }
 
+    public Iterable<EntityMetaInfoRepo> allRepos() {
+        return regions.values();
+    }
+
     public static EntityMetaInfoRepo EMPTY() {
         return EMPTY;
     }
