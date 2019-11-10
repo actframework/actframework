@@ -23,7 +23,7 @@ package act.app.util;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-public class NamedPort {
+public class NamedPort implements Comparable<NamedPort> {
 
     public static final String DEFAULT = "default";
 
@@ -60,6 +60,11 @@ public class NamedPort {
             return S.eq(that.name, name);
         }
         return false;
+    }
+
+    @Override
+    public int compareTo(NamedPort o) {
+        return o.name.compareTo(name);
     }
 
     @Override

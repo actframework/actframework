@@ -21,6 +21,8 @@ package act.test.util;
  */
 
 import act.Act;
+import act.test.verifier.ReversedVerifier;
+import act.test.verifier.Verifier;
 import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.util.*;
@@ -37,7 +39,7 @@ import java.util.*;
  * * Assert - used to verify the data
  * * Modifier - used to modify request
  */
-public abstract class NamedLogic<T extends NamedLogic> extends LogSupport {
+public abstract class NamedLogic extends LogSupport {
 
     protected abstract Class<? extends NamedLogic> type();
 
@@ -129,10 +131,22 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport {
             E.illegalStateIfNot(o.size() == 1, "single element map expected");
             Map.Entry entry = (Map.Entry) o.entrySet().iterator().next();
             String key = S.string(entry.getKey());
+            boolean revert = false;
+            if (key.startsWith("!") || key.startsWith("-")) {
+                revert = true;
+                key = key.substring(1).trim();
+            } else if (key.startsWith("not:")) {
+                revert = true;
+                key = key.substring(4).trim();
+            }
             T logic = register.get(toType, key);
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
             logic.init(entry.getValue());
+            if (revert && logic instanceof Verifier) {
+                final Verifier v = $.cast(logic);
+                return $.cast(new ReversedVerifier(v));
+            }
             return logic;
         }
     }
@@ -149,9 +163,21 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport {
         public T convert(String o) {
             E.illegalStateIf(S.blank(o));
             String key = o;
+            boolean revert = false;
+            if (key.startsWith("!") || key.startsWith("-")) {
+                revert = true;
+                key = key.substring(1).trim();
+            } else if (key.startsWith("not:")) {
+                revert = true;
+                key = key.substring(4).trim();
+            }
             T logic = register.get(toType, key);
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
+            if (revert && logic instanceof Verifier) {
+                final Verifier v = $.cast(logic);
+                return $.cast(new ReversedVerifier(v));
+            }
             return logic;
         }
     }

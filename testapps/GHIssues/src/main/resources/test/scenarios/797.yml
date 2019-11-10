@@ -1,5 +1,5 @@
-Scenario(GH797):
-  description: "[797] JSON output: default format for `java.util.Date` missing time part"
+Scenario(797):
+  description: "JSON output: default format for `java.util.Date` missing time part"
   interactions:
   - description: Test
     request:

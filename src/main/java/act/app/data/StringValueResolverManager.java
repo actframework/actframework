@@ -31,10 +31,8 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class StringValueResolverManager extends AppServiceBase<StringValueResolverManager> {
 
@@ -72,6 +70,24 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
                     col.add(elementResolver.resolve(part));
                 }
                 return col;
+            }
+        };
+    }
+
+    public <T> StringValueResolver<T> arrayResolver(final Class<T> targetType, final char separator) {
+        final Class<?> componentType = targetType.getComponentType();
+        E.unexpectedIf(null == componentType, "specified target type is not array type: " + targetType);
+        final StringValueResolver elementResolver = resolver(componentType);
+        return new StringValueResolver<T>(targetType) {
+            @Override
+            public T resolve(String value) {
+                List list = new ArrayList();
+                List<String> parts = S.fastSplit(value, String.valueOf(separator));
+                for (String part : parts) {
+                    list.add(elementResolver.resolve(part));
+                }
+                T array = (T) Array.newInstance(componentType, list.size());
+                return (T)list.toArray((Object[])array);
             }
         };
     }

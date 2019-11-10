@@ -1,0 +1,8 @@
+Scenario(osgl-tool-181):
+  description: test scenario for https://github.com/osglworks/java-tool/issues/181
+  interactions:
+    - request:
+        get: /osgl-tool/181
+      response:
+        json:
+          DisplayName: "Primary Kit - kids aged 5-9"

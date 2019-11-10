@@ -22,6 +22,7 @@ package act.test.macro;
 
 import act.Act;
 import act.test.Scenario;
+import act.test.TestSession;
 import act.test.util.NamedLogic;
 import org.osgl.$;
 import org.osgl.util.*;
@@ -31,20 +32,20 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-public abstract class Macro<T extends Macro> extends NamedLogic<T> {
+public abstract class Macro extends NamedLogic {
 
-    public abstract void run(Scenario scenario);
+    public abstract void run(TestSession session);
 
     @Override
     protected final Class<? extends NamedLogic> type() {
         return Macro.class;
     }
 
-    public static class ClearFixture extends Macro<ClearFixture> {
+    public static class ClearFixture extends Macro {
 
         @Override
-        public void run(Scenario scenario) {
-            scenario.clearFixtures();
+        public void run(TestSession session) {
+            session.clearFixtures();
         }
 
         @Override
@@ -53,10 +54,10 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
     }
 
-    public static class ClearSession extends Macro<ClearSession> {
+    public static class ClearSession extends Macro {
         @Override
-        public void run(Scenario scenario) {
-            scenario.clearSession();
+        public void run(TestSession session) {
+            session.clearSession();
         }
     }
 
@@ -64,7 +65,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
      * Read file content into a string and cache the string
      * with the underscore style of the file name.
      */
-    public static class ReadContent extends Macro<ReadContent> {
+    public static class ReadContent extends Macro {
 
         private String resourcePath;
 
@@ -79,8 +80,8 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
 
         @Override
-        public void run(Scenario scenario) {
-            scenario.cache(resourcePath, tryRead());
+        public void run(TestSession session) {
+            session.cache(resourcePath, tryRead());
         }
 
         private String tryRead() {
@@ -101,7 +102,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
     }
 
-    public static class Pause extends Macro<Pause> {
+    public static class Pause extends Macro {
 
         long time;
 
@@ -112,7 +113,7 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
         }
 
         @Override
-        public void run(Scenario scenario) {
+        public void run(TestSession session) {
             try {
                 Thread.sleep(time);
             } catch (InterruptedException e) {

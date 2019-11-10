@@ -25,6 +25,8 @@ import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 
@@ -45,28 +47,41 @@ class JsonParamValueLoader implements ParamValueLoader {
     private ParamValueLoader fallBack;
     private BeanSpec spec;
     private Provider defValProvider;
-    private boolean isPathVariable;
 
     JsonParamValueLoader(ParamValueLoader fallBack, BeanSpec spec, DependencyInjector<?> injector) {
         this.fallBack = $.requireNotNull(fallBack);
         this.spec = $.requireNotNull(spec);
         this.defValProvider = findDefValProvider(spec, injector);
         ActionContext ctx = ActionContext.current();
-        if (null != ctx) {
-            isPathVariable = ctx.isPathVar(spec.name());
-        }
+    }
+
+    private JsonParamValueLoader(JsonParamValueLoader parent, Class runtimeType) {
+        this.fallBack = parent.fallBack.wrapWithRuntimeType(runtimeType);
+        this.spec = parent.spec;
+        this.defValProvider = parent.defValProvider;
     }
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        if (isPathVariable) {
+        if (context instanceof ActionContext && ((ActionContext)context).isPathVar(spec.name())) {
             return fallBack.load(bean, context, noDefaultValue);
         }
         JsonDto dto = context.attribute(JsonDto.CTX_ATTR_KEY);
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {
-            Object o = dto.get(spec.name());
+            String key = spec.name();
+            Object o = dto.get(key);
+            if (null != o) {
+                return o;
+            }
+            if (context instanceof ActionContext) {
+                if (key.contains(".")) {
+                    String body = ((ActionContext) context).patchedJsonBody();
+                    JSONObject json = JSON.parseObject(body);
+                    o = $.getProperty(json, key);
+                }
+            }
             return null != o ? o : defValProvider.get();
         }
     }
@@ -110,4 +125,13 @@ class JsonParamValueLoader implements ParamValueLoader {
         }
     }
 
+    @Override
+    public boolean requireRuntimeTypeInfo() {
+        return fallBack.requireRuntimeTypeInfo();
+    }
+
+    @Override
+    public ParamValueLoader wrapWithRuntimeType(Class<?> type) {
+        return new JsonParamValueLoader(this, type);
+    }
 }

@@ -20,8 +20,6 @@ package act.route;
  * #L%
  */
 
-import org.osgl.util.E;
-
 /**
  * Enumerate the source where the route mapping come from.
  * <p>
@@ -34,10 +32,6 @@ import org.osgl.util.E;
  *     <li>
  *         action annotation - the route mapping defined by action handler method
  *         along with action annotation
- *     </li>
- *     <li>
- *         app config - route mapping configured by code by calling
- *         {@link act.app.conf.AppConfigurator.RouteBuilder} APIs
  *     </li>
  * </ul>
  */

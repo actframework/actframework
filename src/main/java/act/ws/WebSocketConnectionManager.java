@@ -20,9 +20,8 @@ package act.ws;
  * #L%
  */
 
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppServiceBase;
+import act.app.*;
+import act.app.event.SysEventId;
 import act.util.Stateless;
 import act.xio.WebSocketConnection;
 import com.alibaba.fastjson.JSON;
@@ -30,8 +29,11 @@ import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Manage {@link WebSocketConnection} through {@link WebSocketConnectionRegistry}
@@ -46,11 +48,36 @@ public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnecti
     private final WebSocketConnectionRegistry byUrl = new WebSocketConnectionRegistry();
     private final WebSocketConnectionRegistry byTag = new WebSocketConnectionRegistry();
 
+    private final ConcurrentMap<WebSocketConnection, WebSocketConnection> closed = new ConcurrentHashMap<>();
+
     private String wsTicketKey;
 
-    public WebSocketConnectionManager(App app) {
+    public WebSocketConnectionManager(final App app) {
         super(app);
         wsTicketKey = app.config().wsTicketKey();
+        app.jobManager().every(new Runnable() {
+            @Override
+            public void run() {
+                purgeClosed();
+            }
+        }, app.config().wsPurgeClosedConnPeriod(), TimeUnit.SECONDS);
+        app.jobManager().on(SysEventId.SINGLETON_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                WebSocketConnectionListener.Manager manager = app.getInstance(WebSocketConnectionListener.Manager.class);
+                manager.freeListeners.add(new WebSocketConnectionListener() {
+                    @Override
+                    public void onConnect(WebSocketContext context) {
+                    }
+
+                    @Override
+                    public void onClose(WebSocketContext context) {
+                        closed.put(context, context);
+                        closed.put(context.connection(), context.connection());
+                    }
+                });
+            }
+        });
     }
 
     public WebSocketConnectionRegistry sessionRegistry() {
@@ -203,6 +230,26 @@ public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnecti
         byUsername.destroy();
         byUrl.destroy();
         byTag.destroy();
+    }
+
+    private void purgeClosed() {
+        if (closed.isEmpty()) {
+            return;
+        }
+        List<WebSocketConnection> list = C.list(closed.values());
+        closed.clear();
+        purgeClosed(list, bySessionId);
+        purgeClosed(list, byTag);
+        purgeClosed(list, byUrl);
+        purgeClosed(list, byUsername);
+    }
+
+    private void purgeClosed(List<WebSocketConnection> closed, WebSocketConnectionRegistry registry) {
+        try {
+            registry.purge(closed);
+        } catch (Exception e) {
+            warn(e, "Error purge closed connection");
+        }
     }
 
     private void sendToConnections(String message, WebSocketConnectionRegistry registry, String key) {

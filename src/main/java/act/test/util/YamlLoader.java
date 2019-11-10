@@ -52,8 +52,6 @@ public class YamlLoader extends LogSupport {
 
     private String fixtureFolder = "/test/fixtures/";
 
-    private ClassLoader classLoader = appClassLoader();
-
     public YamlLoader() {
         resetModelPackages();
         loadConfig();
@@ -276,18 +274,18 @@ public class YamlLoader extends LogSupport {
         return null == url ? null : IO.read(url).toString();
     }
 
-    private String patchResourceName(String name) {
+    protected String patchResourceName(String name) {
         return S.ensure(name).startWith(fixtureFolder);
     }
 
     private Class<?> loadModelType(String type) {
         if (type.contains(".") || $.isPrimitiveType(type)) {
-            return $.classForName(type, classLoader);
+            return classForName(type);
         }
         for (String pkg : modelPackages) {
             String patched = S.concat(pkg, type);
             try {
-                return $.classForName(patched, classLoader);
+                return classForName(patched);
             } catch (Exception e) {
                 // ignore
             }
@@ -313,13 +311,12 @@ public class YamlLoader extends LogSupport {
         }
     }
 
-    private ClassLoader appClassLoader() {
+    private Class<?> classForName(String name) {
         App app = Act.app();
-        if (null == app) {
-            return Thread.currentThread().getContextClassLoader();
+        if (null != app) {
+            return app.classForName(name);
         }
-        ClassLoader appClassLoader = app.classLoader();
-        return null == appClassLoader ? Thread.currentThread().getContextClassLoader() : appClassLoader;
+        return $.classForName(name, Thread.currentThread().getContextClassLoader());
     }
 
     private void resolveDependencies(Map<String, Object> objects, Map<String, Map<String, Object>> mapCache, Map<String, Object> entityCache, Dao dao) {

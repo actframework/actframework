@@ -1,0 +1,9 @@
+Scenario(925):
+  description: "`Unable to find the overwritten method of Xxx` issue on 1.8.8"
+  interactions:
+  - description: test
+    request:
+      get: 925?who=x
+    response:
+      json:
+        result: x

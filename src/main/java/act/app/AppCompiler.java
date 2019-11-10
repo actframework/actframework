@@ -24,7 +24,7 @@ import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 
 import act.Act;
 import act.conf.AppConfig;
-import act.metric.Metric;
+import act.metric.*;
 import act.metric.Timer;
 import act.util.LogSupportedDestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -60,7 +60,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
         this.classLoader = classLoader;
         this.app = classLoader.app();
         this.conf = app.config();
-        this.metric = Act.metricPlugin().metric("act.classload.compile");
+        this.metric = Act.metricPlugin().metric(MetricInfo.CLASS_LOADING);
         configureCompilerOptions();
     }
 
@@ -84,6 +84,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
         opt(map, OPTION_Source, conf.sourceVersion());
         opt(map, OPTION_TargetPlatform, conf.targetVersion());
         opt(map, OPTION_Compliance, conf.sourceVersion());
+        opt(map, OPTION_MethodParametersAttribute, GENERATE);
         compilerOptions = new CompilerOptions(map);
     }
 
@@ -277,6 +278,9 @@ class AppCompiler extends LogSupportedDestroyableBase {
                 if (null == source) {
                     $.nil();
                     source = classLoader.source(name0);
+                }
+                if (null == source) {
+                    throw E.unexpected("Cannot locate source file for %s. \nPlease make sure you do not have non-nested classes defined in source file of other class", name);
                 }
                 if (name != name0) {
                     String innerName = S.afterFirst(name, "$");

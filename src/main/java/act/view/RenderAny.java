@@ -69,15 +69,19 @@ public class RenderAny extends Result {
         H.Format fmt = context.accept();
         if (fmt == UNKNOWN) {
             H.Request req = context.req();
-            H.Method method = req.method();
-            String methodInfo = S.concat(method.name(), " method to ");
-            String acceptHeader = req.header(H.Header.Names.ACCEPT);
-            throw E.unsupport(S.concat(
-                    "Unknown accept content type(",
-                    acceptHeader,
-                    "): ",
-                    methodInfo,
-                    req.url()));
+            if (req.userAgent().isIE9Down()) {
+                fmt = HTML;
+            } else {
+                H.Method method = req.method();
+                String methodInfo = S.concat(method.name(), " method to ");
+                String acceptHeader = req.header(H.Header.Names.ACCEPT);
+                throw E.unsupport(S.concat(
+                        "Unknown accept content type(",
+                        acceptHeader,
+                        "): ",
+                        methodInfo,
+                        req.url()));
+            }
         }
         Result result = null;
         if (JSON == fmt) {

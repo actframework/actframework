@@ -28,12 +28,13 @@ import act.cli.util.CliCursor;
 import act.cli.util.TableCursor;
 import act.data.DataPropertyRepository;
 import act.db.AdaptiveRecord;
-import act.util.ActContext;
-import act.util.JsonUtilConfig;
-import act.util.PropertySpec;
+import act.util.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.*;
 import org.rythmengine.utils.Escape;
+import org.w3c.dom.Document;
 
 import java.io.Writer;
 import java.util.*;
@@ -55,7 +56,7 @@ public enum CliView {
                 return;
             }
 
-            spec = PropertySpec.MetaInfo.withCurrent(spec, context);
+            spec = PropertySpec.MetaInfo.withCurrentNoConsume(spec, context);
 
             if (null == spec) {
                 spec = new PropertySpec.MetaInfo();
@@ -87,11 +88,11 @@ public enum CliView {
                 }
             }
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
-            List<String> outputFields = repo.outputFields(spec, componentType, context);
+            List<S.Pair> outputFields = repo.outputFields(spec, componentType, context);
             if (outputFields.isEmpty()) {
-                outputFields = C.list("this as Item");
+                outputFields = C.<S.Pair>list(S.pair("this as Item", "this as Item"));
             }
-            String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
+            String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, DataPropertyRepository.getFields(outputFields), spec.labels2(outputFields, context)));
             int itemsFound = dataList.size();
             CliCursor cursor = cliContext.session().cursor();
             String appendix = "";
@@ -135,7 +136,7 @@ public enum CliView {
 
         private void buildTree(Writer writer, TreeNode node, String prefix, boolean isTrail) {
             StringBuilder sb = S.newBuilder().append(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
-            IO.write(sb, writer);
+            IO.write(sb, writer, false);
             List<TreeNode> children = node.children();
             int sz = children.size();
             if (sz == 0) {
@@ -156,7 +157,14 @@ public enum CliView {
     XML() {
         @Override
         public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
-            throw E.unsupport();
+            Class<?> mappedResultType = (result instanceof Iterable) ? JSONArray.class : JSONObject.class;
+            Object mappedResult;
+            if (null != spec) {
+                mappedResult = spec.applyTo($.map(result), context).to(mappedResultType);
+            } else {
+                mappedResult = $.map(result).to(mappedResultType);
+            }
+            IO.write($.convert(mappedResult).to(Document.class)).to(writer);
         }
     },
 
@@ -232,28 +240,31 @@ public enum CliView {
             }
             componentType = firstElement.getClass();
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
-            spec = PropertySpec.MetaInfo.withCurrent(spec, context);
+            spec = PropertySpec.MetaInfo.withCurrentNoConsume(spec, context);
             if (null == spec) {
                 spec = new PropertySpec.MetaInfo();
                 spec.onValue("-not_exists");
             }
-            List<String> outputFields = repo.outputFields(spec, componentType, context);
+            List<S.Pair> outputFields = repo.outputFields(spec, componentType, context);
             if (outputFields.isEmpty()) {
                 return;
             }
-            IO.write(buildHeaderLine(outputFields, spec.labelMapping()), writer);
-            IO.write($.OS.lineSeparator(), writer);
-            IO.write(buildDataLine(firstElement, outputFields), writer);
+            IO.write(buildHeaderLine(outputFields, spec.labelMapping(context)), writer, false);
+            IO.write($.OS.lineSeparator(), writer, false);
+            IO.write(buildDataLine(firstElement, outputFields), writer, false);
+            boolean isCli = context instanceof CliContext;
             while (iterator.hasNext()) {
-                IO.write($.OS.lineSeparator(), writer);
-                IO.write(buildDataLine(iterator.next(), outputFields), writer);
-                IO.flush(writer);
+                IO.write($.OS.lineSeparator(), writer, false);
+                IO.write(buildDataLine(iterator.next(), outputFields), writer, false);
+                if (isCli) {
+                    IO.flush(writer);
+                }
             }
         }
 
-        private String buildDataLine(Object data, List<String> outputFields) {
-            Iterator<String> itr = outputFields.iterator();
-            String prop = itr.next();
+        private String buildDataLine(Object data, List<S.Pair> outputFields) {
+            Iterator<S.Pair> itr = outputFields.iterator();
+            S.Pair prop = itr.next();
             S.Buffer buf = S.buffer();
             buf.append(getProperty(data, prop));
             while (itr.hasNext()) {
@@ -262,22 +273,22 @@ public enum CliView {
             return buf.toString();
         }
 
-        private String getProperty(Object data, String prop) {
-            if ("this".equals(prop)) {
+        private String getProperty(Object data, S.Pair prop) {
+            if ("this".equals(prop._1)) {
                 return (escape(data));
             } else {
-                if (data instanceof AdaptiveRecord) {
-                    return escape(S.string(((AdaptiveRecord) data).getValue(prop)));
+                if (data instanceof AdaptiveMap) {
+                    return escape(S.string(((AdaptiveMap) data).getValue(prop._1)));
                 }
-                return escape($.getProperty(data, prop));
+                return escape($.getProperty(data, prop._1));
             }
         }
 
-        private String buildHeaderLine(List<String> outputFields, Map<String, String> labels) {
+        private String buildHeaderLine(List<S.Pair> outputFields, Map<String, String> labels) {
             if (null == labels) {
                 labels = new HashMap<>();
             }
-            Iterator<String> itr = outputFields.iterator();
+            Iterator<S.Pair> itr = outputFields.iterator();
             String label = label(itr.next(), labels);
             S.Buffer buf = S.buffer();
             buf.append(label);
@@ -287,9 +298,13 @@ public enum CliView {
             return buf.toString();
         }
 
-        private String label(String key, Map<String, String> labels) {
-            String s = labels.get(key);
-            return null == s ? key : s;
+        private String label(S.Pair pair, Map<String, String> labels) {
+            String s = labels.get(pair._1);
+            String defLabel = pair._2;
+            if (null == defLabel) {
+                defLabel = pair._1;
+            }
+            return null == s ? defLabel : s;
         }
 
         private String escape(Object o) {

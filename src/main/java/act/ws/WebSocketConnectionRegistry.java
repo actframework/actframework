@@ -9,9 +9,9 @@ package act.ws;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,17 +28,23 @@ import org.osgl.util.C;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Organize websocket connection by string typed keys. Multiple connections
  * can be attached to the same key
  */
 public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
+
     private ConcurrentMap<String, ConcurrentMap<WebSocketConnection, WebSocketConnection>> registry = new ConcurrentHashMap<>();
+
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Return a list of websocket connection by key
-     * @param key the key to find the websocket connection list
+     *
+     * @param key
+     *         the key to find the websocket connection list
      * @return a list of websocket connection or an empty list if no websocket connection found by key
      */
     public List<WebSocketConnection> get(String key) {
@@ -48,10 +54,22 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
     }
 
     /**
+     * Remove all connection associations to `key`.
+     *
+     * @param key
+     *         the key to be removed from the registry
+     */
+    public void removeAll(String key) {
+        registry.remove(key);
+    }
+
+    /**
      * Accept a visitor to iterate through the connections attached to the key specified
      *
-     * @param key the key
-     * @param visitor the visitor
+     * @param key
+     *         the key
+     * @param visitor
+     *         the visitor
      */
     public void accept(String key, $.Function<WebSocketConnection, ?> visitor) {
         ConcurrentMap<WebSocketConnection, WebSocketConnection> connections = registry.get(key);
@@ -59,20 +77,25 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
             return;
         }
         if (!connections.isEmpty()) {
-            List<WebSocketConnection> toBeCleared = null;
-            for (WebSocketConnection conn : connections.keySet()) {
-                if (conn.closed()) {
-                    if (null == toBeCleared) {
-                        toBeCleared = new ArrayList<>();
+            lock.lock();
+            try {
+                List<WebSocketConnection> toBeCleared = null;
+                for (WebSocketConnection conn : connections.keySet()) {
+                    if (conn.closed()) {
+                        if (null == toBeCleared) {
+                            toBeCleared = new ArrayList<>();
+                        }
+                        toBeCleared.add(conn);
+                        continue;
                     }
-                    toBeCleared.add(conn);
-                    continue;
+                    visitor.apply(conn);
                 }
-                visitor.apply(conn);
-            }
-            if (null != toBeCleared) {
-                ConcurrentMap<WebSocketConnection, WebSocketConnection> originalCopy = registry.get(key);
-                originalCopy.keySet().removeAll(toBeCleared);
+                if (null != toBeCleared) {
+                    ConcurrentMap<WebSocketConnection, WebSocketConnection> originalCopy = registry.get(key);
+                    originalCopy.keySet().removeAll(toBeCleared);
+                }
+            } finally {
+                lock.unlock();
             }
         }
     }
@@ -84,8 +107,10 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
      *
      * Note multiple connections can be attached to the same key
      *
-     * @param key the key
-     * @param connection the websocket connection
+     * @param key
+     *         the key
+     * @param connection
+     *         the websocket connection
      * @see #signIn(String, WebSocketConnection)
      */
     public void register(String key, WebSocketConnection connection) {
@@ -97,8 +122,10 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
      *
      * Note multiple connections can be attached to the same key
      *
-     * @param key the key
-     * @param connection the websocket connection
+     * @param key
+     *         the key
+     * @param connection
+     *         the websocket connection
      * @see #register(String, WebSocketConnection)
      */
     public void signIn(String key, WebSocketConnection connection) {
@@ -108,8 +135,11 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
 
     /**
      * Sign in a group of web socket connections to the registry by key
-     * @param key the key
-     * @param connections a collection of websocket connections
+     *
+     * @param key
+     *         the key
+     * @param connections
+     *         a collection of websocket connections
      */
     public void register(String key, Collection<WebSocketConnection> connections) {
         signIn(key, connections);
@@ -117,8 +147,11 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
 
     /**
      * Sign in a group of connections to the registry by key
-     * @param key the key
-     * @param connections a collection of websocket connections
+     *
+     * @param key
+     *         the key
+     * @param connections
+     *         a collection of websocket connections
      */
     public void signIn(String key, Collection<WebSocketConnection> connections) {
         if (connections.isEmpty()) {
@@ -135,8 +168,10 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
     /**
      * De-register a connection from the registry by key specified
      *
-     * @param key the key
-     * @param connection the websocket connection
+     * @param key
+     *         the key
+     * @param connection
+     *         the websocket connection
      */
     public void deRegister(String key, WebSocketConnection connection) {
         signOff(key, connection);
@@ -147,8 +182,10 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
      *
      * Note this method is an alias of {@link #signOff(String, Collection)}
      *
-     * @param key the key
-     * @param connections a collection of websocket connections
+     * @param key
+     *         the key
+     * @param connections
+     *         a collection of websocket connections
      * @see #signOff(String, Collection)
      */
     public void deRegister(String key, Collection<WebSocketConnection> connections) {
@@ -157,8 +194,11 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
 
     /**
      * Detach a connection from a key.
-     * @param key the key
-     * @param connection the connection
+     *
+     * @param key
+     *         the key
+     * @param connection
+     *         the connection
      */
     public void signOff(String key, WebSocketConnection connection) {
         ConcurrentMap<WebSocketConnection, WebSocketConnection> connections = registry.get(key);
@@ -173,7 +213,8 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
      *
      * This method is an alias of {@link #signOff(WebSocketConnection)}.
      *
-     * @param connection the connection.
+     * @param connection
+     *         the connection.
      */
     public void deRegister(WebSocketConnection connection) {
         signOff(connection);
@@ -181,7 +222,9 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
 
     /**
      * Remove a connection from all keys.
-     * @param connection the connection
+     *
+     * @param connection
+     *         the connection
      */
     public void signOff(WebSocketConnection connection) {
         for (ConcurrentMap<WebSocketConnection, WebSocketConnection> connections : registry.values()) {
@@ -192,8 +235,10 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
     /**
      * Sign off a group of connections from the registry by key
      *
-     * @param key the key
-     * @param connections a collection of websocket connections
+     * @param key
+     *         the key
+     * @param connections
+     *         a collection of websocket connections
      */
     public void signOff(String key, Collection<WebSocketConnection> connections) {
         if (connections.isEmpty()) {
@@ -224,7 +269,8 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
      *
      * Note it might count connections that are closed but not removed from registry yet
      *
-     * @param key the key
+     * @param key
+     *         the key
      * @return connection count by key
      */
     public int count(String key) {
@@ -240,6 +286,19 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
             }
         }
         registry.clear();
+    }
+
+    void purge(List<WebSocketConnection> closedConnections) {
+        lock.lock();
+        try {
+            for (WebSocketConnection connection : closedConnections) {
+                for (ConcurrentMap<WebSocketConnection, WebSocketConnection> map: registry.values()) {
+                    map.remove(connection);
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     private ConcurrentMap<WebSocketConnection, WebSocketConnection> ensureConnectionList(String key) {

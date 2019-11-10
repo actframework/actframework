@@ -28,6 +28,7 @@ import org.osgl.util.S;
 /**
  * Provides logging support utility methods to extended classes.
  */
+@Stateless
 public class LogSupport {
 
     public static final String DOUBLE_DASHED_LINE = S.times('=', 80);
@@ -36,8 +37,6 @@ public class LogSupport {
     public static final String HASH_SYMBOL_LINE = S.times('#', 80);
     public static final String TILD_LINE = S.times('~', 80);
 
-    @NoBind
-    @Stateless
     protected final transient Logger logger;
 
     public LogSupport() {

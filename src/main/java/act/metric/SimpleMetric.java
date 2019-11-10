@@ -21,20 +21,23 @@ package act.metric;
  */
 
 import org.osgl.$;
+import org.osgl.util.S;
 
 /**
  * A simple implementation of {@link Metric}
  */
 public class SimpleMetric implements Metric {
     private MetricStore metricStore;
+    private String name;
 
-    public SimpleMetric(MetricStore metricStore) {
+    public SimpleMetric(String name, MetricStore metricStore) {
+        this.name = name;
         this.metricStore = $.requireNotNull(metricStore);
     }
 
     @Override
     public Timer startTimer(String name) {
-        return new SimpleTimer(name, metricStore);
+        return new SimpleTimer(S.pathConcat(this.name, ':', name), metricStore);
     }
 
     @Override

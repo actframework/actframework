@@ -9,9 +9,9 @@ package act.view;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,14 +25,14 @@ import static act.util.ActError.Util.loadSourceInfo;
 import static org.osgl.http.H.Status.INTERNAL_SERVER_ERROR;
 
 import act.Act;
-import act.app.App;
-import act.app.SourceInfo;
+import act.app.*;
 import act.asm.AsmContext;
 import act.asm.AsmException;
 import act.exception.BindException;
 import act.util.ActError;
 import org.osgl.$;
 import org.osgl.exception.InvalidRangeException;
+import org.osgl.exception.ToBeImplemented;
 import org.osgl.exception.UnsupportedException;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.ResponseStatus;
@@ -41,10 +41,9 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.validation.ValidationException;
+import java.util.*;
+import javax.persistence.PersistenceException;
+import javax.validation.*;
 
 public class ActErrorResult extends ErrorResult implements ActError {
 
@@ -56,7 +55,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         populateSourceInfo();
     }
 
-    public ActErrorResult(H.Status status, String message, Object ... args) {
+    public ActErrorResult(H.Status status, String message, Object... args) {
         super(status, errorMessage(status, message, args));
         init();
         populateSourceInfo();
@@ -98,7 +97,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         populateSourceInfo(cause);
     }
 
-    public ActErrorResult(H.Status status, int errorCode, Throwable cause, String message, Object ... args) {
+    public ActErrorResult(H.Status status, int errorCode, Throwable cause, String message, Object... args) {
         super(status, errorCode, cause, errorMessage(status, message, args));
         init();
         populateSourceInfo(cause);
@@ -136,7 +135,8 @@ public class ActErrorResult extends ErrorResult implements ActError {
         return false;
     }
 
-    protected void init() {}
+    protected void init() {
+    }
 
     protected void populateSourceInfo(Throwable cause) {
         if (!Act.isDev()) {
@@ -160,6 +160,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
     }
 
     private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = new HashMap<>();
+
     static {
         $.Function<Throwable, Result> unsupported = new $.Transformer<Throwable, Result>() {
             @Override
@@ -167,6 +168,12 @@ public class ActErrorResult extends ErrorResult implements ActError {
                 return ActNotImplemented.create(throwable);
             }
         };
+        x.put(ToBeImplemented.class, new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                return ActToBeImplemented.create();
+            }
+        });
         x.put(UnsupportedException.class, unsupported);
         x.put(UnsupportedOperationException.class, unsupported);
         x.put(IllegalStateException.class, new $.Transformer<Throwable, Result>() {
@@ -211,14 +218,28 @@ public class ActErrorResult extends ErrorResult implements ActError {
     public static Result of(Throwable t) {
         if (t instanceof Result) {
             return (Result) t;
+        }
+        if (t instanceof PersistenceException && null != t.getCause()) {
+            t = t.getCause();
+        }
+        if (t instanceof ConstraintViolationException) {
+            ConstraintViolationException e = (ConstraintViolationException) t;
+            Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
+            Map<String, ConstraintViolation> lookup = new HashMap<>();
+            for (ConstraintViolation v : violations) {
+                lookup.put(S.pathConcat(v.getRootBeanClass().getSimpleName(), '.', v.getPropertyPath().toString()), v);
+            }
+            S.Buffer buf = S.buffer();
+            ActionContext.buildViolationMessage(lookup, buf, ";");
+            String msg = buf.toString();
+            return ActBadRequest.create(msg);
         } else if (t instanceof org.rythmengine.exception.RythmException) {
             return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(INTERNAL_SERVER_ERROR);
         } else if (t instanceof AsmException) {
             return new ActErrorResult((AsmException) t, true);
-        } else {
-            $.Function<Throwable, Result> transformer = transformerOf(t);
-            return null == transformer ? new ActErrorResult(t) : transformer.apply(t);
         }
+        $.Function<Throwable, Result> transformer = transformerOf(t);
+        return null == transformer ? new ActErrorResult(t) : transformer.apply(t);
     }
 
     public static ActErrorResult scanningError(AsmException exception) {
@@ -315,7 +336,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
             return null;
         }
         Throwable cause;
-        for (;;) {
+        for (; ; ) {
             cause = t.getCause();
             if (null != cause) {
                 t = cause;

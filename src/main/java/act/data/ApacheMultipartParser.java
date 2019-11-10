@@ -55,9 +55,6 @@ public class ApacheMultipartParser extends RequestBodyParser {
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 ISObject sobj = UploadFileStorageService.store(item, context.app());
-                if (sobj.getLength() == 0L) {
-                    continue;
-                }
                 String fieldName = item.getFieldName();
                 if (item.isFormField()) {
                     // must resolve encoding
@@ -69,7 +66,6 @@ public class ApacheMultipartParser extends RequestBodyParser {
                             _encoding = contentTypeEncoding.encoding;
                         }
                     }
-
                     mergeValueInMap(result, fieldName, sobj.asString(Charset.forName(_encoding)));
                 } else {
                     context.addUpload(item.getFieldName(), sobj);

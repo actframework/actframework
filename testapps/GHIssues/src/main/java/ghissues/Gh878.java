@@ -3,10 +3,12 @@ package ghissues;
 import act.controller.annotation.UrlContext;
 import act.util.PropertySpec;
 import act.util.SimpleBean;
+import org.osgl.aaa.NoAuthentication;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.*;
 
 @UrlContext("878")
+@NoAuthentication
 public class Gh878 {
 
     public static class Foo implements SimpleBean{

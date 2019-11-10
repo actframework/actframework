@@ -1,0 +1,9 @@
+Scenario(1138):
+  description: "`@Every` annotation not working as expected if `@OnAppStart` annotation presented"
+  interactions:
+    - request:
+        get: 1138
+      response:
+        json:
+          result:
+            - gt: 1

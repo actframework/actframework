@@ -202,7 +202,7 @@ public class FuncTest extends TestBase {
         Object obj = func.apply();
         yes(obj instanceof DateTime);
         DateTime funcNow = (DateTime) obj;
-        yes((DateTime.now().getMillis() - funcNow.getMillis()) < 1000);
+        yes((DateTime.now().getMillis() - funcNow.getMillis()) < 2000);
     }
 
     @Test
@@ -211,7 +211,7 @@ public class FuncTest extends TestBase {
         Object obj = func.apply();
         yes(obj instanceof DateTime);
         DateTime funcNow = (DateTime) obj;
-        yes((DateTime.now().plusMinutes(1).getMillis() - funcNow.getMillis()) < 1000);
+        yes((DateTime.now().plusMinutes(1).getMillis() - funcNow.getMillis()) < 2000);
     }
 
 
@@ -221,7 +221,7 @@ public class FuncTest extends TestBase {
         Object obj = func.apply();
         yes(obj instanceof DateTime);
         DateTime funcNow = (DateTime) obj;
-        yes((DateTime.now().plusHours(1).getMillis() - funcNow.getMillis()) < 1000);
+        yes((DateTime.now().plusHours(1).getMillis() - funcNow.getMillis()) < 2000);
     }
 
 }

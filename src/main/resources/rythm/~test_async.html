@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+@args String testId, String partition
+<head>
+    <meta charset="UTF-8">
+    <link id="favicon-link" rel="icon" type="image/png" href="/~/asset/img/testing.ico?v=@act.Act.VERSION.getBuildNumber()">
+    <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jsrender.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <style>
+        body {
+          background-color: #222;
+          color: #f1f1f1;
+          font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+          font-size: 14px;
+        }
+        #test-result {
+            display: none;
+        }
+        #in-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+            width: 800px;
+            height: 100px;
+            text-align: center;
+        }
+        #gauge-container {
+            width: 800px;
+            height: 2px;
+            background: #444;
+        }
+        #progress {
+            width: 0;
+            position: relative;
+            left:0;
+            top:0;
+            border: 1px solid green
+        }
+        #progress.failure {
+            border: 1px solid red
+        }
+        #message, #progress-text {
+            font-size: 80%;
+            font-family: tahoma, verdana, arial;
+            padding: 5px 2px;
+            max-width: 800px;
+            overflow-x: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        #message {text-align: left}
+        #progress-text {text-align: right}
+        a {color: #00b8b6;}
+        h1,h2,h3,h4,h5 {
+          font-family: Tahoma, Arial, sans-serif;
+        }
+        h4 {
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 5px;
+          margin-top: 5px;
+          border-bottom: 1px dotted #888;
+          padding-bottom: 8px;
+        }
+        #act-version {
+          position:fixed;
+          bottom:0;
+          right:0;
+          font-size: 11pt;
+          padding: 5px 10px;
+        }
+        .interactions {
+          list-style: none;
+          padding-left: 0;
+          margin-top: 10px;
+          padding-bottom: 10px;
+        }
+        .PASS {
+          color: #00ee00;
+        }
+        .FAIL {
+          color: #ff3333;
+        }
+        .PENDING {
+          color: #ccc;
+        }
+        .error-message {
+          margin-left: 2em;
+        }
+        .version {
+          font-weight: 600;
+        }
+        h4.ignore {
+          color: #aaa;
+          margin-bottom: 20px;
+        }
+        ul.interactions li {
+          margin-bottom: 8px;
+        }
+        li.open-source {
+          display: none;
+        }
+        #error {
+            color: #ee0000;
+        }
+        #error-message {
+            padding: 5px 15px;
+            border: 1px solid #aaa;
+        }
+        ul#error-scenario-list {
+            text-align: left;
+            padding-left: 0;
+            list-style: none;
+            font-size: 80%;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+<div id="in-progress">
+    <div id="message">
+        <div id="scenario"><b>scenario</b>: <span id="scenario-desc"></span></div>
+        <div id="interaction"><b>interaction</b>: <span id="interaction-desc"></span></div>
+    </div>
+    <div id="gauge-container">
+        <div id="progress"></div>
+        <div id="progress-text"></div>
+    </div>
+    <ul id="error-scenario-list" class="FAIL">
+    </ul>
+</div>
+<div id="test-result">
+    <h1>Test Report</h1>
+    <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
+    <div id="scenario-list" style="margin-top: 30px"></div>
+</div>
+<script type="text/x-jsrender" id="scenario-template">
+{{if error}}
+<div id="error">
+<h3>ERROR</h3>
+<pre id="error-message">{{:error.stackTrace}}</pre>
+</div>
+{{/if}}
+{{for scenarios}}
+<h4 {{if ignore}}class='ignore'{{/if}}>
+    {{:title}}
+    {{if issueUrl}}
+    <a class="issue-url" href="{{:issueUrl}}" target="issue-{{:name}}" style="text-decoration: none" title="jump to issue page">
+        <img src="/~/asset/img/{{:issueUrlIcon}}.png" style="height: 16px; padding-left: 1px;"></img>
+    </a>
+    {{/if}}
+    {{if ignore}}
+    <ul style="list-style-type: none;margin:0">
+        <li> - {{:ignoreReason}}</li>
+    </ul>
+    {{/if}}
+    {{if (!ignore && status !== 'PASS')}}
+  <br/>
+  <ul style="list-style-type:none; padding-left: 0px; font-size: 90%">
+    <li style="margin-bottom: 5px">
+      &gt;
+      <a href="/~/test/{{:name}}" target="{{:name}}">
+        Re-run scenario
+      </a>
+    </li>
+        {{if source}}
+    <li class="open-source">
+      &gt;
+      <a href="http://localhost:8091?message={{:source}}:1">Open scenario source</a>
+    </li>
+        {{/if}}
+  </ul>
+    {{/if}}
+</h4>
+
+{{if (!ignore && status !== 'PASS' && errorMessage && !errorMessage.includes('Interaction[')) }}
+<div class="{{:status}}">
+  [{{:status}}] {{>errorMessage}}
+  {{if (stackTrace) }}
+  <pre>
+    {{:stackTrace}}
+  </pre>
+  {{/if}}
+</div>
+{{/if}}
+
+{{if !ignore }}
+<ul class="interactions">
+{{for interactions}}
+  <li class="{{:status}}">
+    [{{:status}}] {{:description}}
+    {{if errorMessage}}
+    <div class="error-message">- {{>errorMessage}}</div>
+      {{if stackTrace }}
+        <pre>
+        {{:stackTrace}}
+        </pre>
+      {{/if}}
+    {{/if}}
+  </li>
+{{/for}}
+</ul>
+{{/if}}
+
+{{/for}}
+</script>
+<script>
+    function handleResult(result, failed) {
+        console.log(result)
+        if (failed) {
+            favicon = '/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()'
+        } else {
+            favicon = '/~/asset/img/test-success.ico?v=@act.Act.VERSION.getBuildNumber()'
+        }
+        $('#favicon-link').attr('href', favicon)
+        $('#in-progress').fadeOut();
+        var tmpl = $.templates('#scenario-template')
+        $('#scenario-list').html(tmpl.render(result))
+        $('#test-result').show();
+        $.ajax({
+          url: 'http://localhost:8091/',
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'jsonp',
+          timeout: 500,
+          success: function (ip) {
+            $('.open-source').show();
+          },
+          error: function (err) {
+            if (err.status === 200) {
+              $('.open-source').show();
+            }
+          }
+        });
+    }
+    function testCallback(data) {
+        var ws = $.createWebSocket('/~/ws/test/progress', function(e) {
+            alert("error")
+        })
+        var failed
+        var errorScenarios = []
+        ws.onmessage = function (event) {
+            var gauge = JSON.parse(event.data)
+            if (!gauge) return
+            if (gauge.done || gauge.error) {
+                $('#progress').width(800);
+                $.getJSON('/~/test/result', function(result) {
+                    handleResult(result, failed || gauge.error)
+                })
+            } else {
+                if (gauge.payload.failed) {
+                    failed = true
+                    $('#progress').addClass('failure')
+                    if (gauge.payload.scenario) {
+                        if (errorScenarios.indexOf(gauge.payload.scenario) < 0) {
+                            errorScenarios.push(gauge.payload.scenario)
+                            $('<li>' + gauge.payload.scenario + '</li>').appendTo($('#error-scenario-list'))
+                        }
+                    }
+                }
+                if (gauge.payload.scenario) {
+                    $('#scenario-desc').text(gauge.payload.scenario)
+                }
+                if (gauge.payload.interaction) {
+                    $('#interaction-desc').text(gauge.payload.interaction)
+                }
+                $('#progress-text').text(gauge.currentSteps + '/' + (gauge.maxHint - 1))
+                $('#progress').width(gauge.progressPercent * 800 / 100)
+            }
+        }
+    }
+    @if(partition) {
+        $.postJSON('/~/test/@testId?partition=@partition', testCallback)
+    } else {
+        $.postJSON('/~/test/@testId', testCallback)
+    }
+</script>
+</body>
+</html>

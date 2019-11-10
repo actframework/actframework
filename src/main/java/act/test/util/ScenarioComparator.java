@@ -9,9 +9,9 @@ package act.test.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ package act.test.util;
 
 import act.test.Scenario;
 import org.osgl.$;
+import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,12 +31,16 @@ import java.util.List;
 
 public class ScenarioComparator implements Comparator<Scenario> {
 
-    private ScenarioManager scenarioManager;
+    private String finalPartition; // any test scenario fall into this partition shall be run last
     private boolean finished;
 
-    public ScenarioComparator(ScenarioManager manager, boolean finished) {
-        scenarioManager = $.requireNotNull(manager);
+    public ScenarioComparator(boolean finished) {
         this.finished = finished;
+    }
+
+    public ScenarioComparator(String finalPartition) {
+        this.finished = false;
+        this.finalPartition = S.requireNotBlank(finalPartition);
     }
 
     @Override
@@ -47,24 +53,30 @@ public class ScenarioComparator implements Comparator<Scenario> {
             } else if (p1 && !p2) {
                 return 1;
             }
+            if ($.bool(o1.ignore) && $.not(o2.ignore)) {
+                return -1;
+            } else if ($.bool(o2.ignore)) {
+                return 1;
+            }
         }
-        List<Scenario> d1 = depends(o1, new ArrayList<Scenario>());
-        List<Scenario> d2 = depends(o2, new ArrayList<Scenario>());
-        if (d1.contains(o2)) {
+        if (o1.allDepends.contains(o2)) {
             return 1;
         }
-        if (d2.contains(o1)) {
+        if (o2.allDepends.contains(o1)) {
             return -1;
         }
         int n = o1.partition.compareTo(o2.partition);
-        return 0 != n ? n : o1.name.compareTo(o2.name);
-    }
-    private List<Scenario> depends(Scenario s, List<Scenario> depends) {
-        for (String name : s.depends) {
-            Scenario scenario = scenarioManager.get(name);
-            depends(scenario, depends);
-            depends.add(scenario);
+        if (n != 0) {
+            if (null != finalPartition) {
+                if (S.eq(o1.partition, finalPartition)) {
+                    return 1;
+                } else if (S.eq(o2.partition, finalPartition)) {
+                    return -1;
+                }
+            }
+            return n;
         }
-        return depends;
+        return o1.title().compareTo(o2.title());
     }
+
 }

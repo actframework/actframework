@@ -63,7 +63,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             });
             return;
         }
-        Job job = getOrCreateMethodJob(method);
+        Job job = getOrCreateMethodJob(method, anno != FixtureLoader.class);
         String value = info.value;
         if (Cron.class.isAssignableFrom(anno)) {
             registerCron(job, evaluateExpression(value, anno));
@@ -158,11 +158,15 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobClassMetaInfo classMetaInfo = method.classInfo();
         return (classMetaInfo.isAbstract());
     }
-    
+
     private Job getOrCreateMethodJob(JobMethodMetaInfo method) {
+        return getOrCreateMethodJob(method, true);
+    }
+    
+    private Job getOrCreateMethodJob(JobMethodMetaInfo method, boolean oneTime) {
         String id = method.id();
         JobManager jobManager = app().jobManager();
         Job job = jobManager.jobById(id, false);
-        return null == job ? new Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), false) : job;
+        return null == job ? new Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), oneTime) : job;
     }
 }

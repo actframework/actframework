@@ -22,6 +22,7 @@ package act.db;
 
 import act.inject.param.NoBind;
 import act.util.LogSupport;
+import act.util.Stateless;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
@@ -31,17 +32,19 @@ import java.lang.reflect.Type;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 
-// We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
-//@InheritedStateless
-public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> extends LogSupport implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
+@NoBind
+@Stateless
+public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>>
+        extends LogSupport
+        implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
-    @NoBind private boolean destroyed;
-    @NoBind protected Type modelType;
-    @NoBind protected Class<MODEL_TYPE> modelClass;
-    @NoBind protected Type idType;
-    @NoBind protected Class<ID_TYPE> idClass;
-    @NoBind protected Type queryType;
-    @NoBind protected Class<QUERY_TYPE> queryClass;
+    private boolean destroyed;
+    protected Type modelType;
+    protected Class<MODEL_TYPE> modelClass;
+    protected Type idType;
+    protected Class<ID_TYPE> idClass;
+    protected Type queryType;
+    protected Class<QUERY_TYPE> queryClass;
 
     public DaoBase() {
         exploreTypes();
@@ -53,7 +56,6 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODE
         this.modelType = $.requireNotNull(modelType);
         this.modelClass = Generics.classOf(modelType);
     }
-
 
     @Override
     public void destroy() {

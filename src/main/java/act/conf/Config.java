@@ -84,7 +84,11 @@ public abstract class Config<E extends ConfigKey> extends LogSupportedDestroyabl
         if (o == NULL) {
             return null;
         } else {
-            return (T) o;
+            if (null != def && $.isSimpleType(o.getClass())) {
+                return (T) $.convert(o).to(def.getClass());
+            } else {
+                return (T) o;
+            }
         }
     }
 
@@ -211,7 +215,7 @@ public abstract class Config<E extends ConfigKey> extends LogSupportedDestroyabl
     protected abstract ConfigKey keyOf(String s);
 
     public static String canonical(String key) {
-        return Keyword.of(key).dotted();
+        return Keyword.of(key).dotted().toLowerCase();
     }
 
     public static boolean matches(String k1, String k2) {

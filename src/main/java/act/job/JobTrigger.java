@@ -52,6 +52,12 @@ public abstract class JobTrigger {
 
     protected static final Logger LOGGER = LogManager.get(JobTrigger.class);
 
+    protected Boolean oneTime;
+
+    private JobTrigger(Boolean oneTime) {
+        this.oneTime = oneTime;
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName();
@@ -68,6 +74,9 @@ public abstract class JobTrigger {
     final void register(Job job, JobManager manager) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("trigger on [%s]: %s", this, job);
+        }
+        if (null != oneTime && !oneTime) {
+            job.setNonOneTime();
         }
         job.trigger(this);
         schedule(manager, job);
@@ -250,6 +259,7 @@ public abstract class JobTrigger {
     static class _Cron extends JobTrigger {
         private CronExpression cronExpr;
         _Cron(String expression) {
+            super(false);
             cronExpr = new CronExpression(expression);
         }
 
@@ -293,12 +303,14 @@ public abstract class JobTrigger {
         protected long seconds;
         protected boolean startImmediately;
         _Periodical(String duration, boolean startImmediately) {
+            super(false);
             E.illegalArgumentIf(S.blank(duration), "delay duration shall not be empty");
             seconds = Time.parseDuration(duration);
             E.illegalArgumentIf(seconds < 1, "delay duration shall not be zero or negative number");
             this.startImmediately = startImmediately;
         }
         _Periodical(long seconds, boolean startImmediately) {
+            super(false);
             E.illegalArgumentIf(seconds < 1, "delay duration cannot be zero or negative");
             this.seconds = seconds;
             this.startImmediately = startImmediately;
@@ -377,6 +389,7 @@ public abstract class JobTrigger {
     private abstract static class _AssociatedTo extends JobTrigger {
         String targetId;
         _AssociatedTo(String targetId) {
+            super(null);
             E.illegalArgumentIf(S.blank(targetId), "associate job ID expected");
             this.targetId = targetId;
         }

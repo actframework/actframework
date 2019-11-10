@@ -21,6 +21,8 @@ package act.apidoc;
  */
 
 import act.db.DbBind;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.joda.time.ReadableInstant;
 import org.osgl.inject.BeanSpec;
 
@@ -55,6 +57,12 @@ class BeanSpecInterpreter {
                 }
                 return "map of (" + keyStr + ", " + valStr + ")";
             }
+        }
+        if (JSONObject.class.isAssignableFrom(rawType)) {
+            return "JSON object";
+        }
+        if (JSONArray.class.isAssignableFrom(rawType)) {
+            return "JSON array";
         }
         if (Number.class.isAssignableFrom(rawType)) {
             return "number";

@@ -1,0 +1,20 @@
+Scenario(1161-c):
+  interactions:
+    - request:
+        post: 1161/nil
+Scenario(1161-b):
+  depends:
+    - 1161-c
+  fixtures:
+    - 1161.yml
+  interactions:
+    - request:
+        get: 1161/Green
+      response:
+        name: Green
+Scenario(1161-a):
+  depends:
+    - 1161-b
+  interactions:
+    - request:
+        post: 1161/nil

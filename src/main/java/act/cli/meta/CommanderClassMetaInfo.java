@@ -206,11 +206,7 @@ public class CommanderClassMetaInfo extends LogSupportedDestroyableBase {
     }
 
     public CommanderClassMetaInfo contextPath(String path) {
-        if (S.blank(path)) {
-            contextPath = "/";
-        } else {
-            contextPath = path;
-        }
+        contextPath = path;
         return this;
     }
 

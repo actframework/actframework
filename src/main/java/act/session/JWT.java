@@ -162,7 +162,9 @@ public class JWT extends SingletonBase {
 
     public Token deserialize(String tokenString) {
         List<String> parts = S.fastSplit(tokenString, ".");
-        E.illegalArgumentIf(parts.size() != 3);
+        if (parts.size() != 3) {
+            return null;
+        }
         String encodedHeaders = parts.get(0);
         String encodedPayloads = parts.get(1);
         String hash = parts.get(2);
@@ -202,7 +204,7 @@ public class JWT extends SingletonBase {
 
     private boolean verifyExpires(JSONObject payloads) {
         Object obj = payloads.get(Payload.EXPIRES_AT.key);
-        return null != obj && obj instanceof Number && ((Number) obj).longValue() > ($.ms() / 1000);
+        return null == obj || (obj instanceof Number && ((Number) obj).longValue() > ($.ms() / 1000));
     }
 
     private boolean verifyArgo(JSONObject headers) {

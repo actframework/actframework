@@ -30,9 +30,7 @@ import ascii.Image2ascii;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.fusesource.jansi.Ansi;
 import org.osgl.$;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +95,7 @@ public class Banner {
         }
         File aFile = new File("");
         String group = Act.nodeGroup();
-        sb.append("\nscan pkg: ").append(System.getProperty(AppConfigKey.SCAN_PACKAGE.key()));
+        sb.append("\nscan pkg: ").append(Act.conf().get(AppConfigKey.SCAN_PACKAGE.key()));
         sb.append("\nbase dir: ").append(aFile.getAbsolutePath());
         sb.append("\n     pid: ").append(Env.PID.get());
         sb.append("\n profile: ").append(ConfLoader.confSetName());
@@ -105,6 +103,8 @@ public class Banner {
         if (S.notBlank(group)) {
             sb.append("\n   group: ").append(group);
         }
+        sb.append("\n      OS: ").append(OS.get());
+        sb.append("\n     jdk: ").append(VM.INFO).append(" ").append(VM.SPEC_VERSION);
         sb.append("\n");
         sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
         sb.append("\n");
@@ -239,9 +239,8 @@ public class Banner {
         return S.concat(S.times(" ", gap), poweredBy);
     }
 
-    private static boolean supportAnsi() {
-        // eclipse project does not support ansi
-        return !new File(".project").exists();
+    public static boolean supportAnsi() {
+        return S.notBlank(System.getenv("TERM"));
     }
 
 }

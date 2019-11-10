@@ -1,0 +1,17 @@
+Scenario(1022):
+  description: Routing issue with dynamic aliases
+  interactions:
+  - description: Get foo
+    request:
+      get: /1022/foo/1
+    response:
+      json:
+        name:
+          - exists: true
+  - description: Get foo name
+    request:
+      get: /1022/foo/1/fooName
+    response:
+      json:
+        result:
+          - exists: true

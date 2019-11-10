@@ -1,6 +1,338 @@
 # ActFramework Change Log
 
-**1.8.8**
+**1.8.30**
+* `__path` param value needs to be sanitized #1241
+* Act-Test - add an `entityId()` function #1240
+
+**1.8.29** 03/Nov/2019
+* SimpleRestfulServiceBase - allow developer to inject logic #1237
+* Allow app to specify sample data provider for any field #1236
+* Enable render QRCode using pseudo accept parameter #1235
+* Creating a system self healing mechanism to handle OOM caused by too many dangling connention #1234
+* Add commonly used cron expression constants #1229
+* Ehcache not working in Act since 1.8.27 #1220
+* CORS - update default allowed headers #1228
+* Allow using query parameter `_accept` to overwrite the `Accept` HTTP header #1227
+* SimpleRestfulServiceBase - support filtering/pagingation/sorting #1226
+* ResourceLoader - Error loading Yaml data into List of entities #1225
+* ApiDoc - missing description for classes extends from `SimpleRestfulServiceBase` #1224
+* Markdown response support #1219
+* $$.processStringSubstitution` issue #1223
+* `@LoadResource` mechanism not doing resource filtering even `resource.filtering` is set to `true` #1222
+* `UnexpectedException: type not recognized: ? extends T` - JsonDtoPatch logic issue #1218
+* CLI table view layout broken due to multi-bytes characters #1217
+* Incorrect XML output for iterable type #1216
+* Support output yaml response #1215
+* Create built-in CLI session history mechanism #1214
+* Allow app to configure CLI progress bar style #1212
+* Incorrect message returned by `ActContext.i18n(template, args)` #1211
+* Provide a default HTML page for async controller response #1209
+* Allow it auto refresh when got 409 error during hot-reloading #1207
+* "The response has already been started" error #1208
+* Update FastJSON to 1.2.62 #1205
+
+**1.8.28** 21/Sep/2019
+* Session resolve issue for concurrent incoming requests #1204
+
+**1.8.27** 15/Sep/2019
+* Hotreload error - Provider has already registered for spec: class act.aaa.AAAService #1201
+* Act-Test - Improve dependency/fixture management #1198
+* Act-Test - dependency order not maintained when setup is true #1195
+* ConcurrentModificationException on detecting file changes #1194
+* Hotreload logic - it shall save ActionContext to local before checking file changes #1193
+* TopLevelDomainList - fix NPE caused when job executing during app hotreload process #1192
+* FastJsonJodaDateCodec - allow it to deserialize timestamp (long) data #1191
+* Act-Test - add randDouble and randFloat function #1190
+* Act-Test - allow run scenarios for specific partition #1189
+* Act-Test - display partition name in the title #1187
+* Update to osgl-tool-1.20.1 and osgl-cache-1.7.1 #1186
+* No need to invoke hotreload listener if app is not running in DEV mode #1185
+* Once add ehcache dependency `maven package` process will never end #1184
+* Command register - it shall not register a command on abstract class #1183
+* CommandBytecodeScanner - it needs to register command by name along with prefix #1182
+* ApiDoc - add syntax highlight for JSON samples #1181
+* ResourceGetter - accessing folder that access is not allowed cause response never close #1180
+* ActionContext not released when `ResourceGetter` is handling request #1179
+* ConcurrentModificationException when output to csv with PropertySpec specified #1178
+* `FixtureLoader` not effective after called #1177
+* Act-Test - NPE encountered when scenario is parsed after scenario depend on it parsed #1176
+* NPE triggered in `requestThrottleExpireScale` after hot reload #1175
+* Change Content-Type header for JSON error response #1173
+
+**1.8.26** 21/Jul/2019
+* update osgl-tool to 1.20.0
+* update genie to 1.11.0
+* API doc - allow landing to specific part when open link with hash #1171
+* Act-Test - when dependent scenario is running in a different partition it shall be run anyway even it has been finished before #1169
+* Act-Test download checksum verification might cause NPE #1168
+* Act-Test - circular dependency caused by `setup` #1167
+* View plugin get initialised twice #1166
+* Scenario spec - cannot specify long value for substitution #1164
+* LoadConfig - suppress warning messages #1163
+* Act-Test - list failed scenario names in the splash page #1162
+* Act-Test - fixture clearing issue with multiple level dependencies bug #1161
+* When uploaded an empty file, the parameter injected is `null` #1160
+* Test Scenario - allow specify response spec without type block #1159
+* Test Scenario - allow specify ignore reason #1158
+* Keep field definition order when output entity list into Excel file #1157
+* Make `AppServicePlugin` extends `LogSupport` #1156
+* False alarm caused by render inline template #1155
+* False alarm message about local variable table not found on app start #1154
+
+**1.8.25** 2/Jul/2019
+
+* Allow inject DbService #1153
+* NPE on creating controller instance #1152
+
+**1.8.24** 22/Jun/2019
+* Allows resource filtering in dev mode #1151
+* CSV view - support AdaptiveBeanBase typed data #1149
+* App halt when there are block issue on startup #1148 
+* Resource loader - improve Map loading - support different key val types #1147
+* Resource loader - handle comment in files for map loading #1146
+* Downloading a big CSV file the second time failed #1145
+* CLI - Async progress bar reporting eat up CPU #1144
+
+
+**1.8.23** 16/May/2019
+* CLI Table view - print line interlaced with revert color/bg color #1143
+* Add `@Label` annotation for bean field marking #1142
+* Email validation handler - not able to valid email at `thinking.studio` #1141
+* CLI - session exit immediately #1140
+* Improve async CLI command error reporting #1139
+* `@Every` annotation not working as expected if `@OnAppStart` annotation presented #1138
+* Router - debug routing list missing certain routes #1137
+
+**1.8.22** 20/May/2019
+* `route.print` not handle keyword matching routes correctly #1136
+* Allow developer to disable JSON body patch #1134
+* API Doc - treat session variable as a special param #1133
+* API doc - catch field javadoc comment and add it to API doc #1132
+* Enhance AdaptiveBean - better support to inheritance #1131
+* Allow developer to specify property naming convention for JSON output #1130
+* Upload file issue #1128
+* Act-Test add synonyms to cache/assign #1126
+* Act-Test add `startsIgnoreCase` and `endsIgnoreCase` verifier #1125
+
+**1.8.21** 26/Apr/2019
+* Update jQuery to 3.4.0 #1123
+* Add String to LocalDate and String to LocalTime type converter #1124
+
+**1.8.20** 20/Apr/2019
+* Act-Test - Add alias `assign` to `cache'; improve explicit issueKey handling #1120
+* Request handler - error output when ReturnValueAdvice and PropertySpec presented for Iterable type return #1118
+* `UnexpectedException` triggered executing CLI command in TSCPP project #1117
+* Configurable URL router support #1116
+* Act Test - running duplicated scenarios due to introduce of RefId #1115
+* Act Test - fixture not cleared in certain case #1114
+* Act Test - intelligent scenario name #1113
+* Validation message - remove the logic that wrap user defined message with `{` and `}` #1112
+* Validation message - allow developer to specify not prepend bean/property path #1111
+* Act-Test: Add issueKey to Scenario #1108
+* Improve `~/test` page rendering #1105
+* Mock data function for development #1106
+* Add headerNames() to UndertowRequest #1104
+* Add `-parameters` argument to ECJ #1103
+* Act-Test add containsIgnoreCase verifier #1102
+* Provide mechanism to inspect Job failure #1100
+* request handler - allow bind to a path in JSON body #1099
+* Exception raised before committing to response shall trigger another 500 response #1097
+* OsglConfig.internalCache shall be cleared before DB start init #1098
+* java.lang.LinkageError caused by org.w3c.dom.Document #1096
+* ActFramework hot reload caused Ehcache Classloader Exception #1070
+* `@LoginUser` caused `InjectException` upon hot reload #1071
+* DataPropertyRepository - ClassCastException encountered building property path #1095
+* DataPropertyRepository - StackOverflowError building property path for model with circular reference #1093
+* Error encountered with customised Unique validator when working with JPA #1069
+* Act-Test - add refId property to Scenario #1091
+* Add switch to disable auto hot reload in DEV mode #1090
+* GH 1078 - Log warn message when `@Global` is found on instance method of an abstract class
+* API Doc - handle `@inheritDoc` tag #1089
+* ReflectedInvokerHelper treated `Set` as stateless type #1088
+* ParamValueLoaderService - PARAM_TREE not cleared in certain case #1087
+* GH 1072 - improve dao init logic, log warn message when an non-abstract Dao class
+  cannot be materialized because of missing type param implementation  
+* API Doc - improve support for endpoints defined in parent class #1086
+* API doc - make it consistent for styling of javadoc code block and sample code block #1085
+* API doc - capture field javadoc comment #1084
+* `ISObject` is not null when no file is uploaded #1083
+* Upload file caused server crash #1082
+* Event bus - simple event key matching logic needs improvement #1077
+* Act-Test - print colourised output when run batch test #1081
+* Act-Test - allow developer specify a model shall not be cleared at fixture loading #1080
+* Error visiting page with IE 8 or below #1079
+* Misleading error stack printed out when loading yml file with `@LoadResource` #1073
+* Act-Test - JSON request array content get dropped #1076
+* Add filter box in API page #1074
+* Act-Test - add `ignore` flag to scenario #1075
+* JPAContext is not readay error when app start asynchronously #1063
+* StackOverflowError caused by JsonDtoPatch #1064
+* Multiple improvements on sys admin command #1068
+  + simplified command name aliases for system command: xxx.list
+    - route.list -> route or routes
+    - metric.timer.list -> metric.timer 
+                        or metric.timers 
+                        or metric
+                        or metrics
+                        or timer
+                        or timers
+    - metric.counter.list -> metric.counter
+                        or metric.counters
+                        or counters
+    - job.list -> job or jobs
+    - daemon.list - daemon or daemons
+    - conf.list
+  + method/field access error due to different classloader for XxxAdmin and the access type
+  + uniformed `q` parameter handling for list commands 
+* Improve metric timer
+* envMatches in ControllerByteCodeScanner shall be reset upon scanning new class #1065
+* Act-Test - support post XML encoded body #1062
+* API book - Module name shall include enclosing class #1059
+* API doc - line breaks in param description get removed #1060
+* metric command stop working #1058
+
+**1.8.19** 13/Feb/2019
+* Update dependency versions
+* Test yaml - variable not evaluated when putting in an array #1055
+* Allow app to configure automate test http request timeout #1051
+* Error enhancing class with `@Data` annotation #1049
+* action method parameter cache #1054
+* Route information missed in API doc for dynamic aliases #1052
+* command `route.print -t` triggers error #1053
+* `@WsEndpoint` annotation now failed to register route #1050
+
+**1.8.18** 04/Feb/2019
+* Fix JobContext init logic
+* Error enhancing bytecode at com.sun.mail.util.logging.MailHandler::publish() #1048
+* ContextualJob cause JobContext get cleared twice #1046
+* JobContext lost when invoking another job #1044
+* Send out Login and Logout event #1043
+* Support `Keyword` matching for param binding of incoming request #972
+* Allow load route configuration from `route.conf` file #1042
+* Allow keep searching route table even when a terminate node found #1041
+* act test failed in mvn could not see detail information #1040
+* mvn package will throw IllegalStateException #1039
+
+**1.8.17** 23/Dec/2018
+* UnexpectedException when submit a `Map<String, T>` type parameter with value as `null` #1027
+* Support static apibook generation #893
+* Morphia ObjectId not generate in api-book #1033
+* Bad behaviour when Error result returned on Accept excel mime type #1034
+* Test report page improvement #1032
+* Provide a way to handle generic param type loading #1031
+* UnexpectedException when submit a `Map<String, T>` type parameter with value as `null` #1027
+* Static file handler - the file handle not closed after serviced #1028
+* Configure healthy monitor and report server status #1021
+* Test - json param shall be processed #1025
+* Test - allow it post body for DELETE request #1024
+* Annotations with ValueLoader cannot work if post with json #1016
+* Routing issue with dynamic aliases and keyword matching #1022
+* Make CLI help command default to display application commands #1018
+* CLI - execute `conf.trace-handler -e` trigger `IllegalAccessError` #1019
+
+**1.8.16** 09/Dec/2018
+* `StackOverflowError` caused by POJO typed request handler method param circular reference #1015
+* Allow configure XML root element tag #1011
+* Allow load resource from `.xml` file #1012
+* `NullPointerException` caused by sending GET request with `Content-Type=application/xml` header #1008
+* api-book-compile cannot get comments from super class #1003
+* act test failed when check return data exist #1010
+* Calling mailer method asynchronously by eventBus.trigger didn't work #1009
+* @PropertySpec and PropertySpec.current.set cannot always work when object wrapped by GlobalAdvice #1006
+* @PropertySpec and PropertySpec.current.set cannot work when object wrapped by GlobalAdvice #1005
+* Make `TimestampAuditor` defined in act-jpa project be common #1002
+* Make `CommandPrefix` be inheritable #998
+* Request handler argument type with type parameter does not work #1000
+
+**1.8.15** 30/Nov/2018
+* Introduce `@CommandPrefix` annotation #982
+* `mi` make it display number in MB by default #996
+* `IllegalAccessError` triggered while running `mi` command #995
+* compile-api-book error when super class has generics #987
+* SimpleRestfulServiceBase 'update' enhancement #976
+* @After @Finally not effect when @Valid failed #988
+* Hot reload in dev mode always fail at the first POST request #989
+* Add method to handle connection close event to `WebSocketConnectionListener` #994
+* websocket connection not released after closed #991
+
+**1.8.14** 28/Nov/2018
+* act command throw IllegalStateException: JPAContext is not ready #973
+* java.lang.IllegalStateException: UT000146: HttpServerExchange cannot have both async IO resumed and dispatch() called in the same cycle #974
+* Support generating sample data for `org.osgl.util.Keyword` typed field #986
+* @Before @After not effect when sub class extends from super class #985
+* It shall force marking progress gauge as done once the job is returned #971
+* `DaoLoader` not able to load Dao class without type parameter #979
+* It shall not set `null` to field marked with `@Configuration` if the setting is not configured #984
+* CLI table view does not work properly with `Keyword` typed field #983
+* Drop websocket connection subscribed to listen job progress once job is finished #977
+* Make the `dao` field of `SimpleRestfulServiceBase` be protected #980
+* Push progress only when `ProgressGauge`'s percentage changed #975
+
+**1.8.13** 25/Nov/2018
+* Provides a mechanism for accurate routing ws connection event to user defined connection handler #961
+* `NullPointerException` when route path element wrapped with `~` is no the final one #958
+* act.session.ttl=-1 not effect when JWT is enabled #968
+* `App.singleton(Xyz.class)` returns `null` value #967
+* `@CsvView` and `@TableView` not effective when mark on request handler method #966
+* Keep decorator setting of async command/request #965
+* `ProgressGuage.markAsDone` shall not trigger event if progress is already done #963
+* Provide a mechanism to handle async process result #960
+* `WebsocketConnectionRegistry` - provide method to remove key #962
+* Issue with using `WebSocketConnectEvent` to call websocket connection handler #959
+
+**1.8.12** 20/Nov/2018
+* Change ws endpoint for job progress status, add GET endpoint for job progress checking #957
+* The `/~/job/progress` ws endpoint does not work #956
+* If interceptor is disabled then it shall not return `404` #955
+* False warning message on DB configuration #953
+* CLI session shall not time out when it is reporting async job progress #952
+* `NullPointerException` invoking `job.list` command #950
+* Allow it to turn on/off handler trace while app is running #949
+* execute `route.list` command causes `NullPointerException` #948
+* `NullPointerException` when calling `$.convert(str).to(DateTime.class)` in Job #947
+* Output enhanced asm code when `java.lang.VerifyError` encountered #945
+* `UnexpectedException` with `Controller.Util.download(URL)` call #944
+* Deadlock issue during app hot reload #941
+* Allow app to do keyword matching on certain route path element #939
+* Missing `Content-Type` header in response servicing static file request #937
+* Hot-reload issue caused by `StackOverflowError` on `AppConfig.loginUrl()` #936
+* Handle `Error` encountered processing incoming request #933
+
+**1.8.11** 5/Nov/2018
+* Automate test failure #932
+* update dependencies
+    - undertow-core: 1.4.26.Final
+    - snakeyaml: 1.23
+    - reflectasm: 1.11.7
+    - joda-time: 2.10.1
+    - jline: 2.14.6
+
+**1.8.9** 4/Nov/2018
+* update jline to 2.14.4
+* CLI - support `@DefaultValue` #929
+* Allow app to customise error response upon invalid request #922
+* `java.lang.IllegalArgumentException` upon starting BSBF project #931
+* Hot reload is broken in R1.8.8 version #921
+* CLI - do not output `null` for options without help message #927
+* API doc - allow fault tolerant when generating sample data #920
+* API doc - it shall support `@Sensitive` annotation #919
+* `UnexpectedClassNotFoundException` raised during restoring plugin classes #923
+* `Unable to find the overwritten method of Xxx` issue on 1.8.8 #925
+
+**1.8.8** 30/Oct/2018
+* Cannot add white space for `session.header.payload.prefix` configuration #918
+* `App.getResource(String)` behavior different between dev and prod mode #916
+* Make `Dao` by default be stateless #914
+* Optimize Singleton controller instance infer logic #913
+* `SubClassFinder` and `AnnotatedClassFinder` shall favor `NoAutoRegister` annotation #912
+* Test - enhance ${now()} function #911
+* Test - allow it add `negative` decorator to verifier #910
+* Test - remove generic type parameter from `NamedLogic` #909
+* Test - allow setting precision of ${now()} function #908
+* Interceptor defined in super class now not effective on sub class #907
+* Basic support for xml content-type #905
+* ReflectedHandlerInvoker - try to get Annotation from method in parent class if possible #906
+* JsonView, CsvView etc shall be declared as `@Inherited` #904
 * Test debug page - make failed test display in the beginning of the page #896
 * SimpleRestfulServiceBase - further simplified the usage #898
 * API sample data - add URL category #897
@@ -751,7 +1083,7 @@
 * Update fastjson to 1.2.30
 
 1.0.5
-* * remove version range from pom.xml. See https://issues.apache.org/jira/browse/MNG-3092
+* * remove version range from pom.xml. See <https://issues.apache.org/jira/browse/MNG-3092>
 
 1.0.4
 * It shall display the exception stack trace tab on template exception page #109 

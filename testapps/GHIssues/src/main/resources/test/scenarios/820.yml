@@ -1,5 +1,5 @@
-Scenario(GH820):
-  description: "[820] Using generic typed injection in Controller cause `UnexpectedException`"
+Scenario(820):
+  description: Using generic typed injection in Controller cause `UnexpectedException`
   interactions:
   - description: Test
     request:

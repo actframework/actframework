@@ -25,6 +25,7 @@ import org.osgl.util.N;
 import org.osgl.util.S;
 
 public class RandomStringProvider extends SampleDataProvider<String> {
+
     @Override
     public String get() {
         return S.random(2 + N.randInt(20));

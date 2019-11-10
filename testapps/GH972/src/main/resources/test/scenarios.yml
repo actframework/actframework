@@ -1,0 +1,26 @@
+Scenario(KEYWORD_MATCHING TEST):
+  interactions:
+    - description: test keyword matching on query parameter
+      request:
+        get: /
+        params:
+          foo_bar: xyz
+      response:
+        json:
+          result: xyz
+    - description: test keyword matching on form fields
+      request:
+        post: /
+        params:
+          bar_level: 2
+      response:
+        json:
+          barLevel: 2
+    - description: test keyword matching on JSON body
+      request:
+        post: /
+        json:
+          bar_level: 2
+      response:
+        json:
+          barLevel: 2

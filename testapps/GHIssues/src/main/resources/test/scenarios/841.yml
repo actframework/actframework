@@ -1,5 +1,5 @@
-Scenario(GH841):
-  description: "[841] FastJson exception when serialize ACT error message"
+Scenario(841):
+  description: FastJson exception when serialize ACT error message
   interactions:
     - description: test normal return
       request:

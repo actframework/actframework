@@ -9,9 +9,9 @@ package act.xio;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,11 +29,13 @@ import act.event.EventBus;
 import act.handler.RequestHandler;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.handler.builtin.controller.HotReloadingHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.PostHandle;
 import act.handler.event.PreHandle;
 import act.metric.*;
 import act.route.Router;
+import act.sys.SystemAvailabilityMonitor;
 import act.util.LogSupportedDestroyableBase;
 import act.view.ActErrorResult;
 import org.osgl.$;
@@ -44,6 +46,10 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.*;
 import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
@@ -58,11 +64,13 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
     private Metric metric;
     private $.Func2<H.Request, String, String> contentSuffixProcessor;
     private $.Func2<H.Request, String, String> urlContextProcessor;
+    private ScheduledExecutorService hotReloadExecutor;
+    private AtomicBoolean pause = new AtomicBoolean();
 
     public NetworkHandler(App app) {
         E.NPE(app);
         this.app = app;
-        this.metric = Act.metricPlugin().metric("act.http");
+        this.metric = Act.metricPlugin().metric(MetricInfo.HTTP_HANDLER);
         this.initUrlProcessors();
         app.registerHotReloadListener(new App.HotReloadListener() {
             @Override
@@ -70,6 +78,13 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 initUrlProcessors();
             }
         });
+        if (app.isDev()) {
+            hotReloadExecutor = Executors.newScheduledThreadPool(2);
+        }
+    }
+
+    public boolean paused() {
+        return pause.get();
     }
 
     private void initUrlProcessors() {
@@ -97,16 +112,23 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         }
         Exception refreshError = null;
         final boolean isDev = Act.isDev();
-        if (isDev) {
+        if (isDev && !Act.conf().hotReloadDisabled()) {
             try {
+                // important as app.checkUpdates(boolean) might trigger
+                // an app hotreload, which might refer to ActionContext.current()
+                ctx.saveLocal();
+                if (app.isLoading()) {
+                    HotReloadingHandler.INSTANCE.handle(ctx);
+                    return;
+                }
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
-                    app.jobManager().on(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {
+                    app.jobManager().post(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {
                         @Override
                         public void run() {
                             handle(ctx, dispatcher);
                         }
-                    }, true);
+                    }, false);
                     dispatcher.keep();
                     return;
                 }
@@ -146,17 +168,21 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         NetworkJob job = new NetworkJob() {
             @Override
             public void run() {
-                Timer timer = Metric.NULL_METRIC.startTimer("null");
+                Timer timer;
                 if (metric != Metric.NULL_METRIC) {
                     String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
                     timer = metric.startTimer(key);
+                } else {
+                    timer = Metric.NULL_METRIC.startTimer("null");
                 }
+                ctx.handleTimer = timer;
                 EventBus eventBus = app.eventBus();
                 // need to set ActionContext.current before calling ctx.skipEvents() as the later
                 //      one will call into ReflectedHandlerInvoker.init() will in turn try to
                 //      set up the parameter spec where ActionContext.current is required.
                 //      see ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method)
                 ctx.saveLocal();
+                Thread.currentThread().setContextClassLoader(app.classLoader());
                 final boolean skipEvents = ctx.skipEvents();
                 try {
                     if (!skipEvents) {
@@ -190,22 +216,32 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     }
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
+                } catch (OutOfMemoryError error) {
+                    error("Out of memory");
+                    SystemAvailabilityMonitor.pauseNow();
+                } catch (Error t) {
+                    fatal(t, "Fatal Error encountered handling request: ", ctx.req());
+                    if (Act.isProd()) {
+                        Act.shutdown(app);
+                    }
                 } finally {
                     if (!skipEvents) {
                         eventBus.emit(new PostHandle(ctx));
                     }
                     if (ctx.isReadyForDestroy()) {
                         ctx.destroy();
-                        // otherwise the ctx get transferred to another thread
+                        // current has already been cleared
+                    } else {
+                        // the ctx get transferred to another thread
+                        ActionContext.clearCurrent();
                     }
-                    ActionContext.clearCurrent();
-                    timer.stop();
                 }
             }
         };
         if (method.unsafe() || !requestHandler.express(ctx)) {
             dispatcher.dispatch(job);
         } else {
+            ctx.markAsNonBlock();
             job.run();
         }
     }
@@ -216,6 +252,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
 
     private void handleException(Exception exception, final ActionContext ctx, String errorMessage) {
         logger.error(exception, errorMessage);
+        if (ctx.resp().isClosed()) {
+            return;
+        }
         Result r;
         try {
             r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(exception, ctx);
@@ -293,7 +332,8 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
 
         private static final char[] avi = {'a', 'v'};
 
-        private static final char[] xml = {'x', 'm'};
+        private static final char[] xml = {};
+        private static final char[] yml = {};
 
         private static final char[] json = {'j', 's', 'o'};
 
@@ -309,6 +349,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         private static final char[] mov = {'m'};
 
         private static final char[] xlsx = {'x', 'l', 's'};
+        private static final char[] yaml = {'y'};
 
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, $.Break {
@@ -407,8 +448,32 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     fmt = H.Format.AVI;
                     break;
                 case 'l':
-                    trait = xml;
-                    fmt = H.Format.XML;
+                    c = url.charAt(start - 1);
+                    switch (c) {
+                        case 'm':
+                            c = url.charAt(start - 2);
+                            initPos = 3;
+                            switch (c) {
+                                case 'x':
+                                    trait = xml;
+                                    fmt = H.Format.XML;
+                                    break;
+                                case 'y':
+                                    trait = yml;
+                                    fmt = H.Format.YAML;
+                                    break;
+                                case 'a':
+                                    sepPos = 4;
+                                    trait = yaml;
+                                    fmt = H.Format.YAML;
+                                    break;
+                                default:
+                                    return url;
+                            }
+                            break;
+                        default:
+                            return url;
+                    }
                     break;
                 case 'n':
                     sepPos = 4;

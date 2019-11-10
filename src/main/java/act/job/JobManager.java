@@ -20,6 +20,8 @@ package act.job;
  * #L%
  */
 
+import static act.app.event.SysEventId.APP_CODE_SCANNED;
+
 import act.Act;
 import act.Destroyable;
 import act.app.*;
@@ -32,6 +34,7 @@ import act.util.SimpleProgressGauge;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
+import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -45,34 +48,49 @@ import java.util.concurrent.*;
 
 public class JobManager extends AppServiceBase<JobManager> {
 
+    public static final String SYS_JOB_MARKER = "__act_sys__";
+
     private static final Logger LOGGER = LogManager.get(JobManager.class);
 
     private ScheduledThreadPoolExecutor executor;
     private ConcurrentMap<String, Job> jobs = new ConcurrentHashMap<String, Job>();
     private ConcurrentMap<Method, Job> methodIndex = new ConcurrentHashMap<>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
+    private CacheService jobResultCache;
+    private JobExceptionListenerManager exceptionListenerManager = new JobExceptionListenerManager();
 
     static String sysEventJobId(SysEventId eventId) {
-        return S.concat("__act_sys__", eventId.toString().toLowerCase());
+        return S.concat(SYS_JOB_MARKER, eventId.toString().toLowerCase());
     }
 
-    public JobManager(App app) {
+    public JobManager(final App app) {
         super(app);
         initExecutor(app);
         for (SysEventId sysEventId : SysEventId.values()) {
             createSysEventListener(sysEventId);
         }
+        on(APP_CODE_SCANNED, "init-job-result-cache", new Runnable() {
+            @Override
+            public void run() {
+                jobResultCache = app.cache("job_result_cache");
+            }
+        });
     }
 
     @Override
     protected void releaseResources() {
         LOGGER.trace("release job manager resources");
+        exceptionListenerManager.destroy();
         for (Job job : jobs.values()) {
             job.destroy();
         }
         jobs.clear();
         executor.getQueue().clear();
         executor.shutdownNow();
+    }
+
+    public JobExceptionListenerManager exceptionListenerManager() {
+        return exceptionListenerManager;
     }
 
     public <T> Future<T> now(Callable<T> callable) {
@@ -93,12 +111,24 @@ public class JobManager extends AppServiceBase<JobManager> {
         });
     }
 
+    public void now(Job job) {
+        executor().submit(job);
+    }
+
     public void now(Runnable runnable) {
         now(randomJobId(), runnable);
     }
 
+    public void now(Runnable runnable, boolean sysJob) {
+        now(randomJobId(), runnable, sysJob);
+    }
+
     public void now(String jobId, Runnable runnable) {
         executor().submit(wrap(jobId, runnable));
+    }
+
+    public void now(String jobId, Runnable runnable, boolean sysJob) {
+        executor().submit(wrap(jobId, runnable, sysJob));
     }
 
     public String now($.Function<ProgressGauge, ?> worker) {
@@ -122,6 +152,10 @@ public class JobManager extends AppServiceBase<JobManager> {
     public String prepare($.Function<ProgressGauge, ?> worker) {
         Job job = wrap(worker);
         return job.id();
+    }
+
+    public Job prepare(String jobId, $.Function<ProgressGauge, ?> worker) {
+        return wrap(jobId, worker);
     }
 
     /**
@@ -224,7 +258,7 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     public void post(SysEventId sysEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        Job job = jobById(sysEventJobId(sysEvent));
+        Job job = jobById(sysEventJobId(sysEvent), false);
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
@@ -241,7 +275,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         if (traceEnabled) {
             LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, sysEvent, runImmediatelyIfEventDispatched);
         }
-        Job job = jobById(sysEventJobId(sysEvent));
+        Job job = jobById(sysEventJobId(sysEvent), !runImmediatelyIfEventDispatched);
         if (null == job) {
             if (traceEnabled) {
                 LOGGER.trace("process delayed job: %s", jobId);
@@ -333,7 +367,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         return methodIndex.get(method);
     }
 
-    public SimpleProgressGauge progressGauge(String jobId) {
+    public ProgressGauge progressGauge(String jobId) {
         return jobById(jobId).progress();
     }
 
@@ -346,11 +380,11 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    C.List<Job> jobs() {
+    public C.List<Job> jobs() {
         return C.list(jobs.values());
     }
 
-    C.List<Job> virtualJobs() {
+    public C.List<Job> virtualJobs() {
         final JobManager jobManager = Act.jobManager();
         return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, Job>() {
             @Override
@@ -405,6 +439,19 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
+    public void cacheResult(String jobId, Object result, Object meta) {
+        jobResultCache.put("__jr_" + jobId, result, 60);
+        jobResultCache.put("__jm_" + jobId, meta, 60);
+    }
+
+    public Object cachedResult(String jobId) {
+        return jobResultCache.get("__jr_" + jobId);
+    }
+
+    public Object cachedMeta(String jobId) {
+        return jobResultCache.get("__jm_" + jobId);
+    }
+
     ScheduledThreadPoolExecutor executor() {
         return executor;
     }
@@ -420,7 +467,7 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     private void createSysEventListener(SysEventId sysEventId) {
         String jobId = sysEventJobId(sysEventId);
-        Job job = new Job(jobId, this);
+        Job job = new Job(jobId, true, this);
         app().eventBus().bind(sysEventId, new _SysEventListener(jobId, job));
     }
 
@@ -445,15 +492,19 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     private Job wrap(Runnable runnable) {
-        return new ContextualJob(randomJobId(), runnable);
+        return wrap(randomJobId(), runnable, false);
     }
 
     private Job wrap(String name, Runnable runnable) {
-        return new ContextualJob(name, runnable);
+        return wrap(name, runnable, false);
     }
 
-    private Job wrap(Callable callable) {
-        return new ContextualJob(randomJobId(), callable);
+    private Job wrap(String name, Runnable runnable, boolean sysJob) {
+        Job job = new ContextualJob(name, runnable);
+        if (sysJob) {
+            job.markAsSysJob();
+        }
+        return job;
     }
 
     private Job wrap(String name, Callable callable) {
@@ -470,10 +521,11 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     private class ContextualJob extends Job {
 
-        private JobContext origin_ = JobContext.copy();
+        private JobContext origin_;
 
         ContextualJob(String id, final Callable<?> callable) {
             super(id, JobManager.this, callable);
+            origin_ = JobContext.copy();
         }
 
         ContextualJob(final String id, final Runnable runnable) {
@@ -484,30 +536,31 @@ public class JobManager extends AppServiceBase<JobManager> {
                     return null;
                 }
             }, true);
-            foo();
+            origin_ = JobContext.copy();
+            ensureMailerContext();
         }
 
         ContextualJob(String id, final $.Function<ProgressGauge, ?> worker) {
             super(id, JobManager.this, worker);
-            foo();
+            origin_ = JobContext.copy();
+            ensureMailerContext();
         }
 
         @Override
         protected void _before() {
             // copy the JobContext of parent thread into the current thread
-            JobContext.init(origin_);
+            JobContext.loadFromOrigin(origin_);
         }
 
         @Override
         protected void _finally() {
-            JobContext.clear();
             removeJob(this);
         }
 
-        private void foo() {
+        private void ensureMailerContext() {
             app().eventBus().once(MailerContext.InitEvent.class, new OnceEventListenerBase<MailerContext.InitEvent>() {
                 @Override
-                public boolean tryHandle(MailerContext.InitEvent event) throws Exception {
+                public boolean tryHandle(MailerContext.InitEvent event) {
                     MailerContext mailerContext = MailerContext.current();
                     if (null != mailerContext) {
                         _before();
@@ -519,8 +572,12 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    private String randomJobId() {
-        return app().cuid() + S.random(4);
+    public String randomJobId() {
+        return app().cuid() + S.urlSafeRandom(3);
+    }
+
+    static boolean isSysJob(Job job) {
+        return S.is(job.id()).startsWith(SYS_JOB_MARKER);
     }
 
 }

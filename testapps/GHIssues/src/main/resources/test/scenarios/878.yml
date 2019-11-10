@@ -1,5 +1,5 @@
-Scenario(GH878):
-  description: "[878] @PropertySpec could not effect entity in collection"
+Scenario(878):
+  description: "@PropertySpec could not effect entity in collection"
   interactions:
     - description: test list
       request:

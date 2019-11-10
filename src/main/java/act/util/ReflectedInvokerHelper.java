@@ -23,7 +23,11 @@ package act.util;
 import act.Act;
 import act.apidoc.ApiManager;
 import act.app.*;
+import act.inject.util.LoadConfig;
 import act.inject.util.LoadResource;
+import act.job.JobContext;
+import act.route.RouteSource;
+import act.route.RoutedContext;
 import org.osgl.$;
 import org.osgl.inject.annotation.Configuration;
 import org.osgl.mvc.annotation.*;
@@ -31,6 +35,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
 import java.lang.reflect.*;
 import java.util.*;
 import javax.inject.Singleton;
@@ -51,7 +56,7 @@ public class ReflectedInvokerHelper {
     public static Object tryGetSingleton(Class<?> invokerClass, App app) {
         Object singleton = app.singleton(invokerClass);
         if (null == singleton) {
-            if (_isGlobalOrStateless(invokerClass, new HashSet<Class>())) {
+            if (isGlobalOrStateless(invokerClass, new HashSet<Class>())) {
                 singleton = app.getInstance(invokerClass);
             }
         }
@@ -75,7 +80,14 @@ public class ReflectedInvokerHelper {
         }
         Annotation[][] paramAnnotations = requestHandlerMethodParamAnnotationCache.get(method);
         if (null == paramAnnotations) {
-            if (!hasActionAnnotation(method)) {
+            boolean searchForOverwrittenMethod = false;
+            RoutedContext ctx = RoutedContext.Current.get();
+            if (null != ctx) {
+                searchForOverwrittenMethod = RouteSource.ACTION_ANNOTATION == ctx.routeSource() && !hasActionAnnotation(method);
+            } else {
+                E.illegalStateIf(null == JobContext.current(), "Unable to detected current RoutedContext");
+            }
+            if (searchForOverwrittenMethod) {
                 Method overwrittenMethod = overwrittenMethodOf(method);
                 paramAnnotations = overwrittenMethod == method ? method.getParameterAnnotations() : requestHandlerMethodParamAnnotations(overwrittenMethod);
             } else {
@@ -92,9 +104,6 @@ public class ReflectedInvokerHelper {
         try {
             return base.getMethod(method.getName(), method.getParameterTypes());
         } catch (NoSuchMethodException e) {
-            if (ApiManager.inProgress()) {
-                return method;
-            }
             throw E.unexpected("Unable to find the overwritten method of " + method);
         }
     }
@@ -117,27 +126,96 @@ public class ReflectedInvokerHelper {
         return isGlobalOrStateless(field, new HashSet<Class>());
     }
 
+    public static <T extends Annotation> boolean isAnnotationPresent(Class<T> annotationClass, Method method) {
+        return null != getAnnotation(annotationClass, method);
+    }
+
+    public static <T extends Annotation> T getAnnotation(Class<T> annotationClass, Method method) {
+        T anno = method.getAnnotation(annotationClass);
+        if (null != anno) {
+            return anno;
+        }
+        if (!annotationClass.isAnnotationPresent(Inherited.class)) {
+            return null;
+        }
+        Method overridenMethod = getOverridenMethod(method);
+        return null == overridenMethod ? null : getAnnotation(annotationClass, overridenMethod);
+    }
+
+    private static Method getOverridenMethod(Method method) {
+        Class<?> host = method.getDeclaringClass();
+        host = host.getSuperclass();
+        if (null == host || Object.class == host) {
+            return null;
+        }
+        String name = method.getName();
+        Class<?>[] params = method.getParameterTypes();
+        return $.getMethod(host, name, params);
+    }
+
     private static boolean isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
         if ($.isSimpleType(type)) {
+            return false;
+        }
+        if (type.getAnnotation(Stateful.class) != null) {
             return false;
         }
         if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _hasGlobalOrStatelessAnnotations(type)) {
             return true;
         }
+        // when type is interface or abstract class we need to infer it as stateful
+        // as we can't determine the implementation class
+        if ((Modifier.isAbstract(type.getModifiers()) || type.isInterface()) && !isStatelessType(type)) {
+            return false;
+        }
         if (circularReferenceDetector.contains(type)) {
             return false;
         }
         circularReferenceDetector.add(type);
-        return _isGlobalOrStateless(type, circularReferenceDetector);
+        try {
+            return _isGlobalOrStateless(type, circularReferenceDetector);
+        } finally {
+            circularReferenceDetector.remove(type);
+        }
     }
 
+
+    private static List<String> statelessTypeTraits = C.list("Logger", "CacheService");
+    private static boolean isStatelessType(Class<?> intfType) {
+        String typeName = intfType.getName();
+        for (String s : statelessTypeTraits) {
+            if (typeName.contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static $.Predicate<Class<?>> STATEFUL_CLASS = new $.Predicate<Class<?>>() {
+        @Override
+        public boolean test(Class<?> aClass) {
+            return !_hasGlobalOrStatelessAnnotations(aClass);
+        }
+    };
+
+    private static $.Predicate<Field> NON_STATIC_FIELD = new $.Predicate<Field>() {
+        @Override
+        public boolean test(Field field) {
+            return !Modifier.isStatic(field.getModifiers());
+        }
+    };
+
     private static boolean _isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
-        List<Field> fields = $.fieldsOf(type);
+        List<Field> fields = $.fieldsOf(type, STATEFUL_CLASS, NON_STATIC_FIELD);
         if (fields.isEmpty()) {
             return true;
         }
         for (Field field : fields) {
-            if (!isGlobalOrStateless(field, circularReferenceDetector)) {
+            if (Modifier.isFinal(field.getModifiers())) {
+                // suppose final field
+                continue;
+            }
+            if (!Modifier.isFinal(field.getModifiers()) && !isGlobalOrStateless(field, circularReferenceDetector)) {
                 return false;
             }
         }
@@ -145,17 +223,32 @@ public class ReflectedInvokerHelper {
     }
 
     private static boolean isGlobalOrStateless(Field field, Set<Class> circularReferenceDetector) {
-        Class<?> fieldType = field.getType();
         if (_hasGlobalOrStatelessAnnotations(field)) {
             return true;
         }
+        Class<?> fieldType = field.getType();
         return isGlobalOrStateless(fieldType, circularReferenceDetector);
     }
 
-    private final static List<Class<? extends Annotation>> statelessMarkers = C.list(Singleton.class, Stateless.class, Global.class, Configuration.class, LoadResource.class);
+    private final static List<Class<? extends Annotation>> statelessMarkersForClass = C.list(
+            Singleton.class, Stateless.class, InheritedStateless.class
+    );
 
-    private static boolean _hasGlobalOrStatelessAnnotations(AnnotatedElement element) {
-        for (Class<? extends Annotation> type : statelessMarkers) {
+    private final static List<Class<? extends Annotation>> statelessMarkersForFields = C.list(
+            Stateless.class, Global.class, Configuration.class,
+            LoadResource.class, LoadConfig.class
+    );
+
+    private static boolean _hasGlobalOrStatelessAnnotations(Class<?> type) {
+        return _hasAnnotations(type, statelessMarkersForClass);
+    }
+
+    private static boolean _hasGlobalOrStatelessAnnotations(Field field) {
+        return _hasAnnotations(field, statelessMarkersForFields);
+    }
+
+    private static boolean _hasAnnotations(AnnotatedElement element, List<Class<? extends Annotation>> annotations) {
+        for (Class<? extends Annotation> type : annotations) {
             if (null != element.getAnnotation(type)) {
                 return true;
             }

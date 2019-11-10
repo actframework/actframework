@@ -1,5 +1,6 @@
 # Put package/class names that needs Act to scan. It can be regular expressions
 act\..*Admin
+act\..*Admin\$.*
 act.apidoc.SampleDataProviderFinder
 act.app.SingletonFinder
 act.app.util.SimpleRestfulServiceBase
@@ -9,6 +10,7 @@ act.controller.captcha.CaptchaService
 act.db.DbBind
 act.db.util.Page
 act.test.Test
+act.test.TestWsProgress
 act.test.inbox.Inbox
 act.test.ScenarioDebugHelper
 act.test.ScenarioDebugHelper$LoadFixtures
@@ -24,13 +26,18 @@ act.i18n.EnumLookupCache
 act.inject.DependencyInjectorBase
 act.inject.genie.GenieInjector
 act.Info
+act.job.JobAdmin
+act.job.JobAdmin$WsProgress
+act.job.JobExceptionListenerFinder
 act.meta.ClassMetaInfoManager
 act.util.FastJsonEnhancedAdaptiveMapCodec
 act.util.FastJson
+act.util.TopLevelDomainList
 act.util.TypeConverterRegister
 act.validation.ValidationPlugin
 act.Zen
 act.apidoc.Endpoint.Service
 org.osgl.util.FastJsonKvCodec
 act.ws.WebSocketAdminConsole
-act.job.JobAdmin.WebsocketEndpoints.JobProgress
+act.ws.WebSocketConnectionListener$Manager$Finder
+act\.monitor\..*

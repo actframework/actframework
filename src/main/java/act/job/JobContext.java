@@ -40,12 +40,11 @@ import java.util.Set;
 public class JobContext extends ActContext.Base<JobContext> {
 
     private static ThreadLocal<JobContext> current_ = new ThreadLocal<JobContext>();
-
     private JobContext parent;
 
     private JobContext(JobContext parent) {
         super(App.instance());
-        current_.set(this);
+        //current_.set(this);
         this.parent = parent;
         if (null != parent) {
             bag_.putAll(parent.bag_);
@@ -61,6 +60,11 @@ public class JobContext extends ActContext.Base<JobContext> {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "job[" + jobId + "]";
     }
 
     private static Map<String, Object> m() {
@@ -112,9 +116,14 @@ public class JobContext extends ActContext.Base<JobContext> {
     /**
      * Init JobContext of current thread
      */
-    static void init() {
+    // make it public for CLI interaction to reuse JobContext
+    public static void init(String jobId) {
         JobContext parent = current_.get();
         JobContext ctx = new JobContext(parent);
+        current_.set(ctx);
+        // don't call setJobId(String)
+        // as it will trigger listeners -- TODO fix me
+        ctx.jobId = jobId;
         if (null == parent) {
             Act.eventBus().trigger(new JobContextInitialized(ctx));
         }
@@ -123,13 +132,14 @@ public class JobContext extends ActContext.Base<JobContext> {
     /**
      * Clear JobContext of current thread
      */
-    static void clear() {
+    public static void clear() {
         JobContext ctx = current_.get();
         if (null != ctx) {
             ctx.bag_.clear();
             JobContext parent = ctx.parent;
             if (null != parent) {
                 current_.set(parent);
+                ctx.parent = null;
             } else {
                 current_.remove();
                 Act.eventBus().trigger(new JobContextDestroyed(ctx));
@@ -180,8 +190,9 @@ public class JobContext extends ActContext.Base<JobContext> {
      * @return the copy of current job context or an empty job context
      */
     static JobContext copy() {
-        JobContext ctxt = new JobContext(null);
         JobContext current = current_.get();
+        //JobContext ctxt = new JobContext(keepParent ? current : null);
+        JobContext ctxt = new JobContext(null);
         if (null != current) {
             ctxt.bag_.putAll(current.bag_);
         }
@@ -192,8 +203,7 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Initialize current thread's JobContext using specified copy
      * @param origin the original job context
      */
-    static void init(JobContext origin) {
-        current_.set(origin);
+    static void loadFromOrigin(JobContext origin) {
         if (origin.bag_.isEmpty()) {
             return;
         }

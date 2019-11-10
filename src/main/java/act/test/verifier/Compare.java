@@ -23,7 +23,7 @@ package act.test.verifier;
 import org.osgl.$;
 import org.osgl.util.E;
 
-public abstract class Compare extends Verifier<Compare> {
+public abstract class Compare extends Verifier {
 
     public enum Type {
         GT() {

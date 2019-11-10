@@ -228,8 +228,19 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             return this;
         }
 
+        /**
+         * This method is deprecated. Please use
+         * * {@link #allowHeaders(String...)} and
+         * * {@link #exposeHeaders(String...)}
+         *
+         * @param headers
+         * @return
+         */
+        @Deprecated
         public CorsSetting allowAndExposeHeaders(String ... headers) {
-            headersBoth.addAll(C.listOf(headers));
+            List<String> headerList = C.listOf(headers);
+            headersAllowed.addAll(headerList);
+            headersExpose.addAll(headerList);
             return this;
         }
 

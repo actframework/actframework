@@ -22,12 +22,13 @@ package act.plugin;
 
 import act.Act;
 import act.app.App;
+import act.util.LogSupport;
 
 /**
  * The base class for Plugin that could be applied to a certain
  * application
  */
-public abstract class AppServicePlugin implements Plugin {
+public abstract class AppServicePlugin extends LogSupport implements Plugin {
     @Override
     public void register() {
         Act.appServicePluginManager().register(this);

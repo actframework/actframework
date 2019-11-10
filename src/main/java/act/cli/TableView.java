@@ -9,9 +9,9 @@ package act.cli;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,7 @@ package act.cli;
 
 import act.util.PropertySpec;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Mark a command method return value shall be displayed as a table. e.g
@@ -38,18 +35,20 @@ import java.lang.annotation.Target;
  * +---------------------------------+---------+---------+
  * </pre>
  * <p>
- *     {@code TableView} can be used in conjunction with {@link PropertySpec}
- *     to export only specified fields
+ * {@code TableView} can be used in conjunction with {@link PropertySpec}
+ * to export only specified fields
  * </p>
  * <p>
- *     Note if a method is marked with neither {@link TableView} nor
- *     {@link JsonView} then the console will simply use
- *     {@link Object#toString()} to present the data.
+ * Note if a method is marked with neither {@link TableView} nor
+ * {@link act.util.JsonView} then the console will simply use
+ * {@link Object#toString()} to present the data.
  * </p>
- * @see JsonView
+ *
+ * @see act.util.JsonView
  * @see PropertySpec
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Inherited
 public @interface TableView {
 }

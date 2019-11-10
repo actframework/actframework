@@ -9,9 +9,9 @@ package act.app;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package act.app;
  */
 
 import static act.app.event.SysEventId.*;
+import static act.util.TopLevelDomainList.CRON_TLD_RELOAD;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.util.S.F.contains;
 import static org.osgl.util.S.F.endsWith;
@@ -34,6 +35,10 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.asm.AsmException;
+import act.asm.ClassReader;
+import act.asm.tree.ClassNode;
+import act.asm.tree.*;
+import act.asm.util.*;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;
 import act.cli.CliDispatcher;
@@ -69,7 +74,7 @@ import act.plugin.PrincipalProvider;
 import act.route.*;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
-import act.test.Test;
+import act.sys.SystemAvailabilityMonitor;
 import act.util.*;
 import act.validation.Password;
 import act.view.ActErrorResult;
@@ -77,6 +82,7 @@ import act.view.ImplicitVariableProvider;
 import act.view.rythm.*;
 import act.ws.*;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.cache.CacheService;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
@@ -92,6 +98,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
@@ -112,7 +119,7 @@ public class App extends LogSupportedDestroyableBase {
         public static $.Predicate<String> JAVA_SOURCE = endsWith(".java");
         public static $.Predicate<String> JAR_FILE = endsWith(".jar");
         public static $.Predicate<String> CONF_FILE = endsWith(".conf").or(endsWith(".properties").or(endsWith(".yaml").or(endsWith(".yml").or(endsWith(".xml"))))).and(contains("main/resources/test").negate());
-        public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
+        public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE).or($.F.eq(RouteTableRouterBuilder.ROUTES_FILE2));
     }
 
     private volatile String profile;
@@ -169,7 +176,6 @@ public class App extends LogSupportedDestroyableBase {
     private Set<String> scanSuffixList;
     private List<File> baseDirs;
     private volatile File tmpDir;
-    private boolean restarting;
     private Result blockIssue;
     private Throwable blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
@@ -185,9 +191,11 @@ public class App extends LogSupportedDestroyableBase {
         }
     };
     private final Version version;
-    private boolean reloading;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
     private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
+
+    // lock app hot reload process
+    private final AtomicBoolean loading = new AtomicBoolean();
 
     // for unit test purpose
     private App() {
@@ -197,7 +205,7 @@ public class App extends LogSupportedDestroyableBase {
         this.appHome = RuntimeDirs.home(this);
         this.config = new AppConfig<>().app(this);
         INST = this;
-        $.setFieldValue("metricPlugin", Act.class, new SimpleMetricPlugin());
+        Lang.setFieldValue("metricPlugin", Act.class, new SimpleMetricPlugin());
         this.eventEmitted = new HashSet<>();
         this.eventBus = new EventBus(this);
         this.jobManager = new JobManager(this);
@@ -205,8 +213,10 @@ public class App extends LogSupportedDestroyableBase {
         this.sessionManager = new SessionManager(this.config, config().cacheService("logout-session"));
         this.dependencyInjector = new GenieInjector(this);
         this.singletonRegistry = new SingletonRegistry(this);
+        this.singletonRegistry.register(SingletonRegistry.class, this.singletonRegistry);
         this.singletonRegistry.register(SessionManager.class, this.sessionManager);
         this.singletonRegistry.register(CookieSessionMapper.class, new CookieSessionMapper(this.config));
+        this.idGenerator = new IdGenerator();
     }
 
     protected App(File appBase, Version version, ProjectLayout layout) {
@@ -234,6 +244,7 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Returns the name of the app
+     *
      * @return the app name
      */
     public String name() {
@@ -242,8 +253,8 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Returns the app version
-     * @return
-     *      the app version
+     *
+     * @return the app version
      */
     public Version version() {
         return version;
@@ -403,8 +414,12 @@ public class App extends LogSupportedDestroyableBase {
         return router;
     }
 
+    public Router sysRouter() {
+        return router(AppConfig.PORT_SYS);
+    }
+
     public Router router(String name) {
-        if (S.blank(name)) {
+        if (S.blank(name) || "default".equalsIgnoreCase(name)) {
             return router();
         }
         for (Map.Entry<NamedPort, Router> entry : moreRouters.entrySet()) {
@@ -420,6 +435,37 @@ public class App extends LogSupportedDestroyableBase {
             return router();
         }
         return moreRouters.get(port);
+    }
+
+    private Iterable<Router> allRouters() {
+        return new Iterable<Router>() {
+            @Override
+            public Iterator<Router> iterator() {
+                return new Iterator<Router>() {
+
+                    private Iterator<Router> moreRoutersIterator;
+
+                    @Override
+                    public boolean hasNext() {
+                        return null == moreRoutersIterator || moreRoutersIterator.hasNext();
+                    }
+
+                    @Override
+                    public Router next() {
+                        if (null == moreRoutersIterator) {
+                            moreRoutersIterator = moreRouters.values().iterator();
+                            return router;
+                        }
+                        return moreRoutersIterator.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        E.unsupport();
+                    }
+                };
+            }
+        };
     }
 
     public AppCrypto crypto() {
@@ -459,21 +505,49 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
+    /**
+     * Check if app needs updates.
+     *
+     * @param async
+     *         refresh app async or sync
+     * @return `true` if there are updates and app require hot reload
+     */
     public boolean checkUpdates(boolean async) {
+        return checkUpdates(async, false);
+    }
+
+    public boolean checkUpdatesNonBlock(boolean async) {
+        return checkUpdates(async, true);
+    }
+
+    private boolean checkUpdates(boolean async, boolean nonBlock) {
         if (!Act.isDev()) {
             return false;
         }
-        synchronized (this) {
-            try {
-                detectChanges();
-                return false;
-            } catch (RequestRefreshClassLoader refreshRequest) {
-                refresh(async);
-                return true;
-            } catch (RequestServerRestart requestServerRestart) {
-                refresh(async);
+        if (loading.get()) {
+            if (nonBlock) {
                 return true;
             }
+            synchronized (this) {
+                while (loading.get()) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw E.unexpected(e);
+                    }
+                }
+            }
+            return false;
+        }
+        try {
+            detectChanges();
+            return false;
+        } catch (RequestRefreshClassLoader refreshRequest) {
+            refresh(async);
+            return true;
+        } catch (RequestServerRestart requestServerRestart) {
+            refresh(async);
+            return true;
         }
     }
 
@@ -528,7 +602,17 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public boolean isStarted() {
-        return currentState == POST_START || currentState == ACT_START;
+        if (null == currentState) {
+            return false;
+        }
+        switch (currentState) {
+            case POST_START:
+            case POST_STARTED:
+            case ACT_START:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -539,8 +623,8 @@ public class App extends LogSupportedDestroyableBase {
         return hasStarted;
     }
 
-    public boolean hotReloading() {
-        return hasStarted;
+    public boolean isLoading() {
+        return loading.get();
     }
 
     public boolean isMainThread() {
@@ -565,14 +649,16 @@ public class App extends LogSupportedDestroyableBase {
             return;
         }
         info("App shutting down ....");
-        for (HotReloadListener listener : hotReloadListeners) {
-            listener.preHotReload();
-        }
-        if (null != classLoader && config().i18nEnabled()) {
-            // clear resource bundle cache for Act I18n
-            ResourceBundle.clearCache(classLoader);
-            // clear resource bundle cache for Rythm I18n
-            ResourceBundle.clearCache(I18N.class.getClassLoader());
+        if (Act.isDev()) {
+            for (HotReloadListener listener : hotReloadListeners) {
+                listener.preHotReload();
+            }
+            if (null != classLoader && config().i18nEnabled()) {
+                // clear resource bundle cache for Act I18n
+                ResourceBundle.clearCache(classLoader);
+                // clear resource bundle cache for Rythm I18n
+                ResourceBundle.clearCache(I18N.class.getClassLoader());
+            }
         }
 
         for (Daemon d : daemonRegistry.values()) {
@@ -593,10 +679,6 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
-    public synchronized boolean isRestarting() {
-        return restarting;
-    }
-
     public RequestHandler blockIssueHandler() {
         if (null != blockIssue && Act.isDev()) {
             return blockIssueHandler;
@@ -605,41 +687,41 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public synchronized void refresh() {
-        currentState = null;
-        final long ms = $.ms();
-        info("App starting ....");
-        profile = null;
-        blockIssue = null;
-        blockIssueCause = null;
-
-        Act.viewManager().clearAppDefinedVars();
-        initScanList();
-        initJarFileBlackList();
-        initServiceResourceManager();
-        reload();
-
-        managedCollectionService = new ManagedCollectionService(this);
-        I18n.classInit(this);
-        ReflectedInvokerHelper.classInit(this);
-        ParamValueLoaderService.classInit(this);
-        JodaTransformers.classInit(this);
-        FastJsonPropertyPreFilter.classInit(this);
-        ActErrorResult.classInit(this);
-        ActProviders.classInit(this);
-        ProvidedValueLoader.classInit(this);
-        GenieFactoryFinder.classInit(this);
-
-        mainThread = Thread.currentThread();
-        restarting = mainThread.getName().contains("job");
-        eventEmitted = C.newSet();
-
-        initSingletonRegistry();
-        initEventBus();
-        emit(EVENT_BUS_INITIALIZED);
-
+        startLoading();
         try {
+            currentState = null;
+            final long ms = $.ms();
+            info("App starting ....");
+            profile = null;
+            blockIssue = null;
+            blockIssueCause = null;
+
+            Act.viewManager().clearAppDefinedVars();
+            initScanList();
+            initJarFileBlackList();
+            initServiceResourceManager();
+            reload();
+
+            managedCollectionService = new ManagedCollectionService(this);
+            I18n.classInit(this);
+            ReflectedInvokerHelper.classInit(this);
+            ParamValueLoaderService.classInit(this);
+            JodaTransformers.classInit(this);
+            FastJsonPropertyPreFilter.classInit(this);
+            ActErrorResult.classInit(this);
+            ActProviders.classInit(this);
+            ProvidedValueLoader.classInit(this);
+            GenieFactoryFinder.classInit(this);
+
+            mainThread = Thread.currentThread();
+            eventEmitted = C.newSet();
+
+            initSingletonRegistry();
+            initEventBus();
+            emit(EVENT_BUS_INITIALIZED);
 
             loadConfig();
+            profile(); // ensure profile get loaded
             emit(CONFIG_LOADED);
 
             initDataPropertyRepository();
@@ -658,7 +740,7 @@ public class App extends LogSupportedDestroyableBase {
             emit(ROUTER_INITIALIZED);
             loadRoutes();
             emit(ROUTER_LOADED);
-            initApiManager(this);
+            initApiManager();
             initSampleDataProviderManager();
             initHttpClientService();
             initCaptchaPluginManager();
@@ -692,33 +774,23 @@ public class App extends LogSupportedDestroyableBase {
                 asmException = e;
                 throw ActErrorResult.of(e);
             }
-        } catch (BlockIssueSignal e) {
-            return;
-        }
 
-        try {
-            //classLoader().loadClasses();
             emit(APP_CODE_SCANNED);
             emit(CLASS_LOADED);
             Act.viewManager().reload(this);
-        } catch (BlockIssueSignal e) {
-            // ignore and keep going with dependency injector initialization
-        }
 
-        try {
             loadDependencyInjector();
             emit(DEPENDENCY_INJECTOR_INITIALIZED);
             dependencyInjector.unlock();
             emit(DEPENDENCY_INJECTOR_LOADED);
-        } catch (BlockIssueSignal e) {
-            return;
-        }
 
-        if (null == blockIssue && null == blockIssueCause) {
-            try {
+            if (null == blockIssue && null == blockIssueCause) {
                 final Runnable runnable1 = new Runnable() {
                     @Override
                     public void run() {
+                        if ($.bool("false")) {
+                            $.nil();
+                        }
                         initJsonDtoClassManager();
                         initParamValueLoaderManager();
                         initMailerConfigManager();
@@ -732,6 +804,9 @@ public class App extends LogSupportedDestroyableBase {
                         initHttpConfig();
                         initViewManager();
 
+                        registerMetricProvider();
+                        config().preloadConfigurations();
+
                         // let's any emit the dependency injector loaded event
                         // in case some other service depend on this event.
                         // If any DI plugin e.g. guice has emitted this event
@@ -739,21 +814,18 @@ public class App extends LogSupportedDestroyableBase {
                         // because once app event is consumed the event listeners
                         // are cleared
                         emit(DEPENDENCY_INJECTOR_PROVISIONED);
-                        emit(SINGLETON_PROVISIONED);
-                        registerMetricProvider();
-                        config().preloadConfigurations();
                         initSessionManager();
+                        emit(SINGLETON_PROVISIONED);
                     }
                 };
                 if (!isDevColdStart()) {
                     runnable1.run();
+                } else {
+                    jobManager.now("post_di_load_init", runnable1);
                 }
                 Runnable runnable2 = new Runnable() {
                     @Override
                     public void run() {
-                        if (isDevColdStart()) {
-                            runnable1.run();
-                        }
                         if (null != blockIssueCause) {
                             setBlockIssue(blockIssueCause);
                         }
@@ -767,6 +839,7 @@ public class App extends LogSupportedDestroyableBase {
                         }
                         hasStarted = true;
                         daemonKeeper();
+                        loadingDone();
                         emit(POST_START);
                         jobManager.post(SysEventId.DB_SVC_LOADED, new Runnable() {
                             @Override
@@ -778,16 +851,19 @@ public class App extends LogSupportedDestroyableBase {
                 };
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_PROVISIONED)) {
                     if (Act.isDev()) {
-                        jobManager.now("App:postDbSvcLogic", runnable2);
+                        jobManager.post(SINGLETON_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                     } else {
                         runnable2.run();
                     }
                 } else {
                     jobManager().on(DB_SVC_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                 }
-            } catch (BlockIssueSignal e) {
-                // ignore
             }
+        } catch (BlockIssueSignal e) {
+            loadingDone();
+        } catch (RuntimeException e) {
+            loadingDone();
+            throw e;
         }
     }
 
@@ -797,6 +873,7 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Check if the app has block issue set
+     *
      * @return `true` if the app has block issue encountered during start up
      */
     public boolean hasBlockIssue() {
@@ -817,7 +894,9 @@ public class App extends LogSupportedDestroyableBase {
 
     /**
      * Report if a class is registered into singleton registry
-     * @param cls the class
+     *
+     * @param cls
+     *         the class
      * @return `true` if the class is registered into singleton registry
      */
     public boolean isSingleton(Class<?> cls) {
@@ -843,7 +922,7 @@ public class App extends LogSupportedDestroyableBase {
         boolean found = false;
         GenieInjector injector = Act.app().injector();
         Annotation[] aa = cls.getAnnotations();
-        for (Annotation a: aa) {
+        for (Annotation a : aa) {
             Class<? extends Annotation> type = a.annotationType();
             if (injector.isInheritedScopeStopper(type)) {
                 return false;
@@ -900,7 +979,7 @@ public class App extends LogSupportedDestroyableBase {
         daemonRegistry.remove(daemon.id());
     }
 
-    List<Daemon> registeredDaemons() {
+    public List<Daemon> registeredDaemons() {
         return C.list(daemonRegistry.values());
     }
 
@@ -989,6 +1068,10 @@ public class App extends LogSupportedDestroyableBase {
         return (DI) dependencyInjector;
     }
 
+    public SingletonRegistry singletonRegistry() {
+        return singletonRegistry;
+    }
+
     public UploadFileStorageService uploadFileStorageService() {
         return uploadFileStorageService;
     }
@@ -1026,13 +1109,14 @@ public class App extends LogSupportedDestroyableBase {
      *
      * **Note** the class will be loaded by the app's {@link #classLoader()}
      *
-     * @param className the className of the instance to be returned
-     * @param <T>       the generic type of the class
+     * @param className
+     *         the className of the instance to be returned
+     * @param <T>
+     *         the generic type of the class
      * @return the instance of the class
      */
     public <T> T getInstance(String className) {
-        Class<T> c = $.classForName(className, classLoader());
-        return getInstance(c);
+        return getInstance(this.<T>classForName(className));
     }
 
     /**
@@ -1042,8 +1126,10 @@ public class App extends LogSupportedDestroyableBase {
      * to load the instance. And this is dependency inject process,
      * not a simple constructor call
      *
-     * @param clz the class
-     * @param <T> the generic type of the class
+     * @param clz
+     *         the class
+     * @param <T>
+     *         the generic type of the class
      * @return the instance of the class
      */
     public <T> T getInstance(Class<T> clz) {
@@ -1060,7 +1146,7 @@ public class App extends LogSupportedDestroyableBase {
      * on {@link #classLoader() App classloader}.
      *
      * @param name
-     *      the resource name
+     *         the resource name
      * @return `URL` to the resource if found or `null` if not found.
      */
     public URL getResource(String name) {
@@ -1074,7 +1160,7 @@ public class App extends LogSupportedDestroyableBase {
      * on {@link #classLoader()}.
      *
      * @param name
-     *      the resource name
+     *         the resource name
      * @return the input stream to the resource or `null` if resource not found
      */
     public InputStream getResourceAsStream(String name) {
@@ -1096,11 +1182,52 @@ public class App extends LogSupportedDestroyableBase {
     /**
      * Load/get a class by name using the app's {@link #classLoader()}
      *
-     * @param className the name of the class to be loaded
+     * @param className
+     *         the name of the class to be loaded
      * @return the class as described above
      */
     public <T> Class<T> classForName(String className) {
-        return $.classForName(className, classLoader());
+        if (className.contains("/")) {
+            className = className.replace('/', '.');
+        }
+        try {
+            return $.classForName(className, classLoader());
+        } catch (VerifyError error) {
+            if (Act.isDev()) {
+                // try output the bad bytecode
+                byte[] bytes = classLoader.cachedEnhancedBytecode(className);
+                if (null != bytes) {
+                    File outputDir = new File(tmpDir(), "bytes");
+                    outputDir.mkdirs();
+                    File output = new File(outputDir, className + ".java");
+                    PrintWriter writer = new PrintWriter(IO.writer(output));
+                    ClassReader cr = new ClassReader(bytes);
+                    ClassNode cn = new ClassNode();
+                    cr.accept(cn, 0);
+                    final List<MethodNode> mns = cn.methods;
+                    for (MethodNode mn : mns) {
+                        InsnList inList = mn.instructions;
+                        writer.println();
+                        writer.println(mn.name + mn.desc);
+                        Printer printer = new Textifier();
+                        TraceMethodVisitor mp = new TraceMethodVisitor(printer);
+                        for (int i = 0; i < inList.size(); i++) {
+                            inList.get(i).accept(mp);
+                        }
+                        printer.print(writer);
+                    }
+                    IO.close(writer);
+                    logger.error("Bad enhanced class encountered, asm code dumped to \n\t>>" + output.getAbsolutePath());
+                } else {
+                    logger.error("Bad enhanced class: " + className);
+                }
+                setBlockIssue(error);
+            } else {
+                logger.fatal(error, "Bad enhanced class found: " + className);
+                shutdown(-1);
+            }
+            return null;
+        }
     }
 
     @Override
@@ -1149,14 +1276,15 @@ public class App extends LogSupportedDestroyableBase {
         }
         appServiceRegistry.register(service);
         if (null != eventBus && !noDiBinder) {
+            final Class serviceType = service.getClass();
             eventBus.bind(SysEventId.DEPENDENCY_INJECTOR_LOADED, new SysEventListenerBase() {
                 @Override
-                public void on(EventObject event) throws Exception {
+                public void on(EventObject event) {
                     final App app = App.this;
-                    eventBus.emit(new DependencyInjectionBinder(app, service.getClass()) {
+                    eventBus.emit(new DependencyInjectionBinder(app, serviceType) {
                         @Override
                         public Object resolve(App app) {
-                            return app.service(service.getClass());
+                            return app.service(serviceType);
                         }
                     });
                 }
@@ -1242,6 +1370,18 @@ public class App extends LogSupportedDestroyableBase {
         return router;
     }
 
+    private synchronized void startLoading() {
+        loading.set(true);
+    }
+
+    private synchronized void loadingDone() {
+        if (config.selfHealing()) {
+            SystemAvailabilityMonitor.start();
+        }
+        loading.set(false);
+        this.notifyAll();
+    }
+
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File resource = RuntimeDirs.resource(this);
@@ -1269,6 +1409,10 @@ public class App extends LogSupportedDestroyableBase {
         registerValueObjectCodec();
         if (config.i18nEnabled()) {
             MvcConfig.enableLocalizedErrorMsg();
+        }
+        String tldReloadCron = (String) config.get(CRON_TLD_RELOAD);
+        if (S.isBlank(tldReloadCron)) {
+            config.setDefaultTldReloadCron();
         }
     }
 
@@ -1423,7 +1567,7 @@ public class App extends LogSupportedDestroyableBase {
         UrlPath.classInit(this);
         router = new Router(this);
         moreRouters = new HashMap<>();
-        List<NamedPort> ports = config().namedPorts();
+        Collection<NamedPort> ports = config().namedPorts();
         for (NamedPort port : ports) {
             moreRouters.put(port, new Router(this, port.name()));
         }
@@ -1454,12 +1598,11 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void initCache() {
-        cache = cache(config().cacheName());
-        cache.startup();
-        CacheService sessionCache = cache(config().cacheNameSession());
-        if (cache != sessionCache) {
-            sessionCache.startup();
+        if (isDev()) {
+            config().cacheServiceProvider().reset();
         }
+        cache = cache(config().cacheName());
+        CacheService sessionCache = cache(config().cacheNameSession());
         HttpConfig.setSessionCache(sessionCache);
     }
 
@@ -1482,10 +1625,7 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
-    private void initApiManager(App app) {
-        if (Act.isProd() || Test.shallRunAutomatedTest(app)) {
-            return;
-        }
+    private void initApiManager() {
         apiManager = new ApiManager(this);
     }
 
@@ -1500,7 +1640,7 @@ public class App extends LogSupportedDestroyableBase {
             scanPatterns = new HashSet<>();
             scanPrefixList = new HashSet<>();
             scanSuffixList = new HashSet<>();
-            for (String scanPackage: ((BootstrapClassLoader) classLoader).scanList()) {
+            for (String scanPackage : ((BootstrapClassLoader) classLoader).scanList()) {
                 if (scanPackage.contains("\\.") || scanPackage.contains("*")) {
                     scanPatterns.add(Pattern.compile(scanPackage));
                     String prefix = S.cut(scanPackage).beforeFirst("\\");
@@ -1605,17 +1745,22 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
-        router().addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
-        router().addMapping(GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
-        router().addMapping(GET, "/webjars/", new ResourceGetter("META-INF/resources/webjars"), RouteSource.BUILD_IN);
-        router().addContext("act.", "/~");
+        ResourceGetter actAsset = new ResourceGetter("asset/~act");
+        ResourceGetter webjars = new ResourceGetter("META-INF/resources/webjars");
+        ResourceGetter asset = new ResourceGetter("asset");
+        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
+        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
+        for (Router router : allRouters()) {
+            router.addMapping(GET, "/asset/", asset, RouteSource.BUILD_IN);
+            router.addMapping(GET, "/~/asset/", actAsset, RouteSource.BUILD_IN);
+            router.addMapping(GET, "/webjars/", webjars, RouteSource.BUILD_IN);
+            router.addContext("act.", "/~");
+            router.addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
+        }
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
             router.addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         }
-        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
-        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
-        router().addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {

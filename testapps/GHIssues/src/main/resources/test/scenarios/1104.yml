@@ -1,0 +1,14 @@
+Scenario(1104):
+  issueUrl: https://github.com/actframework/actframework/issues/1104
+  description: "Add headerNames() to UndertowRequest"
+  interactions:
+  - description: Test
+    request:
+      get: 1104
+      headers:
+        foo: bar
+    response:
+      json:
+        size:
+          - gt: 0
+        ?: foo

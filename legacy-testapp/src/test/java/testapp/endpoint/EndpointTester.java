@@ -137,7 +137,7 @@ public class EndpointTester extends TestBase {
         bodyEq(expected);
     }
 
-    protected ReqBuilder url(String pathTmpl, Object ... args) {
+    public ReqBuilder url(String pathTmpl, Object ... args) {
         reqBuilder = new ReqBuilder(pathTmpl, args).header("Accept", "text/html");
         return reqBuilder;
     }

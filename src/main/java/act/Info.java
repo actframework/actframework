@@ -26,16 +26,21 @@ import act.apidoc.Description;
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.Command;
+import act.conf.AppConfig;
 import act.controller.ExpressController;
+import act.controller.annotation.Port;
 import act.inject.param.NoBind;
+import act.route.Router;
 import act.sys.Env;
 import act.util.Banner;
 import act.util.JsonView;
 import com.alibaba.fastjson.JSON;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
 import org.osgl.util.S;
+import org.osgl.util.VM;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -45,6 +50,7 @@ import javax.inject.Singleton;
 @Singleton
 @SuppressWarnings("unused")
 @ExpressController
+@Port({Router.PORT_DEFAULT, AppConfig.PORT_SYS})
 public class Info {
 
     // a unit of information data
@@ -135,7 +141,9 @@ public class Info {
                 "baseDir", app.base().getAbsoluteFile(),
                 "mode", Act.mode().name(),
                 "profile", Act.profile(),
-                "group", Act.nodeGroup()
+                "group", Act.nodeGroup(),
+                "os", $.OS,
+                "jdk", S.concat(VM.INFO, " ", VM.SPEC_VERSION)
         );
         this.info = new Unit(map, Banner.cachedBanner());
     }

@@ -21,22 +21,23 @@ package act.app;
  */
 
 import static act.controller.Controller.Util.*;
+import static org.osgl.http.H.Format.*;
 import static org.osgl.http.H.Header.Names.*;
 
 import act.*;
 import act.conf.AppConfig;
+import act.controller.ParamNames;
 import act.controller.ResponseCache;
 import act.controller.captcha.CaptchaViolation;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
-import act.event.ActEvent;
-import act.event.SystemEvent;
+import act.event.*;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
-import act.route.Router;
-import act.route.UrlPath;
+import act.inject.param.ParamValueLoaderService;
+import act.route.*;
 import act.security.CORS;
 import act.session.SessionManager;
 import act.util.*;
@@ -65,7 +66,7 @@ import javax.validation.ConstraintViolation;
  * an application session
  */
 @RequestScoped
-public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable {
+public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable, RoutedContext {
 
     private static final Logger LOGGER = LogManager.get(ActionContext.class);
 
@@ -119,6 +120,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean suppressJsonDateFormat;
     private String attachmentName;
     private Class<?> handlerClass;
+    private RouteSource routeSource;
+    private String patchedJsonBody;
+    private boolean nonBlock;
+    public act.metric.Timer handleTimer;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -185,6 +190,20 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.sessionPassThrough = config.sessionPassThrough();
         this.localeResolver = new LocaleResolver(this);
         this.sessionManager = app.sessionManager();
+    }
+
+    @Override
+    public String toString() {
+        H.Request req = request;
+        if (null == req) {
+            return "INVALID CONTEXT";
+        }
+        return S.buffer("[")
+                .a(req.ip())
+                .a("]")
+                .a(req.method())
+                .a(" ")
+                .a(req.url()).toString();
     }
 
     public State state() {
@@ -281,6 +300,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public ActionContext markAsNonBlock() {
+        this.nonBlock = true;
+        return this;
+    }
+
+    public boolean isNonBlock() {
+        return this.nonBlock;
+    }
+
     public ActionContext processedUrl(String url) {
         this.processedUrl = url;
         return this;
@@ -300,6 +328,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 if (s.contains(".")) {
                     s = S.cut(s).afterLast(".");
                 }
+            }
+            if (S.blank(s)) {
+                s = S.cut(actionPath).afterLast(".");
             }
             attachmentName = s;
         }
@@ -568,6 +599,26 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    @Override
+    public RouteSource routeSource() {
+        return routeSource;
+    }
+
+    @Override
+    public ActionContext routeSource(RouteSource routeSource) {
+        this.routeSource = routeSource;
+        return this;
+    }
+
+    public ActionContext patchedJsonBody(String patchedJsonBody) {
+        this.patchedJsonBody = patchedJsonBody;
+        return this;
+    }
+
+    public String patchedJsonBody() {
+        return patchedJsonBody;
+    }
+
     public H.Format accept() {
         return req().accept();
     }
@@ -633,11 +684,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean jsonEncoded() {
-        return req().contentType() == H.Format.JSON;
+        return req().contentType() == JSON;
+    }
+
+    public boolean xmlEncoded() {
+        return req().contentType() == H.Format.XML;
     }
 
     public boolean acceptJson() {
-        return accept() == H.Format.JSON;
+        return accept() == JSON;
     }
 
     public boolean acceptXML() {
@@ -693,6 +748,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return param(name, value);
     }
 
+    /**
+     * Get all parameter keys.
+     * @return a set of parameter keys
+     */
     @Override
     public Set<String> paramKeys() {
         Set<String> set = new HashSet<String>();
@@ -702,6 +761,39 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         set.remove("_method");
         set.remove("_body");
         return set;
+    }
+
+    /**
+     * Get all parameter names.
+     *
+     * This method is an alias to {@link #paramKeys()}. We provide this method
+     * to make it consistent with {@link H.Request#paramNames()}.
+     *
+     * @return a set of parameter names
+     */
+    public Set<String> paramNames() {
+        return paramKeys();
+    }
+
+    /**
+     * Returns the param value associated with `__path`, i.e. calling to
+     * {@link #paramVal(String)} with `__path` as param name.
+     *
+     * However, this method will do sanity check on the value returned, in case
+     * there are `..` found in the value, an `IllegalArgumentException` will
+     * be thrown out. This is to prevent the insecure direct object reference
+     * attack.
+     *
+     * @return the param value of `__path`
+     * @throws IllegalArgumentException when the value contains string `..`
+     */
+    public String __pathParamVal() {
+        String s = paramVal(ParamNames.PATH);
+        if (null == s) {
+            return s;
+        }
+        E.illegalArgumentIf(s.contains(".."), "`..` found in path which is not allowed");
+        return s;
     }
 
     @Override
@@ -832,7 +924,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         } else {
             if (req().method() == H.Method.POST) {
                 H.Format accept = accept();
-                if (H.Format.JSON == accept) {
+                if (JSON == accept) {
                     return CREATED_JSON;
                 } else if (H.Format.XML == accept) {
                     return CREATED_XML;
@@ -881,21 +973,27 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (!result.status().isError()) {
             return applyContentType();
         }
-        if (req().isAjax()) {
-            H.Request req = req();
-            H.Format fmt = req.accept();
+        return applyContentType(contentTypeForErrorResult(req()));
+    }
+
+    private static boolean isErrorCompatible(H.Format fmt) {
+        return JSON == fmt || HTML == fmt || CSV == fmt || TXT == fmt || XML == fmt;
+    }
+
+    public static H.Format contentTypeForErrorResult(H.Request<?> req) {
+        H.Format fmt = req.accept();
+        if (req.isAjax()) {
             if (H.Format.UNKNOWN == fmt) {
                 fmt = req.contentType();
             }
-            if (H.Format.JSON == fmt || H.Format.XML == fmt) {
-                applyContentType(fmt);
-            } else {
-                applyContentType(H.Format.HTML);
+            if (JSON == fmt || H.Format.XML == fmt) {
+                return fmt;
             }
-        } else {
-            applyContentType(H.Format.HTML);
         }
-        return this;
+        if (!isErrorCompatible(fmt)) {
+            fmt = JSON;
+        }
+        return fmt;
     }
 
     public ActionContext applyContentType() {
@@ -941,12 +1039,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
-    private void applyContentType(H.Format fmt) {
+    private ActionContext applyContentType(H.Format fmt) {
         if (null != fmt) {
             ActResponse resp = response;
             resp.initContentType(fmt.contentType());
             resp.commitContentType();
         }
+        return this;
     }
 
     private void applyGlobalCspSetting() {
@@ -1145,10 +1244,19 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public S.Buffer buildViolationMessage(S.Buffer builder, String separator) {
-        Map<String, ConstraintViolation> violations = violations();
+        return buildViolationMessage(violations(), builder, separator);
+    }
+
+    public static S.Buffer buildViolationMessage(Map<String, ConstraintViolation> violations, S.Buffer builder, String separator) {
         if (violations.isEmpty()) return builder;
         for (Map.Entry<String, ConstraintViolation> entry : violations.entrySet()) {
-            builder.append(entry.getKey()).append(": ").append(entry.getValue().getMessage()).append(separator);
+            String message = entry.getValue().getMessage();
+            if (!message.startsWith(":")) {
+                builder.append(entry.getKey()).append(": ").append(message);
+            } else {
+                builder.append(message.substring(1));
+            }
+            builder.append(separator);
         }
         int n = builder.length();
         builder.delete(n - separator.length(), n);
@@ -1203,16 +1311,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public void login(Object userIdentifier) {
         session().put(config().sessionKeyUsername(), userIdentifier);
+        app().eventBus().trigger(new LoginEvent(userIdentifier.toString()));
     }
 
     /**
      * Login the user and redirect back to original URL
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      */
-    public void loginAndRedirectBack(String username) {
-        login(username);
+    public void loginAndRedirectBack(Object userIdentifier) {
+        login(userIdentifier);
         RedirectToLoginUrl.redirectToOriginalUrl(this);
     }
 
@@ -1220,26 +1329,26 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * Login the user and redirect back to original URL. If no
      * original URL found then redirect to `defaultLandingUrl`.
      *
-     * @param username
-     *         The username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      * @param defaultLandingUrl
      *         the URL to be redirected if original URL not found
      */
-    public void loginAndRedirectBack(String username, String defaultLandingUrl) {
-        login(username);
+    public void loginAndRedirectBack(Object userIdentifier, String defaultLandingUrl) {
+        login(userIdentifier);
         RedirectToLoginUrl.redirectToOriginalUrl(this, defaultLandingUrl);
     }
 
     /**
      * Login the user and redirect to specified URL
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      * @param url
      *         the URL to be redirected to
      */
-    public void loginAndRedirect(String username, String url) {
-        login(username);
+    public void loginAndRedirect(Object userIdentifier, String url) {
+        login(userIdentifier);
         throw redirect(url);
     }
 
@@ -1248,8 +1357,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * the session will be cleared
      */
     public void logout() {
+        String userIdentifier = session.get(config().sessionKeyUsername());
         SessionManager sessionManager = app().sessionManager();
         sessionManager.logout(session);
+        if (S.notBlank(userIdentifier)) {
+            app().eventBus().trigger(new LogoutEvent(userIdentifier));
+        }
     }
 
     /**
@@ -1348,9 +1461,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     protected void releaseResources() {
         super.releaseResources();
         PropertySpec.current.remove();
+        PropertySpec.currentSpec.remove();
         if (this.state != State.DESTROYED) {
+            ParamValueLoaderService.clearParamTree();
             sessionManager = null;
             this.allParams = null;
+            this.extraParams.clear();
             this.extraParams = null;
             this.requestParamCache = null;
             this.router = null;
@@ -1359,9 +1475,30 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             // xio impl might need this this.response = null;
             this.flash = null;
             this.session = null;
-            this.controllerInstances = null;
             this.result = null;
             this.uploads.clear();
+            this.uploads = null;
+            this.request = null;
+            this.response = null;
+            this.actionPath = null;
+            this.urlContext = null;
+            this.urlPath = null;
+            if (null != this.pathVarNames) {
+                this.pathVarNames.clear();
+                this.pathVarNames = null;
+            }
+            if (null != this.controllerInstances) {
+                this.controllerInstances.clear();
+                this.controllerInstances = null;
+            }
+            this.reflectedHandlerInvoker = null;
+            this.handlerClass = null;
+            this.encodedSessionToken = null;
+            this.localeResolver = null;
+            if (null != this.handleTimer) {
+                this.handleTimer.stop();
+                this.handleTimer = null;
+            }
             ActionContext.clearLocal();
         }
         this.state = State.DESTROYED;

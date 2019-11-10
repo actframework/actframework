@@ -28,6 +28,7 @@ import act.cli.Optional;
 import act.cli.Required;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
+import act.inject.DefaultValue;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -144,6 +145,11 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             BeanSpec spec
     ) {
         boolean isArray = spec.isArray();
+        String defVal = null;
+        DefaultValue defaultValue = spec.getAnnotation(DefaultValue.class);
+        if (null != defaultValue) {
+            defVal = defaultValue.value();
+        }
         StringValueResolver resolver = findResolver(spec, isArray); //= isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
 
         Required required = spec.getAnnotation(Required.class);
@@ -153,7 +159,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         } else if (null != optional) {
             return new OptionLoader(bindName, optional, resolver, spec);
         }
-        return isArray ? new CliVarArgumentLoader(spec.rawType().getComponentType(), resolver) : new CliArgumentLoader(resolver);
+        return isArray ? new CliVarArgumentLoader(spec.rawType().getComponentType(), resolver) : new CliArgumentLoader(resolver, defVal);
     }
 
     private StringValueResolver findResolver(BeanSpec spec, boolean isArray) {

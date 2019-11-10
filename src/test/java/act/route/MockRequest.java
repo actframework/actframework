@@ -58,6 +58,11 @@ public class MockRequest extends RequestImplBase<MockRequest> {
     }
 
     @Override
+    public Iterable<String> headerNames() {
+        return null;
+    }
+
+    @Override
     public String path() {
         return url;
     }

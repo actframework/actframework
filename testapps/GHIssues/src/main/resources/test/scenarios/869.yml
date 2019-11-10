@@ -1,6 +1,6 @@
-Scenario(GH869):
+Scenario(869):
   urlContext: /api/v1
-  description: "[869] Test - Allow app to define url context for scenario #869"
+  description: Test - Allow app to define url context for scenario #869
   interactions:
     - description: test
       request:

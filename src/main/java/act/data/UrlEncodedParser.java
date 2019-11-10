@@ -58,7 +58,7 @@ public class UrlEncodedParser extends RequestBodyParser {
             String data = new String(os.toByteArray(), encoding);
             if (data.length() == 0) {
                 //data is empty - can skip the rest
-                return new HashMap<String, String[]>(0);
+                return new HashMap<>(0);
             }
 
             // check if data is in JSON format

@@ -1,0 +1,14 @@
+Scenario(1001):
+  description: HTTP GET support json auto bind to obj #1001
+  interactions:
+  - description: Test
+    request:
+      headers:
+        content-type: application/json
+      get: /1001
+      params:
+        _body: '{"id":1,"name":"foo"}'
+    response:
+      json:
+        id: 1
+        name: foo

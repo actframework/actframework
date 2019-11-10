@@ -1,0 +1,9 @@
+Scenario(967):
+  description: Issue with loading configuration into Map
+  interactions:
+  - description: test
+    request:
+      get: 967
+    response:
+      json:
+        result: xyz

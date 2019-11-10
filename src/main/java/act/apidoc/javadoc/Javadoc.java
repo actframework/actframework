@@ -33,9 +33,18 @@ public class Javadoc {
     private JavadocDescription description;
     private List<JavadocBlockTag> blockTags;
 
+    public Javadoc(JavadocDescription description, List<JavadocBlockTag> blockTags) {
+        this.description = description;
+        this.blockTags = blockTags;
+    }
+
     public Javadoc(JavadocDescription description) {
         this.description = description;
         this.blockTags = new LinkedList<>();
+    }
+
+    public List<JavadocBlockTag> blockTags() {
+        return blockTags;
     }
 
     public Javadoc addBlockTag(JavadocBlockTag blockTag) {

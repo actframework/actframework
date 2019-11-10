@@ -1,0 +1,12 @@
+Scenario(1211):
+  interactions:
+    - description: test case 1
+      request:
+        get: 1211
+      response:
+        result: hello world
+    - description: test case 2
+      request:
+        get: 1211/2
+      response:
+        result: hello world

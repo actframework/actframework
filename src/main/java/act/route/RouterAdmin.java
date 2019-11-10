@@ -21,12 +21,8 @@ package act.route;
  */
 
 import act.app.App;
-import act.cli.CliContext;
-import act.cli.Command;
-import act.cli.Optional;
-import act.cli.Required;
+import act.cli.*;
 import act.cli.tree.FilteredTreeNode;
-import act.cli.tree.TreeNode;
 import act.cli.tree.TreeNodeFilter;
 import act.util.PropertySpec;
 import org.osgl.http.H;
@@ -50,7 +46,7 @@ public class RouterAdmin {
         this.context = CliContext.current();
     }
 
-    @Command(name = "act.route.list, act.route.print", help = "list routes")
+    @Command(name = "act.route.list, act.route.print, act.route, act.routes", help = "list routes")
     @PropertySpec("method,path,compactHandler")
     public Object listRoutes(
             @Optional("list routes in tree view") boolean tree,
@@ -58,38 +54,8 @@ public class RouterAdmin {
             @Optional("specify route filter") String q
     ) {
         final Router router = S.blank(name) ? app.router() : app.router(name);
-        if (S.notBlank(q)) {
-            if (q.contains(".") || q.contains("[") || q.contains("*")) {
-                // already regex
-            } else {
-                // make it a regex
-                q = ".*" + q + ".*";
-            }
-        }
         if (tree) {
-            TreeNode root = new TreeNode() {
-
-                @Override
-                public String id() {
-                    return "root";
-                }
-
-                @Override
-                public String label() {
-                    return "Router";
-                }
-
-                @Override
-                public List<TreeNode> children() {
-                    List<TreeNode> l = new ArrayList<>();
-                    l.add(router._GET);
-                    l.add(router._POST);
-                    l.add(router._PUT);
-                    l.add(router._DEL);
-                    return l;
-                }
-            };
-            return S.blank(q) ? root : new FilteredTreeNode(root, TreeNodeFilter.Common.pathMatches(q));
+            return S.blank(q) ? router : new FilteredTreeNode(router, TreeNodeFilter.Common.pathMatches(q));
         } else {
             return routeInfoList(name, q);
         }
@@ -101,7 +67,9 @@ public class RouterAdmin {
         if (S.notBlank(q)) {
             List<RouteInfo> toBeRemoved = new ArrayList<>();
             for (RouteInfo info: list) {
-                if (info.path().matches(q) || S.string(info.handler()).matches(q)) {
+                String handler = S.string(info.handler());
+                String path = info.path();
+                if (path.contains(q) || handler.contains(q) || path.matches(q) || handler.matches(q)) {
                     continue;
                 }
                 toBeRemoved.add(info);

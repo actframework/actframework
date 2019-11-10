@@ -1,0 +1,9 @@
+Scenario(990):
+  description: "@Named inject fail #990"
+  interactions:
+  - description: Test
+    request:
+      get: /990
+    response:
+      json:
+        result: A

@@ -15,7 +15,7 @@ Add `act-starter-parent` into into your pom.xml file
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.8.6</version>
+    <version>1.8.29.0</version>
   </parent>
 ```
 
@@ -27,33 +27,16 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.8.8.7
-```
-
-To start an new project for RESTful service:
-
-```
-mvn archetype:generate -B \
-    -DgroupId=com.mycom.helloservice \
-    -DartifactId=helloservice \
-    -DarchetypeGroupId=org.actframework \
-    -DarchetypeArtifactId=archetype-simple-restful-service \
-    -DarchetypeVersion=1.8.8.7
+    -DarchetypeVersion=1.8.29.0
 ```
 
 **tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.8.7
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.28.0
 ```
 
-Or 
-
-```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.8.7
-```
-
-For RESTful service project
+**Note** There are more ActFramework application archetypes for use. Please get them [here](ARCHETYPES.md). 
 
 ## Features
 
@@ -150,6 +133,8 @@ For RESTful service project
   - [Multiple database support built in](http://actframework.org/doc/multi_db.md)
 
 - **[Powerful view architecture with multiple render engine support](http://actframework.org/doc/templating.md)**
+
+- **[An unbelievable automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)**
 
 - **Commonly used tools**
 

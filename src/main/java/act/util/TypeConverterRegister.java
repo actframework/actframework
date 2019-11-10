@@ -30,7 +30,7 @@ public class TypeConverterRegister {
 
     TypeConverterRegistry registry = TypeConverterRegistry.INSTANCE;
 
-    @SubClassFinder()
+    @SubClassFinder
     public void foundTypeConverter(Lang.TypeConverter converter) {
         registry.register(converter);
     }

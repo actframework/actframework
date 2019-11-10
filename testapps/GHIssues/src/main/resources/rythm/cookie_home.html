@@ -1,0 +1,25 @@
+<html>
+<head>
+  <title>Cookie Test Page</title>
+  <script src="/asset/jquery.min.js"></script>
+  <script src="/asset/js.cookie.min.js"></script>
+</head>
+<body>
+<h1>Cookie Test Page</h1>
+<form method="post">
+  <input name="cookieName" placeholder="Cookie name">
+  <input name="cookieValue" placeholder="Cookie value">
+  <button>Add</button>
+</form>
+<form method="post" action="?_method=delete">
+  <input name="cookieName" placeholder="Cookie name">
+  <button>delete</button>
+</form>
+<div>Cookies</div>
+<pre id="cookies"></pre>
+<script>
+  var allCookies = Cookies.get();
+  $('#cookies').text(JSON.stringify(allCookies))
+</script>
+</body>
+</html>

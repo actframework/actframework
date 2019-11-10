@@ -202,6 +202,17 @@ public enum AppConfigKey implements ConfigKey {
     CLI_PAGE_SIZE_TABLE("cli.page.size.table"),
 
     /**
+     * {@code act.cli.progress-bar.style}
+     * Specify the CLI progress bar style, available styles are:
+     *
+     * * block
+     * * ascii
+     *
+     * Default value: `block`
+     */
+    CLI_PROGRESS_BAR_STYLE("cli.progress-bar.style"),
+
+    /**
      * {@code cli.session.ttl} specifies the number of seconds
      * a cli session can exists after last user interaction
      *
@@ -302,8 +313,14 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.cors.headers} specifies both `Access-Control-Expose-Headers`
      * and `Access-Control-Allow-Headers`
      *
+     * This configuration is deprecated, it is replaced by
+     *
+     * * {@link #CORS_HEADERS_EXPOSE}
+     * * {@link #CORS_HEADERS_ALLOWED}
+     *
      * Default value: `Content-Type, X-HTTP-Method-Override`
      */
+    @Deprecated
     CORS_HEADERS("cors.headers"),
 
     /**
@@ -311,7 +328,7 @@ public enum AppConfigKey implements ConfigKey {
      * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
      * it is set
      *
-     * Default value: empty
+     * Default value: `Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, Location, Link, Content-Disposition, Content-Length`
      */
     CORS_HEADERS_EXPOSE("cors.headers.expose"),
 
@@ -320,7 +337,7 @@ public enum AppConfigKey implements ConfigKey {
      * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
      * it is set
      *
-     * Default value: empty
+     * Default value: `X-HTTP-Method-Override, X-Requested-With, Authorization, X-XSRF-Token, X-CSRF-Token`
      */
     CORS_HEADERS_ALLOWED("cors.headers.allowed"),
 
@@ -332,7 +349,7 @@ public enum AppConfigKey implements ConfigKey {
     CORS_MAX_AGE("cors.max_age"),
 
     /**
-     * `act.cors.allow_credential` specifies `Access-Control-Allow-Credential`.
+     * `act.cors.allow_credentials` specifies `Access-Control-Allow-Credentials`.
      *
      * Default value: `false`
      */
@@ -471,6 +488,14 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: null
      */
     GLOBAL_RETURN_VALUE_ADVICE("globalReturnValueAdvice"),
+
+    /**
+     * `globalValidateViolationAdvice` specifies the global {@link act.handler.ValidateViolationAdvice}
+     *  type.
+     *
+     *  Default value: null
+     */
+    GLOBAL_VALIDATE_VIOLATION_ADVICE("globalValidateViolateAdvice"),
 
     /**
      * `act.handler.csrf_check_failure.impl` specifies the implementation
@@ -721,6 +746,13 @@ public enum AppConfigKey implements ConfigKey {
     JWT_ISSUER("jwt.issuer"),
 
     /**
+     * `json_body_patch` - enable/disable JSON body patch
+     *
+     * Default value: `true`
+     */
+    JSON_BODY_PATCH("json_body_patch.enabled"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */
@@ -760,6 +792,15 @@ public enum AppConfigKey implements ConfigKey {
     MODULES("modules"),
 
     /**
+     * `act.monitor`
+     *
+     * When `act.monitor` is turned on then it will load the monitor thread
+     *
+     * Default value: `false``
+     */
+    MONITOR("monitor.enabled"),
+
+    /**
      * {@code act.namedPorts} specifies a list of port names this
      * application listen to. These are additional ports other than
      * the default {@link #HTTP_PORT}
@@ -785,6 +826,20 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: 1024 * 8 (i.e. 8k)
      */
     OSGL_THREADLOCAL_BUF_LIMIT("threadlocal_buf.limit"),
+
+    /**
+     * `param_binding.keyword_matching` turn on/off keyword matching in HTTP param
+     * binding process.
+     *
+     * When this configuration is turned on the framework is able to do keyword matching
+     * to bind the HTTP parameter, e.g. when it declare to bind a parameter named `fooBar`,
+     * when request is sending with parameter named `foo_bar`, it can still finish the bind.
+     *
+     * **Note** turning on this configuration might cause slightly performance degrade.
+     *
+     * Default value: `false`
+     */
+    PARAM_BINDING_KEYWORD_MATCHING("param_binding.keyword_matching.enabled"),
 
     /**
      * `password.spec` specify default password spec which is used to
@@ -886,6 +941,15 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@link TemplatePathResolver}</p>
      */
     RESOLVER_TEMPLATE_PATH("resolver.template_path.impl"),
+
+    /**
+     *  `resource.filtering`
+     *
+     *  Enable/disable resource filtering (only impact dev mode)
+     *
+     *  Default value: `true`
+     */
+    RESOURCE_FILTERING("resource.filtering.enabled"),
 
     /**
      * `resource.preload.size.limit`
@@ -1154,6 +1218,15 @@ public enum AppConfigKey implements ConfigKey {
     SSL("ssl.enabled"),
 
     /**
+     * `system.self-healing`
+     *
+     * Turn on/off System Self Healing. Refer GH1234
+     *
+     * Default value: `false`
+     */
+    SYS_SELF_HEALING("system.self-healing"),
+
+    /**
      * `target.version` specifies the java version of the compile
      * target code. This configuration is used only in dev mode.
      *
@@ -1169,6 +1242,13 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: `default`
      */
     TEMPLATE_HOME("template.home"),
+
+    /**
+     * `test.timeout` specifies automate test http agent timeout in seconds
+     *
+     * Default value: 60 * 60 (i.e. 1 hour) in dev mode, 10 in automate test mode
+     */
+    TEST_TIMEOUT("test.timeout"),
 
     /**
      * `trace.handler.enabled` turn on/off handle invocation calls.
@@ -1245,7 +1325,33 @@ public enum AppConfigKey implements ConfigKey {
      */
     WS_KEY_TICKET("ws.key.ticket"),
 
+    /**
+     * `ws.purge-closed-conn.period`
+     *
+     * Specifies the waiting period in seconds to purge closed websocket connections
+     *
+     * Default value: `10` in PROD mode, `1` in DEV mode
+     */
+    WS_PURGE_CLOSED_CONN_PERIOD("ws.purge-closed-conn.period"),
+
+    /**
+     * `x_forward_protocol`
+     *
+     * specifies the header it shall check to determine if the current request
+     * is convey on HTTPS channel.
+     *
+     * Default value: `http`
+     */
     X_FORWARD_PROTOCOL("x_forward_protocol"),
+
+    /**
+     * `xml_root`
+     *
+     * Specifies the XML response root tag name.
+     *
+     * Default value: `xml`
+     */
+    XML_ROOT("xml_root"),
 
     ;
     private String key;
@@ -1323,17 +1429,21 @@ public enum AppConfigKey implements ConfigKey {
         Set<String> suffixes = ConfigKeyHelper.suffixes();
         Set<String> nonAliasSuffixes = ConfigKeyHelper.nonAliasSuffixes();
         for (AppConfigKey k : values()) {
-            lookup.put(k.name().toUpperCase(), k);
+            addToLookup(k.name(), k);
             String key = k.key().toUpperCase();
-            lookup.put(key, k);
+            addToLookup(key, k);
             String suffix = S.afterLast(key, ".");
             if (S.notBlank(suffix) && suffixes.contains(suffix) && !nonAliasSuffixes.contains(suffix)) {
                 Set<String> aliases = ConfigKeyHelper.aliases(key, suffix);
                 for (String alias : aliases) {
-                    lookup.put(Config.canonical(alias), k);
+                    addToLookup(Config.canonical(alias), k);
                 }
             }
         }
+    }
+
+    private static void addToLookup(String name, AppConfigKey key) {
+        lookup.put(Config.canonical(name), key);
     }
 
     /**

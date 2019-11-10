@@ -22,10 +22,7 @@ package act.cli;
 
 import act.util.PropertySpec;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Mark a command method return value shall be displayed as a XML object. e.g
@@ -53,5 +50,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
+@Inherited
 public @interface XmlView {
 }

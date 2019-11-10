@@ -76,6 +76,13 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
                     }
                 }
             }
+            if (S.blank(value)) {
+                return null;
+            }
+            if (value.length() < 15) {
+                // assume it is model name (the parameter name)
+                return null;
+            }
             // last try base64 decoder
             try {
                 return resolveFromBase64(value);

@@ -132,9 +132,24 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     protected void scan() {
-        super.scan();
         compileSources();
-        scanSources();
+        Set<String> sourcesToBeScanned = findSourcesToBeScanned();
+        Set<String> libClasses = libClasses();
+        if (Act.profile().equalsIgnoreCase("test")) {
+            Set<String> toBeRemoved = new HashSet<>();
+            for (String s : libClasses) {
+                if (s.contains("$")) {
+                    String s0 = S.cut(s).beforeFirst("$");
+                    if (sourcesToBeScanned.contains(s0)) {
+                        toBeRemoved.add(s);
+                    }
+                }
+            }
+            libClasses.removeAll(toBeRemoved);
+        }
+        libClasses.removeAll(sourcesToBeScanned);
+        scan(libClasses);
+        scanSources(sourcesToBeScanned);
     }
 
     @Override
@@ -212,8 +227,8 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     }
 
-    private void scanSources() {
-        Timer timer = metric.startTimer("act:classload:scan:scanSources");
+    private Set<String> findSourcesToBeScanned() {
+        Timer timer = metric.startTimer("act:classload:scan:findScanSources");
         try {
             logger.debug("start to scan sources...");
             List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
@@ -245,6 +260,20 @@ public class DevModeClassLoader extends AppClassLoader {
                     }
                 }
             }
+            return classesNeedByteCodeScan;
+        } finally {
+            long ns = timer.ns();
+            timer.stop();
+            if (logger.isDebugEnabled()) {
+                logger.debug("it takes %sms to find %s sources to be scanned and their bytecodes", ns / (1000 * 1000), sources.size());
+            }
+        }
+    }
+
+    private void scanSources(Set<String> classesNeedByteCodeScan) {
+        Timer timer = metric.startTimer("act:classload:scan:scanSources");
+        try {
+            logger.debug("start to scan sources...");
 
             if (classesNeedByteCodeScan.isEmpty()) {
                 return;
@@ -315,10 +344,17 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     public void detectChanges() {
+        // #1194 - prevent ConcurrentModificationException
+        List<FsChangeDetector> detectors = new ArrayList<>(this.detectors);
         for (FsChangeDetector detector : detectors) {
             detectChanges(detector);
         }
         super.detectChanges();
+    }
+
+    public void registerResourceFileDetector(String resourcePath) {
+        ProjectLayout layout = app().layout();
+        addDetector(layout.resource(app().base()), S.F.endsWith(resourcePath), confChangeListener);
     }
 
     private void detectChanges(FsChangeDetector detector) {
@@ -338,7 +374,7 @@ public class DevModeClassLoader extends AppClassLoader {
             addDetector(layout.lib(base), JAR_FILE, libChangeListener);
             File rsrc = layout.resource(base);
             addDetector(rsrc, CONF_FILE.or(ROUTES_FILE), confChangeListener);
-            addDetector(rsrc, null, resourceChangeListener);
+            //addDetector(rsrc, null, resourceChangeListener);
 
             if (isTest) {
                 addDetector(layout.testSource(base), JAVA_SOURCE, sourceChangeListener);

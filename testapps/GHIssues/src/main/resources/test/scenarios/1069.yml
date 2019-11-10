@@ -1,0 +1,18 @@
+Scenario(1069):
+  description: Error encountered with customised Unique validator when working with JPA
+  interactions:
+  - description: save user for the first time
+    request:
+      post: /1069
+      json:
+        name: abc
+  - description: save user for the second time
+    request:
+      post: /1069
+      params:
+        name: abc
+    response:
+      status: 400
+      json:
+        message:
+          - contains: org.hibernate.validator.constraints.Length.message

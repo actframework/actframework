@@ -1,16 +1,23 @@
 <!DOCTYPE html>
+@import org.osgl.Lang
 @import act.test.Scenario
 @import act.test.Interaction
-@args List<Scenario> result
+@args List<Scenario> result, boolean failure
 <html>
 <head>
   <meta charset="utf-8">
+  @ifNot(failure) {
+  <link rel="icon" type="image/png" href="/~/asset/img/test-success.ico?v=@act.Act.VERSION.getBuildNumber()">
+  } else {
+  <link rel="icon" type="image/png" href="/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()">
+  }
+  <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
   <style>
     body {
       background-color: #222;
       color: #f1f1f1;
-      font-family: "Roboto", "Trebuchet MS", "Dejavu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 1em;
+      font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: 13px;
     }
     a {color: #00b8b6;}
     h1,h2,h3,h4,h5 {
@@ -52,26 +59,78 @@
     .version {
       font-weight: 600;
     }
+    .open-source {
+      display:none;
+    }
+    h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 5px;
+      margin-top: 5px;
+      border-bottom: 1px dotted #888;
+      padding-bottom: 8px;
+    }
+    h4.ignore {
+      color: #aaa;
+      text-decoration: line-through;
+    }
+    ul.interactions li {
+      margin-bottom: 8px;
+    }
   </style>
   @render(head)
 </head>
 <body>
-<h1>Test Report</h1>
-<div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
+<h1 style="margin-bottom: 4px">Test Report</h1>
+<div class="version">@(_app.name())-@(_app.version().getVersion())</div>
+<br/>
 @for(Scenario scenario: result) {
-<h4>
-@if(scenario.description) {
-  @scenario.description
-} else {
-  @scenario.name.toUpperCase()
-}
+<h4 @if(scenario.ignore) {class="ignore"}>
+  @scenario.title() @if(scenario.issueUrl) {
+    &nbsp;<a class="issue-url" href="@scenario.issueUrl" target="_blank"  title="jump to issue page" style="text-decoration: none">
+  <img src="/~/asset/img/@(scenario.issueUrlIcon).png" style="height: 16px; padding-left: 1px;"></img>
+     </a>
+  }
+
+  @if(scenario.ignore) {
+  <ul style="list-style-type:none">
+    <li> - @scenario.getIgnoreReason()</li>
+  </ul>
+  }
+
+  @if(Lang.not(scenario.ignore) && !scenario.status.pass()) {
+    @if(scenario.source) {
+  <ul class="open-source" style="list-style-type:none; padding-left: 0px; font-size: 90%">
+    <li style="margin-bottom: 5px">
+      &gt;
+      <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+        Re-run scenario 
+      </a>
+    </li>
+    <li>
+      &gt;
+      <a href="http://localhost:8091?message=@(scenario.source):1">Open scenario source</a>
+    </li>
+  </ul>
+  <span class="no-source">
+    <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+      Re-run scenario &gt;
+    </a>
+  </span>
+    } else {
+  &nbsp;&nbsp;
+  <a href="/~/test/@scenario.name.toUpperCase()" target="@scenario.name.toLowerCase()">
+    Re-run scenario &gt;
+  </a>
+    }
+  }
 </h4>
 
 
-@if(!scenario.status.pass() && null != scenario.errorMessage) {
+@if(Lang.not(scenario.ignore) && !scenario.status.pass() && null != scenario.errorMessage && !scenario.errorMessage.contains("Interaction[")) {
 <div class="@scenario.status">
   [@scenario.status] @scenario.errorMessage
-  @if(scenario.cause) {
+  @if(null != scenario.cause && (!(scenario.cause instanceof act.test.util.ErrorMessage))) {
   <pre>
 @scenario.causeStackTrace()
   </pre>
@@ -79,13 +138,14 @@
 </div>
 }
 
+@ifNot(scenario.ignore) {
 <ul class="interactions">
 @for (Interaction interaction: scenario.interactions) {
   <li class="@interaction.status">
     [@interaction.status] @interaction.description.capFirst()
     @if(interaction.errorMessage) {
     <div class="error-message">- @interaction.errorMessage</div>
-    @if(interaction.cause) {
+    @if(interaction.cause != null && (!(interaction.cause instanceof act.test.util.ErrorMessage))) {
 <pre>
 @interaction.causeStackTrace()
 </pre>
@@ -94,8 +154,28 @@
   </li>
 }
 </ul>
+}
 
 }
 <a id="act-version" href="https://github.com/actframework/actframework">actframework-@act.Act.VERSION.getVersion()</a>
+<script>
+$.ajax({
+      url: 'http://localhost:8091/',
+      type: 'GET',
+      crossDomain: true,
+      dataType: 'jsonp',
+      timeout: 500,
+      success: function (ip) {
+        $('.no-source').hide();
+        $('.open-source').show();
+      },
+      error: function (err) {
+        if (err.status === 200) {
+          $('.no-source').hide();
+          $('.open-source').show();
+        }
+      }
+});
+</script>
 </body>
 </html>

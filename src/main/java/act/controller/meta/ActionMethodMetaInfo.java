@@ -39,6 +39,7 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
 
     public ActionMethodMetaInfo(ActionMethodMetaInfo parentAction, ControllerClassMetaInfo thisClass) {
         super(parentAction, thisClass);
+        this.interceptors.mergeFrom(thisClass.interceptors());
     }
 
     public ActionMethodMetaInfo addWith(String... classes) {

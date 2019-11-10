@@ -22,7 +22,6 @@ package act.inject;
 
 import act.Destroyable;
 import act.app.App;
-import act.app.AppClassLoader;
 import act.app.AppServiceBase;
 import act.app.event.SysEventId;
 import act.util.ClassNode;
@@ -30,10 +29,7 @@ import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 
 public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<DI>> extends AppServiceBase<DI> implements DependencyInjector<DI> {
@@ -73,12 +69,12 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
             if (null == list) {
                 final List<DependencyInjectionListener> list0 = new ArrayList<>();
                 list = list0;
-                final AppClassLoader cl = app().classLoader();
-                ClassNode node = cl.classInfoRepository().node(c.getName());
+                final App app = app();
+                ClassNode node = app.classLoader().classInfoRepository().node(c.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
-                        listeners.put($.classForName(classNode.name(), cl), list0);
+                        listeners.put(app.classForName(classNode.name()), list0);
                     }
                 });
                 listeners.put(c, list);

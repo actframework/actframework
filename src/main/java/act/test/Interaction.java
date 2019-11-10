@@ -20,61 +20,106 @@ package act.test;
  * #L%
  */
 
+import act.Act;
+import act.metric.Metric;
+import act.test.inbox.Inbox;
+import act.test.macro.Macro;
+import act.test.util.ErrorMessage;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import okhttp3.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import org.osgl.exception.UnexpectedException;
+import org.osgl.http.H;
+import org.osgl.util.E;
+import org.osgl.util.IO;
+import org.osgl.util.N;
+import org.osgl.util.S;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static act.metric.MetricInfo.ACT_TEST_INTERACTION;
 import static act.test.TestStatus.PENDING;
 import static act.test.util.ErrorMessage.error;
 
-import act.Act;
-import act.test.inbox.Inbox;
-import act.test.macro.Macro;
-import okhttp3.Response;
-import org.osgl.exception.UnexpectedException;
-import org.osgl.http.H;
-import org.osgl.util.*;
-
-import java.util.*;
-
 public class Interaction implements ScenarioPart {
     public List<Macro> preActions = new ArrayList<>();
-    public String description;
+    public String description = "test interaction";
     public RequestSpec request;
     public ResponseSpec response;
     public List<Macro> postActions = new ArrayList<>();
     public Map<String, String> cache = new LinkedHashMap<>();
+    // see https://github.com/actframework/actframework/issues/1119
+    public Map<String, String> assign = new LinkedHashMap<>();
+    public Map<String, String> store = new LinkedHashMap<>();
+    public Map<String, String> save = new LinkedHashMap<>();
     public String errorMessage;
-    public Throwable cause;
+    public transient Throwable cause;
     public TestStatus status = PENDING;
+    private transient Metric metric = Act.metricPlugin().metric(ACT_TEST_INTERACTION);
 
     @Override
-    public void validate(Scenario scenario) throws UnexpectedException {
-        E.unexpectedIf(S.blank(description), "no description in the interaction of [%s]", scenario);
+    public void validate(TestSession session) throws UnexpectedException {
         E.unexpectedIf(null == request, "request spec not specified in interaction[%s]", this);
         //E.unexpectedIf(null == response, "response spec not specified");
-        scenario.resolveRequest(request);
-        request.validate(this);
-        if (null != response) {
-            response.validate(this);
+        act.metric.Timer timer = metric.startTimer("validate");
+        try {
+            request.resolveParent(session.requestTemplateManager);
+            request.validate(this);
+            if (null != response) {
+                response.validate(this);
+            }
+            reset();
+        } finally {
+            timer.stop();
         }
-        reset();
     }
+
+
 
     @Override
     public String toString() {
         return description;
     }
 
+    public String getStackTrace() {
+        return causeStackTrace();
+    }
+
     public boolean run() {
-        boolean pass = run(preActions) && verify() && run(postActions);
-        status = TestStatus.of(pass);
-        return pass;
+        act.metric.Timer timer = metric.startTimer("run");
+        if (!assign.isEmpty()) {
+            cache.putAll(assign);
+        }
+        if (!store.isEmpty()) {
+            cache.putAll(store);
+        }
+        if (!save.isEmpty()) {
+            cache.putAll(save);
+        }
+        try {
+            boolean pass = run(preActions) && verify() && run(postActions);
+            status = TestStatus.of(pass);
+            return pass;
+        } finally {
+            timer.stop();
+        }
     }
 
     public String causeStackTrace() {
         return null == cause ? null: E.stackTrace(cause);
     }
 
-    private void reset() {
+    public void reset() {
         errorMessage = null;
         cause = null;
+        status = PENDING;
     }
 
     private boolean verify() {
@@ -83,7 +128,7 @@ public class Interaction implements ScenarioPart {
             if (S.notBlank(request.email)) {
                 doVerifyEmail(request.email);
             } else {
-                resp = Scenario.get().sendRequest(request);
+                resp = TestSession.current().sendRequest(request);
                 doVerify(resp);
             }
             return true;
@@ -100,17 +145,22 @@ public class Interaction implements ScenarioPart {
     }
 
     private void doVerify(Response resp) throws Exception {
-        verifyStatus(resp);
-        verifyHeaders(resp);
-        verifyBody(resp);
+        act.metric.Timer timer = metric.startTimer("verify");
+        try {
+            verifyStatus(resp);
+            verifyHeaders(resp);
+            verifyBody(resp);
+        } finally {
+            timer.stop();
+        }
     }
 
     private void doVerifyEmail(String email) throws Exception {
-        email = Scenario.get().processStringSubstitution(email);
+        email = TestSession.current().processStringSubstitution(email);
         Inbox inbox = Act.getInstance(Inbox.class);
         Inbox.Reader reader = inbox.getReader();
         String content = reader.readLatest(email);
-        Scenario.get().verifyBody(content, response);
+        TestSession.current().verifyBody(content, response);
     }
 
     private boolean run(List<Macro> macros) {
@@ -125,7 +175,7 @@ public class Interaction implements ScenarioPart {
 
     private boolean run(Macro macro) {
         try {
-            macro.run(Scenario.get());
+            macro.run(TestSession.current());
             return true;
         } catch (Exception e) {
             errorMessage = e.getMessage();
@@ -141,7 +191,38 @@ public class Interaction implements ScenarioPart {
         H.Status expected = expectedStatus();
         if (null == expected) {
             if (!resp.isSuccessful()) {
-                error("Status verification failure. Expected: successful, Found: " + resp.code());
+                int status = resp.code();
+                try {
+                    String body = resp.body().string();
+                    String msg = body;
+                    if (body.startsWith("{") && body.endsWith("}")) {
+                        try {
+                            JSONObject json = JSON.parseObject(body);
+                            if (json.containsKey("message")) {
+                                msg = json.getString("message");
+                            }
+                        } catch (Exception e) {
+                            // ignore
+                        }
+                    }
+                    if (msg.contains("<html>")) {
+                        Document doc = Jsoup.parse(msg, S.concat("http://localhost:", TestSession.current().port(), "/"));
+                        Elements elements = doc.select(".error-message");
+                        if (elements.hasText()) {
+                            msg = elements.text();
+                        } else {
+                            elements = doc.select("h1");
+                            if (elements.hasText()) {
+                                msg = doc.text();
+                            } else {
+                                msg = doc.title();
+                            }
+                        }
+                    }
+                    error("Status verification failure. Expected: successful, Found: %s, Error message: %s", status, msg);
+                } catch (IOException e) {
+                    error("Status verification failure. Expected: successful, Found: %s", status);
+                }
             }
         } else {
             if (expected.code() != resp.code()) {
@@ -158,25 +239,25 @@ public class Interaction implements ScenarioPart {
             String headerName = entry.getKey();
             String headerVal = resp.header(headerName);
             try {
-                Scenario.get().verifyValue(headerName, headerVal, entry.getValue());
+                TestSession.current().verifyValue(headerName, headerVal, entry.getValue());
             } catch (Exception e) {
                 error(e, S.concat("Failed verifying header[", headerName, "]: ", e.getMessage()));
             }
         }
-        Scenario.get().lastHeaders.set(resp.headers());
+        TestSession.current().lastHeaders.set(resp.headers());
     }
 
     private void verifyBody(Response rs) throws Exception {
         if (null != response && S.notBlank(response.checksum)) {
-            Scenario.get().verifyDownloadChecksum(rs, response.checksum);
+            TestSession.current().verifyDownloadChecksum(rs, response.checksum);
             if (S.notBlank(response.downloadFilename)) {
-                Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
+                TestSession.current().verifyDownloadFilename(rs, response.downloadFilename);
             }
         } else if (null != response && S.notBlank(response.downloadFilename)) {
-            Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
+            TestSession.current().verifyDownloadFilename(rs, response.downloadFilename);
         } else {
             String bodyString = S.string(rs.body().string()).trim();
-            Scenario.get().verifyBody(bodyString, response);
+            TestSession.current().verifyBody(bodyString, response);
         }
     }
 
@@ -186,6 +267,10 @@ public class Interaction implements ScenarioPart {
 
     private static Throwable causeOf(Exception e) {
         Throwable cause = e.getCause();
-        return null == cause ? e : cause;
+        Throwable t = null == cause ? e : cause;
+        if (t instanceof ErrorMessage) {
+            t = null;
+        }
+        return t;
     }
 }

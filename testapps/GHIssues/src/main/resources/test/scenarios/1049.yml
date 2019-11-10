@@ -1,0 +1,15 @@
+Scenario(1049):
+  description: Error enhancing class with `@Data` annotation
+  interactions:
+    - description: Test
+      request:
+        post: /1049
+        json:
+          policyId: 1
+          clientId: 1
+          productId: 1
+      response:
+        json:
+          policyId: 1
+          clientId: 1
+          productId: 1

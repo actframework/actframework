@@ -112,8 +112,9 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
        this.onResult = true;
     }
 
-    public void commitContentType() {
+    public T commitContentType() {
         header(H.Header.Names.CONTENT_TYPE, _getContentType());
+        return me();
     }
 
     @Override
@@ -158,14 +159,28 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     }
 
     public ActResponse afterWritingContent() {
-        ActionContext ctx = context();
         if (committed) {
             return this;
         }
-        committed = true;
         commit();
+        ActionContext ctx = context();
         MvcConfig.applyAfterCommitResultHandler(Ok.get(), ctx.req(), this);
         return this;
+    }
+
+    @Override
+    public final void commit() {
+        if (isCommitted()) {
+            return;
+        }
+        committed = true;
+        doCommit();
+    }
+
+    protected abstract void doCommit();
+
+    protected final boolean isCommitted() {
+        return committed;
     }
 
     @Override

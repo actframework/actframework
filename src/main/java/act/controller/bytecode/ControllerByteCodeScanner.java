@@ -69,6 +69,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     @Override
+    protected void reset(String className) {
+        super.reset(className);
+        envMatches = $.var(true);
+        eav = null;
+    }
+
+    @Override
     protected void onAppSet() {
         router = app().router();
     }
@@ -158,7 +165,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
             String className = classInfo.className();
             boolean isRoutedMethod = app().isRoutedActionMethod(className, name);
-            return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
+            return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature);
         }
 
         @Override
@@ -329,7 +336,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         private class ActionMethodVisitor extends MethodVisitor implements Opcodes {
 
             private String methodName;
-            private int access;
             private String desc;
             private String signature;
             private boolean isStatic;
@@ -348,9 +354,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private EnvAnnotationVisitor eav;
             private $.Var<Boolean> envMatched = $.var(true);
 
-            ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
+            ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature) {
                 super(ASM5, mv);
-                this.access = access;
                 this.methodName = methodName;
                 this.desc = desc;
                 this.signature = signature;
@@ -373,7 +378,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return av;
                 }
                 if (Global.class.getName().equals(c.getName())) {
-                    isGlobal.set(true);
+                    if (classInfo.isAbstract() && !isStatic) {
+                        logger.warn("\"@Global\" cannot be used on instance method of an abstract class: %s.%s", classInfo.className(), methodName);
+                    } else {
+                        isGlobal.set(true);
+                    }
                     return av;
                 }
                 if (Type.getType(With.class).getDescriptor().equals(desc)) {
@@ -501,7 +510,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 final HandlerMethodMetaInfo info = methodInfo;
                 info.name(methodName);
-                boolean isStatic = AsmTypes.isStatic(access);
                 if (isStatic) {
                     info.invokeStaticMethod();
                 } else {
@@ -902,7 +910,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             final List<Router> routers = new ArrayList<>();
             final App app = app();
             if (null == ports || ports.length == 0) {
-                if (app().hasMoreRouters()) {
+                if (!methodNames.isEmpty() && app().hasMoreRouters()) {
                     String className = classInfo.className();
                     for (String methodName : methodNames) {
                         Router routerX = app.getRouterFor(className, methodName);
@@ -960,7 +968,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             if (!noRegister) {
                 String contextPath = classInfo.urlContext();
                 String className = classInfo.className();
-                String action = WsEndpoint.PSEUDO_METHOD == methodName ? methodName : S.concat(className, ".", methodName);
+                String action = WsEndpoint.PSEUDO_METHOD == methodName ? "ws:" + className : S.concat(className, ".", methodName);
                 registerOnContext(contextPath, action);
                 contexts.add(contextPath);
             }

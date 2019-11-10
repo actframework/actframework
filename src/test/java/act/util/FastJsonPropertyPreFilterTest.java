@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,7 +39,7 @@ public class FastJsonPropertyPreFilterTest extends ActTestBase {
     private Foo foo;
     private Foo foo2;
     private DataPropertyRepository repo;
-    private List<String> fooProps;
+    private List<S.Pair> fooProps;
 
     @BeforeClass
     public static void classInit() {
@@ -59,7 +60,11 @@ public class FastJsonPropertyPreFilterTest extends ActTestBase {
         JsonUtilConfig.configure(mockApp);
         repo = new DataPropertyRepository(mockApp);
         fooProps = repo.propertyListOf(Foo.class);
-        filter.setFullPaths(fooProps);
+        List<String> ls = new ArrayList<>();
+        for (S.Pair pair : fooProps) {
+            ls.add(pair._1);
+        }
+        filter.setFullPaths(ls);
     }
 
     @Test
@@ -132,7 +137,7 @@ public class FastJsonPropertyPreFilterTest extends ActTestBase {
                 };
             }
         };
-        List<Person> list = new ArrayList<Person>();
+        List<Person> list = new ArrayList<>();
         for (Person p : iterable) {
             list.add(p);
         }

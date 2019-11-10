@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+@**
+ * The template file for Markdown content rendering
+ *@
+@args String title, String desc
+<html lang="@_lang">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="@desc">
+  <style>
+    .hidden {display: none;}
+  </style>
+  <title>@title</title>
+  <link rel="stylesheet" href="/~/asset/css/highlight.min.css?v=@act.Act.VERSION.getBuildNumber()">
+  <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/highlight.min.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/highlight.java.min.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/markdown-it.min.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/markdown-it-footnote.min.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  <style>
+    body {
+      background-color: #222;
+      color: #f1f1f1;
+      font-family: "Roboto", "Trebuchet MS", "Dejavu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 1em;
+    }
+    a {color: #00b8b6;}
+    h1,h2,h3,h4,h5 {
+      font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
+      font-weight: bold;
+    }
+    pre>code {
+      display: block;
+      padding: 15px;
+      background-color: #000;
+    }
+    code {
+      font-family: Envy Code R,Consolas,Monaco,Andale Mono,Ubuntu Mono,Menlo,Courier New,monospace;
+      font-size: 11pt;
+    }
+  </style>
+</head>
+<div id="doc-content" class="hidden">
+  @render()
+</div>
+<script>
+var result = $('#doc-content').text()
+$('#doc-content').text('')
+
+var md = markdownit({
+  html: true,
+  highlight: function (code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+          return hljs.highlight(lang, code).value;
+      } catch (__) {
+      }
+    } else {
+      console.log("lang not supported: " + lang)
+    }
+    return ''; // use external default escaping
+  }
+}).use(markdownitFootnote);
+
+function setOutput(val) {
+  var out = document.getElementById('doc-content');
+  if (!out) return
+  var old = out.cloneNode(true);
+  out.innerHTML = md.render(val);
+  var allold = old.getElementsByTagName("*");
+  if (allold === undefined) return;
+  var allnew = out.getElementsByTagName("*");
+  if (allnew === undefined) return;
+  for (var i = 0, max = Math.min(allold.length, allnew.length); i < max; i++) {
+    if (!allold[i].isEqualNode(allnew[i])) {
+      out.scrollTop = allnew[i].offsetTop;
+      return;
+    }
+  }
+  setTimeout(function() {
+    $('pre.line-numbers > code').each(function(i, block) {
+      hljs.lineNumbersBlock(block);
+    });
+    $('#doc-content').removeClass('hidden')
+  })
+  var hash = window.location.hash;
+  if (hash) {
+    setTimeout(function() {
+      $to = $(hash);
+      if ($to.offset()) {
+        $('html,body').animate({scrollTop: $to.offset().top},'slow');
+      } else {
+        var name = hash.substr(1);
+        $to = $('a[name=' + name + ']');
+        $('html,body').animate({scrollTop: $to.offset().top},'slow');
+      }
+    }, 200);
+  }
+}
+
+setOutput(result);
+
+// set anchor for all headers
+var r = /^\s*\[(.*)\](.*)/;
+$('#doc-content > h3, #doc-content > h4, #doc-content > h5').each(function(){
+  var $h = $(this), s = $h.text(), v = r.exec(s), id = false;
+  if (v) {
+    id = v[1];
+    $h.text(' ' + v[2]);
+  }
+  //$('<a id="' + nm0 + '"></a>').prependTo($h);
+  var $section = $('<section></section>')
+  $h.wrap($section.prop('id', id).addClass(this.tagName.toLowerCase()));
+  if ($h.parent('section').hasClass('h3')) {
+    $h.parent('section').append('<i class="icon-double-angle-up pull-right back-to-top" title="back to top"></i>')
+  } else {
+    $h.parent('section').append('<i class="icon-double-angle-up pull-right back-to-top" title="back to section top"></i>')
+  }
+});
+</script>
+</html>

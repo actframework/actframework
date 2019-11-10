@@ -12,8 +12,9 @@ import javax.persistence.*;
 
 @UrlContext("862")
 public class Gh862 extends BaseController {
+
     @Entity(name = "foo862")
-    public static class Foo {
+    public static class Gh862Foo {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         public Integer id;
@@ -22,30 +23,31 @@ public class Gh862 extends BaseController {
     }
 
     @Inject
-    private JPADao<Integer, Foo> dao;
+    private JPADao<Integer, Gh862Foo> dao;
 
     @SessionVariable
     @DbBind
-    private Foo foo;
+    private Gh862Foo foo;
 
     @PostAction
-    public Foo create(final Foo foo) {
+    public Gh862Foo create(final Gh862Foo foo) {
         return dao.save(foo);
     }
 
     @GetAction
-    public Iterable<Foo> list() {
+    public Iterable<Gh862Foo> list() {
         return dao.findAll();
     }
 
+
     @PutAction("current/{target}")
-    public Foo select(@DbBind Foo target, H.Session session) {
+    public Gh862Foo select(@DbBind Gh862Foo target, H.Session session) {
         session.put("foo", target.id);
         return target;
     }
 
     @GetAction("current")
-    public Foo current() {
+    public Gh862Foo current() {
         return foo;
     }
 }

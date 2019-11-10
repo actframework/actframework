@@ -25,7 +25,7 @@ import org.osgl.util.S;
 
 import java.util.List;
 
-public class StrEq extends Verifier<StrEq> {
+public class StrEq extends Verifier {
 
     @Override
     public boolean verify(Object value) {

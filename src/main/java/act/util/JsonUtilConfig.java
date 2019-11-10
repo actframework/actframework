@@ -31,17 +31,21 @@ import act.cli.util.MappedFastJsonNameFilter;
 import act.conf.AppConfig;
 import act.data.DataPropertyRepository;
 import act.event.SysEventListenerBase;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.*;
 import com.alibaba.fastjson.util.TypeUtils;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.OsglConfig;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -54,12 +58,17 @@ public class JsonUtilConfig {
         private final Object v;
         private SerializerFeature[] features;
         private SerializeFilter[] filters;
+        private SerializeConfig config;
         private DateFormat dateFormat;
         private boolean disableCircularReferenceDetect = true;
+        private boolean isLargeResponse;
+        private String sv;
 
         public JsonWriter(Object v, PropertySpec.MetaInfo spec, boolean format, ActContext context) {
             if (null == v) {
                 this.v = "{}";
+                this.isLargeResponse = false;
+                this.sv = (String)v;
             } else if (v instanceof String) {
                 String s = S.string(v).trim();
                 int len = s.length();
@@ -74,6 +83,8 @@ public class JsonUtilConfig {
                         this.v = "{\"result\":" + s + "}";
                     }
                 }
+                this.isLargeResponse = ((String) v).length() > OsglConfig.getThreadLocalCharBufferLimit();
+                this.sv = (String) v;
             } else {
                 this.v = v;
                 AppConfig config = Act.appConfig();
@@ -96,6 +107,8 @@ public class JsonUtilConfig {
                 this.disableCircularReferenceDetect = null == spec && context.isDisableCircularReferenceDetect();
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
+                this.config = initConfig(context);
+                this.isLargeResponse = context instanceof ActionContext && ((ActionContext) context).isLargeResponse();
             }
         }
 
@@ -121,6 +134,17 @@ public class JsonUtilConfig {
             return filterSet.toArray(new SerializeFilter[filterSet.size()]);
         }
 
+        private SerializeConfig initConfig(ActContext context) {
+            SerializeConfig config = SerializeConfig.getGlobalInstance();
+            PropertyNamingStrategy propertyNamingStrategy = context.fastjsonPropertyNamingStrategy();
+            if (null == propertyNamingStrategy) {
+                return config;
+            }
+            config = new SerializeConfig();
+            config.propertyNamingStrategy = propertyNamingStrategy;
+            return config;
+        }
+
         private SerializerFeature[] initFeatures(boolean format, ActContext context) {
             Set<SerializerFeature> featureSet = new HashSet<>();
             if (format) {
@@ -143,7 +167,8 @@ public class JsonUtilConfig {
 
         private FastJsonPropertyPreFilter initPropertyPreFilter(Object v, PropertySpec.MetaInfo spec, ActContext context) {
             if (null != context) {
-                spec = PropertySpec.MetaInfo.withCurrent(spec, context);
+                PropertySpec.MetaInfo withCurrent = PropertySpec.MetaInfo.withCurrent(spec, context);
+                spec = null == withCurrent ? spec : withCurrent;
             }
             if (null == spec) {
                 return null;
@@ -162,7 +187,7 @@ public class JsonUtilConfig {
                 IO.write((CharSequence) v, writer);
                 return;
             }
-            writeJson(writer, v, SerializeConfig.globalInstance, filters, dateFormat, DEFAULT_GENERATE_FEATURE, features);
+            writeJson(writer, v, config, filters, dateFormat, DEFAULT_GENERATE_FEATURE, features);
         }
 
         public $.Func0<String> asContentProducer() {
@@ -170,9 +195,12 @@ public class JsonUtilConfig {
             return new $.Func0<String>() {
                 @Override
                 public String apply() throws NotAppliedException, $.Break {
-                    S.Buffer buf = S.buffer();
-                    me.visit(buf);
-                    return buf.toString();
+                    if (null != me.sv) {
+                        return sv;
+                    }
+                    Writer w = me.isLargeResponse ? new StringWriter() : S.buffer();
+                    me.visit(w);
+                    return w.toString();
                 }
             };
         }
@@ -258,4 +286,9 @@ public class JsonUtilConfig {
             writer.close();
         }
     }
+
+    private static class Bean {
+        public String fooBar = "foo_bar";
+    }
+
 }

@@ -23,6 +23,7 @@ package act.session;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class CompoundSesssionMapper implements SessionMapper {
     public String readSession(H.Request request) {
         for (SessionMapper mapper : sessionMappers) {
             String retVal = mapper.readSession(request);
-            if (null != retVal) {
+            if (S.notBlank(retVal)) {
                 return retVal;
             }
         }

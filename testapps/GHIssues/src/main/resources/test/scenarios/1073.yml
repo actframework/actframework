@@ -1,0 +1,23 @@
+Scenario(1073):
+  description: "`@LoadResource` load yml file to bean failed"
+  interactions:
+    - description: Test
+      request:
+        get: /1073
+      response:
+        json:
+          0:
+            id: u31.csg
+            name: 网管
+            type: corba
+            provider: zz
+            adapter: Adapter
+            ip: 127.0.0.1
+            port: 8080
+            nameService:  NameService
+            userName: user
+            password: aaa
+            howmany: 100
+            nameComponents:
+              - id: 123
+                kind: ems

@@ -1,5 +1,5 @@
-Scenario(GH866):
-  description: "[866] `PropertySpec` specification not working when return value is a list"
+Scenario(866):
+  description: "`PropertySpec` specification not working when return value is a list"
   interactions:
     - description: test
       request:

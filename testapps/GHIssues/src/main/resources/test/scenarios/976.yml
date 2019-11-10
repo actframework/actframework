@@ -1,0 +1,27 @@
+Scenario(976):
+  description: SimpleRestfulServiceBase 'update' enhancement
+  interactions:
+  - description: create data
+    request:
+      post: 976
+      params:
+        name: abc
+    cache:
+      dataId: id
+  - description: verify data create
+    request:
+      get: 976/${dataId}
+    response:
+      json:
+        name: abc
+  - description: update data
+    request:
+      put: 976/${dataId}
+      params:
+        name: xyz
+  - description: verify data update
+    request:
+      get: 976/${dataId}
+    response:
+      json:
+        name: xyz

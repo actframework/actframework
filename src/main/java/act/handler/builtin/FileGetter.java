@@ -23,11 +23,11 @@ package act.handler.builtin;
 import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
-import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.FastStr;
+import org.osgl.util.MimeType;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -77,7 +77,7 @@ public class FileGetter extends FastRequestHandler {
         File file = base;
         H.Format fmt;
         if (base.isDirectory()) {
-            String path = context.paramVal(ParamNames.PATH);
+            String path = context.__pathParamVal();
             if (S.blank(path)) {
                 AlwaysForbidden.INSTANCE.handle(context);
                 return;
@@ -111,6 +111,14 @@ public class FileGetter extends FastRequestHandler {
             retVal = H.Format.of(s.toString());
         }
         return null == retVal ? H.Format.BINARY : retVal;
+    }
+
+    public static boolean isText(H.Format format) {
+        return MimeType.findByContentType(format.contentType()).test(MimeType.Trait.text);
+    }
+
+    public static boolean isBinary(H.Format format) {
+        return !isText(format);
     }
 
     @Override

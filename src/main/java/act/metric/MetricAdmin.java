@@ -46,7 +46,7 @@ public class MetricAdmin {
         context.println(pause ? "metric data sync paused." : "metric data sync enabled");
     }
 
-    @Command(name = "act.metric.counter.list", help = "list all counters")
+    @Command(name = "act.metric.counter.list,act.metric.counter,act.counter,act.metric.counters,act.counters.", help = "show metric counters")
     @PropertySpec("name,count")
     public Object getCounters(
             @Optional("specify maximum items returned") Integer limit,
@@ -62,7 +62,7 @@ public class MetricAdmin {
         return process(list, limit, q, tree, depth, MetricInfo.Comparator.COUNTER, MetricInfoTree.COUNTER);
     }
 
-    @Command(name = "act.metric.timer.list", help = "list all timers")
+    @Command(name = "act.metric.timer.list,act.metric.timer,act.metric,act.timer,act.metrics,act.timers", help = "show metric timers")
     @PropertySpec("name,accumulated,count,avg")
     public Object getTimers(
             @Optional("specify maximum items returned") Integer limit,

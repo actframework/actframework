@@ -23,11 +23,12 @@ package act.app;
 import act.Destroyable;
 import act.app.event.SysEventId;
 import org.osgl.$;
+import org.osgl.util.C;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * provides service for app to get singleton instance by type
@@ -43,8 +44,16 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
     }
 
     synchronized void register(final Class<?> singletonClass) {
+        if (isTraceEnabled()) {
+            trace("register " + singletonClass);
+        }
         if (!batchRegistered) {
             if (preRegistry.isEmpty()) {
+                trace("preRegistry is empty");
+                if (isTraceEnabled()) {
+                    trace("Add [%s] to preRegistry", singletonClass);
+                }
+                preRegistry.put(singletonClass, singletonClass);
                 app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "register-singleton-instances", new Runnable() {
                     @Override
                     public void run() {
@@ -52,13 +61,19 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
                     }
                 }, true);
             }
-            preRegistry.put(singletonClass, singletonClass);
         } else {
             register(singletonClass, app().getInstance(singletonClass));
         }
     }
 
+    public Iterable<String> typeNames() {
+        return C.list(registry.keySet()).map($.F.asString());
+    }
+
     public void register(Class singletonClass, Object singleton) {
+        if (isTraceEnabled()) {
+            trace("direct register " + singletonClass);
+        }
         registry.put(singletonClass, singleton);
     }
 
@@ -73,9 +88,16 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
     }
 
     private void doRegister() {
+        boolean traceEnabled = isTraceEnabled();
+        if (traceEnabled) {
+            trace("doRegister");
+        }
         batchRegistered = true;
         for (Map.Entry<Class<?>, Class<?>> entry: preRegistry.entrySet()) {
             Class<?> c = entry.getKey();
+            if (traceEnabled) {
+                trace("doRegister on " + c);
+            }
             registry.put(c, app().getInstance(c));
         }
         preRegistry.clear();

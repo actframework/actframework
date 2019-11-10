@@ -20,31 +20,24 @@ package act.app;
  * #L%
  */
 
+import static act.boot.app.FullStackAppBootstrapClassLoader.KEY_CLASSPATH;
 import static act.util.ClassInfoRepository.canonicalName;
 import static org.osgl.Lang.requireNotNull;
 
 import act.Act;
 import act.app.event.SysEventId;
 import act.app.util.EnvMatcher;
-import act.asm.AsmException;
-import act.asm.ClassReader;
-import act.asm.ClassWriter;
+import act.asm.*;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.FullStackAppBootstrapClassLoader;
-import act.cli.meta.CommanderClassMetaInfo;
-import act.cli.meta.CommanderClassMetaInfoHolder;
-import act.cli.meta.CommanderClassMetaInfoManager;
+import act.cli.meta.*;
 import act.conf.AppConfig;
-import act.controller.meta.ControllerClassMetaInfo;
-import act.controller.meta.ControllerClassMetaInfoHolder;
-import act.controller.meta.ControllerClassMetaInfoManager;
+import act.controller.meta.*;
 import act.event.SysEventListenerBase;
 import act.exception.EnvNotMatchException;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
-import act.mail.meta.MailerClassMetaInfo;
-import act.mail.meta.MailerClassMetaInfoHolder;
-import act.mail.meta.MailerClassMetaInfoManager;
+import act.mail.meta.*;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.util.*;
@@ -81,6 +74,7 @@ public class AppClassLoader
     private Map<String, byte[]> enhancedResourceCache = new HashMap<>();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
+    private boolean fullClassGraphBuilt;
     protected ControllerClassMetaInfoManager controllerInfo;
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
@@ -215,6 +209,34 @@ public class AppClassLoader
         return c;
     }
 
+    public synchronized boolean isFullClassGraphBuilt() {
+        return fullClassGraphBuilt;
+    }
+
+    public synchronized void buildFullClassGraph() {
+        if (fullClassGraphBuilt) {
+            return;
+        }
+        E.illegalStateIf(null == classInfoRepository);
+        C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
+        path = path.filter(S.F.endsWith(".jar"));
+        List<File> jars = path.map(new $.Transformer<String, File>() {
+            @Override
+            public File transform(String s) {
+                return new File(s);
+            }
+        }).sorted();
+        Map<String, byte[]> index = Jars.buildClassNameIndex(jars);
+        ClassInfoByteCodeScanner scanner = new ClassInfoByteCodeScanner(classInfoRepository());
+        ByteCodeVisitor bv = scanner.byteCodeVisitor();
+        for (Map.Entry<String, byte[]> entry : index.entrySet()) {
+            byte[] ba = entry.getValue();
+            ClassReader cr = new ClassReader(ba);
+            cr.accept(bv, 0);
+        }
+        fullClassGraphBuilt = true;
+    }
+
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class<?> c = findLoadedClass(name);
@@ -222,10 +244,10 @@ public class AppClassLoader
             return c;
         }
 
-        // ensure we can enhance the act classes specified below
-        if (name.startsWith("act.") && name.endsWith("Admin")) {
-            return super.loadClass(name, resolve);
-        }
+//        // ensure we can enhance the act classes specified below
+//        if (name.startsWith("act.") && name.endsWith("Admin")) {
+//            return super.loadClass(name, resolve);
+//        }
 
         c = loadAppClass(name, resolve);
 
@@ -236,8 +258,16 @@ public class AppClassLoader
         }
     }
 
+    protected Set<String> libClasses() {
+        return libClsCache.keySet();
+    }
+
     protected void scan() {
-        scanByteCode(libClsCache.keySet(), bytecodeLookup);
+        scanByteCode(libClasses(), bytecodeLookup);
+    }
+
+    protected void scan(Set<String> libClasses) {
+        scanByteCode(libClasses, bytecodeLookup);
     }
 
     /**
@@ -592,7 +622,8 @@ public class AppClassLoader
     }
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
-        if (!isSystemClass(className)) return bytecode;
+        //if (isSystemClass(className)) return bytecode;
+        if (!app().config().needEnhancement(className)) return bytecode;
         $.Var<ClassWriter> cw = $.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
@@ -644,6 +675,11 @@ public class AppClassLoader
     byte[] enhancedBytecode(String name) {
         byte[] bytecode = bytecode(name, false);
         return null == bytecode ? null : enhance(name, bytecode);
+    }
+
+    byte[] cachedEnhancedBytecode(String className) {
+        String key = className.replace('.', '/') + ".class";
+        return enhancedResourceCache.get(key);
     }
 
     private synchronized ClassNode cache(Class<?> c) {
@@ -709,7 +745,15 @@ public class AppClassLoader
     }
 
     public static boolean isSystemClass(String name) {
-        boolean sys = name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("com.google") || name.startsWith("org.apache") || name.startsWith("org.springframework") || name.startsWith("sun.") || name.startsWith("org.osgl.") || name.startsWith("osgl.");
-        return !sys;
+        boolean sys = name.startsWith("java.")
+                || name.startsWith("javax.")
+                || name.startsWith("com.google.")
+                || name.startsWith("org.apache.")
+                || name.startsWith("org.springframework.")
+                || name.startsWith("sun.")
+                || name.startsWith("com.sun.")
+                || name.startsWith("org.osgl.")
+                || name.startsWith("osgl.");
+        return sys;
     }
 }

@@ -22,19 +22,23 @@ package act.cli;
 
 import act.Destroyable;
 import act.app.*;
-import act.cli.builtin.IterateCursor;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
 import act.cli.util.CliCursor;
 import act.handler.CliHandler;
+import act.job.JobContext;
 import act.util.Banner;
 import act.util.DestroyableBase;
+import jline.Terminal;
 import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
+import jline.console.history.PersistentHistory;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.Socket;
@@ -55,12 +59,14 @@ public class CliSession extends DestroyableBase implements Runnable {
     private boolean exit;
     private Thread runningThread;
     private ConsoleReader console;
+    private FileHistory history;
     private CliCursor cursor;
     private CommandNameCompleter commandNameCompleter;
     // the current handler
     private CliHandler handler;
     private boolean daemon;
     private CliContext cliContext;
+    private boolean started;
     /**
      * Allow user command to attach data to the context and fetched for later use.
      * <p>
@@ -121,6 +127,10 @@ public class CliSession extends DestroyableBase implements Runnable {
         cursor = null;
     }
 
+    public Terminal term() {
+        return console.getTerminal();
+    }
+
     public <T> T attribute(String key) {
         return $.cast(attributes.get(key));
     }
@@ -131,7 +141,10 @@ public class CliSession extends DestroyableBase implements Runnable {
      * @return {@code true} if this session is expired
      */
     public boolean expired(int expiration) {
-        if (daemon && null != cliContext && !cliContext.disconnected()) {
+        if (null == cliContext) {
+            return started; // see GH #1140
+        }
+        if ((daemon || cliContext.inProgress()) && !cliContext.disconnected()) {
             return false;
         }
         long l = expiration * 1000;
@@ -145,13 +158,40 @@ public class CliSession extends DestroyableBase implements Runnable {
         Destroyable.Util.tryDestroyAll(attributes.values(), ApplicationScoped.class);
     }
 
+    private void tryTuneTelnetOptions(OutputStream os) throws IOException {
+        // placeholder - if we can tell the incoming connection is from
+        // a telnet program we can negotiate the stty options here
+//        Writer w = new OutputStreamWriter(os, "ISO-8859-1");
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)1);
+//        w.write((char)255);
+//        w.write((char)251);
+//        w.write((char)3);
+//        w.write((char)255);
+//        w.write((char)252);
+//        w.write((char)34);
+//        w.flush();
+    }
+
+    private File historyFile() {
+        String fileName = System.getProperty("cli.history");
+        if (S.blank(fileName)) {
+            fileName = ".act.cli-history";
+        }
+        return new File(fileName);
+    }
+
     @Override
     public void run() {
         runningThread = Thread.currentThread();
         try {
             app.eventBus().emitSync(new CliSessionStart(this));
             OutputStream os = socket.getOutputStream();
+            tryTuneTelnetOptions(os);
             console = new ConsoleReader(socket.getInputStream(), os);
+            history = new FileHistory(historyFile(), true);
+            console.setHistory(history);
             String banner = Banner.cachedBanner();
             printBanner(banner, console);
             String appName = App.instance().name();
@@ -167,10 +207,15 @@ public class CliSession extends DestroyableBase implements Runnable {
                 if (exit) {
                     console.println("session terminated");
                     console.flush();
+                    started = true;
                     return;
                 }
                 ts = $.ms();
-                app.checkUpdates(true);
+                if (app.checkUpdatesNonBlock(true)) {
+                    console.print("app reloading ...");
+                    started = true;
+                    return;
+                }
                 if (S.blank(line)) {
                     continue;
                 }
@@ -178,6 +223,8 @@ public class CliSession extends DestroyableBase implements Runnable {
                 try {
                     CliContext context = new CliContext(line, app, console, this);
                     cliContext = context;
+                    JobContext.init(id());
+                    started = true;
                     context.handle();
                 } catch ($.Break b) {
                     Object payload = b.get();
@@ -191,6 +238,8 @@ public class CliSession extends DestroyableBase implements Runnable {
                     } else {
                         console.println(S.fmt("INTERNAL ERROR: unknown payload type: %s", payload.getClass()));
                     }
+                } finally {
+                    JobContext.clear();
                 }
             }
         } catch (InterruptedIOException e) {
@@ -200,6 +249,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         } catch (Exception e) {
             LOGGER.error(e, "Error processing cli session");
         } finally {
+            IO.flush(history);
             if (null != server) {
                 server.remove(this);
             }
@@ -227,15 +277,8 @@ public class CliSession extends DestroyableBase implements Runnable {
     }
 
     void handler(CliHandler handler) {
-        if (handler == IterateCursor.INSTANCE) {
-            return;
-        }
-        if (null == this.handler || S.string(this.handler).equals(S.string(handler))) {
-            this.handler = handler;
-            return;
-        }
+        handler.resetCursor(this);
         this.handler = handler;
-        removeCursor();
     }
 
     private static void printBanner(String banner, ConsoleReader console) throws IOException {

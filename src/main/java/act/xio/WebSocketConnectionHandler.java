@@ -23,14 +23,13 @@ package act.xio;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.controller.meta.ActionMethodMetaInfo;
-import act.controller.meta.ControllerClassMetaInfo;
-import act.controller.meta.HandlerParamMetaInfo;
+import act.app.event.*;
+import act.controller.meta.*;
+import act.event.SysEventListenerBase;
 import act.handler.RequestHandlerBase;
 import act.inject.param.*;
 import act.sys.Env;
-import act.ws.WebSocketConnectionManager;
-import act.ws.WebSocketContext;
+import act.ws.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -38,19 +37,16 @@ import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.WsAction;
 import org.osgl.mvc.result.BadRequest;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
     protected boolean disabled;
-    protected ClassLoader cl;
+    protected App app;
     protected WebSocketConnectionManager connectionManager;
     protected ActionMethodMetaInfo handler;
     protected ControllerClassMetaInfo controller;
@@ -69,33 +65,37 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     private boolean isWsHandler;
     private Class[] paramTypes;
     private boolean isSingleParam;
+    private WebSocketConnectionListener connectionListener;
+    private WebSocketConnectionListener.Manager connectionListenerManager;
 
     // used to compose connection only websocket handler
     protected WebSocketConnectionHandler(WebSocketConnectionManager manager) {
         this.connectionManager = manager;
         this.isWsHandler = false;
         this.disabled = true;
+        this.app = manager.app();
+        this.initWebSocketConnectionListenerManager();
     }
 
     public WebSocketConnectionHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager) {
         this.connectionManager = $.requireNotNull(manager);
+        this.app = manager.app();
+        this.initWebSocketConnectionListenerManager();
         if (null == methodInfo) {
             this.isWsHandler = false;
             this.disabled = true;
             return;
         }
-        App app = manager.app();
-        this.cl = app.classLoader();
         this.handler = $.requireNotNull(methodInfo);
         this.controller = handler.classInfo();
 
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(WebSocketContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
-        this.handlerClass = $.classForName(controller.className(), cl);
+        this.handlerClass = app.classForName(controller.className());
         this.disabled = !Env.matches(handlerClass);
 
-        paramTypes = paramTypes(cl);
+        paramTypes = paramTypes(app);
 
         try {
             this.method = handlerClass.getMethod(methodInfo.name(), paramTypes);
@@ -138,6 +138,65 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
             }
             isSingleParam = 1 == realParamCnt;
         }
+    }
+
+    @Override
+    protected void releaseResources() {
+        app = null;
+        connectionManager = null;
+        connectionListenerManager = null;
+        handler = null;
+        controller = null;
+        handlerClass = null;
+        method = null;
+        methodAccess = null;
+        paramLoaderService = null;
+        jsonDTOClassManager = null;
+        paramSpecs = null;
+        host = null;
+        $.resetArray(paramTypes);
+        paramTypes = null;
+        super.releaseResources();
+    }
+
+    private void initWebSocketConnectionListenerManager() {
+        App app = Act.app();
+        if (app.eventEmitted(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED)) {
+            this.connectionListenerManager = app.getInstance(WebSocketConnectionListener.Manager.class);
+        } else {
+            final WebSocketConnectionHandler me = this;
+            this.app.eventBus().bind(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new SysEventListenerBase() {
+                @Override
+                public void on(EventObject event) {
+                    me.connectionListenerManager = me.app.getInstance(WebSocketConnectionListener.Manager.class);
+                }
+            });
+        }
+    }
+
+    protected void setConnectionListener(WebSocketConnectionListener connectionListener) {
+        this.connectionListener = $.requireNotNull(connectionListener);
+    }
+
+    /**
+     * Called by implementation class once websocket connection established
+     * at networking layer.
+     * @param context the websocket context
+     */
+    protected final void _onConnect(WebSocketContext context) {
+        if (null != connectionListener) {
+            connectionListener.onConnect(context);
+        }
+        connectionListenerManager.notifyFreeListeners(context, false);
+        Act.eventBus().emit(new WebSocketConnectEvent(context));
+    }
+
+    protected final void _onClose(WebSocketContext context) {
+        if (null != connectionListener) {
+            connectionListener.onClose(context);
+        }
+        connectionListenerManager.notifyFreeListeners(context, true);
+        Act.eventBus().emit(new WebSocketCloseEvent(context));
     }
 
     @Override
@@ -202,12 +261,12 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         return params;
     }
 
-    private Class[] paramTypes(ClassLoader cl) {
+    private Class[] paramTypes(App app) {
         int sz = handler.paramCount();
         Class[] ca = new Class[sz];
         for (int i = 0; i < sz; ++i) {
             HandlerParamMetaInfo param = handler.param(i);
-            ca[i] = $.classForName(param.type().getClassName(), cl);
+            ca[i] = app.classForName(param.type().getClassName());
         }
         return ca;
     }
@@ -216,7 +275,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (0 == fieldsAndParamsCount || !context.isJson()) {
             return;
         }
-        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(handlerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(paramSpecs, handlerClass);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;

@@ -29,8 +29,7 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 class PojoLoader extends ParamValueLoader.JsonBodySupported {
 
@@ -84,18 +83,37 @@ class PojoLoader extends ParamValueLoader.JsonBodySupported {
     private Map<String, FieldLoader> fieldLoaders(ParamKey key, BeanSpec spec) {
         Class<?> current = spec.rawType();
         Map<String, FieldLoader> fieldLoaders = new HashMap<>();
+        Set<Class<?>> circularReferenceDetector = circularReferenceCounter.get();
         while (null != current && !current.equals(Object.class)) {
+            if (null == circularReferenceDetector) {
+                circularReferenceDetector = new HashSet<>();
+                circularReferenceCounter.set(circularReferenceDetector);
+            }
             for (Field field : current.getDeclaredFields()) {
-                if (shouldWaive(field)) {
+                Class<?> fieldType = field.getType();
+                if (shouldWaive(field) || circularReferenceDetector.contains(fieldType)) {
                     continue;
                 }
-                field.setAccessible(true);
-                String fieldName = field.getName();
-                fieldLoaders.put(fieldName, service.fieldLoader(key, field, spec.field(fieldName)));
+                circularReferenceDetector.add(fieldType);
+                try {
+                    field.setAccessible(true);
+                    String fieldName = field.getName();
+                    BeanSpec fieldSpec = spec.field(fieldName);
+                    if (null == fieldSpec) {
+                        // circular reference
+                        continue;
+                    }
+                    fieldLoaders.put(fieldName, service.fieldLoader(key, field, spec.field(fieldName)));
+                } finally {
+                    circularReferenceDetector.remove(fieldType);
+                }
             }
             current = current.getSuperclass();
         }
         return fieldLoaders;
     }
+
+
+    static final ThreadLocal<Set<Class<?>>> circularReferenceCounter = new ThreadLocal<>();
 
 }

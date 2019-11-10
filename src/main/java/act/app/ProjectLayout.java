@@ -24,6 +24,7 @@ import static act.app.ProjectLayout.Utils.file;
 import static act.app.RuntimeDirs.CLASSES;
 import static act.app.RuntimeDirs.CONF;
 import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
+import static act.route.RouteTableRouterBuilder.ROUTES_FILE2;
 
 import act.Act;
 import act.app.util.NamedPort;
@@ -388,7 +389,7 @@ public interface ProjectLayout {
         @Override
         public Map<String, List<File>> routeTables(File appBase) {
             Map<String, List<File>> map = new HashMap<>();
-            map.put(NamedPort.DEFAULT, routeTables(appBase, ROUTES_FILE));
+            map.put(NamedPort.DEFAULT, routeTables(appBase, ROUTES_FILE, ROUTES_FILE2));
             for (NamedPort np : Act.app().config().namedPorts()) {
                 String npName = np.name();
                 String routesFile = S.concat("routes.", npName, ".conf");
@@ -397,21 +398,39 @@ public interface ProjectLayout {
             return map;
         }
 
-        private List<File> routeTables(File appBase, String routesFiile) {
+        private List<File> routeTables(File appBase, String ... routesFiles) {
             List<File> files = new ArrayList<>();
             File resourceBase = resource(appBase);
-            files.add(file(resourceBase, routesFiile));
-            File confBase = conf(appBase);
-            if ($.eq(confBase, resourceBase)) {
-                // see https://github.com/actframework/actframework/issues/300
-                return files;
+            File routeFile = routeFile(resourceBase, routesFiles);
+            if (null != routeFile) {
+                files.add(routeFile);
             }
-            files.add(file(confBase, routesFiile));
+            File confBase = conf(appBase);
+            routeFile = routeFile(confBase, routesFiles);
+            if (null != routeFile && !files.contains(routeFile)) {
+                files.add(routeFile);
+            }
             File commonBase = file(confBase, "common");
-            files.add(file(commonBase, routesFiile));
+            routeFile = routeFile(commonBase, routesFiles);
+            if (null != routeFile && !files.contains(routeFile)) {
+                files.add(routeFile);
+            }
             File profileBase = file(confBase, Act.profile());
-            files.add(file(profileBase, routesFiile));
+            routeFile = routeFile(profileBase, routesFiles);
+            if (null != routeFile && !files.contains(routeFile)) {
+                files.add(routeFile);
+            }
             return files;
+        }
+
+        private static File routeFile(File base, String ... routesFiles) {
+            for (String s : routesFiles) {
+                File routeFile = file(base, s);
+                if (routeFile.canRead()) {
+                    return routeFile;
+                }
+            }
+            return null;
         }
 
         public static ProjectLayout valueOfIgnoreCase(String s) {

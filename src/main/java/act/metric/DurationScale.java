@@ -24,8 +24,8 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 enum DurationScale {
-    ns(1),
-    ms(1000L * 1000L),
+    ns("ns", 1),
+    ms("ms", 1000L * 1000L),
     second("s", 1000L * 1000L * 1000L),
     minute("min", 1000L * 1000L * 1000L * 60L),
     hour("h", 1000L * 1000L * 1000L * 60L * 60L),

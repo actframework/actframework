@@ -22,12 +22,14 @@ package act.util;
 
 import act.Destroyable;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.inject.param.NoBind;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.*;
 
+@NoBind
 public abstract class LogSupportedDestroyableBase extends LogSupport implements Destroyable {
 
     private volatile boolean destroyed;

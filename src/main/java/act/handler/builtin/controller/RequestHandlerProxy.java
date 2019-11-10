@@ -20,17 +20,15 @@ package act.handler.builtin.controller;
  * #L%
  */
 
+import static act.app.ActionContext.contentTypeForErrorResult;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.POST;
 
-import act.Act;
-import act.ActResponse;
-import act.Destroyable;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppInterceptorManager;
+import act.*;
+import act.app.*;
 import act.app.event.SysEventId;
-import act.controller.*;
+import act.controller.CacheSupportMetaInfo;
+import act.controller.ResponseCache;
 import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.inject.util.Sorter;
@@ -239,16 +237,22 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             } catch (Exception e0) {
                 logger.error(e0, "Error invoking exception handler");
             }
-            if (null == result) {
-                H.Request req = context.req();
-                logger.error(e, "error handling request: " + req);
-                result = ActErrorResult.of(e);
-            }
-            try {
-                onResult(result, context);
-            } catch (Exception e2) {
-                logger.error(e2, "error rendering exception handle result");
-                onResult(ActErrorResult.of(e2), context);
+            if (context.resp().isClosed()) {
+                logger.error(e, "Error committing result");
+            } else {
+                if (null == result) {
+                    H.Request req = context.req();
+                    result = ActErrorResult.of(e);
+                    if (result.status().isServerError()) {
+                        logger.error(e, "Server error encountered on handling request: " + req);
+                    }
+                }
+                try {
+                    onResult(result, context);
+                } catch (Exception e2) {
+                    logger.error(e2, "error rendering exception handle result");
+                    onResult(ActErrorResult.of(e2), context);
+                }
             }
         } finally {
             try {
@@ -324,7 +328,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 H.Request req = context.req();
                 ActResponse<?> resp = context.prepareRespForResultEvaluation();
                 if (result instanceof ErrorResult) {
-                    resp.contentType(req.accept());
+                    // see https://github.com/actframework/actframework/issues/1034
+                    H.Format fmt = contentTypeForErrorResult(req);
+                    req.accept(fmt);
+                    resp.contentType(fmt);
                 }
                 result.apply(req, resp);
             }

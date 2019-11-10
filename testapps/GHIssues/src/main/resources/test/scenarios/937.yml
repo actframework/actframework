@@ -1,0 +1,10 @@
+Scenario(937):
+  description: Missing `Content-Type` header in response servicing static file request
+  interactions:
+  - description: Test
+    request:
+      get: /906?n=100
+    response:
+      headers:
+        Content-Type:
+          - contains: text/plain

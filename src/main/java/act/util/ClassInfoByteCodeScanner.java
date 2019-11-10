@@ -32,6 +32,13 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     private ClassInfoRepository classInfoRepository;
 
+    public ClassInfoByteCodeScanner(ClassInfoRepository classInfoRepository) {
+        this.classInfoRepository = classInfoRepository;
+    }
+
+    public ClassInfoByteCodeScanner() {
+    }
+
     @Override
     protected void onAppSet() {
         app().eventBus().bind(SysEventId.CLASS_LOADER_INITIALIZED, new SysEventListenerBase("init-class-info-repo") {
@@ -63,17 +70,31 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
+            if (null == superName) {
+                return; // ignore java.lang.Object
+            }
+            String superType = Type.getObjectType(superName).getClassName();
             String myName = Type.getObjectType(name).getClassName();
             me = classInfoRepository.node(myName);
-            me.modifiers(access);
-            String superType = Type.getObjectType(superName).getClassName();
-            if (!Object.class.getName().equals(superType)) {
-                me.parent(superType);
+            if (me.modifiers() == 0) {
+                // ASM access some how contains non-class modifiers, get rid of them
+                access &= ~ACC_SYNCHRONIZED;
+                access &= ~ACC_VOLATILE;
+                access &= ~ACC_BRIDGE;
+                access &= ~ACC_VARARGS;
+                access &= ~ACC_TRANSIENT;
+                access &= ~ACC_NATIVE;
+                access &= ~ACC_STRICT;
+                access &= ~ACC_MANDATED;
+                me.modifiers(access);
             }
-            if (null != interfaces) {
+            if (!me.hasInterfaces() && null != interfaces) {
                 for (String intf: interfaces) {
                     me.addInterface(intf);
                 }
+            }
+            if (null == me.parent() && !Object.class.getName().equals(superType)) {
+                me.parent(superType);
             }
         }
 

@@ -20,32 +20,21 @@ package act.xio.undertow;
  * #L%
  */
 
-import act.Act;
 import act.app.ActionContext;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.view.ActErrorResult;
-import act.ws.WebSocketCloseEvent;
-import act.ws.WebSocketConnectEvent;
-import act.ws.WebSocketConnectionManager;
-import act.ws.WebSocketContext;
+import act.ws.*;
 import act.xio.WebSocketConnection;
 import act.xio.WebSocketConnectionHandler;
 import io.undertow.Handlers;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.websockets.WebSocketConnectionCallback;
-import io.undertow.websockets.core.AbstractReceiveListener;
-import io.undertow.websockets.core.BufferedTextMessage;
-import io.undertow.websockets.core.StreamSourceFrameChannel;
-import io.undertow.websockets.core.WebSocketChannel;
+import io.undertow.websockets.core.*;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 
 import java.io.IOException;
 
 class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
-
-    UndertowWebSocketConnectionHandler (WebSocketConnectionManager manager) {
-        super(manager);
-    }
 
     UndertowWebSocketConnectionHandler(ActionMethodMetaInfo method, WebSocketConnectionManager manager) {
         super(method, manager);
@@ -71,7 +60,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                     }
                     channel.getReceiveSetter().set(new AbstractReceiveListener() {
                         @Override
-                        protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
+                        protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
                             WebSocketContext.current(wsCtx);
                             String payload = message.getData();
                             if (logger.isTraceEnabled()) {
@@ -89,11 +78,11 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                             WebSocketContext.current(wsCtx);
                             super.onClose(webSocketChannel, channel);
                             connection.destroy();
-                            context.app().eventBus().emit(new WebSocketCloseEvent(wsCtx));
+                            UndertowWebSocketConnectionHandler.this._onClose(wsCtx);
                         }
                     });
                     channel.resumeReceives();
-                    Act.eventBus().emit(new WebSocketConnectEvent(wsCtx));
+                    UndertowWebSocketConnectionHandler.this._onConnect(wsCtx);
                 }
 
             }).handleRequest(exchange);

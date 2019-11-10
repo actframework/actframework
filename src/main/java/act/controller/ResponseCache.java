@@ -214,7 +214,7 @@ public class ResponseCache extends ActResponse implements Serializable {
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
-        realResponse.writeBinary(binary);
+        realResponse.writeContent(buffer);
         this.wroteDirectly = true;
         return this;
     }
@@ -364,7 +364,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     }
 
     @Override
-    public void commit() {
+    protected void doCommit() {
         if (null != outputCache) {
             outputCache.commit();
         } else if (null != osCache) {

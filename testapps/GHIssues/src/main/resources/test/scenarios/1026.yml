@@ -1,0 +1,24 @@
+# The issue cannot be closed till Fastjson provide deserialization support for multi-map
+#Scenario(1026):
+#  description: act post could not support Multimap type
+#  interactions:
+#  - description: Test
+#    request:
+#      post: /1026
+#      params:
+#        permissions:
+#          admin:
+#            - "admin.create"
+#            - "admin.read"
+#            - "admin.update"
+#            - "admin.delete"
+#          user:
+#            - "user.create"
+#            - "user.read"
+#            - "user.update"
+#            - "user.delete"
+#    response:
+#      json:
+#        permissions:
+#          admin:
+#            ?: "admin.create"

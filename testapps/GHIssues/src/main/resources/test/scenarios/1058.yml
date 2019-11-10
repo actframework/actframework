@@ -1,0 +1,9 @@
+Scenario(1058):
+  description: metric command stop working
+  interactions:
+    - description: test
+      request:
+        get: 1058
+      response:
+        json:
+          size: 1

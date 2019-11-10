@@ -1,0 +1,18 @@
+Scenario(1005):
+  description: "@PropertySpec and PropertySpec.current.set cannot work"
+  interactions:
+  - description: Test
+    request:
+      post: /1005
+      params:
+        foo.name: foo
+        foo.flag: true
+        foo.id: 10
+        fields: id,flag
+    response:
+      json:
+        data:
+          id: 10
+          flag: true
+          name:
+            - exists: false

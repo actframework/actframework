@@ -45,7 +45,6 @@ import java.util.List;
 public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Object> {
 
     private App app;
-    private ClassLoader cl;
     private JobClassMetaInfo classInfo;
     private volatile Class<?> jobClass;
     private MethodAccess methodAccess;
@@ -58,7 +57,6 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     private boolean isStatic;
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
-        this.cl = app.classLoader();
         this.methodInfo = handlerMetaInfo;
         this.classInfo = handlerMetaInfo.classInfo();
         this.app = app;
@@ -70,7 +68,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
             return;
         }
         disabled = false;
-        jobClass = $.classForName(classInfo.className(), cl);
+        jobClass = app.classForName(classInfo.className());
         disabled = disabled || !Env.matches(jobClass);
         method = methodInfo.method();
         disabled = disabled || !Env.matches(method);

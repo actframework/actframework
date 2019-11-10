@@ -1,0 +1,20 @@
+Scenario(922):
+  description: Allow app to customise error response upon invalid request
+  interactions:
+    - description: method specific violation advice
+      request:
+        get: 922/specific
+      response:
+        status: 200
+    - description: global violation advice
+      request:
+        get: 922/global
+      response:
+        status: 400
+        json:
+          code: 1
+          msg: xxx
+          count: 180
+          data: {
+                  item: [1, 2, 3]
+          }

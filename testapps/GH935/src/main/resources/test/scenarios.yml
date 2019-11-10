@@ -1,0 +1,13 @@
+Scenario(GH935):
+  interactions:
+    - description: "[gh935] renderJson date yyyy-MM-dd HH:mm:ss"
+      request:
+        get: /935
+        params:
+          date: "1999-12-21"
+          name: xyz
+      response:
+        json:
+          name: xyz
+          date: "1999-12-21 00:00:00"
+

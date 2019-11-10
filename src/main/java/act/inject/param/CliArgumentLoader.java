@@ -29,17 +29,21 @@ class CliArgumentLoader extends CliParamValueLoader {
 
     private final StringValueResolver resolver;
 
-    CliArgumentLoader(StringValueResolver resolver) {
+    CliArgumentLoader(StringValueResolver resolver, String defVal) {
         this.resolver = resolver;
-        CliContext.ParsingContextBuilder.foundArgument();
+        CliContext.ParsingContextBuilder.foundArgument(defVal);
     }
 
     @Override
     public Object load(Object cached, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
-        int id = ctx.parsingContext().curArgId().getAndIncrement();
+        CliContext.ParsingContext ptx = ctx.parsingContext();
+        int id = ptx.curArgId().getAndIncrement();
         String optVal = ctx.commandLine().argument(id);
         Object val = null;
+        if (S.isBlank(optVal)) {
+            optVal = ptx.argDefVals.get(id);
+        }
         if (S.notBlank(optVal)) {
             val = resolver.resolve(optVal);
         }

@@ -34,6 +34,7 @@ import act.controller.meta.*;
 import act.crypto.AppCrypto;
 import act.db.DbManager;
 import act.event.*;
+import act.exception.AppStartTerminateException;
 import act.handler.RequestHandlerBase;
 import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
@@ -53,6 +54,7 @@ import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -71,6 +73,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
 import java.net.*;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -95,11 +98,23 @@ public final class Act {
      */
     private static final String ATTR_APP_JAR = "App-Jar";
 
+    /**
+     * The runtime mode
+     */
     public enum Mode {
-        PROD,
+
         /**
-         * DEV mode is special as Act might load classes
-         * directly from srccode code when running in this mode
+         * PROD mode should be used when app is running in product
+         * deployment or SIT/UAT testing deployment etc
+         */
+        PROD,
+
+        /**
+         * DEV mode should be used by developer when developing the application.
+         *
+         * When Act is started in DEV mode the framework will monitor the
+         * source/configuration file and do hot reload when source/configuration
+         * file changes.
          */
         DEV() {
             @Override
@@ -186,16 +201,38 @@ public final class Act {
     private static Map<String, Plugin> genericPluginRegistry = new HashMap<>();
     private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = new HashMap<>();
 
+    /**
+     * Returns the runtime mode of the process.
+     *
+     * @return Act process runtime mode
+     * @see Mode
+     */
     public static Mode mode() {
         return mode;
     }
 
+    /**
+     * Check if the Act process is running in {@link Mode#PROD} mode
+     * @return `true` if Act process is running in prod mode
+     */
     public static boolean isProd() {
         return mode.isProd();
     }
 
+    /**
+     * Check if the Act process is running in {@link Mode#DEV} mode
+     * @return `true` if Act process is running in dev mode
+     */
     public static boolean isDev() {
         return mode.isDev();
+    }
+
+    /**
+     * Check if the Act process is running using `test` profile
+     * @return `true` if Act process is running using `test` profile
+     */
+    public static boolean isTest() {
+        return "test".equalsIgnoreCase(profile());
     }
 
     /**
@@ -281,9 +318,9 @@ public final class Act {
     public static void startup(AppDescriptor descriptor) {
         long start = descriptor.getStart();
         processEnvironment(descriptor);
-        Banner.print(descriptor);
         registerTypeConverters();
         loadConfig();
+        Banner.print(descriptor);
         initMetricPlugin();
         initPluginManager();
         initAppServicePluginManager();
@@ -296,7 +333,11 @@ public final class Act {
         NetworkBootupThread nbt = initNetworkLayer();
         initApplicationManager();
         LOGGER.info("loading application(s) ...");
-        appManager.loadSingleApp(descriptor);
+        try {
+            appManager.loadSingleApp(descriptor);
+        } catch (AppStartTerminateException e) {
+            System.exit(-1);
+        }
         startNetworkLayer(nbt);
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
         App app = app();
@@ -322,6 +363,10 @@ public final class Act {
                 emit(SysEventId.ACT_START);
             }
         }, true);
+    }
+
+    public static void shutdown() {
+        shutdown(app(), 0);
     }
 
     public static void shutdown(final App app) {
@@ -360,7 +405,7 @@ public final class Act {
         if (app.config().supportSsl()) {
             network.register(appConfig().httpsPort(), true, networkHandler);
         }
-        List<NamedPort> portList = app.config().namedPorts();
+        Collection<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
             network.register(np.port(), false, new NetworkHandler(app, np));
         }
@@ -516,15 +561,11 @@ public final class Act {
     }
 
     public static <T> Class<T> classForName(String className) {
-        ClassLoader cl = null;
         App app = app();
         if (null != app) {
-            cl = app.classLoader();
+            return app.classForName(className);
         }
-        if (null == cl) {
-            cl = Act.class.getClassLoader();
-        }
-        return $.classForName(className, cl);
+        return $.classForName(className, Act.class.getClassLoader());
     }
 
     /**
@@ -539,8 +580,7 @@ public final class Act {
         if (null != app) {
             return app.getInstance(className);
         } else {
-            Class<T> type = $.classForName(className);
-            return getInstance(type);
+            return getInstance(Act.<T>classForName(className));
         }
     }
 
@@ -729,7 +769,7 @@ public final class Act {
         bootstrap(AppDescriptor.of(appName, scanPackage, appVersion));
     }
 
-    static int classCacheSize() {
+    public static int classCacheSize() {
         return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
     }
 
@@ -824,6 +864,58 @@ public final class Act {
             public Long convert(ReadableInstant o) {
                 return o.getMillis();
             }
+        }).register(new $.TypeConverter<String, LocalTime>() {
+            @Override
+            public LocalTime convert(String s) {
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalTime.class);
+                }
+                AppConfig config = Act.appConfig();
+                String pattern = config.localizedTimePattern(locale());
+                return (DateTimeFormat.forPattern(pattern)).parseLocalTime(s);
+            }
+            @Override
+            public LocalTime convert(String s, Object hint) {
+                if (null == hint) {
+                    return convert(s);
+                }
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalTime.class);
+                }
+                String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTimeParser().parseLocalTime(s);
+                }
+                return (DateTimeFormat.forPattern(pattern)).parseLocalTime(s);
+            }
+        }).register(new $.TypeConverter<String, LocalDate>() {
+            @Override
+            public LocalDate convert(String s) {
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalDate.class);
+                }
+                AppConfig config = Act.appConfig();
+                String pattern = config.localizedDatePattern(locale());
+                return (DateTimeFormat.forPattern(pattern)).parseLocalDate(s);
+            }
+            @Override
+            public LocalDate convert(String s, Object hint) {
+                if (null == hint) {
+                    return convert(s);
+                }
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(LocalDate.class);
+                }
+                String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTimeParser().parseLocalDate(s);
+                }
+                return (DateTimeFormat.forPattern(pattern)).parseLocalDate(s);
+            }
         }).register(new $.TypeConverter<String, DateTime>() {
             @Override
             public DateTime convert(String s) {
@@ -831,10 +923,8 @@ public final class Act {
                     Long l = Long.valueOf(s);
                     return $.convert(l).to(DateTime.class);
                 }
-                ActContext ctx = ActContext.Base.currentContext();
-                Locale locale = ctx.locale(true);
                 AppConfig config = Act.appConfig();
-                String pattern = config.localizedDateTimePattern(locale);
+                String pattern = config.localizedDateTimePattern(locale());
                 return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }
             @Override
@@ -847,6 +937,9 @@ public final class Act {
                     return $.convert(l).to(DateTime.class);
                 }
                 String pattern = S.string(hint);
+                if (pattern.toLowerCase().contains("iso")) {
+                    return ISODateTimeFormat.dateTimeParser().parseDateTime(s);
+                }
                 return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }
         }).register(new $.TypeConverter<Long, DateTime>() {
@@ -871,6 +964,16 @@ public final class Act {
             }
         })
         ;
+    }
+
+    private static Locale locale() {
+        ActContext ctx = ActContext.Base.currentContext();
+        if (null != ctx) {
+            return ctx.locale(true);
+        } else {
+            App app = app();
+            return null == app ? Locale.getDefault() : app.config().locale();
+        }
     }
 
     private static void loadConfig() {
@@ -1224,5 +1327,28 @@ public final class Act {
 //    }
 
     public static void main(String[] args) throws Exception {
+        String text = "abc[[UC_FLD_APPLICATIONEFFECTIVEDATE]]xyz\t[[UC_FLD_NDV123985]]dsa[[UC_FLD_NDV123981]]adf";
+        String text0 = text;
+        int pos = text.indexOf("[[");
+        int pos0 = 0;
+        StringBuilder buf = new StringBuilder();
+        buf.append(text.substring(pos0, pos));
+        while (pos >= 0) {
+            int bpos = text.indexOf("]]", pos);
+            E.illegalStateIf(bpos < 0, "Invalid template content: " + text0);
+            String varName = text.substring(pos + 2, bpos);
+            String varVal = "<<" + S.cut(varName).after("UC_FLD_") + ">>";
+            buf.append(varVal);
+            pos0 = bpos + 2;
+            pos = text.indexOf("[[", bpos);
+            if (pos > 0) {
+                buf.append(text.substring(pos0, pos));
+            } else {
+                buf.append(text.substring(pos0, text.length()));
+            }
+        }
+        System.out.println(text);
+        System.out.println(buf.toString());
+
     }
 }

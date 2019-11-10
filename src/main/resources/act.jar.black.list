@@ -5,6 +5,7 @@ commons
 core
 debugger
 ecj
+ehcache
 fastjson
 guava
 hamcrest
@@ -27,7 +28,9 @@ objenesis
 org.apache.bval.bundle
 osgl
 -osgl-mvc
+-osgl-storage
 patchca
 reflectasm
 rythm
 slf4j
+xml-apis

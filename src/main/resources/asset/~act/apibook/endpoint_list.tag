@@ -1,10 +1,10 @@
 <endpoint-list>
     <div class="endpoint" each={ endpoint in endpoints } show={ show(endpoint) }>
         <a class="id" id="{ endpoint.xid }">&nbsp;</a>
-        <pre class="code">[{ endpoint.httpMethod }] { endpoint.path }</pre>
+        <h4 class="entry">[{ endpoint.httpMethod }] { endpoint.path }</h4>
         <div class="desc"><raw html={ endpoint.richDesc }></raw></div>
         <div class="param-list">
-            <h4>Parameters</h4>
+            <h5>Parameters</h5>
             <div class="param-list-body">
                 <div if={ endpoint.params.length== 0 }>
                     N/A
@@ -21,14 +21,14 @@
                     </thead>
                     <tbody>
                     <tr each={ endpoint.params }>
-                        <td>{ name }</td>
+                        <td title={ tooltip }>{ name }</td>
                         <td>{ type }</td>
                         <td>{ required }</td>
                         <td>
                             <span if={ defaultValue }>{ defaultValue }</span>
                             <span if={ !defaultValue }>N/A</span>
                         </td>
-                        <td>{ description }</td>
+                        <td><raw html={ richDesc }></raw></td>
                     </tr>
                     </tbody>
                 </table>
@@ -36,16 +36,21 @@
         </div>
         <!-- eof param list -->
         <div class="query-sample" if="{ endpoint.sampleQuery }">
-            <h4>Query example</h4>
+            <h5>Query example</h5>
             <pre class="code">{ endpoint.sampleQuery }</pre>
         </div>
         <div class="post-sample" if="{ endpoint.sampleJsonPost }">
-            <h4>Json body example</h4>
-            <pre class="code">{ endpoint.sampleJsonPost }</pre>
+            <h5>Json body example</h5>
+            <raw html={ endpoint.sampleJsonPost}>
+            <pre class="code"><code class="json">{ endpoint.sampleJsonPost }</code></pre>
+        </div>
+        <div class="return" if="{ endpoint.returnDescription }">
+            <h5>Return</h5>
+            <div style="margin-top:10px"><raw html={ endpoint.returnDescription}></div>
         </div>
         <div class="return-sample" if="{ endpoint.returnSample }">
-            <h4>Return value sample</h4>
-            <pre class="code">{ endpoint.returnSample }</pre>
+            <h5 if="{ !endpoint.returnDescription }">Return value sample</h5>
+            <raw html={endpoint.returnSample}>
         </div>
     </div>
     <div id='bottom-padding'>&nbsp;</div>
@@ -59,6 +64,13 @@
             margin-bottom: 0.2em;
         }
 
+        h4.entry {
+            font-family: "Noto Sans Mono CJK SC", Menlo, Consolas, "Envy Code R";
+            border-bottom: 1px solid #aaa;
+            display: block;
+            padding-bottom: 10px;
+        }
+
         div.desc {
             margin-top: 10px;
             margin-bottom: 10px;
@@ -66,6 +78,11 @@
 
         a[id] {
             display: block;
+        }
+
+        .desc ul li {
+            line-height: 160%;
+            font-size: 13px;
         }
 
         table {
@@ -82,7 +99,7 @@
         td, th {
             width: 1px;
             padding: 5px 1em;
-            font-size: .9em;
+            font-size: 12px;
             white-space: nowrap;
         }
 
@@ -94,8 +111,13 @@
         }
 
         td {
-            font-weight: 300;
+            font-weight: 500;
             padding-bottom: 0;
+            vertical-align: top;
+        }
+
+        td:not(:first-child) {
+            font-family: "Envy Code R", "Roboto Mono", Menlo, Consolas, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
         }
 
         td:first-child, th:first-child {
@@ -109,13 +131,17 @@
             width: 100%;
         }
 
+        td pre {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
         div.endpoint {
             padding-bottom: 25px;
-            border-bottom: 1px solid #aaa;
         }
 
         .endpoint > .desc {
-            font-weight: 300;
+            font-weight: 500;
             max-width: 1280px;
         }
 
@@ -144,13 +170,14 @@
             padding: 10pt;
             background: #444;
             max-width: 1280px;
-            font-size: 12pt;
+            font-size: 14px;
+            font-weight: 400;
             line-height: 1.5;
             overflow-x: auto;
             margin: 16px 0 16px 0;
         }
 
-        .param-list-body {
+        .param-list-body, .return-desc {
             padding: 10px;
             background: #444;
             max-width: 1280px;
@@ -177,29 +204,90 @@
     </style>
     <script>
         var self = this
+        self.filter = false
         self.endpoints = []
         self.sysInfo = {}
         self.on('mount', function () {
             self.fetchEndpoints()
         })
         self.selectedModules = []
+        patchPreCode() {
+            $('pre > code').each(function() {
+                $(this).parent().addClass('code')
+            })
+        }
+        filteredEndpoints() {
+            if (!self.filter) {
+                return self.endpoints
+            } else {
+                return self.endpoints.filter(x => x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter))
+            }
+        }
+        highlightjs(s) {
+            if (!s) return ''
+            s = "```json\n" + s + "\n```"
+            return riot.md.render(s)
+        }
         fetchEndpoints() {
             $.getJSON('/~/apibook/endpoints', function(endpoints) {
                 for(var i = 0, j = endpoints.length; i < j; ++i) {
-                    var endpoint = endpoints[i];
+                    var endpoint = endpoints[i]
                     endpoint.richDesc = riot.md.render(endpoint.description);
+                    if (endpoint.returnDescription) {
+                        var html = riot.md.render(endpoint.returnDescription)
+                        var tag = $(html)
+                        endpoint.richReturnDescription = tag.html()
+                    } else {
+                        endpoint.richReturnDescription = ''
+                    }
+                    endpoint.sampleJsonPost = self.highlightjs(endpoint.sampleJsonPost)
+                    endpoint.returnSample = self.highlightjs(endpoint.returnSample)
+                    for (var pi = 0, pj = endpoint.params.length; pi < pj; ++pi) {
+                        var param = endpoint.params[pi]
+                        if (param && param.description) {
+                            var html = riot.md.render(param.description)
+                            var tag = $(html)
+                            param.richDesc = tag.html()
+                            if (!param.richDesc || typeof param.richDesc === 'undefined') {
+                                param.richDesc = ''
+                            }
+                        } else if (param) {
+                            param.richDesc = ''
+                        }
+                    }
                 }
                 self.endpoints = endpoints
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);
+                self.patchPreCode()
+                if(window.location.hash) {
+                    var anchor = document.getElementById(window.location.hash.substr(1))
+                    if (anchor) {
+                         anchor.scrollIntoView();
+                    }
+                }
             })
         }
         riot.store.on('module-selected', function(modules) {
             self.selectedModules = modules;
             self.update()
+            self.patchPreCode()
+        })
+        riot.store.on('filter-changed', function(filter) {
+            self.filter = filter
+            self.update()
+            self.patchPreCode()
         })
         show(endpoint) {
-            return self.selectedModules.indexOf(endpoint.module) > -1;
+            var ret = self.selectedModules.indexOf(endpoint.module) > -1;
+            if (!ret) {
+                return false
+            }
+            if (!self.filter) {
+                return ret
+            }
+            x = endpoint
+            return x.description.toLowerCase().includes(self.filter) || x.id.toLowerCase().includes(self.filter) || x.path.toLowerCase().includes(self.filter)
         }
     </script>
 </endpoint-list>

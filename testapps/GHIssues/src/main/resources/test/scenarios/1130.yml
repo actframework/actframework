@@ -1,0 +1,9 @@
+Scenario(1130):
+  description: "Allow developer to specify property naming convention for JSON output"
+  interactions:
+  - description: test
+    request:
+      get: 1130
+    response:
+      json:
+        foo_bar: 1

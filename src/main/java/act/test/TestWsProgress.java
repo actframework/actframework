@@ -1,0 +1,78 @@
+package act.test;
+
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2019 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import act.Act;
+import act.job.JobManager;
+import act.sys.Env;
+import act.util.ProgressGauge;
+import act.ws.WebSocketConnectionListener;
+import act.ws.WebSocketContext;
+import act.ws.WsEndpoint;
+import com.alibaba.fastjson.JSON;
+import org.osgl.util.C;
+import org.osgl.util.E;
+
+import javax.inject.Inject;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+@Env.RequireMode(Act.Mode.DEV)
+@WsEndpoint("/~/ws/test/progress")
+public class TestWsProgress implements WebSocketConnectionListener {
+
+    @Inject
+    private Test test;
+
+    @Inject
+    private JobManager jobManager;
+
+    @Override
+    public void onConnect(final WebSocketContext context) {
+        if (null == test.gauge) {
+            if (test.result().isEmpty()) {
+                context.sendJsonToSelf(C.Map("error", true));
+            } else {
+                context.sendJsonToSelf(C.Map("done", true));
+            }
+            return;
+        }
+        E.illegalStateIfNot(Test.inProgress() || test.gauge.isDone());
+        test.gauge.addListener(new ProgressGauge.Listener() {
+            @Override
+            public void onUpdate(ProgressGauge progressGauge) {
+                context.send(JSON.toJSONString(progressGauge));
+                if (progressGauge.isDone()) {
+                    jobManager.delay(new Runnable() {
+                        @Override
+                        public void run() {
+                            context.connection().close();
+                        }
+                    }, 100, MILLISECONDS);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onClose(WebSocketContext context) {
+    }
+}

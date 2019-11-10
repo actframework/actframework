@@ -22,11 +22,12 @@ package act.handler;
 
 import act.Act;
 import act.cli.CliContext;
+import act.cli.CliSession;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
+import javax.enterprise.context.ApplicationScoped;
 
 public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements CliHandler {
 
@@ -65,4 +66,8 @@ public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements C
     }
 
     protected void releaseResources() {}
+
+    public void resetCursor(CliSession session) {
+        session.removeCursor();
+    }
 }

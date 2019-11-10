@@ -1,0 +1,22 @@
+Scenario(1015):
+  description: "`StackOverflowError` caused by POJO typed request handler method param circular reference"
+  interactions:
+  - description: Test
+    request:
+      post: /1015
+      params:
+        name: foo
+        age: 1
+        invitor.name: bar
+        invitor.age: 2
+        invitor.invitor.name: hai
+        invitor.invitor.age: 3
+    response:
+      json:
+        name: foo
+        age: 1
+        invitor:
+          name: bar
+          age: 2
+          invitor:
+            - exists: false # circular reference not supported

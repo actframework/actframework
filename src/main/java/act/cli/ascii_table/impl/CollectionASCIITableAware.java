@@ -44,7 +44,6 @@ import org.osgl.cache.CacheService;
 import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -91,11 +90,11 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 					properties.remove(i);
 					properties.add(i, prop);
 				}
-				headers.add(new ASCIITableHeader(Keyword.of(String.valueOf(header)).constantName()));
+				headers.add(new ASCIITableHeader(Keyword.of(header).constantName()));
 			}
 			
 			//Populate data
-			data = new ArrayList<List<Object>>();
+			data = new ArrayList<>();
 			List<Object> rowData;
 			Class<?> dataClazz = Object.class;
 			for (Object o: objList) {
@@ -104,14 +103,13 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 					break;
 				}
 			}
-			Map<String, Serializable> propertyExtractorMap = new HashMap<String, Serializable>();
 			CacheService cache = null;
 			CliContext ctx = CliContext.current();
 			if (null != ctx) {
 				cache = ctx.evaluatorCache();
 			}
 			for (int i = 0 ; i < objList.size() ; i ++) {
-				rowData = new ArrayList<Object>();
+				rowData = new ArrayList<>();
 				
 				for (int j = 0 ; j < properties.size() ; j ++) {
 					rowData.add(getProperty(cache,
@@ -157,9 +155,12 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 
 	@Override
 	public String formatData(ASCIITableHeader header, int row, int col, Object data) {
+        if (null == data) {
+            return "";
+        }
 		//Format only numbers
 		try {
-			BigDecimal bd = new BigDecimal(data.toString());
+			BigDecimal bd = new BigDecimal(S.string(data));
 			return DecimalFormat.getInstance().format(bd);
 		} catch (Exception e) {
 		}

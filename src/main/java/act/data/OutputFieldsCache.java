@@ -25,7 +25,9 @@ import act.data.util.StringOrPattern;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
+import org.osgl.util.AdaptiveMap;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -38,9 +40,9 @@ class OutputFieldsCache {
     // 3. component type - the type of the entity where field data get extracted
     private class K {
         Set<String> excluded;
-        List<String> outputs;
+        List<S.Pair> outputs;
         Class<?> componentType;
-        K(Set<String> ss, List<String> ls, Class<?> componentType) {
+        K(Set<String> ss, List<S.Pair> ls, Class<?> componentType) {
             excluded = ss;
             outputs = ls;
             this.componentType = componentType;
@@ -66,11 +68,11 @@ class OutputFieldsCache {
         }
     }
 
-    private Map<K, List<String>> cache = new HashMap<>();
+    private Map<K, List<S.Pair>> cache = new HashMap<>();
 
-    public List<String> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
-        K k = new K(spec.excludedFields(context), spec.outputFields(context), componentClass);
-        List<String> outputs = cache.get(k);
+    public List<S.Pair> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
+        K k = new K(spec.excludedFields(context), spec.outputFieldsAndLabel(context), componentClass);
+        List<S.Pair> outputs = cache.get(k);
         if (null == outputs) {
             outputs = calculateOutputs(k);
             cache.put(k, outputs);
@@ -78,30 +80,39 @@ class OutputFieldsCache {
         return outputs;
     }
 
-    List<String> calculateOutputs(K k) {
+    List<S.Pair> calculateOutputs(K k) {
         Class<?> type = k.componentType;
         if ($.isSimpleType(type) && k.excluded.isEmpty() && k.outputs.isEmpty()) {
             return C.list();
         }
         List<StringOrPattern> outputs = new ArrayList<>();
-        boolean hasPattern = hasPattern(k.outputs, outputs);
+        boolean hasPattern = hasPattern2(k.outputs, outputs);
         Set<String> excluded = k.excluded;
+        DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
+        List<S.Pair> allFields = repo.propertyListOf(k.componentType);
         if (hasPattern || outputs.isEmpty()) {
-            DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
-            List<String> allFields = repo.propertyListOf(k.componentType);
             if (!excluded.isEmpty()) {
-                List<String> finalOutputs;
+                List<S.Pair> finalOutputs;
                 List<StringOrPattern> lsp = new ArrayList<>();
                 boolean excludeHasPattern = hasPattern(excluded, lsp);
                 if (!excludeHasPattern) {
-                    return C.list(allFields).without(excluded);
+                    List<S.Pair> ret = new ArrayList<>(allFields);
+                    for (S.Pair pair : allFields) {
+                        for (String s : excluded) {
+                            if (pair._1.equals(s)) {
+                                ret.remove(pair);
+                                break;
+                            }
+                        }
+                    }
+                    return ret;
                 } else {
                     finalOutputs = C.newList(allFields);
                     outer:
-                    for (String s : allFields) {
+                    for (S.Pair pair : allFields) {
                         for (StringOrPattern sp: lsp) {
-                            if (sp.matches(s)) {
-                                finalOutputs.remove(s);
+                            if (sp.matches(pair._1)) {
+                                finalOutputs.remove(pair);
                                 continue  outer;
                             }
                         }
@@ -113,23 +124,44 @@ class OutputFieldsCache {
                     return allFields;
                 }
                 // excluded is empty and output fields has pattern
-                List<String> finalOutputs = new ArrayList<>();
+                List<S.Pair> finalOutputs = new ArrayList<>();
                 for (StringOrPattern sp: outputs) {
                     if (sp.isPattern()) {
                         Pattern p = sp.p();
-                        for (String s: allFields) {
-                            if (p.matcher(s).matches()) {
-                                finalOutputs.add(s);
+                        for (S.Pair pair: allFields) {
+                            if (p.matcher(pair._1).matches()) {
+                                finalOutputs.add(pair);
                             }
                         }
                     } else {
-                        finalOutputs.add(sp.s());
+                        for (S.Pair pair : allFields) {
+                            if (S.eq(pair._1, sp.s())) {
+                                finalOutputs.add(pair);
+                                break;
+                            }
+                        }
                     }
                 }
                 return finalOutputs;
             }
         } else {
-            return k.outputs;
+            if (AdaptiveMap.class.isAssignableFrom(k.componentType)) {
+                return k.outputs;
+            }
+            List<S.Pair> pairs = new ArrayList<>(k.outputs.size());
+            for (S.Pair pair : k.outputs) {
+                if (null != pair._2) {
+                    pairs.add(pair);
+                } else {
+                    for (S.Pair pair0 : allFields) {
+                        if (S.eq(pair._1, pair0._1)) {
+                            pairs.add(pair0);
+                            break;
+                        }
+                    }
+                }
+            }
+            return pairs;
         }
     }
 
@@ -137,6 +169,16 @@ class OutputFieldsCache {
         boolean b = false;
         for (String s: ls) {
             StringOrPattern sp = new StringOrPattern(s);
+            b = b || sp.isPattern();
+            lsp.add(sp);
+        }
+        return b;
+    }
+
+    private boolean hasPattern2(Collection<S.Pair> ls, List<StringOrPattern> lsp) {
+        boolean b = false;
+        for (S.Pair pair: ls) {
+            StringOrPattern sp = new StringOrPattern(pair._1);
             b = b || sp.isPattern();
             lsp.add(sp);
         }

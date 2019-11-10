@@ -1,0 +1,23 @@
+Scenario(911):
+  description: Test - enhance ${now()} function
+  interactions:
+  - description: simple now
+    request:
+      get: 911
+    response:
+      json:
+        result:
+          - -after: ${now()}
+          - before: ${now(hp)}
+          - before: ${now(highPrecision)}
+          - -after: ${now(lowPrecision)}
+          - -after: ${now(lp)}
+  - description: simple now with delta
+    request:
+      get: 911
+      params:
+        delta: +2mn
+    response:
+      json:
+        result:
+          - -after: ${now(lp,+2mn)}

@@ -21,10 +21,13 @@ package act.conf;
  */
 
 import act.Act;
-import act.cli.Command;
-import act.cli.Optional;
+import act.cli.*;
 import act.controller.ExpressController;
+import act.controller.annotation.Port;
 import act.controller.annotation.UrlContext;
+import act.route.Router;
+import act.sys.Env;
+import act.util.PropertySpec;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
@@ -37,12 +40,24 @@ import javax.inject.Singleton;
 @UrlContext("conf")
 @Singleton
 @ExpressController
+@Port({Router.PORT_DEFAULT, AppConfig.PORT_SYS})
 public class ConfAdmin {
 
     @Inject
     private AppConfig appConfig;
 
-    @Command(name = "act.conf.list", help = "list configuration")
+    @Env.RequireMode(Act.Mode.DEV)
+    @Command(name = "act.conf.hot_reload", help = "enable/disable hot reload in dev mode")
+    public void disableEnableHotReload(
+            @Required("true for enable, false for disable") boolean enable,
+            CliContext context
+    ) {
+        Act.conf().enableDisableHotReload(enable);
+        context.println(Act.conf().hotReloadDisabled() ? "Hot reload disabled" : "Hot reload enabled");
+    }
+
+    @Command(name = "act.conf.list, act.conf, act.configuration, act.configurations", help = "list configuration")
+    @PropertySpec("key,val")
     public List<ConfigItem> list(
             @Optional("list system configuration") boolean system,
             @Optional(lead = "-q", help = "specify search text") String q
@@ -52,23 +67,33 @@ public class ConfAdmin {
 
         Config<?> config = system ? Act.conf() : appConfig;
         boolean hasQuery = S.notBlank(q);
+        if (hasQuery) {
+            q = q.trim().toLowerCase();
+        }
         for (ConfigKey key: keys) {
-            String keyString = key.toString();
-            if (hasQuery && !keyString.contains(q)) {
+            String keyString = key.toString().toLowerCase();
+            if (hasQuery && (!keyString.contains(q) && !keyString.matches(q))) {
                 continue;
             }
-            list.add(new ConfigItem(key.toString(), config));
+            if (AppConfigKey.TRACE_HANDLER_ENABLED == key) {
+                list.add(new ConfigItem(key.toString(), appConfig.traceHandler()));
+            } else if (AppConfigKey.TRACE_REQUEST_ENABLED == key) {
+                list.add(new ConfigItem(key.toString(), appConfig.traceRequests()));
+            } else {
+                list.add(new ConfigItem(key.toString(), config));
+            }
         }
         return list;
     }
 
-    @GetAction({"csrf", "xsrf"})
-    public JSONObject csrfConf() {
-        JSONObject retVal = new JSONObject();
-        retVal.put("cookieName", appConfig.csrfCookieName());
-        retVal.put("headerName", appConfig.csrfHeaderName());
-        retVal.put("paramName", appConfig.csrfParamName());
-        return retVal;
+    @Command("act.conf.trace-handler")
+    public void toggleTraceHandler(@Required boolean enabled) {
+        appConfig.toggleTraceHandler(enabled);
+    }
+
+    @Command("act.conf.trace-request")
+    public void toggleTraceRequest(@Required boolean enabled) {
+        appConfig.toggleTraceRequest(enabled);
     }
 
 }

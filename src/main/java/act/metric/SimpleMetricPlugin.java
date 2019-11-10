@@ -26,6 +26,7 @@ import act.plugin.AppServicePlugin;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class SimpleMetricPlugin implements MetricPlugin {
 
     private Map<String, Logger> enabledMap = new HashMap<>();
     private SimpleMetricStore defaultMetricStore = new SimpleMetricStore(this);
-    private Metric defaultMetric = new SimpleMetric(defaultMetricStore);
+    private Metric defaultMetric = new SimpleMetric("act", defaultMetricStore);
 
     public SimpleMetricPlugin() {
     }
@@ -49,10 +50,10 @@ public class SimpleMetricPlugin implements MetricPlugin {
         }
         Logger logger = enabledMap.get(name);
         if (null == logger) {
-            logger = LogManager.get("metric." + name);
+            logger = LogManager.get("act.metric." + name);
             enabledMap.put(name, logger);
         }
-        return logger.isTraceEnabled() ? metric() : Metric.NULL_METRIC;
+        return logger.isTraceEnabled() ? S.blank(name) ? defaultMetric : new SimpleMetric(name, defaultMetricStore) : Metric.NULL_METRIC;
     }
 
     @Override

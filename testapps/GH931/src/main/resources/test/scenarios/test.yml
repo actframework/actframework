@@ -1,0 +1,16 @@
+Scenario(GH931):
+  fixtures:
+    - fixture.yml
+  description: "[931] `java.lang.IllegalArgumentException` upon starting BSBF project"
+  interactions:
+    - description: test
+      request:
+        get: /orders
+      response:
+        json:
+          size: 1
+          0:
+            product: monitor
+            quantity: 1
+            account:
+              name: tom

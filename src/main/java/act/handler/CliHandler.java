@@ -23,6 +23,7 @@ package act.handler;
 import act.Act;
 import act.Destroyable;
 import act.cli.CliContext;
+import act.cli.CliSession;
 import org.osgl.$;
 
 import java.util.List;
@@ -87,4 +88,10 @@ public interface CliHandler extends $.Function<CliContext, Void>, Destroyable {
      * @return {@code true} if this handler applied in the mode, or {@code false} otherwise
      */
     boolean appliedIn(Act.Mode mode);
+
+    /**
+     * Reset session cursor
+     * @param session CLI session
+     */
+    void resetCursor(CliSession session);
 }

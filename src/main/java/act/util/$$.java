@@ -25,6 +25,7 @@ import act.data.*;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.*;
 
 import java.sql.Time;
@@ -48,6 +49,15 @@ public class $$ {
         return dateTimeTypes.contains(type);
     }
 
+    static {
+        StringUtils.evaluator = new $.Transformer<String, String>() {
+            @Override
+            public String transform(String s) {
+                return S.string(Act.appConfig().getIgnoreCase(s));
+            }
+        };
+    }
+
     public static String toString(Object v, boolean directToString) {
         if (directToString) {
             ValueObject.Codec codec = codecs.get(v.getClass());
@@ -66,6 +76,14 @@ public class $$ {
 
     public static boolean shouldUseToString(Class<?> type) {
         return ($.isSimpleType(type) && !type.isArray()) || isDateTimeType(type);
+    }
+
+    public static String processStringSubstitution(String s) {
+        return StringUtils.processStringSubstitution(s);
+    }
+
+    public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
+        return StringUtils.processStringSubstitution(s, evaluator);
     }
 
 }

@@ -128,6 +128,9 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     loader.init(map, valueSpec);
                     Object value = loader.get();
+                    if (null == value) {
+                        return;
+                    }
                     try {
                         if (isConst) {
                             Const<?> fieldValue = $.cast(field.get(null));
@@ -153,7 +156,7 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                             field.set(null, value);
                         }
                     } catch (Exception e) {
-                        throw E.unexpected(e, "failed to set configuration value[%] to field[%s]", value, field);
+                        throw E.unexpected(e, "failed to set configuration value[%s] to field[%s]", value, field);
                     }
                 }
             }

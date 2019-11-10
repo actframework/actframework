@@ -103,6 +103,7 @@ public class RouteTableRouterBuilder implements RouterBuilder {
     private static AtomicInteger jobIdCounter = new AtomicInteger(0);
 
     public static final String ROUTES_FILE = "routes.conf";
+    public static final String ROUTES_FILE2 = "route.conf";
 
     private List<String> lines;
 
@@ -169,11 +170,10 @@ public class RouteTableRouterBuilder implements RouterBuilder {
                 router.addMapping(m, path, action.toString(), RouteSource.ROUTE_TABLE);
             }
         } else {
-            String s = method;
-            if ("context".equalsIgnoreCase(s) || "ctx".equalsIgnoreCase(s)) {
+            if ("context".equalsIgnoreCase(method) || "ctx".equalsIgnoreCase(method)) {
                 router.addContext(action.toString(), path);
             } else {
-                H.Method m = H.Method.valueOfIgnoreCase(s);
+                H.Method m = H.Method.valueOfIgnoreCase(method);
                 router.addMapping(m, path, action.toString(), RouteSource.ROUTE_TABLE);
             }
         }

@@ -22,7 +22,6 @@ package act.inject.genie;
 
 import act.Act;
 import act.app.App;
-import act.app.AppClassLoader;
 import act.app.conf.AppConfigurator;
 import act.app.event.SysEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
@@ -33,9 +32,7 @@ import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.*;
-import org.osgl.inject.annotation.LoadValue;
-import org.osgl.inject.annotation.Provided;
-import org.osgl.inject.annotation.StopInheritedScope;
+import org.osgl.inject.annotation.*;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
@@ -44,9 +41,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import javax.inject.*;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
@@ -179,9 +174,9 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         if (0 == len) {
             return set;
         }
-        ClassLoader cl = App.instance().classLoader();
+        App app = Act.app();
         for (String className : factories) {
-            set.add($.classForName(className, cl));
+            set.add(app.classForName(className));
         }
         return set;
     }
@@ -264,8 +259,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         if (hasBinding(autoBinding)) {
             return;
         }
-        final AppClassLoader cl = Act.app().classLoader();
-        ClassInfoRepository repo = cl.classInfoRepository();
+        final App app = Act.app();
+        ClassInfoRepository repo = app.classLoader().classInfoRepository();
         ClassNode root = repo.node(autoBinding.getName());
         E.invalidConfigurationIf(null == root, "Cannot find AutoBind root: %s", autoBinding.getName());
         final Set<Class<?>> candidates = new LinkedHashSet<>();
@@ -273,7 +268,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
             @Override
             public void visit(ClassNode classNode) throws $.Break {
                 try {
-                    Class<?> clazz = $.classForName(classNode.name(), cl);
+                    Class<?> clazz = app.classForName(classNode.name());
                     if (Env.matches(clazz)) {
                         candidates.add(clazz);
                     }

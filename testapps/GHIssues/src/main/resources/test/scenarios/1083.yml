@@ -1,0 +1,17 @@
+Scenario(1083):
+  description: "`ISObject` is not null when no file is uploaded"
+  interactions:
+  - description: It shall be null when no file uploaded
+    request:
+      post: 1083
+    response:
+      json:
+        result: true
+  - description: It shall NOT be null when file uploaded
+    request:
+      post: 1083
+      parts:
+        file: test.txt
+    response:
+      json:
+        result: false

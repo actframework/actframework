@@ -9,9 +9,9 @@ package act.cli;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ package act.cli;
 
 import static act.cli.ReportProgress.Type.BAR;
 
-import act.app.ActionContext;
+import act.Act;
 import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
@@ -30,12 +30,12 @@ import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
+import act.conf.AppConfig;
 import act.handler.CliHandler;
-import act.util.ActContext;
-import act.util.ProgressGauge;
-import act.util.PropertySpec;
-import act.util.SimpleProgressGauge;
+import act.job.JobManager;
+import act.util.*;
 import jline.console.ConsoleReader;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -47,10 +47,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.xnio.streams.WriterOutputStream;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -71,11 +68,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         // for a specific required group
         Map<String, AtomicInteger> required;
 
-        private ParsingContext() {}
+        private ParsingContext() {
+        }
 
         public AtomicInteger curArgId() {
             return curArgId;
         }
+
+        public Map<Integer, String> argDefVals = new HashMap<>();
 
         public boolean hasArguments(CommandLineParser command) {
             return curArgId.get() < command.argumentCount();
@@ -119,11 +119,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         public ParsingContext copy() {
             ParsingContext ctx = new ParsingContext();
             ctx.optionArgumentsCnt = optionArgumentsCnt;
-            ctx.required = new HashMap<String, AtomicInteger>(required);
+            ctx.required = new HashMap<>(required);
             for (Map.Entry<String, AtomicInteger> entry : ctx.required.entrySet()) {
                 entry.setValue(new AtomicInteger(0));
             }
             ctx.curArgId = new AtomicInteger(0);
+            ctx.argDefVals.putAll(this.argDefVals);
             return ctx;
         }
     }
@@ -133,7 +134,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
         public static void start() {
             ParsingContext ctx0 = new ParsingContext();
-            ctx0.required = new HashMap<String, AtomicInteger>();
+            ctx0.required = new HashMap<>();
             ctx.set(ctx0);
         }
 
@@ -141,8 +142,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             ctx.get().optionArgumentsCnt++;
         }
 
-        public static void foundArgument() {
-            ctx.get().optionArgumentsCnt++;
+        public static void foundArgument(String defVal) {
+            ParsingContext ctx0 = ctx.get();
+            int n = ctx0.optionArgumentsCnt++;
+            if (S.notBlank(defVal)) {
+                ctx0.argDefVals.put(n, defVal);
+            }
         }
 
         public static void foundRequired(String group) {
@@ -186,10 +191,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     private boolean rawPrint;
 
+    private boolean inProgress;
+
     private Map<String, String> preparsedOptionValues;
 
     public CliContext(String line, App app, ConsoleReader console, CliSession session) {
-        this(line, app, console, session, null == System.getenv("cli-no-raw-print"));
+        this(line, app, console, session, null == System.getenv("ACT_CLI_NO_RAW_PRINT"));
     }
 
     protected CliContext(String line, App app, ConsoleReader console, CliSession session, boolean rawPrint) {
@@ -207,7 +214,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Set the console prompt
-     * @param prompt the prompt
+     *
+     * @param prompt
+     *         the prompt
      */
     public void prompt(String prompt) {
         console.setPrompt(prompt);
@@ -259,6 +268,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Returns CLI session id
+     *
      * @return CLI session id
      */
     @Override
@@ -292,6 +302,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     /**
      * Return the current working directory
+     *
      * @return the current working directory
      */
     public File curDir() {
@@ -327,31 +338,61 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return pw.checkError();
     }
 
-    public void print(ProgressGauge progressGauge) {
+    public void print(CommandMethodMetaInfo methodMetaInfo, ProgressGauge progressGauge) throws Exception {
         ReportProgress reportProgress = attribute(ReportProgress.CTX_ATTR_KEY);
         if (null == reportProgress) {
             reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
         }
         ReportProgress.Type type = reportProgress.type();
-        if (BAR == type) {
-            printBar(progressGauge);
-        } else {
-            printText(progressGauge);
+        inProgress = true;
+        try {
+            if (!progressGauge.isDone()) {
+                if (BAR == type) {
+                    printBar(progressGauge);
+                } else {
+                    printText(progressGauge);
+                }
+            }
+            Object result = Act.getInstance(JobManager.class).cachedResult(progressGauge.getId());
+            if (null != result) {
+                PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+                methodMetaInfo.view().print(result, filter, this);
+            }
+        } finally {
+            inProgress = false;
         }
     }
 
-    public void printBar(ProgressGauge progressGauge) {
+    public void printBar(ProgressGauge progressGauge) throws Exception {
         PrintStream os = new PrintStream(new WriterOutputStream(rawPrint ? pw : console.getOutput()));
-        String label = app().config().i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
-        ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, ProgressBarStyle.UNICODE_BLOCK);
+        AppConfig config = app().config();
+        String label = config.i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
+        ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, config.cliProgressBarStyle());
         pb.start();
+        int lastMaxHint = -1;
+        int lastSteps = -1;
+
         while (!progressGauge.isDone()) {
-            pb.maxHint(progressGauge.maxHint());
-            pb.stepTo(progressGauge.currentSteps());
+            int maxHint = progressGauge.maxHint();
+            int steps = progressGauge.currentSteps();
+            if (maxHint != lastMaxHint) {
+                pb.maxHint(maxHint);
+                lastMaxHint = maxHint;
+            }
+            if (steps != lastSteps) {
+                pb.stepTo(steps);
+                lastSteps = steps;
+            }
+            Thread.sleep(200);
             flush();
         }
-        pb.stepTo(pb.getMax());
-        pb.stop();
+        if (progressGauge.isFailed()) {
+            pb.stop();
+            println(progressGauge.error());
+        } else {
+            pb.stepTo(pb.getMax());
+            pb.stop();
+        }
     }
 
     public void printText(ProgressGauge progressGauge) {
@@ -371,10 +412,13 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
                 break;
             }
         }
+        if (progressGauge.isFailed()) {
+            println(progressGauge.error());
+        }
         println();
     }
 
-    public void print(String template, Object ... args) {
+    public void print(String template, Object... args) {
         if (rawPrint) {
             print1(template, args);
         } else {
@@ -417,7 +461,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
     }
 
-    private void print1(String template, Object ... args) {
+    private void print1(String template, Object... args) {
         if (args.length == 0) {
             pw.print(template);
         } else {
@@ -578,12 +622,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return new File(file.getAbsolutePath());
     }
 
-    private void saveLocal() {
-        _local.set(this);
+    boolean inProgress() {
+        return inProgress;
     }
 
-    private void initOverHttp(ActionContext actionContext) {
-
+    private void saveLocal() {
+        _local.set(this);
     }
 
     public static CliContext current() {

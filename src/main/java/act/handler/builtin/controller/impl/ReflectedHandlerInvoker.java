@@ -20,10 +20,14 @@ package act.handler.builtin.controller.impl;
  * #L%
  */
 
+import static act.app.ActionContext.State.HANDLING;
+import static act.app.ActionContext.State.INTERCEPTING;
+
 import act.Act;
 import act.Trace;
 import act.annotations.*;
 import act.app.*;
+import act.cli.ReportProgress;
 import act.conf.AppConfig;
 import act.controller.*;
 import act.controller.annotation.*;
@@ -40,6 +44,7 @@ import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
 import act.inject.SessionVariable;
 import act.inject.param.*;
+import act.job.Job;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.plugin.ControllerPlugin;
@@ -62,13 +67,16 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.*;
 import org.osgl.util.*;
+import org.w3c.dom.Document;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import javax.enterprise.context.ApplicationScoped;
+import javax.validation.ConstraintViolation;
 
 /**
  * Implement handler using
@@ -80,7 +88,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private static final Object[] DUMP_PARAMS = new Object[0];
     private App app;
-    private ClassLoader cl;
+    private AppConfig config;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
     private MethodAccess methodAccess;
@@ -128,13 +136,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private MissingAuthenticationHandler csrfFailureHandler;
     private ThrottleFilter throttleFilter;
     private boolean async;
+    private boolean reportAsyncProgress;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
-    private boolean traceHandler;
     private boolean isLargeResponse;
     private boolean forceSmallResponse;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private PropertyNamingStrategy propertyNamingStrategy;
     private $.Function<ActionContext, Result> pluginBeforeHandler;
     private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
     private Map<String, Object> attributes = new HashMap<>();
@@ -152,40 +161,47 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private ReturnValueAdvice returnValueAdvice;
     // see https://github.com/actframework/actframework/issues/852
     private boolean returnIterable;
+    // see https://github.com/actframework/actframework/issues/922
+    private ValidateViolationAdvice validateViolationAdvice;
     private boolean returnSimpleType;
     private boolean returnIterableComponentIsSimpleType;
     private boolean shallTransformReturnVal;
     private int order;
+    private String xmlRootTag;
+    private List<JsonDtoPatch> dtoPatches = new ArrayList<>();
+    private boolean hasDtoPatches;
+    private Class<?> returnType;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
-        this.cl = app.classLoader();
+        this.config = app.config();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
-        this.controllerClass = $.classForName(controller.className(), cl);
+        this.controllerClass = app.classForName(controller.className());
         this.disabled = !Env.matches(controllerClass);
-        this.traceHandler = app.config().traceHandler();
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
+        this.xmlRootTag = config.xmlRootTag();
 
-        Class[] paramTypes = paramTypes(cl);
+        Class[] paramTypes = paramTypes(app);
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
-        this.returnString = method.getReturnType() == String.class;
+        this.returnType = Generics.getReturnType(method, controllerClass);
+        this.returnString = this.returnType == String.class;
         Integer priority = handler.priority();
         if (null != priority) {
             this.order = priority;
         } else {
-            Order order = method.getAnnotation(Order.class);
+            Order order = ReflectedInvokerHelper.getAnnotation(Order.class, method);
             this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
         }
         final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
         if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
-            this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
-            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(method.getReturnType()));
+            this.returnSimpleType = this.returnString || $.isSimpleType(returnType);
+            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(returnType));
             if (this.returnIterable) {
                 if (handlerMetaInfo.isReturnArray()) {
                     this.returnIterableComponentIsSimpleType = $.isSimpleType(method.getReturnType().getComponentType());
@@ -215,27 +231,31 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
         this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
-        this.forceDataBinding = method.isAnnotationPresent(RequireDataBind.class);
-        this.async = null != method.getAnnotation(Async.class);
-        if (this.async && (handlerMetaInfo.hasReturnOrThrowResult())) {
-            logger.warn("handler return result will be ignored for async method: " + method);
-        }
+        this.forceDataBinding = ReflectedInvokerHelper.isAnnotationPresent(RequireDataBind.class, method);
+        this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
+        this.reportAsyncProgress = null != ReflectedInvokerHelper.getAnnotation(ReportProgress.class, method);
         this.isStatic = handlerMetaInfo.isStatic();
         if (!this.isStatic) {
-            //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
         }
 
-        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
+        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == ReflectedInvokerHelper.getAnnotation(NoReturnValueAdvice.class, method)) {
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
             if (null != advisor) {
                 returnValueAdvice = app.getInstance(advisor.value());
-            } else if (null == controllerClass.getAnnotation(NoReturnValueAdvice.class)) {
+            } else if (null == getAnnotation(NoReturnValueAdvice.class)) {
                 returnValueAdvice = app.config().globalReturnValueAdvice();
             }
+        }
+
+        ValidateViolationAdvisor vAdvisor = getAnnotation(ValidateViolationAdvisor.class);
+        if (null != vAdvisor) {
+            validateViolationAdvice = app.getInstance(vAdvisor.value());
+        } else if (null == getAnnotation(NoValidateViolationAdvice.class)) {
+            validateViolationAdvice = app.config().globalValidateViolationAdvice();
         }
 
         if (method.isAnnotationPresent(RequireCaptcha.class)) {
@@ -244,7 +264,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         this.suppressJsonDateFormat = shouldSuppressJsonDateFormat();
 
-        Throttled throttleControl = method.getAnnotation(Throttled.class);
+        Throttled throttleControl = ReflectedInvokerHelper.getAnnotation(Throttled.class, method);
         if (null != throttleControl) {
             int throttle = throttleControl.value();
             if (throttle < 1) {
@@ -254,28 +274,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throttleFilter = new ThrottleFilter(throttle, expireScale.enabled());
         }
 
-        this.isLargeResponse = method.getAnnotation(LargeResponse.class) != null;
-        this.forceSmallResponse = method.getAnnotation(SmallResponse.class) != null;
+        this.isLargeResponse = ReflectedInvokerHelper.getAnnotation(LargeResponse.class, method) != null;
+        this.forceSmallResponse = ReflectedInvokerHelper.getAnnotation(SmallResponse.class, method) != null;
         if (isLargeResponse && forceSmallResponse) {
             warn("found both @LargeResponse and @SmallResponse, will ignore @SmallResponse");
             forceSmallResponse = false;
         }
 
-        FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+        FastJsonFilter filterAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFilter.class, method);
         if (null != filterAnno) {
             filters = filterAnno.value();
         }
-        FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+        FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
         if (null != featureAnno) {
             features = featureAnno.value();
         }
+        FastJsonPropertyNamingStrategy propertyNamingStrategyAnno = ReflectedInvokerHelper.getAnnotation(FastJsonPropertyNamingStrategy.class, method);
+        if (null != propertyNamingStrategyAnno) {
+            propertyNamingStrategy = propertyNamingStrategyAnno.value();
+        }
         enableCircularReferenceDetect = hasAnnotation(EnableCircularReferenceDetect.class);
 
-        DateFormatPattern pattern = method.getAnnotation(DateFormatPattern.class);
+        DateFormatPattern pattern = ReflectedInvokerHelper.getAnnotation(DateFormatPattern.class, method);
         if (null != pattern) {
             this.dateFormatPattern = pattern.value();
         } else {
-            Pattern patternLegacy = method.getAnnotation(Pattern.class);
+            Pattern patternLegacy = ReflectedInvokerHelper.getAnnotation(Pattern.class, method);
             if (null != patternLegacy) {
                 this.dateFormatPattern = patternLegacy.value();
             }
@@ -297,6 +321,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        for (BeanSpec spec : paramSpecs) {
+            JsonDtoPatch patch = JsonDtoPatch.of(spec);
+            if (null != patch) {
+                dtoPatches.add(patch);
+            }
+        }
+        hasDtoPatches = !dtoPatches.isEmpty();
         List<BeanSpec> paramSpecWithoutSessionVariables = new ArrayList<>();
         fieldsAndParamsCount = paramSpecs.size();
         for (BeanSpec spec : paramSpecs) {
@@ -344,29 +375,29 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             forceResponseContentType = contentType.value().format();
         }
 
-        DownloadFilename downloadFilename = method.getAnnotation(DownloadFilename.class);
+        DownloadFilename downloadFilename = ReflectedInvokerHelper.getAnnotation(DownloadFilename.class, method);
         if (null != downloadFilename) {
             this.downloadFilename = downloadFilename.value();
         }
 
         // method annotation takes priority of class annotation
-        if (null != method.getAnnotation(JsonView.class)) {
+        if (null != ReflectedInvokerHelper.getAnnotation(JsonView.class, method)) {
             forceResponseContentType = H.MediaType.JSON.format();
         }
-        if (null != method.getAnnotation(CsvView.class)) {
+        if (null != ReflectedInvokerHelper.getAnnotation(CsvView.class, method)) {
             forceResponseContentType = H.MediaType.CSV.format();
         }
-        contentType = method.getAnnotation(ResponseContentType.class);
+        contentType = ReflectedInvokerHelper.getAnnotation(ResponseContentType.class, method);
         if (null != contentType) {
             forceResponseContentType = contentType.value().format();
         }
 
-        ResponseStatus status = method.getAnnotation(ResponseStatus.class);
+        ResponseStatus status = ReflectedInvokerHelper.getAnnotation(ResponseStatus.class, method);
         if (null != status) {
             forceResponseStatus = H.Status.of(status.value());
         }
 
-        PreventDoubleSubmission dsp = method.getAnnotation(PreventDoubleSubmission.class);
+        PreventDoubleSubmission dsp = ReflectedInvokerHelper.getAnnotation(PreventDoubleSubmission.class, method);
         if (null != dsp) {
             dspToken = dsp.value();
             if (PreventDoubleSubmission.DEFAULT.equals(dspToken)) {
@@ -375,7 +406,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
 
         byPassImplicityTemplateVariable = (controllerClass.isAnnotationPresent(NoImplicitTemplateVariable.class) ||
-                method.isAnnotationPresent(NoImplicitTemplateVariable.class));
+                ReflectedInvokerHelper.isAnnotationPresent(NoImplicitTemplateVariable.class, method));
 
         initOutputVariables();
         initCacheParams(app.config());
@@ -407,7 +438,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     @Override
     protected void releaseResources() {
         app = null;
-        cl = null;
         controller = null;
         controllerClass = null;
         method = null;
@@ -421,6 +451,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     @Override
     public int order() {
         return this.order;
+    }
+
+    public M handlerMetaInfo() {
+        return handler;
+
     }
 
     @Override
@@ -476,6 +511,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     public Result handle(final ActionContext context) {
         if (disabled) {
+            if (INTERCEPTING == context.state()) {
+                return null;
+            }
             return ActNotFound.get();
         }
 
@@ -530,6 +568,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             context.fastjsonFeatures(features);
         }
 
+        if (null != propertyNamingStrategy) {
+            context.fastjsonPropertyNamingStrategy(propertyNamingStrategy);
+        }
+
         if (null != dateFormatPattern) {
             context.dateFormatPattern(dateFormatPattern);
         }
@@ -561,32 +603,83 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         final Object controller = controllerInstance(context);
 
-        /*
-         * We will send back response immediately when param validation
-         * failed in either of the following cases:
-         * 1) this is an ajax call
-         * 2) the accept content type is **NOT** html
-         */
-        boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
-
         final Object[] params = params(controller, context);
 
         context.ensureCaptcha();
 
-        if (failOnViolation && context.hasViolation()) {
-            String msg = context.violationMessage(";");
-            return ActBadRequest.create(msg);
+        Map<String, ConstraintViolation> violations = context.violations();
+        if (HANDLING == context.state() && !violations.isEmpty()) {
+
+            if (null != validateViolationAdvice) {
+                Result r = null;
+                try {
+                    Object retVal = validateViolationAdvice.onValidateViolation(violations, context);
+                    if (null != retVal) {
+                        if (retVal instanceof Result) {
+                            r = (Result) retVal;
+                        } else {
+                            String payload;
+                            H.Format accept = context.accept();
+                            boolean requireXML = accept == H.Format.XML;
+                            JSONObject json = $.deepCopy(retVal).to(JSONObject.class);
+                            if (requireXML) {
+                                Document doc = $.convert(json).to(Document.class);
+                                payload = XML.toString(doc);
+                                r = new RenderXML(payload);
+                            } else {
+                                payload = JSON.toJSONString(json);
+                                context.resp().contentType(H.Format.JSON);
+                                r = new RenderJSON(payload);
+                            }
+                            r.status(H.Status.BAD_REQUEST);
+                        }
+                    }
+                } catch (Result e) {
+                    r = e;
+                }
+                if (null != r) {
+                    return r;
+                }
+            }
+
+            /*
+             * We will send back response immediately when param validation
+             * failed in either of the following cases:
+             * 1) this is an ajax call
+             * 2) the accept content type is **NOT** html
+             */
+            boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
+
+            if (failOnViolation) {
+                String msg = context.violationMessage(";");
+                return ActBadRequest.create(msg);
+            }
         }
 
         if (async) {
-            JobManager jobManager = context.app().jobManager();
-            String jobId = jobManager.prepare(new TrackableWorker() {
+            final JobManager jobManager = context.app().jobManager();
+            final String jobId = jobManager.randomJobId();
+            final String reqInfo = context.req().toString();
+            jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
+                    if (isTraceEnabled()) {
+                        trace("about invoking request handler[%s] asynchronously: %s", reqInfo, jobId);
+                    }
                     try {
-                        invoke(handler, context, controller, params);
+                        Object o = invoke(context, controller, params);
+                        if (null == o) {
+                            o = "done";
+                        }
+                        jobManager.cacheResult(jobId, o, method);
+                        context.progress().commitFinalState();
                     } catch (Exception e) {
-                        warn(e, "Error executing async handler: " + handler);
+                        String errMsg = S.buffer("Error handling request: ").append(reqInfo).toString();
+                        warn(e, errMsg);
+                        ControllerProgressGauge gauge = context.progress();
+                        gauge.fail(errMsg);
+                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method);
+                        gauge.commitFinalState();
                     }
                 }
             });
@@ -594,7 +687,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            return new RenderJSON(C.Map("jobId", jobId));
+            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept() == H.Format.HTML);
+            if (renderAsyncJobPage) {
+                context.templatePath("/act/asyncJob.html");
+                context.renderArg("jobId", jobId);
+                return RenderTemplate.get();
+            } else {
+                String resultUrl = context.router().fullUrl("/~/jobs/%s/result", jobId);
+                    return new RenderJSON(C.Map("jobId", jobId, "resultUrl", resultUrl));
+            }
         }
 
         try {
@@ -657,22 +758,31 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
     }
 
+    public String singleJsonFieldName() {
+        return singleJsonFieldName;
+    }
+
     private void cacheJsonDto(ActContext<?> context, JsonDto dto) {
         context.attribute(JsonDto.CTX_ATTR_KEY, dto);
     }
 
     private void ensureJsonDtoGenerated(ActionContext context) {
-        if (0 == fieldsAndParamsCount || !context.jsonEncoded()) {
+        if (0 == fieldsAndParamsCount || (!context.jsonEncoded() && !context.xmlEncoded())) {
             return;
         }
-        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(controllerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(paramSpecs, controllerClass);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;
         }
         try {
-            JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            cacheJsonDto(context, dto);
+            String patchedJsonBody = patchedJsonBody(context);
+            context.patchedJsonBody(patchedJsonBody);
+            JsonDto dto = JSON.parseObject(patchedJsonBody, dtoClass);
+            if (null != dto) {
+                patchDtoBeans(dto);
+                cacheJsonDto(context, dto);
+            }
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 warn(e.getCause(), "error parsing JSON data");
@@ -680,6 +790,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 warn(e, "error parsing JSON data");
             }
             throw new BadRequest(e.getCause());
+        }
+    }
+
+    private void patchDtoBeans(JsonDto dto) {
+        if (hasDtoPatches) {
+            for (JsonDtoPatch patch : dtoPatches) {
+                Object bean = dto.get(patch.name());
+                patch.applyChildren(bean);
+            }
         }
     }
 
@@ -710,7 +829,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
      */
     private String patchedJsonBody(ActionContext context) {
         String body = context.body();
-        if (S.blank(body) || 1 < fieldsAndParamsCount(context)) {
+        if (!config.allowJsonBodyPatch() || S.blank(body)) {
+            return body;
+        }
+        if (context.xmlEncoded()) {
+            Document doc = XML.read(body);
+            JSONObject json = $.convert(doc).to(JSONObject.class);
+            body = JSON.toJSONString(json.containsKey(xmlRootTag) ? json.get(xmlRootTag) : json);
+        }
+        if (1 < fieldsAndParamsCount(context)) {
             return body;
         }
         String theName = singleJsonFieldName(context);
@@ -732,10 +859,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                     continue;
                 }
                 if (startCheckName) {
+                    int id = i - nameStart - 1;
                     if (c == '"') {
+                        if (id < theNameLen) {
+                            needPatch = true;
+                        }
                         break;
                     }
-                    int id = i - nameStart - 1;
                     if (id >= theNameLen || theName.charAt(i - nameStart - 1) != c) {
                         needPatch = true;
                         break;
@@ -749,12 +879,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         return needPatch ? S.fmt("{\"%s\": %s}", theName, body) : body;
     }
 
-    private Class[] paramTypes(ClassLoader cl) {
+    private Class[] paramTypes(App app) {
         int sz = handler.paramCount();
         Class[] ca = new Class[sz];
         for (int i = 0; i < sz; ++i) {
             HandlerParamMetaInfo param = handler.param(i);
-            ca[i] = $.classForName(param.type().getClassName(), cl);
+            ca[i] = app.classForName(param.type().getClassName());
         }
         return ca;
     }
@@ -813,7 +943,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             cacheSupport = CacheSupportMetaInfo.disabled();
             return;
         }
-        CacheFor cacheFor = method.getAnnotation(CacheFor.class);
+        CacheFor cacheFor = ReflectedInvokerHelper.getAnnotation(CacheFor.class, method);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() : CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.id(),
@@ -888,7 +1018,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             if (0 == len) {
                 return;
             }
-            Annotation outputRequestParams = method.getAnnotation(OutputRequestParams.class);
+            Annotation outputRequestParams = ReflectedInvokerHelper.getAnnotation(OutputRequestParams.class, method);
             if (null != outputRequestParams) {
                 DependencyInjector injector = app.injector();
                 for (int i = 0; i < len; ++i) {
@@ -934,25 +1064,31 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object retVal;
         String invocationInfo = null;
+        if (config.traceHandler()) {
+            invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
+            Trace.LOGGER_HANDLER.trace(invocationInfo);
+        }
         try {
-            if (traceHandler) {
-                invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
-                Trace.LOGGER_HANDLER.trace(invocationInfo);
-            }
-            retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
-            if (returnString && context.acceptJson()) {
-                retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
-            }
-            context.calcResultHashForEtag(retVal);
+            retVal = invoke(context, controller, params);
         } catch (Result r) {
             retVal = r;
         } catch (Exception e) {
-            if (traceHandler) {
+            if (config.traceHandler()) {
                 Trace.LOGGER_HANDLER.trace(e, "error invoking %s", invocationInfo);
             }
             throw e;
         }
         return transform(retVal, this, context, returnValueAdvice, shallTransformReturnVal, returnIterable);
+    }
+
+    private Object invoke(ActionContext context, Object controller, Object[] params) {
+        Object retVal;
+        retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        if (returnString && context.acceptJson()) {
+            retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
+        }
+        context.calcResultHashForEtag(retVal);
+        return retVal;
     }
 
     private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice, boolean transformRetVal, boolean returnIterable) {
@@ -979,11 +1115,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         boolean hasTemplate = invoker.checkTemplate(context);
         if (!hasTemplate && hasReturn && null != returnValueAdvice) {
             if (transformRetVal) {
-                PropertySpec.MetaInfo propertySpec = handlerMetaInfo.propertySpec();
+                PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(handlerMetaInfo, context);
                 if (null != propertySpec) {
                     Lang._MappingStage stage = propertySpec.applyTo(Lang.map(retVal), context);
                     Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
                     retVal = stage.to(newRetVal);
+                } else {
+                    String curSpec = PropertySpec.current.get();
+                    if (S.notBlank(curSpec)) {
+                        Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
+                        retVal = Lang.deepCopy(retVal).filter(curSpec).to(newRetVal);
+                        PropertySpec.current.remove();
+                    }
                 }
             }
             retVal = returnValueAdvice.applyTo(retVal, context);
@@ -1054,7 +1197,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
 
     public <T extends Annotation> T getAnnotation(Class<T> annoType) {
-        T anno = method.getAnnotation(annoType);
+        T anno = ReflectedInvokerHelper.getAnnotation(annoType, method);
         if (null == anno) {
             anno = controllerClass.getAnnotation(annoType);
         }
@@ -1062,11 +1205,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     public boolean hasAnnotation(Class<? extends Annotation> annoType) {
-        return (null != method.getAnnotation(annoType)) || null != controllerClass.getAnnotation(annoType);
+        return (null != ReflectedInvokerHelper.getAnnotation(annoType, method)) || null != controllerClass.getAnnotation(annoType);
     }
 
     private boolean shouldSuppressJsonDateFormat() {
-        Class<?> returnType = method.getReturnType();
         List<Field> fields = $.fieldsOf(returnType);
         for (Field field : fields) {
             JSONField jsonField = field.getAnnotation(JSONField.class);
@@ -1259,9 +1401,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             List<String> classNames = metaInfo.exceptionClasses();
             List<Class<? extends Exception>> clsList;
             clsList = C.newSizedList(classNames.size());
-            AppClassLoader cl = App.instance().classLoader();
+            App app = Act.app();
             for (String cn : classNames) {
-                clsList.add((Class) $.classForName(cn, cl));
+                clsList.add((Class) app.classForName(cn));
             }
             return clsList;
         }

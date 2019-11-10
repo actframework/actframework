@@ -20,25 +20,20 @@ package act;
  * #L%
  */
 
+import act.app.SingletonRegistry;
+import act.cli.Optional;
 import act.cli.*;
-import act.handler.NonBlock;
 import act.sys.Env;
-import act.util.JsonView;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
-import org.osgl.mvc.annotation.GetAction;
+import org.osgl.Lang;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import javax.validation.constraints.Min;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import javax.validation.constraints.Min;
 
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
@@ -57,10 +52,10 @@ public class SysUtilAdmin {
     @Command(name = "act.meminfo, act.mi", help = "Print memory info")
     public void memInfo(
             @act.cli.Optional("monitor memory usage") boolean monitor,
-            @act.cli.Optional("human readable") boolean human,
+            @act.cli.Optional(lead = "-b,--bytes", help = "display number in bytes") boolean bytes,
             CliContext context
     ) {
-        final int factor = human ? 1024 * 1024 : 1;
+        final int factor = bytes ? 1 : 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
 
         if (monitor) {
@@ -107,6 +102,32 @@ public class SysUtilAdmin {
             context.println("%12s: %11d", "cached(cls#)", cached);
             context.flush();
         }
+    }
+
+    @Command(name = "act.singleton.list, act.singleton, act.singletons", help = "List all singletons")
+    public Iterable<String> listSingletons(@Optional("specify singleton filter") final String q) {
+        SingletonRegistry singletonRegistry = Act.app().singletonRegistry();
+        final Iterable<String> iterable = singletonRegistry.typeNames();
+        if (S.notBlank(q)) {
+            return new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    return Iterators.filter(iterable.iterator(), new Lang.Predicate<String>() {
+                        @Override
+                        public boolean test(String s) {
+                            return s.toLowerCase().contains(q) || s.matches(q);
+                        }
+                    });
+                }
+            };
+        }
+        return iterable;
+    }
+
+    @Command(name = "act.singleton.show-property", help = "Show singleton instance property")
+    public Object showSingletonProperty(@Required String type, @Required String property) {
+        Object o = Act.app().singleton(Act.classForName(type));
+        return $.getProperty(o, property);
     }
 
     @Command(name = "act.gc", help = "Run GC")

@@ -20,11 +20,16 @@ package act.test.util;
  * #L%
  */
 
+import act.Act;
+import act.metric.MetricPlugin;
 import act.test.*;
 import act.test.macro.Macro;
 import act.test.req_modifier.RequestModifier;
 import act.test.verifier.*;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.mockito.Mockito;
+import org.osgl.$;
 import org.osgl.http.H;
 
 import java.util.Map;
@@ -42,9 +47,12 @@ public class ScenarioManagerTest extends TestTestBase {
         Test.registerTypeConverters();
         RequestModifier.registerModifiers();
         Macro.registerActions();
+        MetricPlugin metricPlugin = Mockito.mock(MetricPlugin.class);
+        $.setField("metricPlugin", Act.class, metricPlugin);
     }
 
     @org.junit.Test
+    @Ignore // ResponseSpec now extends from AdaptiveBeanBase which require ActFramework to run up
     public void test() {
         Map<String, Scenario> map = loader.load();
         no(map.isEmpty());

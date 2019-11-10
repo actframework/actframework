@@ -20,14 +20,13 @@ package act.app;
  * #L%
  */
 
-import act.cli.CliContext;
-import act.cli.Command;
-import act.cli.Required;
+import act.cli.*;
 import act.data.JodaDateTimeCodec;
 import act.util.PropertySpec;
 import org.joda.time.DateTime;
+import org.osgl.$;
 import org.osgl.inject.annotation.Provided;
-import org.osgl.util.E;
+import org.osgl.util.*;
 
 import java.util.Map;
 
@@ -37,10 +36,20 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class DaemonAdmin {
 
-    @Command(name = "act.daemon.list", help = "List app daemons")
+    @Command(name = "act.daemon.list,act.daemon,act.daemons", help = "List app daemons")
     @PropertySpec("id,state")
-    public Iterable<Daemon> list() {
-        return App.instance().registeredDaemons();
+    public Iterable<Daemon> list(@Optional("specify filter string") final String q) {
+        final C.List<Daemon> daemons = C.list(App.instance().registeredDaemons());
+        if (S.notBlank(q)) {
+            return daemons.filter(new $.Predicate<Daemon>() {
+                @Override
+                public boolean test(Daemon daemon) {
+                    String s = S.string(daemon.id());
+                    return s.toLowerCase().contains(q) || s.matches(q);
+                }
+            });
+        }
+        return daemons;
     }
 
     @Command(name = "act.daemon.start", help = "Start app daemon")

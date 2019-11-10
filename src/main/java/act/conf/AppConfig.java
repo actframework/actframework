@@ -25,8 +25,10 @@ import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 
 import act.Act;
 import act.Constants;
+import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppConfigLoaded;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
@@ -36,8 +38,9 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
-import act.handler.ReturnValueAdvice;
-import act.handler.UnknownHttpMethodProcessor;
+import act.event.EventBus;
+import act.event.SysEventListenerBase;
+import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.internal.util.StrBufRetentionLimitCalculator;
@@ -51,15 +54,18 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
-import org.osgl.$;
-import org.osgl.OsglConfig;
+import me.tongfei.progressbar.ProgressBarStyle;
+import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
+import org.osgl.cache.impl.SimpleCacheService;
+import org.osgl.cache.impl.SimpleCacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
+import org.osgl.util.converter.TypeConverterRegistry;
 import org.osgl.web.util.UserAgent;
 import org.rythmengine.utils.Time;
 import osgl.version.Version;
@@ -84,6 +90,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public static final String CONF_FILE_NAME = "app.conf";
     public static final String CSRF_TOKEN_NAME = "__csrf__";
     public static final String PORT_CLI_OVER_HTTP = "__admin__";
+    public static final String PORT_SYS = "__sys__";
 
     private App app;
 
@@ -98,21 +105,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 return null;
             }
         });
+        TypeConverterRegistry.INSTANCE.register(new Lang.TypeConverter<String, Class>() {
+            @Override
+            public Class convert(String s) {
+                return Act.appClassForName(s);
+            }
+        });
         MvcConfig.errorPageRenderer(new ActErrorPageRender());
         MvcConfig.beforeCommitResultHandler(ResultEvent.BEFORE_COMMIT_HANDLER);
         MvcConfig.afterCommitResultHandler(ResultEvent.AFTER_COMMIT_HANDLER);
         MvcConfig.messageTranslater(new $.Transformer<String, String>() {
             @Override
             public String transform(String message) {
-                if (Act.appConfig().i18nEnabled()) {
-                    String translated = I18n.i18n(message);
-                    if (message == translated) {
-                        translated = I18n.i18n(MvcConfig.class, message);
-                        message = translated;
-                    }
-                    return message;
+                String translated = I18n.i18n(message);
+                if (message == translated) {
+                    translated = I18n.i18n(MvcConfig.class, message);
                 }
-                return message;
+                if (message == translated) {
+                    translated = I18n.i18n(act_messages.class, message);
+                }
+                return translated;
             }
         });
     }
@@ -127,17 +139,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
-        routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
+    // for unit test
     public AppConfig() {
         this((Map) System.getProperties());
+        this.routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
     public AppConfig<T> app(App app) {
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
+        EventBus eventBus = app.eventBus();
+        if (null != eventBus) {
+            eventBus.bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+                @Override
+                public void on(AppConfigLoaded event) throws Exception {
+                    routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
+                }
+            });
+        } // else - must be in routing benchmark unit test
         return this;
     }
 
@@ -163,7 +185,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
-        OsglConfig.internalCache().clear();
+        OsglConfig.setXmlRootTag(xmlRootTag());
+
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
         OsglConfig.registerGlobalInstanceFactory(new $.Function<Class, Object>() {
             final App app = Act.app();
@@ -454,6 +477,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders;
 
+    @Deprecated
     protected T corsHeaders(String s) {
         this.corsHeaders = s;
         return me();
@@ -461,7 +485,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String corsHeaders() {
         if (null == corsHeaders) {
-            corsHeaders = get(CORS_HEADERS, "Content-Type, X-HTTP-Method-Override, X-Requested-With");
+            corsHeaders = get(CORS_HEADERS, "");
         }
         return corsHeaders;
     }
@@ -481,7 +505,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            corsHeadersExpose = get(CORS_HEADERS_EXPOSE, corsHeaders());
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,"");
+            if (S.blank(corsHeadersExpose)) {
+                corsHeadersExpose = corsHeaders();
+                if (S.notBlank(corsHeadersExpose)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.expose` instead");
+                } else {
+                    corsHeadersExpose = "Act-Session-Expires, Authorization, X-XSRF-Token, X-CSRF-Token, Location, Link, Content-Disposition, Content-Length";
+                }
+            }
         }
         return corsHeadersExpose;
     }
@@ -515,13 +547,21 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private String corsHeadersAllowed;
 
     protected T corsAllowHeaders(String s) {
-        this.corsHeadersExpose = s;
+        this.corsHeadersAllowed = s;
         return me();
     }
 
     public String corsAllowHeaders() {
         if (null == corsHeadersAllowed) {
-            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, corsHeaders());
+            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, "");
+            if (S.isBlank(corsHeadersAllowed)) {
+                corsHeadersAllowed = corsHeaders();
+                if (S.notBlank(corsHeadersAllowed)) {
+                    warn("`cors.headers` is deprecated. Please use `cors.headers.allowed` instead");
+                } else {
+                    corsHeadersAllowed = "X-HTTP-Method-Override, X-Requested-With, Authorization, X-XSRF-Token, X-CSRF-Token";
+                }
+            }
         }
         return corsHeadersAllowed;
     }
@@ -791,6 +831,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private ProgressBarStyle cliProgressBarStyle;
+
+    protected T cliProgressBarStyle(ProgressBarStyle style) {
+        this.cliProgressBarStyle = style;
+        return me();
+    }
+
+    public ProgressBarStyle cliProgressBarStyle() {
+        if (null == cliProgressBarStyle) {
+            String s = get(CLI_PROGRESS_BAR_STYLE, "unicode");
+            cliProgressBarStyle = S.eq("ascii", s) ? ProgressBarStyle.ASCII : ProgressBarStyle.UNICODE_BLOCK;
+        }
+        return cliProgressBarStyle;
+    }
+
+    private void _mergeCliProgressBarStyle(AppConfig config) {
+        if (!hasConfiguration(CLI_PROGRESS_BAR_STYLE)) {
+            cliProgressBarStyle = config.cliProgressBarStyle;
+        }
+    }
+
     private CliOverHttpAuthority cliOverHttpAuthority;
 
     protected T cliOverHttpAuthority(CliOverHttpAuthority authority) {
@@ -820,7 +881,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int cliOverHttpPort() {
         if (null == cliOverHttpPort) {
-            cliOverHttpPort = get(CLI_OVER_HTTP_PORT, 5462);
+            cliOverHttpPort = get(CLI_OVER_HTTP_PORT, httpPort() + 2);
         }
         return cliOverHttpPort;
     }
@@ -881,7 +942,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int cliPort() {
         if (null == cliPort) {
-            cliPort = get(CLI_PORT, 5461);
+            cliPort = get(CLI_PORT, httpPort() + 1);
         }
         return cliPort;
     }
@@ -1099,30 +1160,85 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private String xmlRootTag;
+    protected T xmlRootTag(String tag) {
+        this.xmlRootTag = tag;
+        return me();
+    }
+    public String xmlRootTag() {
+        if (null == xmlRootTag) {
+            xmlRootTag = get(XML_ROOT, "xml");
+        }
+        return xmlRootTag;
+    }
+    private void _mergeXmlRootTag(AppConfig conf) {
+        if (!hasConfiguration(XML_ROOT)) {
+            this.xmlRootTag = conf.xmlRootTag;
+        }
+    }
+
     private ReturnValueAdvice globalReturnValueAdvice;
     private Boolean globalReturnValueAdviceSet;
 
     protected T globalReturnValueAdvice(ReturnValueAdvice advice) {
         this.globalReturnValueAdvice = $.requireNotNull(advice);
+        this.globalReturnValueAdviceSet = true;
         return me();
     }
 
     public ReturnValueAdvice globalReturnValueAdvice() {
-        if (null != globalReturnValueAdvice) {
+        if (null != globalReturnValueAdviceSet) {
             return globalReturnValueAdvice;
         }
-        if (null == globalReturnValueAdviceSet) {
-            globalReturnValueAdviceSet = true;
-            String s = get(GLOBAL_RETURN_VALUE_ADVICE, null);
-            if (null != s) {
-                try {
-                    globalReturnValueAdvice = app.getInstance(s);
-                } catch (Exception e) {
-                    throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
-                }
+        String s = get(GLOBAL_RETURN_VALUE_ADVICE, null);
+        if (null != s) {
+            try {
+                globalReturnValueAdvice = app.getInstance(s);
+            } catch (Exception e) {
+                throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
             }
         }
+        globalReturnValueAdviceSet = true;
         return globalReturnValueAdvice;
+    }
+
+    private void _mergeGlobalReturnValueAdvice(AppConfig conf) {
+        if (!hasConfiguration(GLOBAL_RETURN_VALUE_ADVICE)) {
+            globalReturnValueAdvice = conf.globalReturnValueAdvice;
+            globalReturnValueAdviceSet = conf.globalReturnValueAdviceSet;
+        }
+    }
+
+    private ValidateViolationAdvice globalValidateViolationAdvice;
+    private Boolean globalValidateViolationAdviceSet;
+
+    protected T globalValidateViolationAdvice(ValidateViolationAdvice advice) {
+        this.globalValidateViolationAdvice = $.requireNotNull(advice);
+        this.globalValidateViolationAdviceSet = true;
+        return me();
+    }
+
+    public ValidateViolationAdvice globalValidateViolationAdvice() {
+        if (null != globalValidateViolationAdviceSet) {
+            return globalValidateViolationAdvice;
+        }
+        String s = get(GLOBAL_VALIDATE_VIOLATION_ADVICE, null);
+        if (null != s) {
+            try {
+                globalValidateViolationAdvice = app.getInstance(s);
+            } catch (Exception e) {
+                throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
+            }
+        }
+        globalValidateViolationAdviceSet = true;
+        return globalValidateViolationAdvice;
+    }
+
+    private void _mergeGlobalValidateViolationAdvice(AppConfig conf) {
+        if (!hasConfiguration(GLOBAL_VALIDATE_VIOLATION_ADVICE)) {
+            globalValidateViolationAdvice = conf.globalValidateViolationAdvice;
+            globalValidateViolationAdviceSet = conf.globalValidateViolationAdviceSet;
+        }
     }
 
 
@@ -1525,12 +1641,16 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public String loginUrl() {
-        if (null == loginUrl) {
-            loginUrl = get(URL_LOGIN, "/login");
-        }
         ActionContext context = ActionContext.current();
         if (null != context && context.isAjax()) {
             return ajaxLoginUrl();
+        }
+        return loginUrl0();
+    }
+
+    private String loginUrl0() {
+        if (null == loginUrl) {
+            loginUrl = get(URL_LOGIN, "/login");
         }
         return loginUrl;
     }
@@ -1551,7 +1671,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String ajaxLoginUrl() {
         if (null == ajaxLoginUrl) {
-            ajaxLoginUrl = get(URL_LOGIN_AJAX, loginUrl());
+            ajaxLoginUrl = get(URL_LOGIN_AJAX, loginUrl0());
         }
         return ajaxLoginUrl;
     }
@@ -1647,6 +1767,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeJobPoolSize(AppConfig conf) {
         if (!hasConfiguration(JOB_POOL_SIZE)) {
             jobPoolSize = conf.jobPoolSize;
+        }
+    }
+
+    private Boolean jsonBodyPatch;
+    protected T jsonBodyPatch(boolean enabled) {
+        jsonBodyPatch = enabled;
+        return me();
+    }
+    public boolean allowJsonBodyPatch() {
+        if (null == jsonBodyPatch) {
+            jsonBodyPatch = get(JSON_BODY_PATCH, true);
+        }
+        return jsonBodyPatch;
+    }
+    private void _mergeJsonBodyPatch(AppConfig conf) {
+        if (!hasConfiguration(JSON_BODY_PATCH)) {
+            jsonBodyPatch = conf.jsonBodyPatch;
         }
     }
 
@@ -1915,40 +2052,67 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private List<NamedPort> namedPorts = null;
+    private Boolean monitorEnabled;
 
-    protected T namedPorts(NamedPort... namedPorts) {
-        this.namedPorts = C.listOf(namedPorts);
+    protected T enableMonitor(boolean enable) {
+        this.monitorEnabled = enable;
         return me();
     }
 
-    public List<NamedPort> namedPorts() {
+    public boolean monitorEnabled() {
+        if (null == monitorEnabled) {
+            monitorEnabled = $.bool(get(MONITOR, false));
+        }
+        return monitorEnabled;
+    }
+
+    private void _mergeMonitorEnabled(AppConfig config) {
+        if (!hasConfiguration(MONITOR)) {
+            this.monitorEnabled = config.monitorEnabled;
+        }
+    }
+
+    private Map<String, NamedPort> namedPorts = null;
+
+    protected T namedPorts(NamedPort... namedPorts) {
+        this.namedPorts = new HashMap<>();
+        for (NamedPort port : namedPorts) {
+            this.namedPorts.put(port.name(), port);
+        }
+        return me();
+    }
+
+    public Collection<NamedPort> namedPorts() {
         if (null == namedPorts) {
             String s = get(NAMED_PORTS, null);
             if (null == s) {
-                namedPorts = cliOverHttp() ? C.list(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort())) : C.<NamedPort>list();
+                namedPorts = new HashMap<>();
             } else {
                 String[] sa = (s.split("[,;]+"));
-                ListBuilder<NamedPort> builder = ListBuilder.create();
+                Map<String, NamedPort> builder = new HashMap<>();
                 for (String s0 : sa) {
                     String[] sa0 = s0.split(":");
                     E.invalidConfigurationIf(2 != sa0.length, "Unknown named port configuration: %s", s);
                     String name = sa0[0].trim();
                     String val = sa0[1].trim();
                     NamedPort port = new NamedPort(name, Integer.parseInt(val));
-                    if (!builder.contains(port)) {
-                        builder.add(port);
+                    if (!builder.containsKey(port.name())) {
+                        builder.put(port.name(), port);
                     } else {
                         throw E.invalidConfiguration("port[%s] already configured", name);
                     }
                 }
-                if (cliOverHttp()) {
-                    builder.add(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort()));
-                }
-                namedPorts = builder.toList();
+                namedPorts = builder;
             }
+            if (cliOverHttp() && !namedPorts.containsKey(PORT_CLI_OVER_HTTP)) {
+                namedPorts.put(PORT_CLI_OVER_HTTP, new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort()));
+            }
+            if (!namedPorts.containsKey(PORT_SYS)) {
+                namedPorts.put(PORT_SYS, new NamedPort(PORT_SYS, httpPort() + 3));
+            }
+
         }
-        return namedPorts;
+        return namedPorts.values();
     }
 
     public NamedPort namedPort(String portId) {
@@ -2257,6 +2421,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean selfHealing;
+    protected T selfHealing(boolean on) {
+        selfHealing = on;
+        return me();
+    }
+    public boolean selfHealing() {
+        if (null == selfHealing) {
+            selfHealing = get(SYS_SELF_HEALING, false);
+        }
+        return selfHealing;
+    }
+    private void _mergeSelfHealing(AppConfig conf) {
+        if (!hasConfiguration(SYS_SELF_HEALING)) {
+            selfHealing = conf.selfHealing;
+        }
+    }
+
     private String targetVersion = null;
 
     protected T targetVersion(JavaVersion version) {
@@ -2377,7 +2558,33 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return CONTROLLER_CLASS_TESTER;
     }
 
-    private TemplatePathResolver templatePathResolver = null;
+    private Integer testTimeout;
+
+    protected T testTimeout(int timeout) {
+        if (timeout < 10) {
+            logger.warn("test.timeout reset to minimum value: 10");
+            timeout = 10;
+        }
+        testTimeout = timeout;
+        return me();
+    }
+
+    public int testTimeout() {
+        if (null == testTimeout) {
+            int defTimeout = ("e2e".equalsIgnoreCase(Act.profile()) || "test".equalsIgnoreCase(Act.profile())) ? 10 : 60 * 60;
+            testTimeout = get(TEST_TIMEOUT, defTimeout);
+            this.testTimeout(testTimeout); // make sure we have a valid number
+        }
+        return testTimeout;
+    }
+
+    private void _mergeTestTimeout(AppConfig conf) {
+        if (!hasConfiguration(TEST_TIMEOUT)) {
+            testTimeout = conf.testTimeout;
+        }
+    }
+
+    private TemplatePathResolver templatePathResolver;
 
     protected T templatePathResolver(TemplatePathResolver resolver) {
         E.NPE(resolver);
@@ -2417,6 +2624,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeTemplateHome(AppConfig conf) {
         if (!hasConfiguration(AppConfigKey.TEMPLATE_HOME)) {
             templateHome = conf.templateHome;
+        }
+    }
+
+    private Boolean paramBindingKeywordMatching;
+
+    protected T paramBindingKeywordMatching(boolean enabled) {
+        paramBindingKeywordMatching = enabled;
+        return me();
+    }
+
+    public boolean paramBindingKeywordMatching() {
+        if (null == paramBindingKeywordMatching) {
+            paramBindingKeywordMatching = get(PARAM_BINDING_KEYWORD_MATCHING, false);
+        }
+        return paramBindingKeywordMatching;
+    }
+
+    private void _mergeParamBindingKeywordMatching(AppConfig config) {
+        if (!hasConfiguration(PARAM_BINDING_KEYWORD_MATCHING)) {
+            paramBindingKeywordMatching = config.paramBindingKeywordMatching;
         }
     }
 
@@ -2882,7 +3109,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sessionHeaderPayloadPrefix() {
         if (null == sessionHeaderPayloadPrefix) {
-            sessionHeaderPayloadPrefix = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
+            String s = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
+            s = S.strip(s).of(S.DOUBLE_QUOTES);
+            sessionHeaderPayloadPrefix = s;
         }
         return sessionHeaderPayloadPrefix;
     }
@@ -3066,6 +3295,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         return traceHandler;
     }
 
+    // must be public, otherwise it get IllegalAccessError
+    public void toggleTraceHandler(boolean enabled) {
+        traceHandler = enabled;
+    }
+
     private void _mergeTraceHandler(AppConfig config) {
         if (!hasConfiguration(TRACE_HANDLER_ENABLED)) {
             this.traceHandler = config.traceHandler;
@@ -3084,6 +3318,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             traceRequest = get(TRACE_REQUEST_ENABLED, false);
         }
         return traceRequest;
+    }
+
+    // must be public, otherwise it get IllegalAccessError
+    public void toggleTraceRequest(boolean enabled) {
+        traceRequest = enabled;
     }
 
     private void _mergeTraceRequests(AppConfig config) {
@@ -3164,6 +3403,15 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public CacheService cacheService(String name) {
+        CacheService cacheService = cacheServiceProvider().get(name);
+        E.illegalStateIf(cacheService.state().isShutdown(), "Cache service[%s] already shutdown.", name);
+        if (!cacheService.state().isStarted()) {
+            cacheService.startup();
+        }
+        return cacheService;
+    }
+
+    public CacheServiceProvider cacheServiceProvider() {
         if (null == cacheServiceProvider) {
             CacheServiceProvider.Impl.setClassLoader(app().classLoader());
             try {
@@ -3173,15 +3421,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 cacheServiceProvider = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
                 if (null != cacheServiceProvider) {
                     set(AppConfigKey.CACHE_IMPL, cacheServiceProvider);
-                    return cacheServiceProvider.get(name);
+                } else {
+                    throw e;
                 }
-                throw e;
             }
             if (null == cacheServiceProvider) {
                 cacheServiceProvider = CacheServiceProvider.Impl.Auto;
             }
         }
-        return cacheServiceProvider.get(name);
+        return cacheServiceProvider;
+    }
+
+    public void resetCacheServices() {
+        if (!Act.isDev()) {
+            return;
+        }
+        OsglConfig.internalCache().clear();
+
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
@@ -3293,6 +3549,30 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean resourceFiltering;
+
+    protected T resourceFiltering(boolean b) {
+        resourceFiltering = b;
+        return me();
+    }
+
+    public boolean resourceFiltering() {
+        if (null == resourceFiltering) {
+            if (app.isDev()) {
+                resourceFiltering = get(RESOURCE_FILTERING, true);
+            } else {
+                resourceFiltering = false;
+            }
+        }
+        return resourceFiltering;
+    }
+
+    private void _mergeResourceFiltering(AppConfig conf) {
+        if (!hasConfiguration(RESOURCE_FILTERING)) {
+            this.resourceFiltering = conf.resourceFiltering;
+        }
+    }
+
     private Integer uploadInMemoryCacheThreshold;
 
     protected T uploadInMemoryCacheThreshold(int l) {
@@ -3350,6 +3630,26 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeWsTicketKey(AppConfig config) {
         if (!hasConfiguration(WS_KEY_TICKET)) {
             wsTicketKey = config.wsTicketKey;
+        }
+    }
+
+    private Integer wsPurgeClosedConnPeriod;
+
+    protected T wsPurgeClosedConnPeriod(int period) {
+        this.wsPurgeClosedConnPeriod = period;
+        return me();
+    }
+
+    public int wsPurgeClosedConnPeriod() {
+        if (null == wsPurgeClosedConnPeriod) {
+            wsPurgeClosedConnPeriod = get(WS_PURGE_CLOSED_CONN_PERIOD, Act.isDev() ? 1 : 10);
+        }
+        return wsPurgeClosedConnPeriod;
+    }
+
+    private void _mergeWsPurgeClosedConnPeroid(AppConfig config) {
+        if (!hasConfiguration(WS_PURGE_CLOSED_CONN_PERIOD)) {
+            wsPurgeClosedConnPeriod = config.wsPurgeClosedConnPeriod;
         }
     }
 
@@ -3513,5 +3813,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             }
         }
         return timeStyle;
+    }
+
+    public void setDefaultTldReloadCron() {
+        raw.put(canonical(TopLevelDomainList.CRON_TLD_RELOAD), "0 0 2 * * *");
     }
 }

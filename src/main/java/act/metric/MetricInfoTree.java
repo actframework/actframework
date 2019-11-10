@@ -129,11 +129,31 @@ public class MetricInfoTree {
     public static class NodeDecorator {
         $.Function<MetricInfo, String> labelGetter;
 
+        private static final TreeNode NULL = new TreeNode() {
+            @Override
+            public String id() {
+                return "";
+            }
+
+            @Override
+            public String label() {
+                return "";
+            }
+
+            @Override
+            public List<TreeNode> children() {
+                return C.list();
+            }
+        };
+
         NodeDecorator($.Function<MetricInfo, String> labelGetter) {
             this.labelGetter = $.requireNotNull(labelGetter);
         }
 
         TreeNode decorate(final MetricInfoNode node) {
+            if (null == node) {
+                return NULL;
+            }
             return new TreeNode() {
 
                 @Override
@@ -161,14 +181,14 @@ public class MetricInfoTree {
 
     }
 
-    static final NodeDecorator COUNTER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
+    public static final NodeDecorator COUNTER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
         @Override
         public String transform(MetricInfo metricInfo) {
             return S.fmt("%s: %s", metricInfo.getName(), metricInfo.getCountAsStr());
         }
     });
 
-    static final NodeDecorator TIMER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
+    public static final NodeDecorator TIMER = new NodeDecorator(new $.Transformer<MetricInfo, String>() {
         @Override
         public String transform(MetricInfo metricInfo) {
             return S.fmt("%s: %s / %s = %s", metricInfo.getName(), metricInfo.getAccumulated(), metricInfo.getCountAsStr(), metricInfo.getAvg());

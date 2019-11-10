@@ -3,8 +3,12 @@
 -act.i18n.TimeZoneResolver
 -act.i18n.EnumService
 -act.Zen.
+-act.monitor.
+-act.conf.CsrfConfAdmin
 
 # The following endpoints are only public on dev mode
 [dev]-act.apidoc.
 [dev]-act.Info
 [dev]-act.i18n.
+[dev]-act.job.
+[dev]-act.test.

@@ -227,7 +227,7 @@ public class CriteriaUtil {
      * @param params
      * @return
      */
-    private static List<CriteriaComponent> parse(String expression, Object ... params) {
+    public static List<CriteriaComponent> parse(String expression, Object ... params) {
         S.List nodes = S.fastSplit(expression, ",");
         List<CriteriaComponent> components = new ArrayList<>();
         int n = 0;

@@ -1,0 +1,11 @@
+Scenario(1061):
+  description: act1.8.17 Document Class Object conflict
+  interactions:
+    - description: Test
+      request:
+        post: /1061
+        xml:
+          name: bar
+      response:
+        json:
+          name: bar

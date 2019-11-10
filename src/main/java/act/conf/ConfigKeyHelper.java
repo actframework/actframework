@@ -92,7 +92,7 @@ class ConfigKeyHelper {
         if (key.endsWith(".long")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_LONG);
         }
-        if (key.endsWith(".int") || key.endsWith(".ttl") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size") || key.endsWith(".port")) {
+        if (key.endsWith(".int") || key.endsWith(".ttl") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size") || key.endsWith(".port") || key.endsWith(".timeout")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_INT);
         }
         if (key.endsWith(".float")) {
@@ -109,7 +109,7 @@ class ConfigKeyHelper {
         return SUFFIXES;
     }
 
-    private static final Set<String> NON_ALIAS_SUFFIXES = C.set(S.fastSplit("dir,home,path,ttl,port,len,count,times,size", ","));
+    private static final Set<String> NON_ALIAS_SUFFIXES = C.set(S.fastSplit("dir,home,path,ttl,port,len,count,times,size,timeout", ","));
     static Set<String> nonAliasSuffixes() {
         return NON_ALIAS_SUFFIXES;
     }

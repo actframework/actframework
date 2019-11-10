@@ -21,6 +21,7 @@ package act.cli.builtin;
  */
 
 import act.cli.CliContext;
+import act.cli.CliSession;
 import act.cli.util.CliCursor;
 import act.handler.CliHandlerBase;
 import act.util.PropertySpec;
@@ -47,6 +48,11 @@ public class IterateCursor extends CliHandlerBase {
                 PropertySpec.current.remove();
             }
         }
+    }
+
+    @Override
+    public void resetCursor(CliSession session) {
+        // do not reset cursor for this particular handler
     }
 
     private Object readResolve() {

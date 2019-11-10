@@ -33,6 +33,11 @@ public class ConfigItem {
         this.val = ValueObject.of(config.get(key));
     }
 
+    public ConfigItem(String key, Object val) {
+        this.key = key;
+        this.val = ValueObject.of(val);
+    }
+
     public String getKey() {
         return key;
     }

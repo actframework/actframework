@@ -66,7 +66,8 @@ public abstract class TreeNodeFilter extends $.F2<List<? extends TreeNode>, Tree
             return new TreeNodeFilter() {
                 @Override
                 protected boolean test(List<? extends TreeNode> path, TreeNode theNode) {
-                    return path(path, theNode).matches(pattern);
+                    String s = path(path, theNode);
+                    return s.toLowerCase().contains(pattern.toLowerCase()) || s.matches(pattern);
                 }
             };
         }
@@ -84,7 +85,8 @@ public abstract class TreeNodeFilter extends $.F2<List<? extends TreeNode>, Tree
             return new TreeNodeFilter() {
                 @Override
                 protected boolean test(List<? extends TreeNode> path, TreeNode theNode) {
-                    return theNode.label().matches(pattern);
+                    String s = theNode.label();
+                    return s.toLowerCase().contains(pattern.toLowerCase()) || s.matches(pattern);
                 }
             };
         }

@@ -21,6 +21,8 @@ package act.apidoc;
  */
 
 import static act.apidoc.SampleDataCategory.EMAIL;
+import static act.apidoc.SimpleEndpointIdProvider.className;
+import static act.apidoc.SimpleEndpointIdProvider.id;
 
 import act.Act;
 import act.app.data.StringValueResolverManager;
@@ -32,23 +34,31 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
+import act.inject.HeaderVariable;
+import act.inject.SessionVariable;
 import act.inject.param.NoBind;
 import act.inject.param.ParamValueLoaderService;
 import act.util.*;
 import act.validation.NotBlank;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.bval.constraints.NotEmpty;
 import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.OsglConfig;
 import org.osgl.http.H;
-import org.osgl.inject.*;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
+import java.beans.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -59,43 +69,76 @@ import javax.validation.constraints.NotNull;
 /**
  * An `Endpoint` represents an API that provides specific service
  */
-public class Endpoint implements Comparable<Endpoint> {
+public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private static final Logger LOGGER = ApiManager.LOGGER;
 
-    private static BeanSpecInterpreter beanSpecInterpretor = new BeanSpecInterpreter();
+    private static BeanSpecInterpreter beanSpecInterpreter = new BeanSpecInterpreter();
+
+    private static boolean mapTypeQuerySampleWarned = false;
 
     public static class ParamInfo {
-        private String bindName;
-        private BeanSpec beanSpec;
-        private String description;
-        private String defaultValue;
-        private boolean required;
-        private List<String> options;
+        public String bindName;
+        public transient BeanSpec beanSpec;
+        public String type;
+        public String description;
+        public String defaultValue;
+        public boolean required;
+        public boolean sessionVariable;
+        public boolean headerVariable;
+        public List<String> options;
+        public String fieldKey;
 
-        private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
+        private ParamInfo() {}
+
+        private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
             this.description = description;
             this.defaultValue = checkDefaultValue(beanSpec);
             this.required = checkRequired(beanSpec);
+            this.sessionVariable = checkSessionVariable(beanSpec);
+            this.headerVariable = checkHeaderVariable(beanSpec);
             this.options = checkOptions(beanSpec);
+            this.fieldKey = fieldKey;
         }
 
         public String getName() {
+            if (sessionVariable) {
+                return bindName + "[S]";
+            } else if (headerVariable) {
+                return bindName + "[H]";
+            }
             return bindName;
         }
 
+        public String getTooltip() {
+            if (sessionVariable) {
+                return "Session variable: " + bindName;
+            } else if (headerVariable) {
+                return "Header variable: " + bindName;
+            } else {
+                return "Bind name: " + bindName;
+            }
+        }
+
         public String getType() {
-            return beanSpecInterpretor.interpret(beanSpec);
+            return null == beanSpec ? type : beanSpecInterpreter.interpret(beanSpec);
         }
 
         public String getDescription() {
+            if (S.blank(description)) {
+                if (sessionVariable) {
+                    return "Session variable";
+                } else if (headerVariable) {
+                    return "Header variable";
+                }
+            }
             return description;
         }
 
         public void setDescription(String description) {
-            this.description = description;
+            this.description = description.replaceAll("\\n\\s+","\n");
         }
 
         public boolean isRequired() {
@@ -129,6 +172,14 @@ public class Endpoint implements Comparable<Endpoint> {
                     || spec.hasAnnotation(NotEmpty.class));
         }
 
+        private boolean checkSessionVariable(BeanSpec spec) {
+            return spec.hasAnnotation(SessionVariable.class);
+        }
+
+        private boolean checkHeaderVariable(BeanSpec spec) {
+            return spec.hasAnnotation(HeaderVariable.class);
+        }
+
         private List<String> checkOptions(BeanSpec spec) {
             Class<?> type = spec.rawType();
             if (type.isEnum()) {
@@ -149,45 +200,58 @@ public class Endpoint implements Comparable<Endpoint> {
 
     /**
      * unique identify an endpoint in an application.
+     *
+     * Generated from class and method name via {@link SimpleEndpointIdProvider#id(Class, Method)}
      */
-    private String id;
+    public String id;
+
+    public transient EndpointIdProvider parent;
 
     /**
      * The scheme used to access the endpoint
      */
-    private Scheme scheme = Scheme.HTTP;
+    public Scheme scheme = Scheme.HTTP;
 
-    private int port;
+    public int port;
 
     /**
      * The HTTP method
      */
-    private H.Method httpMethod;
+    public H.Method httpMethod;
 
     /**
      * The URL path
      */
-    private String path;
+    public String path;
 
     /**
      * The handler.
      *
      * In most case should be `pkg.Class.method`
      */
-    private String handler;
+    public String handler;
 
     FastJsonPropertyPreFilter fastJsonPropertyPreFilter;
 
     /**
      * The description
      */
-    private String description;
+    public String description;
 
-    private String module;
+    /**
+     * The return info description
+     */
+    public String returnDescription;
 
-    private Class<?> returnType;
+    public String module;
 
-    private String returnSample;
+    private transient BeanSpec returnType;
+
+    private Map<String, Class> typeLookups;
+
+    public String returnSample;
+
+    public transient Object returnSampleObject;
 
     /**
      * Param list.
@@ -195,12 +259,14 @@ public class Endpoint implements Comparable<Endpoint> {
      * Only available when handler is driven by
      * {@link act.handler.builtin.controller.impl.ReflectedHandlerInvoker}
      */
-    private List<ParamInfo> params = new ArrayList<>();
+    public List<ParamInfo> params = new ArrayList<>();
 
-    private String sampleJsonPost;
-    private String sampleQuery;
-    private Class<?> controllerClass;
-    private transient SampleDataProviderManager sampleDataProviderManager;
+    public String sampleJsonPost;
+    public String sampleQuery;
+    public Class<?> controllerClass;
+    public transient SampleDataProviderManager sampleDataProviderManager;
+
+    private Endpoint() {}
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
         AppConfig conf = Act.appConfig();
@@ -222,8 +288,18 @@ public class Endpoint implements Comparable<Endpoint> {
         return httpMethod.ordinal() - o.httpMethod.ordinal();
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
+
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String getParentId() {
+        return null == parent ? null : parent.getId();
     }
 
     /**
@@ -253,6 +329,11 @@ public class Endpoint implements Comparable<Endpoint> {
         return path;
     }
 
+    public String getPathHtml() {
+        String s = path.replace("{", "<span class='var'>{");
+        return s.replace("}", "}</span>");
+    }
+
     public String getHandler() {
         return handler;
     }
@@ -262,7 +343,7 @@ public class Endpoint implements Comparable<Endpoint> {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = processTypeImplSubstitution(description);
     }
 
     public String getModule() {
@@ -277,7 +358,7 @@ public class Endpoint implements Comparable<Endpoint> {
         return params;
     }
 
-    public Class<?> returnType() {
+    public BeanSpec returnType() {
         return returnType;
     }
 
@@ -286,10 +367,7 @@ public class Endpoint implements Comparable<Endpoint> {
     }
 
     public String getReturnType() {
-        if (void.class == returnType || Void.class == returnType) {
-            return null;
-        }
-        return className(returnType);
+        return null == returnType ? null : returnType.toString();
     }
 
     public String getSampleJsonPost() {
@@ -304,12 +382,45 @@ public class Endpoint implements Comparable<Endpoint> {
         return controllerClass;
     }
 
+    public String processTypeImplSubstitution(String s) {
+        if (null == s) {
+            return null;
+        }
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        int a = 0;
+        int z = n;
+        S.Buffer buf = S.buffer();
+        while (true) {
+            buf.append(s.substring(a, z));
+            n = s.indexOf("}", z);
+            a = n;
+            E.illegalArgumentIf(n < -1, "Invalid string: " + s);
+            String key = s.substring(z + 2, a);
+            Class<?> impl = typeLookups.get(key);
+            if (null != impl) {
+                buf.append(Keyword.of(className(impl)).readable().toLowerCase());
+            } else {
+                buf.append("${").append(key).append("}");
+            }
+            n = s.indexOf("${", a);
+            if (n < 0) {
+                buf.append(s.substring(a + 1));
+                return buf.toString();
+            }
+            z = n;
+        }
+    }
+
     private void explore(RequestHandler handler) {
         RequestHandlerProxy proxy = $.cast(handler);
         ReflectedHandlerInvoker invoker = $.cast(proxy.actionHandler().invoker());
         Class<?> controllerClass = invoker.controllerClass();
+        typeLookups = Generics.buildTypeParamImplLookup(controllerClass);
         Method method = invoker.method();
-        returnType = method.getReturnType();
+        returnType = BeanSpec.of(method.getGenericReturnType(), Act.injector(), typeLookups);
         PropertySpec pspec = method.getAnnotation(PropertySpec.class);
         if (null != pspec) {
             PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
@@ -322,61 +433,69 @@ public class Endpoint implements Comparable<Endpoint> {
             List<String> outputs = propSpec.outputFieldsForHttp();
             Set<String> excluded = propSpec.excludeFieldsForHttp();
             if (!(outputs.isEmpty() && excluded.isEmpty())) {
-                fastJsonPropertyPreFilter = new FastJsonPropertyPreFilter(returnType, outputs, excluded, Act.app().service(DataPropertyRepository.class));
+                fastJsonPropertyPreFilter = new FastJsonPropertyPreFilter(returnType.rawType(), outputs, excluded, Act.app().service(DataPropertyRepository.class));
             }
             // just ignore cli value here
         }
         Module classModule = controllerClass.getAnnotation(Module.class);
         String classModuleText = null == classModule ? inferModule(controllerClass) : classModule.value();
         this.id = id(controllerClass, method);
-        Type returnType = method.getGenericReturnType();
+        Class<?> superClass = controllerClass.getSuperclass();
+        try {
+            Method overwrittenMethod = superClass.getMethod(method.getName(), method.getParameterTypes());
+            parent = new SimpleEndpointIdProvider(overwrittenMethod.getDeclaringClass(), method);
+        } catch (Exception e) {
+            // so we don't have an overwritten method, that's fine, just ignore the exception
+        }
         Map<String, Class> typeParamLookup = C.Map();
         if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(controllerClass);
         }
-        returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? id(controllerClass, method) : descAnno.value();
         Module methodModule = method.getAnnotation(Module.class);
         this.module = null == methodModule ? classModuleText : methodModule.value();
-        exploreParamInfo(method, typeParamLookup);
+        boolean payloadMethod = H.Method.POST == httpMethod || H.Method.PUT == httpMethod || H.Method.PATCH == httpMethod;
+        boolean body = payloadMethod && null != invoker.singleJsonFieldName();
+        exploreParamInfo(method, typeParamLookup, body);
         if (!Modifier.isStatic(method.getModifiers())) {
-            exploreParamInfo(controllerClass, typeParamLookup);
+            exploreParamInfo(controllerClass, typeParamLookup, body);
         }
         this.controllerClass = controllerClass;
+        try {
+            this.returnSample = null == returnType ? null : generateSampleJson(returnType, typeParamLookup, true);
+        } catch (Exception e) {
+            LOGGER.warn(e, "Error creating returnSample of endpoint for request handler [%s] for [%s %s]", handler, httpMethod, path);
+        }
     }
 
     private String inferModule(Class<?> controllerClass) {
+        Class<?> enclosingClass = controllerClass.getEnclosingClass();
+        if (null != enclosingClass) {
+            return inferModule(enclosingClass);
+        }
         return controllerClass.getSimpleName();
     }
 
-    private String id(Class<?> controllerClass, Method method) {
-        return className(controllerClass) + "." + method.getName();
-    }
-
-    private String className(Class<?> clz) {
-        Class<?> enclosing = clz.getEnclosingClass();
-        if (null != enclosing) {
-            return className(enclosing) + "." + clz.getSimpleName();
-        }
-        return clz.getSimpleName();
-    }
-
-    private void exploreParamInfo(Method method, Map<String, Class> typeParamLookup) {
+    private void exploreParamInfo(Method method, Map<String, Class> typeParamLookup, boolean body) {
         Type[] paramTypes = method.getGenericParameterTypes();
         int paramCount = paramTypes.length;
         if (0 == paramCount) {
             return;
         }
         DependencyInjector injector = Act.injector();
-        Annotation[][] allAnnos = method.getParameterAnnotations();
+        Method declaredMethod = overridenRequestHandlerMethod(method);
+        if (null == declaredMethod) {
+            return;
+        }
+        Annotation[][] allAnnos = declaredMethod.getParameterAnnotations();
         Map<String, Object> sampleData = new HashMap<>();
         StringValueResolverManager resolver = Act.app().resolverManager();
         List<String> sampleQuery = new ArrayList<>();
         for (int i = 0; i < paramCount; ++i) {
             Type type = paramTypes[i];
             Annotation[] annos = allAnnos[i];
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null);
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null, null, body);
             if (null != info) {
                 params.add(info);
                 if (path.contains("{" + info.getName() + "}")) {
@@ -384,10 +503,9 @@ public class Endpoint implements Comparable<Endpoint> {
                     continue;
                 }
                 Object sample;
-                if (null != info.defaultValue) {
+                sample = generateSampleData(info.beanSpec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), false);
+                if (null == sample && null != info.defaultValue) {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
-                } else {
-                    sample = generateSampleData(info.beanSpec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>());
                 }
                 if (H.Method.GET == this.httpMethod) {
                     String query = generateSampleQuery(info.beanSpec.withoutName(), typeParamLookup, info.bindName, new HashSet<Type>(), C.<String>newList());
@@ -400,7 +518,14 @@ public class Endpoint implements Comparable<Endpoint> {
             }
         }
         if (!sampleData.isEmpty()) {
-            sampleJsonPost = JSON.toJSONString(sampleData, true);
+            Object payload = sampleData;
+            if (sampleData.size() == 1) {
+                payload = sampleData.values().iterator().next();
+            }
+            if (null != payload && $.isSimpleType(payload.getClass())) {
+                payload = sampleData;
+            }
+            sampleJsonPost = null == payload ? null : JSON.toJSONString(payload, true);
         }
         if (!sampleQuery.isEmpty()) {
             this.sampleQuery = S.join("&", sampleQuery);
@@ -415,20 +540,21 @@ public class Endpoint implements Comparable<Endpoint> {
         }
     };
 
-    private void exploreParamInfo(Class<?> controller, Map<String, Class> typeParamLookup) {
+    private void exploreParamInfo(Class<?> controller, Map<String, Class> typeParamLookup, boolean body) {
         DependencyInjector injector = Act.injector();
         List<Field> fields = $.fieldsOf(controller, FIELD_PREDICATE);
         for (Field field : fields) {
             Type type = field.getGenericType();
             Annotation[] annos = field.getAnnotations();
-            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName());
+            String fieldKey = field.getDeclaringClass().getName().replace('$', '.') + "." + field.getName();
+            ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, field.getName(), fieldKey, body);
             if (null != info) {
                 params.add(info);
             }
         }
     }
 
-    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name) {
+    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name, String fieldKey, boolean body) {
         if (isLoginUser(annos)) {
             return null;
         }
@@ -440,14 +566,14 @@ public class Endpoint implements Comparable<Endpoint> {
             if (org.osgl.util.S.blank(name)) {
                 name = spec.name();
             }
-            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id");
+            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey);
         }
         String description = "";
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();
         }
-        return new ParamInfo(spec.name(), spec, description);
+        return new ParamInfo(body ? spec.name() + " (body)" : spec.name(), spec, description, fieldKey);
     }
 
     private boolean isLoginUser(Annotation[] annos) {
@@ -459,19 +585,29 @@ public class Endpoint implements Comparable<Endpoint> {
         return false;
     }
 
-    private String generateSampleJson(BeanSpec spec, Map<String, Class> typeParamLookup) {
+    private String generateSampleJson(BeanSpec spec, Map<String, Class> typeParamLookup, boolean isReturn) {
         Class<?> type = spec.rawType();
         if (Result.class.isAssignableFrom(type) || void.class == type) {
             return null;
         }
-        Object sample = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>());
-        if (null == sample) {
+        returnSampleObject = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>(), isReturn);
+        if (null == returnSampleObject) {
+            return null;
+        }
+        if (returnSampleObject instanceof Map && ((Map) returnSampleObject).isEmpty()) {
             return null;
         }
         if ($.isSimpleType(type)) {
-            sample = C.Map("result", sample);
+            returnSampleObject = C.Map("result", returnSampleObject);
         }
-        return JSON.toJSONString(sample, true);
+        SerializeFilter[] filters = new SerializeFilter[null == fastJsonPropertyPreFilter ? 0 : 1];
+        if (null != fastJsonPropertyPreFilter) {
+            filters[0] = fastJsonPropertyPreFilter;
+        }
+        SerializerFeature[] features = new SerializerFeature[] {
+                SerializerFeature.PrettyFormat
+        };
+        return JSON.toJSONString(returnSampleObject, SerializeConfig.globalInstance, filters, features);
     }
 
     private String generateSampleQuery(BeanSpec spec, Map<String, Class> typeParamLookup, String bindName, Set<Type> typeChain, List<String> nameChain) {
@@ -481,7 +617,7 @@ public class Endpoint implements Comparable<Endpoint> {
             nameChain.add(specName);
         }
         if ($.isSimpleType(type)) {
-            Object o = generateSampleData(spec, typeParamLookup, typeChain, nameChain);
+            Object o = generateSampleData(spec, typeParamLookup, typeChain, nameChain, false);
             if (null == o) {
                 return "";
             }
@@ -492,12 +628,12 @@ public class Endpoint implements Comparable<Endpoint> {
             Class<?> elementType = type.getComponentType();
             BeanSpec elementSpec = BeanSpec.of(elementType, Act.injector(), typeParamLookup);
             if ($.isSimpleType(elementType)) {
-                Object o = generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain);
+                Object o = generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain, false);
                 if (null == o) {
                     return "";
                 }
                 return bindName + "=" + o
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain);
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain, false);
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
@@ -505,23 +641,24 @@ public class Endpoint implements Comparable<Endpoint> {
             Type elementType = typeParams.isEmpty() ? Object.class : typeParams.get(0);
             BeanSpec elementSpec = BeanSpec.of(elementType, null, Act.injector(), typeParamLookup);
             if ($.isSimpleType(elementSpec.rawType())) {
-                Object o = generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain);
+                Object o = generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain, false);
                 if (null == o) {
                     return "";
                 }
                 return bindName + "=" + o
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain);
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeParamLookup, typeChain, nameChain, false);
             }
         } else if (Map.class.isAssignableFrom(type)) {
-            LOGGER.warn("Map not supported yet");
+            if (!mapTypeQuerySampleWarned) {
+                mapTypeQuerySampleWarned = true;
+                LOGGER.warn("Query sample does not support Map type! Make sure your @GetAction handler params/fields be simple types");
+            }
             return "";
         } else if (ReadableInstant.class.isAssignableFrom(type)) {
             return bindName + "=<datetime>";
         }
         if (null != stringValueResolver(type)) {
-            SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
-            SampleDataCategory category = null != anno ? anno.value() : null;
-            return bindName + "=" + sampleDataProviderManager.getSampleData(category, bindName, String.class);
+            return bindName + "=" + sampleDataFromAnnotation(spec, bindName);
         }
         List<String> queryPairs = new ArrayList<>();
         List<Field> fields = $.fieldsOf(type);
@@ -536,6 +673,29 @@ public class Endpoint implements Comparable<Endpoint> {
             }
         }
         return S.join(queryPairs).by("&").get();
+    }
+
+    private static Object sampleDataFromAnnotation(BeanSpec spec, String bindName) {
+        SampleData.ProvidedBy annoProvided = spec.getAnnotation(SampleData.ProvidedBy.class);
+        if (null != annoProvided) {
+            return Act.getInstance(annoProvided.value()).get();
+        }
+        SampleData.StringList annoStrList = spec.getAnnotation(SampleData.StringList.class);
+        if (null != annoStrList) {
+            return $.random(annoStrList.value());
+        }
+        SampleData.IntList annoIntList = spec.getAnnotation(SampleData.IntList.class);
+        if (null != annoIntList) {
+            int[] ia = annoIntList.value();
+            return $.random(ia);
+        }
+        SampleData.DoubleList annoDblList = spec.getAnnotation(SampleData.DoubleList.class);
+        if (null != annoDblList) {
+            return $.random(annoDblList.value());
+        }
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
+        return Act.getInstance(SampleDataProviderManager.class).getSampleData(category, bindName, spec.rawType());
     }
 
     private static boolean isCollection(Type type) {
@@ -553,20 +713,21 @@ public class Endpoint implements Comparable<Endpoint> {
         return false;
     }
 
-    private Object generateSampleData(BeanSpec spec, Map<String, Class> typeParamLookup, Set<Type> typeChain, List<String> nameChain) {
-        return generateSampleData(spec, typeParamLookup, typeChain, nameChain, fastJsonPropertyPreFilter);
+    private Object generateSampleData(BeanSpec spec, Map<String, Class> typeParamLookup, Set<Type> typeChain, List<String> nameChain, boolean isReturn) {
+        return generateSampleData(spec, typeParamLookup, typeChain, nameChain, isReturn ? fastJsonPropertyPreFilter : null, isReturn);
     }
 
     public static Object generateSampleData(
             BeanSpec spec, Map<String, Class> typeParamLookup,
             Set<Type> typeChain, List<String> nameChain,
-            FastJsonPropertyPreFilter fastJsonPropertyPreFilter
+            FastJsonPropertyPreFilter fastJsonPropertyPreFilter,
+            boolean isReturn
     ) {
         Type type = spec.type();
         if (void.class == type) {
             return null;
         }
-        if (typeChain.contains(type) && !isCollection(type)) {
+        if (typeChain.contains(type) && !isCollection(type) && !$.isSimpleType(spec.rawType())) {
             return S.concat(spec.name(), ":", type); // circular reference detected
         }
         typeChain.add(type);
@@ -576,22 +737,18 @@ public class Endpoint implements Comparable<Endpoint> {
         }
         if (null != fastJsonPropertyPreFilter) {
             String path = S.join(nameChain).by(".").get();
-            if (!fastJsonPropertyPreFilter.matches(path)) {
-                if (spec.isArray() || Iterable.class.isAssignableFrom(spec.rawType())) {
-                    return Act.getInstance(spec.rawType());
-                } else {
-                    return null;
-                }
+            if (S.notBlank(path) && !fastJsonPropertyPreFilter.matches(path)) {
+                return null;
             }
         }
-        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
-        SampleDataCategory category = null != anno ? anno.value() : null;
-        Class<?> classType = spec.rawType();
-        SampleDataProviderManager sampleDataProviderManager = Act.app().sampleDataProviderManager();
-        Object o = sampleDataProviderManager.getSampleData(category, name, classType, false);
+        Object o = sampleDataFromAnnotation(spec, name);
         if (null != o) {
             return o;
         }
+        Class<?> classType = spec.rawType();
+        SampleDataProviderManager sampleDataProviderManager = Act.getInstance(SampleDataProviderManager.class);
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
         try {
             if (void.class == classType || Void.class == classType || Result.class.isAssignableFrom(classType)) {
                 return null;
@@ -606,16 +763,16 @@ public class Endpoint implements Comparable<Endpoint> {
                     return 0 < len ? ea[N.randInt(len)] : null;
                 } else if (Locale.class == classType) {
                     return (Act.appConfig().locale());
-                } else if (String.class == classType) {
+                } else if (String.class == classType || Keyword.class == classType) {
                     String mockValue = sampleDataProviderManager.getSampleData(category, name, String.class);
                     if (spec.hasAnnotation(Sensitive.class)) {
                         return Act.crypto().encrypt(mockValue);
                     }
-                    return mockValue;
+                    return Keyword.class == classType ? Keyword.of(mockValue) : mockValue;
                 } else if (classType.isArray()) {
                     Object sample = Array.newInstance(classType.getComponentType(), 2);
-                    Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
-                    Array.set(sample, 1, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
+                    Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
+                    Array.set(sample, 1, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
                     return sample;
                 } else if ($.isSimpleType(classType)) {
                     if (Enum.class == classType) {
@@ -645,33 +802,40 @@ public class Endpoint implements Comparable<Endpoint> {
                     Map map = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(classType, Map.class);
+                        typeParams = Generics.tryGetTypeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.size() < 2) {
-                        map.put(S.random(), S.random());
-                        map.put(S.random(), S.random());
+                        return null;
                     } else {
                         Type keyType = typeParams.get(0);
                         Type valType = typeParams.get(1);
-                        map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
-                        map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
+                        if (Object.class == valType) {
+                            return null;
+                        }
+                        Object key1 = "foo";
+                        Object key2 = "bar";
+                        if (keyType != String.class) {
+                            key1 = generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                            key2 = generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        }
+                        Object val1 = generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        Object val2 = generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
+                        map.put(key1, val1);
+                        map.put(key2, val2);
                     }
+                    return map;
                 } else if (Iterable.class.isAssignableFrom(classType)) {
                     Collection col = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(classType, Map.class);
+                        typeParams = Generics.tryGetTypeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.isEmpty()) {
-                        col.add(S.random());
+                        return null;
                     } else {
                         Type componentType = typeParams.get(0);
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn));
                     }
                     return col;
                 }
@@ -690,11 +854,11 @@ public class Endpoint implements Comparable<Endpoint> {
                     Method[] ma = classType.getMethods();
                     for (Method m : ma) {
                         if (!Modifier.isStatic(m.getModifiers()) && m.getName().startsWith("get") && m.getReturnType() != void.class) {
-                            if (shouldWaive(m)) {
+                            if (shouldWaive(m, classType)) {
                                 continue;
                             }
                             Class<?> propertyClass = m.getReturnType();
-                            Object val = null;
+                            Object val;
                             try {
                                 String propertyName = m.getName().substring(3);
                                 if ("name".equalsIgnoreCase(propertyName)) {
@@ -709,7 +873,7 @@ public class Endpoint implements Comparable<Endpoint> {
                                 if (null == emailGetter && isEmail(propertySpec)) {
                                     emailGetter = m;
                                 } else {
-                                    val = generateSampleData(propertySpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter);
+                                    val = generateSampleData(propertySpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
                                     if (null != val) {
                                         Class<?> valType = val.getClass();
                                         if (!propertyClass.isAssignableFrom(valType)) {
@@ -737,8 +901,24 @@ public class Endpoint implements Comparable<Endpoint> {
                     if (Modifier.isStatic(field.getModifiers())) {
                         continue;
                     }
-                    if (ParamValueLoaderService.shouldWaive(field)) {
-                        continue;
+                    if (!isReturn) {
+                        if (ParamValueLoaderService.shouldWaive(field)) {
+                            continue;
+                        }
+                    } else {
+                        // for return type we shouldn't waive NoBind fields
+                        int modifiers = field.getModifiers();
+                        if (Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers)) {
+                            continue;
+                        }
+                        String fieldName = field.getName();
+                        Class<?> entityType = field.getDeclaringClass();
+                        boolean shouldWaive = Object.class.equals(entityType)
+                                || Class.class.equals(entityType)
+                                || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+                        if (shouldWaive) {
+                            continue;
+                        }
                     }
                     Class<?> fieldClass = field.getType();
                     Object val = null;
@@ -755,9 +935,17 @@ public class Endpoint implements Comparable<Endpoint> {
                         }
                         BeanSpec fieldSpec = BeanSpec.of(fieldType, annotations, fieldName, injector, field.getModifiers(), typeParamLookup);
                         if (null == emailField && isEmail(fieldSpec)) {
-                            emailField = field;
+                            if (null != fastJsonPropertyPreFilter) {
+                                List<String> newNameChain = C.newList(nameChain).append(fieldSpec.name());
+                                String path = S.join(newNameChain).by(".").get();
+                                if (fastJsonPropertyPreFilter.matches(path)) {
+                                    emailField = field;
+                                }
+                            } else {
+                                emailField = field;
+                            }
                         } else {
-                            val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter);
+                            val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter, isReturn);
                             if (null == val) {
                                 continue;
                             }
@@ -766,6 +954,9 @@ public class Endpoint implements Comparable<Endpoint> {
                                 val = $.convert(val).to(fieldClass);
                             }
                             if (null != val) {
+                                if (valType == String.class && fieldSpec.hasAnnotation(Sensitive.class)) {
+                                    val = Act.app().crypto().encrypt((String) val);
+                                }
                                 field.set(obj, val);
                             }
                         }
@@ -802,13 +993,13 @@ public class Endpoint implements Comparable<Endpoint> {
     }
 
     // see ParamValueLoaderService.shouldWaive(Field)
-    private static boolean shouldWaive(Method getter) {
+    private static boolean shouldWaive(Method getter, Class<?> implementClass) {
         int modifiers = getter.getModifiers();
         if (Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers)) {
             return true;
         }
         String fieldName = getter.getName().substring(3);
-        Class<?> entityType = getter.getReturnType();
+        Class<?> entityType = Generics.getReturnType(getter, implementClass);
         return ParamValueLoaderService.noBind(entityType)
                 || getter.isAnnotationPresent(NoBind.class)
                 || getter.isAnnotationPresent(Stateless.class)
@@ -817,6 +1008,41 @@ public class Endpoint implements Comparable<Endpoint> {
                 || Object.class.equals(entityType)
                 || Class.class.equals(entityType)
                 || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+    }
+
+    private static Method overridenRequestHandlerMethod(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            return null;
+        }
+        if (isRequestHandler(method)) {
+            return method;
+        }
+        Method overridenMethod = overridenMethod(method);
+        return null == overridenMethod ? null : overridenRequestHandlerMethod(overridenMethod);
+    }
+
+    private static Method overridenMethod(Method method) {
+        Class<?> host = method.getDeclaringClass();
+        Class<?> superHost = host.getSuperclass();
+        if (null == superHost || Object.class == superHost) {
+            return null;
+        }
+        Method[] ma = superHost.getMethods();
+        for (Method m : ma) {
+            if (m.getName().equals(method.getName()) && $.eq2(method.getParameterTypes(), method.getParameterTypes())) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isRequestHandler(Method method) {
+        return method.isAnnotationPresent(Action.class)
+                || method.isAnnotationPresent(GetAction.class)
+                || method.isAnnotationPresent(PutAction.class)
+                || method.isAnnotationPresent(PostAction.class)
+                || method.isAnnotationPresent(PatchAction.class)
+                || method.isAnnotationPresent(DeleteAction.class);
     }
 
 

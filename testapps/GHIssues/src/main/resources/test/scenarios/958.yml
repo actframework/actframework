@@ -1,0 +1,9 @@
+Scenario(958):
+  description: "`NullPointerException` when route path element wrapped with `~` is no the final one"
+  interactions:
+  - description: test
+    request:
+      get: 958/foo-bar
+    response:
+      json:
+        result: ok

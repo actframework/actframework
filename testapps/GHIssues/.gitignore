@@ -17,3 +17,4 @@ test.trace.db
 act.pid
 .workspace
 *.geany
+upload*

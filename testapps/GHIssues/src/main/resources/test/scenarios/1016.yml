@@ -1,0 +1,25 @@
+Scenario(1016):
+  description: Annotations with ValueLoader cannot work if post with json
+  interactions:
+  - description: Test
+    request:
+      post: /1016
+      json:
+        id: 1
+    response:
+      json:
+        id: 1
+        ip:
+          - exists: true
+  - description: Test embedded case
+    request:
+      post: /1016/embedded
+      json:
+        foo:
+          id: 1
+    response:
+      json:
+        foo:
+          id: 1
+          ip:
+            - exists: true

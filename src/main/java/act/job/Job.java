@@ -52,10 +52,19 @@ public class Job extends DestroyableBase implements Runnable {
         boolean iterating;
         List<Job> jobList;
         Job parent;
+        boolean sysJob;
 
         LockableJobList(Job parent) {
             this.jobList = new ArrayList<>();
             this.parent = parent;
+            this.sysJob = null != parent && parent.sysJob;
+        }
+
+        void markAsSysJob() {
+            this.sysJob = true;
+            for (Job job : jobList) {
+                job.markAsSysJob();
+            }
         }
 
         synchronized void clear() {
@@ -63,14 +72,17 @@ public class Job extends DestroyableBase implements Runnable {
         }
 
         synchronized Job add(Job thatJob) {
-            if (parent.isOneTime()) {
-                thatJob.setOneTime();
+            if (!parent.isOneTime()) {
+                thatJob.setNonOneTime();
             }
             if (parent.done() || iterating) {
-                parent.manager.now(thatJob);
+                parent.manager.now(thatJob, sysJob);
                 return parent;
             }
             jobList.add(thatJob);
+            if (sysJob) {
+                thatJob.markAsSysJob();
+            }
             // Note we can't do this otherwise route registration
             // process will be broken
             // - Collections.sort(jobList, Sorter.COMPARATOR);
@@ -95,7 +107,7 @@ public class Job extends DestroyableBase implements Runnable {
                             public void run() {
                                 subJob.run();
                             }
-                        });
+                        }, subJob.sysJob);
                     } else {
                         subJob.run();
                         if (Act.isDev() && subJob.app.hasBlockIssue()) {
@@ -120,7 +132,7 @@ public class Job extends DestroyableBase implements Runnable {
     private final String id;
     private final String jobProgressTag;
     private App app;
-    private boolean oneTime;
+    private boolean oneTime = true;
     private boolean executed;
     private JobManager manager;
     private JobTrigger trigger;
@@ -128,8 +140,9 @@ public class Job extends DestroyableBase implements Runnable {
     Object callableResult;
     Exception callableException;
     private Method method;
+    private boolean sysJob;
     // progress percentage
-    private SimpleProgressGauge progress = new SimpleProgressGauge();
+    private ProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
@@ -137,16 +150,25 @@ public class Job extends DestroyableBase implements Runnable {
     private Job(String id) {
         this.id = id;
         this.jobProgressTag = wsJobProgressTag(id);
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager) {
         this(id, manager, ($.Func0<?>)null);
     }
 
+    Job(String id, boolean sysJob, JobManager manager) {
+        this(id, manager, ($.Func0<?>) null);
+        if (sysJob) {
+            markAsSysJob();
+        }
+    }
+
     Job(String id, JobManager manager, final Callable<?> callable) {
         this.id = id;
         this.manager = $.requireNotNull(manager);
-        this.oneTime = true;
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
@@ -161,6 +183,9 @@ public class Job extends DestroyableBase implements Runnable {
                 return null;
             }
         };
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager, $.Func0<?> worker) {
@@ -178,6 +203,9 @@ public class Job extends DestroyableBase implements Runnable {
         if (worker instanceof ReflectedJobInvoker) {
             this.method = ((ReflectedJobInvoker) worker).method();
         }
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker) {
@@ -193,10 +221,13 @@ public class Job extends DestroyableBase implements Runnable {
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
+        if (JobManager.isSysJob(this)) {
+            markAsSysJob();
+        }
     }
 
     public void setProgressGauge(ProgressGauge progressGauge) {
-        progress = SimpleProgressGauge.wrap(progressGauge);
+        progress = progressGauge;
         progress.setId(getId());
         progress.addListener(new ProgressGauge.Listener() {
             @Override
@@ -207,7 +238,7 @@ public class Job extends DestroyableBase implements Runnable {
         });
     }
 
-    public SimpleProgressGauge progress() {
+    public ProgressGauge progress() {
         return progress;
     }
 
@@ -227,6 +258,17 @@ public class Job extends DestroyableBase implements Runnable {
 
     protected String brief() {
         return S.concat("job[", id, "]\none time job:", S.string(oneTime), "\ntrigger:", S.string(trigger));
+    }
+
+    void markAsSysJob() {
+        this.sysJob = true;
+        this.parallelJobs.markAsSysJob();
+        this.followingJobs.markAsSysJob();
+        this.precedenceJobs.markAsSysJob();
+    }
+
+    boolean isSysJob() {
+        return sysJob;
     }
 
     @Override
@@ -251,16 +293,15 @@ public class Job extends DestroyableBase implements Runnable {
         }
     }
 
-    Job setOneTime() {
-        oneTime = true;
-        return this;
+    void setNonOneTime() {
+        oneTime = false;
     }
 
     boolean done() {
         return executed && oneTime;
     }
 
-    final String id() {
+    public final String id() {
         return id;
     }
 
@@ -286,15 +327,19 @@ public class Job extends DestroyableBase implements Runnable {
         invokeParallelJobs();
         runPrecedenceJobs();
         try {
-            if (Act.isDev() && app.isStarted()) {
-                app.checkUpdates(false);
+            if (Act.isDev() && !Act.conf().hotReloadDisabled() && app.isStarted() && !sysJob) {
+                if (app.checkUpdates(false)) {
+                    // app reloaded
+                    return;
+                }
             }
             doJob();
-        } catch (Throwable e) {
-            boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass()) || Error.class.isInstance(e);
-            Throwable cause = e;
+            progress.markAsDone();
+        } catch (Throwable t) {
+            boolean isFatal = FATAL_EXCEPTIONS.contains(t.getClass()) || !Exception.class.isInstance(t);
+            Throwable cause = t;
             if (!isFatal) {
-                cause = e.getCause();
+                cause = t.getCause();
                 while (null != cause) {
                     isFatal = FATAL_EXCEPTIONS.contains(cause.getClass());
                     if (isFatal) {
@@ -303,25 +348,33 @@ public class Job extends DestroyableBase implements Runnable {
                     cause = cause.getCause();
                 }
             }
+            String msg = t.getLocalizedMessage();
+            if (S.blank(msg)) {
+                msg = S.fmt("Unexpected exception encountered: %s, please check console log", t.getClass().getSimpleName());
+            }
+            progress.fail(msg);
             if (isFatal) {
                 if (Act.isDev()) {
-                    app.setBlockIssue(e);
+                    app.setBlockIssue(t);
                 } else {
+                    LOGGER.fatal(cause, "Fatal error executing job[%s]", id());
                     Act.shutdown(App.instance());
                     destroy();
                     if (App.instance().isMainThread()) {
                         if (cause instanceof RuntimeException) {
                             throw (RuntimeException) cause;
                         }
-                        throw E.unexpected(e);
-                    } else {
-                        LOGGER.fatal(cause, "Fatal error executing job %s", id());
+                        throw E.unexpected(t);
                     }
                 }
                 return;
             }
-            // TODO inject Job Exception Handling mechanism here
-            LOGGER.warn(e, "error executing job %s", id());
+
+            JobExceptionListenerManager manager = Act.jobManager().exceptionListenerManager();
+            manager.handleJobException(id(), (Exception) t);
+            if (app.isMainThread()) {
+                throw t;
+            }
         } finally {
             if (!isDestroyed()) {
                 executed = true;
@@ -348,7 +401,11 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     protected void doJob(){
-        JobContext.init();
+        JobContext.init(id());
+        ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+        if (ctxClassLoader != app.classLoader()) {
+            Thread.currentThread().setContextClassLoader(app.classLoader());
+        }
         try {
             _before();
             if (null != worker) {
@@ -358,6 +415,9 @@ public class Job extends DestroyableBase implements Runnable {
             JobContext.clear();
             scheduleNextInvocation();
             _finally();
+            if (ctxClassLoader != app.classLoader()) {
+                Thread.currentThread().setContextClassLoader(ctxClassLoader);
+            }
         }
     }
 

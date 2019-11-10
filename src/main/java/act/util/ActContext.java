@@ -28,9 +28,11 @@ import act.app.ActionContext;
 import act.app.App;
 import act.cli.CliContext;
 import act.conf.AppConfig;
+import act.handler.builtin.controller.ControllerProgressGauge;
 import act.i18n.I18n;
 import act.mail.MailerContext;
 import act.view.Template;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
@@ -39,7 +41,6 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.reflect.Method;
@@ -240,6 +241,10 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     SerializerFeature[] fastjsonFeatures();
 
+    CTX_TYPE fastjsonPropertyNamingStrategy(PropertyNamingStrategy strategy);
+
+    PropertyNamingStrategy fastjsonPropertyNamingStrategy();
+
     CTX_TYPE dateFormatPattern(String pattern);
 
     String dateFormatPattern();
@@ -248,6 +253,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     boolean isAllowIgnoreParamNamespace();
 
+    boolean isPropertySpecConsumed();
+
+    CTX_TYPE markPropertySpecConsumed();
 
     interface Listener {
         void onDestroy(ActContext context);
@@ -270,8 +278,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Locale locale;
         private int fieldOutputVarCount;
         private boolean noTemplateCache;
-        private volatile SimpleProgressGauge progress;
-        private String jobId;
+        private volatile ControllerProgressGauge progress;
+        protected String jobId;
         private Method handlerMethod;
         private Method currentMethod;
         private String pattern;
@@ -281,12 +289,13 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, ConstraintViolation> violations;
         private Class<? extends SerializeFilter>[] fastjsonFilters;
         private SerializerFeature[] fastjsonFeatures;
+        private PropertyNamingStrategy fastJsonPropertyNamingStrategy;
         private String dateFormatPattern;
         private boolean disableCircularReferenceDetect = true;
+        private boolean propertySpecConsumed;
 
         public Base(App app) {
-            E.NPE(app);
-            this.app = app;
+            this.app = $.requireNotNull(app);
             renderArgs = new HashMap<>();
             attributes = new HashMap<>();
             listenerList = new ArrayList<>();
@@ -309,7 +318,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.renderArgs.clear();
             this.template = null;
             this.app = null;
-            this.template = null;
+            this.handlerMethod = null;
+            this.currentMethod = null;
             this.listenerList.clear();
             this.destroyableList.clear();
             this.violations.clear();
@@ -371,14 +381,23 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.fastjsonFeatures = features;
             return me();
         }
-        
-        public SerializerFeature[] fastjsonFeatures() {
-            return fastjsonFeatures;
+
+        public CTX fastjsonPropertyNamingStrategy(PropertyNamingStrategy strategy) {
+            this.fastJsonPropertyNamingStrategy = strategy;
+            return me();
         }
 
         public CTX dateFormatPattern(String pattern) {
             this.dateFormatPattern = pattern;
             return me();
+        }
+
+        public SerializerFeature[] fastjsonFeatures() {
+            return fastjsonFeatures;
+        }
+
+        public PropertyNamingStrategy fastjsonPropertyNamingStrategy() {
+            return fastJsonPropertyNamingStrategy;
         }
 
         public String dateFormatPattern() {
@@ -686,16 +705,27 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return false;
         }
 
+        @Override
+        public boolean isPropertySpecConsumed() {
+            return propertySpecConsumed;
+        }
+
+        @Override
+        public CTX markPropertySpecConsumed() {
+            propertySpecConsumed = true;
+            return me();
+        }
+
         public void setJobId(String jobId) {
             this.jobId = jobId;
             app().jobManager().setJobProgressGauge(jobId, progress());
         }
 
-        public ProgressGauge progress() {
+        public ControllerProgressGauge progress() {
             if (null == progress) {
                 synchronized (this) {
                     if (null == progress) {
-                        progress = new SimpleProgressGauge();
+                        progress = new ControllerProgressGauge();
                     }
                 }
             }

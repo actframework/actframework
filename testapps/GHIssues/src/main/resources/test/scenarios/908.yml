@@ -1,0 +1,15 @@
+Scenario(908):
+  ignore: TODO redefine the test case
+  description: Test - allow setting precision of ${now()} function
+  constants:
+    startTs0: ${now()}   # default: low precision
+    startTs1: ${now(hp)} # specify high precision
+  interactions:
+  - description: Test
+    request:
+      get: 908
+    response:
+      json:
+        result:
+          - -before: ${startTs0}
+          - before: ${startTs1}

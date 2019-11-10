@@ -20,10 +20,16 @@ package act.util;
  * #L%
  */
 
+import act.Destroyable;
+
+import java.util.Map;
+
 /**
  * Class implement this interface can track progress
  */
-public interface ProgressGauge {
+public interface ProgressGauge extends Destroyable {
+
+    String PAYLOAD_MESSAGE = "message";
 
     /**
      * Set ID to the gauge
@@ -34,12 +40,33 @@ public interface ProgressGauge {
     void setId(String id);
 
     /**
+     * Return ID of this gauge.
+     *
+     * **Note** the id of the gauge is the same
+     * with the id of the Job this gauge monitor.
+     *
+     * @return the id of the gauge
+     */
+    String getId();
+
+    /**
      * Update max hint. If the number is negative, then
      * it indicate the progress is indefinite
      *
      * @param maxHint the max steps hint
      */
     void updateMaxHint(int maxHint);
+
+    /**
+     * Increment max hint by 1.
+     */
+    void incrMaxHint();
+
+    /**
+     * Increment max hint by number specified
+     * @param number the number to be add up to max hint
+     */
+    void incrMaxHintBy(int number);
 
     /**
      * Advances the progress by one step
@@ -82,6 +109,55 @@ public interface ProgressGauge {
      * Mark the progress as done
      */
     void markAsDone();
+
+    /**
+     * Reset payload to the gauge.
+     *
+     * Once this method is called, there is no payload in the gauge.
+     * This method shall not trigger update event
+]     */
+    void clearPayload();
+
+    /**
+     * Set payload to the gauge.
+     *
+     * This method could be used to pass additional message to
+     * listener including websocket broadcast
+     *
+     * @param key the key
+     * @param val the value
+     */
+    void setPayload(String key, Object val);
+
+    /**
+     * Returns progress percentage.
+     * @return progress percentage
+     */
+    int currentProgressPercent();
+
+    /**
+     * Returns the payload that has been set to this gauge.
+     * @return the payload set to this gauge
+     */
+    Map<String, Object> getPayload();
+
+    /**
+     * Mark the progress has failed with an error message
+     * @param error the error message
+     */
+    void fail(String error);
+
+    /**
+     * Return error message if any
+     * @return error message
+     */
+    String error();
+
+    /**
+     * Return if the progress has error or not
+     * @return `true` if the progress is failed
+     */
+    boolean isFailed();
 
     /**
      * Add an listener to this gauge that monitors the progress update

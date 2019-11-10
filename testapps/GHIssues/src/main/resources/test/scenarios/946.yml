@@ -1,0 +1,10 @@
+Scenario(946):
+  description: Issue with loading configuration into Map
+  interactions:
+  - description: test
+    request:
+      get: 946
+    response:
+      json:
+        beginTime: 2018
+        endTime: 2019

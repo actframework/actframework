@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>GH991 - websocket connection not released after closed</title>
+  <script src="/~/asset/js/jquery.js"></script>
+  <script src="/~/asset/js/jquery.ext.js"></script>
+</head>
+<body style="max-width: 800px">
+<h1>GH991 - websocket connection not released after closed</h1>
+<p>
+  Once the page is load it will create new websocket connection and then display the number of websocket connections established in the app backend.
+</p>
+<p>
+  Pres F5 to refresh the page will cause previous websocket connection get closed and new connection established.
+</p>
+<p>
+  So try keep pressing f5 to monitor if the connection number keep increasing
+</p>
+<script>
+  var ws = $.createWebSocket("/ws")
+  ws.onmessage = function(event) {
+    alert(event.data)
+  }
+  var ws2 = $.createWebSocket("/ws2")
+</script>
+</body>
+</html>

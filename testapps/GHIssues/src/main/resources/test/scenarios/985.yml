@@ -1,0 +1,10 @@
+Scenario(985):
+  description: "@Before @After not effect when sub class extends from super class"
+  interactions:
+  - description: test
+    request:
+      get: 985
+    response:
+      json:
+        superInit: true
+        subInit: true

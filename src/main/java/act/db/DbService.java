@@ -22,7 +22,11 @@ package act.db;
 
 import act.app.App;
 import act.app.AppHolderBase;
+import act.db.meta.EntityClassMetaInfo;
+import act.db.meta.EntityFieldMetaInfo;
 import act.db.meta.EntityMetaInfoRepo;
+import act.db.meta.MasterEntityMetaInfoRepo;
+import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -34,11 +38,15 @@ import java.util.Set;
 
 public abstract class DbService extends AppHolderBase<DbService> {
 
+    public static final String DEFAULT = DB.DEFAULT;
+
     /**
      * This is deprecated, please use {@link #logger} instead
      */
     @Deprecated
     protected static final Logger _logger = LogManager.get(DbService.class);
+
+    private volatile EntityMetaInfoRepo entityMetaInfoRepo;
 
     protected final Logger logger = LogManager.get(getClass());
 
@@ -69,8 +77,7 @@ public abstract class DbService extends AppHolderBase<DbService> {
      * @return model classes talk to this datasource
      */
     public Set<Class> entityClasses() {
-        EntityMetaInfoRepo repo = app().entityMetaInfoRepo().forDb(id);
-        return null == repo ? C.<Class>set() : repo.entityClasses();
+        return entityMetaInfoRepo().entityClasses();
     }
 
     @Override
@@ -103,6 +110,38 @@ public abstract class DbService extends AppHolderBase<DbService> {
 
     public abstract Class<? extends Annotation> entityAnnotationType();
 
+    public final String entityName(Class<?> modelClass) {
+        return classInfo(modelClass).entityName();
+    }
+
+    protected final EntityClassMetaInfo classInfo(Class<?> modelClass) {
+        return entityMetaInfoRepo().classMetaInfo(modelClass);
+    }
+
+    public final String lastModifiedColumn(Class<?> modelClass) {
+        EntityFieldMetaInfo fieldInfo = classInfo(modelClass).lastModifiedAtField();
+        return null == fieldInfo ? null : fieldInfo.columnName();
+    }
+
+    public final String createdColumn(Class<?> modelClass) {
+        EntityFieldMetaInfo fieldInfo = classInfo(modelClass).createdAtField();
+        return null == fieldInfo ? null : fieldInfo.columnName();
+    }
+
+    public final String idColumn(Class<?> modelClass) {
+        EntityFieldMetaInfo fieldInfo = classInfo(modelClass).idField();
+        return null == fieldInfo ? null : fieldInfo.columnName();
+    }
+
+    public final Field idField(Class<?> modelClass) {
+        EntityFieldMetaInfo fieldInfo = classInfo(modelClass).idField();
+        return null == fieldInfo ? null : $.fieldOf(modelClass, fieldInfo.fieldName());
+    }
+
+    public final String columnName(Field field) {
+        return classInfo(field.getDeclaringClass()).fieldInfo(field.getName()).columnName();
+    }
+
     /**
      * Utility method to find the ID type from Model type. Could be used by sub class on {@link #defaultDao(Class)}
      * method implementation
@@ -124,4 +163,16 @@ public abstract class DbService extends AppHolderBase<DbService> {
         }
         return null;
     }
+
+    protected EntityMetaInfoRepo entityMetaInfoRepo() {
+        if (null == entityMetaInfoRepo || MasterEntityMetaInfoRepo.EMPTY() == entityMetaInfoRepo) {
+            synchronized (this) {
+                if (null == entityMetaInfoRepo) {
+                    entityMetaInfoRepo = app().entityMetaInfoRepo().forDb(id);
+                }
+            }
+        }
+        return entityMetaInfoRepo;
+    }
+
 }

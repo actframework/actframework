@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 
 @Data
-public class AdaptiveBean implements SimpleBean, EnhancedAdaptiveMap<AdaptiveBean> {
+public class AdaptiveBean extends AdaptiveBeanBase<AdaptiveBean> {
 
     @NoBind
-    private transient JSONObject kv = new JSONObject();
+    private transient JSONObject kv = new JSONObject(true);
 
     private transient volatile EnhancedAdaptiveMap.MetaInfo metaInfo;
 

@@ -1,0 +1,18 @@
+Scenario(1064):
+  description: StackOverflowError caused by JsonDtoPatch
+  interactions:
+    - description: Test
+      request:
+        post: /1064/departments
+        json:
+          id: 1
+          name: foo
+          parent:
+            id: 0
+            name: root
+          children:
+            - id: 2
+              name: bar
+      response:
+        json:
+          name: foo

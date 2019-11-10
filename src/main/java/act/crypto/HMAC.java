@@ -111,7 +111,7 @@ public class HMAC {
     }
 
     protected byte[] doHash(byte[] bytes) {
-        return doHash(bytes, mac);
+        return doHash(bytes, mac());
     }
 
     protected final byte[] doHash(byte[] bytes, Mac mac) {
@@ -129,7 +129,7 @@ public class HMAC {
     }
 
     protected boolean verifyHash(byte[] payload, byte[] hash) {
-        return verifyHash(payload, hash, mac);
+        return verifyHash(payload, hash, mac());
     }
 
     protected final boolean verifyHash(byte[] payload, byte[] hash, Mac mac) {
@@ -140,6 +140,24 @@ public class HMAC {
     public boolean verifyArgo(String algoName) {
         Algorithm algorithm = algoLookup.get(algoName);
         return null != algorithm && S.eq(this.algoName, algorithm.jwtName());
+    }
+
+    private static final ThreadLocal<Mac> curMac = new ThreadLocal<>();
+    private Mac mac() {
+        Mac mac = curMac.get();
+        if (null == mac) {
+            mac = newMac();
+            curMac.set(mac);
+        }
+        return mac;
+    }
+
+    private Mac newMac() {
+        try {
+            return (Mac) mac.clone();
+        } catch (CloneNotSupportedException e) {
+            throw E.unsupport("mac not clonable");
+        }
     }
 
     private static Map<String, Algorithm> algoLookup; static {

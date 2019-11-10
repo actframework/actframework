@@ -1,5 +1,5 @@
-Scenario(GH835):
-  description: "[835] Provide a mechanism to allow developer advice on return value of request handler method"
+Scenario(835):
+  description: Provide a mechanism to allow developer advice on return value of request handler method
   interactions:
     - description: test specified advice
       request:

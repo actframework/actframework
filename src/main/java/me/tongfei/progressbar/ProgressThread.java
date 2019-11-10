@@ -98,7 +98,7 @@ class ProgressThread implements Runnable {
     }
 
     void refresh() {
-        consoleStream.print('\r');
+        consoleStream.print("\r");
 
         LocalDateTime currTime = LocalDateTime.now();
         Duration elapsed = new Duration(progress.startTime.toDateTime(DateTimeZone.UTC), currTime.toDateTime(DateTimeZone.UTC));

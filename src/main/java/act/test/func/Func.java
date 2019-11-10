@@ -9,9 +9,9 @@ package act.test.func;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,16 +26,20 @@ import act.test.util.NamedLogic;
 import act.test.verifier.DateTimeVerifier;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
 import org.rythmengine.utils.Time;
 
 import java.lang.reflect.Array;
+import java.text.DateFormat;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class Func<T extends Func> extends NamedLogic<T> {
+public abstract class Func extends NamedLogic {
 
     @Override
     protected Class<? extends NamedLogic> type() {
@@ -44,7 +48,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
 
     public abstract Object apply();
 
-    public static class VerifiableEmail extends Func<VerifiableEmail> {
+    public static class VerifiableEmail extends Func {
         @Override
         public Object apply() {
             String email = Act.getInstance(Inbox.class).account;
@@ -59,7 +63,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
-    public static class SizeOf extends Func<SizeOf> {
+    public static class SizeOf extends Func {
 
         int size;
 
@@ -84,21 +88,47 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
-    public static class Today extends Func<Today> {
+    public static abstract class _Date extends Func {
+
+        private DateTimeFormatter fmt;
+
+        protected abstract LocalDate getDate();
+
+        @Override
+        public void init(Object param) {
+            String pattern = S.string(param);
+            fmt = DateTimeFormat.forPattern(pattern);
+        }
+
         @Override
         public Object apply() {
+            LocalDate date = getDate();
+            return null == fmt ? date : fmt.print(date);
+        }
+    }
+
+    public static class Today extends _Date {
+        @Override
+        public LocalDate getDate() {
             return LocalDate.now();
         }
     }
 
-    public static class Tomorrow extends Func<Tomorrow> {
+    public static class Tomorrow extends _Date {
         @Override
-        public Object apply() {
+        public LocalDate getDate() {
             return LocalDate.now().plusDays(1);
         }
     }
 
-    public static class GetTime extends Func<GetTime> {
+    public static class Yesterday extends _Date {
+        @Override
+        public LocalDate getDate() {
+            return LocalDate.now().minusDays(1);
+        }
+    }
+
+    public static class GetTime extends Func {
 
         private Integer deltaInSeconds;
         private DateTime dateTime;
@@ -173,29 +203,115 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
+    /**
+     * `_Time` is the base class for all time relevant functions, including
+     * `Now`, `NextMinute`, `NextHour`.
+     *
+     * Examples of configuring `_Time`:
+     *
+     * `${now(+1d)}` - now plus one day
+     * `${now(-2h)}` - now minus 2 hours
+     * `${now(true,+3s)} - now with high precision plus 3 seconds
+     * `${now(-5mn,lp)} - now with low precision minus 5 minutes
+     */
+    public abstract static class _Time extends Func {
 
-    public static class Now extends Func<Now> {
+        /**
+         * When `highPrecision` is true, then it set the precision to
+         * milliseconds instead of second.
+         *
+         * The default value is `false`.
+         */
+        protected boolean highPrecision = false;
+
+
+        protected int delta;
+
+        @Override
+        public void init(Object param) {
+            if (param.getClass().isArray()) {
+                int n = Array.getLength(param);
+                for (int i = 0; i < n; ++i) {
+                    Object o = Array.get(param, i);
+                    parseParam(o);
+                }
+            } else if (param instanceof Collection) {
+                for (Object o : ((Collection) param)) {
+                    parseParam(o);
+                }
+            } else {
+                parseParam(param);
+            }
+        }
+
+        private void parseParam(Object o) {
+            String s = S.string(o);
+            String[] sa = s.split(S.COMMON_SEP);
+            for (String si : sa) {
+                parseParamPart(si);
+            }
+        }
+
+        private void parseParamPart(String s) {
+            if ("true".equalsIgnoreCase(s)) {
+                highPrecision = true;
+            } else if ("false".equalsIgnoreCase(s)) {
+                highPrecision = false;
+            } else if (Keyword.of("highPrecision").equals(Keyword.of(s))) {
+                highPrecision = true;
+            } else if (Keyword.of("lowPrecision").equals(Keyword.of(s))) {
+                highPrecision = false;
+            } else if ("hp".equalsIgnoreCase(s)) {
+                highPrecision = true;
+            } else if ("lp".equalsIgnoreCase(s)) {
+                highPrecision = false;
+            } else if (s.startsWith("+")) {
+                s = s.substring(1);
+                delta = Time.parseDuration(s);
+            } else {
+                if (S.isInt(s)) {
+                    delta = Integer.parseInt(s);
+                } else if (s.startsWith("-")) {
+                    s = s.substring(1);
+                    delta = -Time.parseDuration(s);
+                } else {
+                    throw new UnexpectedException("Unknown time parameter: " + s);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static class Now extends _Time {
         @Override
         public Object apply() {
-            return DateTime.now();
+            return now();
+        }
+
+        protected DateTime now() {
+            DateTime dt = highPrecision ? DateTime.now() : DateTime.now().withMillisOfSecond(0);
+            return 0 == delta ? dt : dt.plusSeconds(delta);
         }
     }
 
-    public static class NextMinute extends Func<NextMinute> {
+    public static class NextMinute extends Now {
         @Override
         public Object apply() {
-            return DateTime.now().plusMinutes(1);
+            return now().plusMinutes(1);
         }
     }
 
-    public static class NextHour extends Func<NextHour> {
+    public static class NextHour extends Now {
         @Override
         public Object apply() {
-            return DateTime.now().plusHours(1);
+            return now().plusHours(1);
         }
     }
 
-    public static class AfterLast extends Func<AfterLast> {
+    public static class AfterLast extends Func {
 
         private String retVal;
 
@@ -220,7 +336,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
-    public static class BeforeFirst extends Func<BeforeFirst> {
+    public static class BeforeFirst extends Func {
 
         private String retVal;
 
@@ -258,7 +374,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
      * @see String#substring(int)
      * @see String#substring(int, int)
      */
-    public static class SubStr extends Func<SubStr> {
+    public static class SubStr extends Func {
 
         private String targetStr;
 
@@ -298,7 +414,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
     /**
      * Random pick up from a list of parameters.
      */
-    public static class RandomOf extends Func<RandomOf> {
+    public static class RandomOf extends Func {
 
         private boolean isList;
         private List list;
@@ -330,7 +446,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
      * the length of the random string. Otherwise the length will be any
      * where between 5 and 15.
      */
-    public static class RandomStr extends Func<RandomStr> {
+    public static class RandomStr extends Func {
         @Override
         public Object apply() {
             int length = 0;
@@ -360,7 +476,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
      * - if there is 1 init val, it specify the ceiling of the random integer
      * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
      */
-    public static class RandomInt extends Func<RandomInt> {
+    public static class RandomInt extends Func {
         @Override
         public Object apply() {
             int max = 0;
@@ -413,10 +529,90 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
+
+    /**
+     * Generate random double value.
+     *
+     * If initVal is provided then
+     * - if there is 1 init val, it specify the ceiling of the random integer
+     * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
+     */
+    public static class RandomDouble extends Func {
+        @Override
+        public Object apply() {
+            int max = 0;
+            boolean positive = true;
+            int min = 0;
+            if (null != initVal) {
+                Object ceilling = initVal;
+                if (initVal instanceof List) {
+                    List list = (List) initVal;
+                    Object bottom = list.get(0);
+                    min = $.convert(bottom).toInt();
+                    ceilling = list.get(1);
+                }
+                try {
+                    max = $.convert(ceilling).toInt();
+                    if (max < 0) {
+                        positive = false;
+                        if (max > min) {
+                            int tmp = min;
+                            min = max;
+                            max = tmp;
+                        }
+                        max = min - max;
+                    } else {
+                        if (max < min) {
+                            int tmp = min;
+                            min = max;
+                            max = tmp;
+                        }
+                        max = max - min;
+                    }
+                } catch (Exception e) {
+                    warn(e, "RandomDouble func init value (max) shall be evaluated to an integer, found: " + initVal);
+                }
+            }
+            if (max == 0) {
+                max = 100;
+            }
+            double retVal = N.randDouble();
+            if (!positive) {
+                retVal = -retVal;
+            }
+            if (retVal < min) {
+                retVal = retVal + min;
+            }
+            if (retVal > max) {
+                retVal = retVal - (max - min);
+            }
+            return retVal;
+        }
+
+        @Override
+        protected List<String> aliases() {
+            return C.list("randDbl", "randDouble", "randomDbl");
+        }
+    }
+
+    /**
+     * Generate random double value.
+     *
+     * If initVal is provided then
+     * - if there is 1 init val, it specify the ceiling of the random integer
+     * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
+     */
+    public static class RandomFloat extends RandomDouble {
+        @Override
+        protected List<String> aliases() {
+            return C.list("randFloat", "randFlt", "randomFlt");
+        }
+    }
+
     /**
      * Generate random `true`, `false`
      */
-    public static class RandomBoolean extends Func<RandomBoolean> {
+    public static class RandomBoolean extends Func {
         @Override
         public Object apply() {
             return $.random(true, false);
@@ -435,7 +631,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
      * - if there is 1 init val, it specify the ceiling of the random long value
      * - if there are 2 values, the first is the bottom of the random val and the second is the ceiling of the val
      */
-    public static class RandomLong extends Func<RandomLong> {
+    public static class RandomLong extends Func {
         @Override
         public Object apply() {
             long max = 0;

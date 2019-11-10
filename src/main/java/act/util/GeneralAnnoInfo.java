@@ -71,16 +71,8 @@ public class GeneralAnnoInfo {
         return type;
     }
 
-    public Class annotationClass(ClassLoader classLoader) {
-        return $.classForName(type.getClassName(), classLoader);
-    }
-
     public Map<String, Object> attributes() {
         return C.Map(attributes);
-    }
-
-    public Map<String, List<Object>> listAttributes() {
-        return C.Map(listAttributes);
     }
 
     public GeneralAnnoInfo addAnnotation(String name, Type type) {

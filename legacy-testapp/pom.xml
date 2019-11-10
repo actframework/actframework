@@ -73,9 +73,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <act.version>1.8.8-RC12-SNAPSHOT</act.version>
+    <act.version>1.8.29-SNAPSHOT</act.version>
     <act.storage.version>[0.13.0, 2.0.0)</act.storage.version>
-    <act.morphia.version>1.6.2-SNAPSHOT</act.morphia.version>
+    <act.morphia.version>1.8.0-SNAPSHOT</act.morphia.version>
     <app.entry>testapp.TestApp</app.entry>
   </properties>
 

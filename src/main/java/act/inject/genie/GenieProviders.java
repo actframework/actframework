@@ -22,7 +22,6 @@ package act.inject.genie;
 
 import act.Act;
 import act.app.App;
-import act.app.AppClassLoader;
 import act.conf.AppConfig;
 import act.conf.Config;
 import act.inject.DefaultValue;
@@ -31,19 +30,14 @@ import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
-import org.osgl.inject.loader.AnnotatedElementLoader;
-import org.osgl.inject.loader.ConfigurationValueLoader;
-import org.osgl.inject.loader.TypedElementLoader;
+import org.osgl.inject.loader.*;
 import org.osgl.inject.util.ArrayLoader;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.inject.Provider;
 
 /**
@@ -54,8 +48,8 @@ class GenieProviders {
     private static final AnnotatedElementLoader _ANNO_ELEMENT_LOADER = new AnnotatedElementLoader() {
         @Override
         protected List<Class<?>> load(Class<? extends Annotation> aClass, final boolean loadNonPublic, final boolean loadAbstract) {
-            final AppClassLoader cl = app().classLoader();
-            ClassNode root = cl.classInfoRepository().node(aClass.getName());
+            final App app = app();
+            ClassNode root = app.classLoader().classInfoRepository().node(aClass.getName());
             if (null == root) {
                 return C.list();
             }
@@ -63,7 +57,7 @@ class GenieProviders {
             $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws $.Break {
-                    Class c = $.classForName(classNode.name(), cl);
+                    Class c = app.classForName(classNode.name());
                     list.add(c);
                 }
             };
@@ -201,7 +195,7 @@ class GenieProviders {
                         try {
                             return $.newInstance(val, Act.app().classLoader());
                         } catch (Exception e) {
-                            throw new InjectException("Cannot cast value type[%s] to required type[%s]", val.getClass(), spec);
+                            throw new InjectException(e, "Cannot initialize %s", val, spec);
                         }
                     }
                 }
@@ -216,8 +210,8 @@ class GenieProviders {
             return new TypedElementLoader() {
                 @Override
                 protected List<Class> load(Class aClass, final boolean loadNonPublic, final boolean loadAbstract, final boolean loadRoot) {
-                    final AppClassLoader cl = app().classLoader();
-                    final ClassNode root = cl.classInfoRepository().node(aClass.getName());
+                    final App app = app();
+                    final ClassNode root = app.classLoader().classInfoRepository().node(aClass.getName());
                     if (null == root) {
                         return C.list();
                     }
@@ -225,7 +219,7 @@ class GenieProviders {
                     $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                         @Override
                         public void visit(ClassNode classNode) throws $.Break {
-                            Class c = $.classForName(classNode.name(), cl);
+                            Class c = app.classForName(classNode.name());
                             list.add(c);
                         }
                     };

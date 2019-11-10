@@ -22,14 +22,21 @@ package act.xio.undertow;
 
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
+import io.undertow.server.HttpServerExchange;
 import org.osgl.$;
 import org.osgl.util.Output;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class NonBlockOutput implements Output {
+
+    private final AtomicBoolean sending = new AtomicBoolean(false);
+    private final ConcurrentLinkedQueue<ByteBuffer> pending = new ConcurrentLinkedQueue<>();
 
     private Sender sender;
 
@@ -89,7 +96,7 @@ class NonBlockOutput implements Output {
 
     @Override
     public Output append(ByteBuffer buffer) {
-        sender.send(buffer);
+        send(buffer);
         return this;
     }
 
@@ -101,5 +108,33 @@ class NonBlockOutput implements Output {
     @Override
     public Writer asWriter() {
         return Adaptors.asWriter(this);
+    }
+
+    private IoCallback resume = new IoCallback() {
+        @Override
+        public void onComplete(HttpServerExchange exchange, Sender sender) {
+            ByteBuffer next = pending.poll();
+            if (null == next) {
+                sending.set(false);
+            } else {
+                sender.send(next, this);
+            }
+        }
+
+        @Override
+        public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+        }
+    };
+
+    private void send(ByteBuffer buffer) {
+        if (sending.compareAndSet(false, true)) {
+            sender.send(buffer, resume);
+        } else {
+            pending.offer(buffer);
+            if (sending.compareAndSet(false, true)) {
+                pending.poll();
+                sender.send(buffer, resume);
+            }
+        }
     }
 }

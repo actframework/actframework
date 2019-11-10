@@ -1,5 +1,5 @@
-Scenario(GH860):
-  description: "[860] test resource not refreshed after hot-reload"
+Scenario(860):
+  description: test resource not refreshed after hot-reload
   interactions:
   - description: Test
     preActions:

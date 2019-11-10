@@ -20,13 +20,13 @@ package act.conf;
  * #L%
  */
 
+import static act.conf.ActConfigKey.*;
+
 import org.osgl.util.E;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Map;
-
-import static act.conf.ActConfigKey.*;
 
 public class ActConfig extends Config<ActConfigKey> {
 
@@ -74,6 +74,19 @@ public class ActConfig extends Config<ActConfigKey> {
             validateDir(appBase, APP_BASE.key());
         }
         return appBase;
+    }
+
+    private Boolean hotReload;
+
+    public void enableDisableHotReload(boolean on) {
+        hotReload = on;
+    }
+
+    public boolean hotReloadDisabled() {
+        if (null == hotReload) {
+            hotReload = get(HOT_RELOAD, true);
+        }
+        return !hotReload;
     }
 
     private Integer xioMaxWorkerThreads;

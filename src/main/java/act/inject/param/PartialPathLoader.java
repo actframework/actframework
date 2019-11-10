@@ -20,8 +20,10 @@ package act.inject.param;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.controller.ParamNames;
 import act.util.ActContext;
+import org.osgl.util.E;
 
 public class PartialPathLoader extends ParamValueLoader.NonCacheable {
 
@@ -33,7 +35,9 @@ public class PartialPathLoader extends ParamValueLoader.NonCacheable {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        return context.paramVal(ParamNames.PATH);
+        E.illegalStateIfNot(context instanceof ActionContext, "Not in an HTTP request context");
+        ActionContext actionContext = (ActionContext) context;
+        return actionContext.__pathParamVal();
     }
 
     @Override

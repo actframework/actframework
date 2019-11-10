@@ -30,7 +30,7 @@ import org.osgl.util.converter.TypeConverterRegistry;
 
 import java.util.List;
 
-public abstract class RequestModifier<T extends RequestModifier> extends NamedLogic<T> {
+public abstract class RequestModifier extends NamedLogic {
 
     public abstract void modifyRequest(Request.Builder builder);
 
@@ -39,7 +39,7 @@ public abstract class RequestModifier<T extends RequestModifier> extends NamedLo
         return RequestModifier.class;
     }
 
-    public static class AcceptJson extends RequestModifier<AcceptJson> {
+    public static class AcceptJson extends RequestModifier {
         @Override
         public void modifyRequest(Request.Builder builder) {
             builder.header(ACCEPT, "application/json");
@@ -52,7 +52,7 @@ public abstract class RequestModifier<T extends RequestModifier> extends NamedLo
     }
 
 
-    public static class RemoteAddress extends RequestModifier<RemoteAddress> {
+    public static class RemoteAddress extends RequestModifier {
         @Override
         public void modifyRequest(Request.Builder builder) {
             builder.header(X_FORWARDED_FOR, S.string(initVal));
@@ -64,7 +64,7 @@ public abstract class RequestModifier<T extends RequestModifier> extends NamedLo
         }
     }
 
-    public static class JsonContent extends RequestModifier<JsonContent> {
+    public static class JsonContent extends RequestModifier {
         @Override
         public void modifyRequest(Request.Builder builder) {
             builder.header(CONTENT_TYPE, "application/json");

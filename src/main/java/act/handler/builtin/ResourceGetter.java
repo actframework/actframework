@@ -32,6 +32,7 @@ import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.util.$$;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
@@ -64,6 +65,7 @@ public class ResourceGetter extends FastRequestHandler {
     private boolean preloadFailure;
     private boolean preloaded;
     private String etag;
+    private boolean filterResource;
     private volatile RequestHandler indexHandler;
     private ConcurrentMap<String, RequestHandler> subFolderIndexHandlers = new ConcurrentHashMap<>();
 
@@ -79,6 +81,7 @@ public class ResourceGetter extends FastRequestHandler {
         String path = base.charAt(0) == SEP ? base.substring(1) : base;
         this.base = path;
         this.app = Act.app();
+        this.filterResource = app.config().resourceFiltering();
         this.baseUrl = app.getResource(path);
         this.delegate = verifyBase(this.baseUrl, base);
         if (null == delegate) {
@@ -104,7 +107,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (preloaded || null != delegate) {
             return true;
         }
-        String path = context.paramVal(ParamNames.PATH);
+        String path = context.__pathParamVal();
         return Act.isProd() &&
                 (cachedBuffers.containsKey(path)
                         || cachedFailures.containsKey(path)
@@ -133,7 +136,7 @@ public class ResourceGetter extends FastRequestHandler {
     }
 
     protected String path(ActionContext context) {
-        return context.paramVal(ParamNames.PATH);
+        return context.__pathParamVal();
     }
 
     protected void handle(String path, ActionContext context) {
@@ -189,6 +192,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (null != buffer) {
             context.resp()
                     .contentType(cachedContentType.get(path))
+                    .commitContentType()
                     .header(CACHE_CONTROL, "public, max-age=7200")
                     .etag(etags.get(path))
                     .writeContent(buffer.duplicate());
@@ -217,10 +221,12 @@ public class ResourceGetter extends FastRequestHandler {
                 loadPath = S.pathConcat(base, SEP, path);
                 target = app.getResource(loadPath);
                 if (null == target) {
-                    throw NotFound.get();
+                    AlwaysNotFound.INSTANCE.handle(context);
+                    return;
                 }
             }
             if (preventFolderAccess(target, loadPath, context)) {
+                AlwaysForbidden.INSTANCE.handle(context);
                 return;
             }
             ActResponse resp = context.prepareRespForResultEvaluation();
@@ -234,7 +240,7 @@ public class ResourceGetter extends FastRequestHandler {
             } else {
                 contentType = FileGetter.contentType(target.getPath());
             }
-            resp.contentType(contentType);
+            resp.contentType(contentType).commitContentType();
             if (isProd) {
                 resp.header(CACHE_CONTROL, "max-age=86400");
                 String etag = etags.get(path);
@@ -250,8 +256,6 @@ public class ResourceGetter extends FastRequestHandler {
                 long len = file.length();
                 if (Act.isProd()) {
                     etags.put(path, String.valueOf(len));
-                }
-                if (Act.isProd()) {
                     boolean smallResource = len < config.resourcePreloadSizeLimit();
                     if (smallResource) {
                         $.Var<String> etagBag = $.var();
@@ -265,12 +269,19 @@ public class ResourceGetter extends FastRequestHandler {
                         return;
                     }
                 }
-                resp.send(file);
+                if (!filterResource || FileGetter.isBinary(contentType)) {
+                    resp.send(file);
+                } else {
+                    String content = IO.readContentAsString(file);
+                    content = $$.processStringSubstitution(content);
+                    resp.writeContent(content);
+                }
             } else if (largeResource.contains(path)) {
                 resp.send(target);
             } else {
                 try {
                     int n = IO.copy(target.openStream(), resp.outputStream());
+                    resp.afterWritingContent();
                     boolean smallResource = n < config.resourcePreloadSizeLimit();
                     if (!smallResource) {
                         largeResource.add(path);
@@ -412,7 +423,11 @@ public class ResourceGetter extends FastRequestHandler {
      */
     private FastRequestHandler verifyBase(URL baseUrl, String baseSupplied) {
         if (null == baseUrl) {
-            logger.warn("URL base not exists: " + baseSupplied);
+            if ("META-INF/resources/webjars".equalsIgnoreCase(baseSupplied)) {
+                // webjars not provided, just ignore it.
+            } else {
+                logger.warn("URL base not exists: " + baseSupplied);
+            }
             return AlwaysNotFound.INSTANCE;
         }
         return null;

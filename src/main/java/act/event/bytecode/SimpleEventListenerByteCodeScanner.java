@@ -9,9 +9,9 @@ package act.event.bytecode;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,14 +28,13 @@ import act.asm.Type;
 import act.event.*;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.job.JobManager;
-import act.util.AsmTypes;
-import act.util.Async;
-import act.util.ByteCodeVisitor;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,14 +62,35 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         if (!metaInfoList.isEmpty()) {
             final EventBus eventBus = app().eventBus();
             JobManager jobManager = app().jobManager();
+            final ClassInfoRepository repo = app().classLoader().classInfoRepository();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
                 SysEventId hookOn = metaInfo.beforeAppStart() ? SysEventId.DEPENDENCY_INJECTOR_PROVISIONED : SysEventId.PRE_START;
                 jobManager.on(hookOn, "SimpleEventListenerByteCodeScanner:bindEventListener:" + metaInfo.jobId(), new Runnable() {
                     @Override
                     public void run() {
+                        ReflectedSimpleEventListener listener = new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), metaInfo.isStatic(), metaInfo.isAsync());
+                        /*
+                         * Here we might need to build a full class graph so we can generate
+                         * permutation of simple event listener method argument types, and bind
+                         * it to event in the event bus
+                         */
+                        if (!app().classLoader().isFullClassGraphBuilt() && $.bool(listener.argumentTypes())) {
+                            boolean needBuildFullClassGraph = false;
+                            for (Class c : listener.argumentTypes()) {
+                                if ($.isSimpleType(c) || Modifier.isFinal(c.getModifiers())) {
+                                    continue;
+                                }
+                                if (null == repo.findNode(c)) {
+                                    needBuildFullClassGraph = true;
+                                    break;
+                                }
+                            }
+                            if (needBuildFullClassGraph) {
+                                app().classLoader().buildFullClassGraph();
+                            }
+                        }
                         for (final Object event : metaInfo.events()) {
-                            final boolean isStatic = metaInfo.isStatic();
-                            eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic, metaInfo.isAsync()));
+                            eventBus.bind(event, listener);
                         }
                     }
                 });
@@ -91,15 +111,11 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            Type returnType = Type.getReturnType(desc);
-            final boolean isVoid = "V".equals(returnType.toString());
             final boolean isPublicNotAbstract = AsmTypes.isPublicNotAbstract(access);
             Type[] arguments = Type.getArgumentTypes(desc);
             final List<String> paramTypes = new ArrayList<>();
-            if (null != arguments) {
-                for (Type type : arguments) {
-                    paramTypes.add(type.getClassName());
-                }
+            for (Type type : arguments) {
+                paramTypes.add(type.getClassName());
             }
             final String methodName = name;
             final boolean isStatic = AsmTypes.isStatic(access);
@@ -151,7 +167,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                                 events.add(S.string(value).intern());
                                             } else {
                                                 Type type = (Type) value;
-                                                Class<?> c = $.classForName(type.getClassName(), app().classLoader());
+                                                Class<?> c = app().classForName(type.getClassName());
                                                 events.add(c);
                                             }
                                             super.visit(name, value);
@@ -163,7 +179,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                             delayedEvents.add(new $.Func0() {
                                                 @Override
                                                 public Object apply() throws NotAppliedException, $.Break {
-                                                    Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                                    Class<? extends Enum> enumClass = app().classForName(enumClassName);
                                                     return (Enum.valueOf(enumClass, value));
                                                 }
                                             });
@@ -192,7 +208,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                     delayedEvents.add(new $.Func0() {
                                         @Override
                                         public Object apply() throws NotAppliedException, $.Break {
-                                            Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                            Class<? extends Enum> enumClass = app().classForName(enumClassName);
                                             return (Enum.valueOf(enumClass, value));
                                         }
                                     });
@@ -201,9 +217,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                             }
                         };
                     } else if (Async.class.getName().equals(className)) {
-                        if (!isVoid) {
-                            logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that has return type", className, methodName);
-                        } else if (!isPublicNotAbstract) {
+                        if (!isPublicNotAbstract) {
                             logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that are not public or abstract method", className, methodName);
                         } else {
                             asyncMethodName = Async.MethodNameTransformer.transform(methodName);
@@ -221,7 +235,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                             logger.warn("@OnEvent annotation shall be put on a method with exactly one event object (optionally with other injectable arguments");
                         } else {
                             String type = paramTypes.get(0);
-                            events.add($.classForName(type, app().classLoader()));
+                            events.add(app().classForName(type));
                         }
                     }
                     if (!events.isEmpty() || !delayedEvents.isEmpty()) {

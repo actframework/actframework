@@ -23,17 +23,79 @@ package act.util;
 import act.Destroyable;
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.*;
 
 public class SimpleProgressGauge extends DestroyableBase implements ProgressGauge {
 
+    public static final ProgressGauge NULL = new SimpleProgressGauge(100, -1) {
+
+        @Override
+        public void addListener(Listener listener) {
+            E.unsupport();
+        }
+
+        @Override
+        public void updateMaxHint(int maxHint) {
+            E.unsupport();
+        }
+
+        @Override
+        public void incrMaxHint() {
+            E.unsupport();
+        }
+
+        @Override
+        public void incrMaxHintBy(int number) {
+            E.unsupport();
+        }
+
+        @Override
+        public void step() {
+            E.unsupport();
+        }
+
+        @Override
+        public void stepBy(int steps) {
+            E.unsupport();
+        }
+
+        @Override
+        public void stepTo(int steps) {
+            E.unsupport();
+        }
+
+        @Override
+        public void setId(String id) {
+            E.unsupport();
+        }
+
+        @Override
+        public void markAsDone() {
+            E.unsupport();
+        }
+    };
+
     private String id;
-    private int maxHint;
-    private int currentSteps;
-    private ProgressGauge delegate;
+    private boolean markedAsDown;
+    protected int maxHint;
+    protected int currentSteps;
+    protected String error;
+    private Map<String, Object> payload = new HashMap<>();
+    private transient int percent;
+    protected ProgressGauge delegate;
     private List<Listener> listeners = new ArrayList<>();
+    private ReadWriteLock listenerListLock = new ReentrantReadWriteLock();
+
+    private SimpleProgressGauge(int maxHint, int currentSteps) {
+        this.maxHint = maxHint;
+        this.currentSteps = currentSteps;
+    }
 
     private SimpleProgressGauge(ProgressGauge delegate) {
         this.delegate = $.requireNotNull(delegate);
@@ -49,10 +111,9 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     protected void releaseResources() {
-        maxHint = 100;
-        currentSteps = 0;
+        listeners.clear();
+        payload.clear();
         Destroyable.Util.tryDestroy(delegate);
-        triggerUpdateEvent();
     }
 
     @Override
@@ -60,7 +121,13 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             delegate.addListener(listener);
         } else {
-            listeners.add(listener);
+            Lock lock = listenerListLock.writeLock();
+            lock.lock();
+            try {
+                listeners.add(listener);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -70,18 +137,31 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
             delegate.updateMaxHint(maxHint);
         } else {
             this.maxHint = maxHint;
-            triggerUpdateEvent();
+            triggerUpdateEvent(true);
         }
     }
 
     @Override
-    public void step() {
+    public void incrMaxHint() {
         if (null != delegate) {
-            delegate.step();
-        } else {
-            currentSteps++;
-            triggerUpdateEvent();
+            delegate.incrMaxHint();
+            return;
         }
+        this.maxHint++;
+    }
+
+    @Override
+    public void incrMaxHintBy(int number) {
+        if (null != delegate) {
+            delegate.incrMaxHintBy(number);
+            return;
+        }
+        this.maxHint += number;
+    }
+
+    @Override
+    public void step() {
+        this.stepBy(1);
     }
 
     @Override
@@ -100,8 +180,10 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         if (null != delegate) {
             delegate.stepTo(steps);
         } else {
-            currentSteps = steps;
-            triggerUpdateEvent();
+            if (currentSteps != steps) {
+                currentSteps = steps;
+                triggerUpdateEvent();
+            }
         }
     }
 
@@ -134,15 +216,16 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         this.id = id;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
     public int currentProgressPercent() {
         if (null != delegate) {
-            return delegate.currentSteps() * 100 / delegate.maxHint();
+            return percentage(delegate.currentSteps(), delegate.maxHint());
         }
-        return currentSteps * 100 / maxHint;
+        return percentage(currentSteps, maxHint);
     }
 
     public int getProgressPercent() {
@@ -151,21 +234,102 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     @Override
     public boolean isDone() {
+        if (isDestroyed()) {
+            return true;
+        }
         if (null != delegate) {
             return delegate.isDone();
         }
-        return currentSteps == maxHint;
+        return null != error || currentSteps >= (maxHint - 1);
+    }
+
+    public void fail(String error) {
+        if (null != delegate) {
+            delegate.fail(error);
+            return;
+        }
+        this.error = error;
+        triggerUpdateEvent(true);
+    }
+
+    public String error() {
+        if (null != delegate) {
+            return delegate.error();
+        }
+        return error;
+    }
+
+    public boolean isFailed() {
+        if (null != delegate) {
+            return delegate.isFailed();
+        }
+        return S.notBlank(error);
     }
 
     @Override
     public void markAsDone() {
-        stepTo(maxHint);
+        if (null != delegate) {
+            delegate.markAsDone();
+            return;
+        }
+        if (!markedAsDown) {
+            markedAsDown = true;
+            stepTo(maxHint);
+        }
     }
 
-    private void triggerUpdateEvent() {
-        for (Listener listener : listeners) {
-            listener.onUpdate(this);
+    @Override
+    public void clearPayload() {
+        if (null != delegate) {
+            delegate.clearPayload();
+            return;
         }
+        this.payload.clear();
+    }
+
+    @Override
+    public void setPayload(String key, Object val) {
+        if (null != delegate) {
+            delegate.setPayload(key, val);
+            return;
+        }
+        this.payload.put(key, val);
+        this.triggerUpdateEvent(true);
+    }
+
+    @Override
+    public Map<String, Object> getPayload() {
+        if (null != delegate) {
+            return delegate.getPayload();
+        }
+        return this.payload;
+    }
+
+    protected void triggerUpdateEvent() {
+        triggerUpdateEvent(false);
+    }
+
+    protected void triggerUpdateEvent(boolean forceTriggerEvent) {
+        if (forceTriggerEvent || percentageChanged()) {
+            Lock lock = listenerListLock.readLock();
+            lock.lock();
+            try {
+                for (Listener listener : listeners) {
+                    listener.onUpdate(this);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+
+    private boolean percentageChanged() {
+        int cur = currentProgressPercent();
+        if (cur != percent) {
+            percent = cur;
+            return true;
+        }
+        return false;
     }
 
     public static SimpleProgressGauge wrap(ProgressGauge progressGauge) {
@@ -178,5 +342,10 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
 
     public static String wsJobProgressTag(String jobId) {
         return "__act_job_progress_" + jobId + "__";
+    }
+
+    private static int percentage(int currentSteps, int maxHint) {
+        int n = maxHint > 10000 ? (currentSteps / (maxHint / 100)) :  (currentSteps * 100 / maxHint);
+        return (100 <= n) && (currentSteps < (maxHint - 1)) ? 99 : n;
     }
 }

@@ -33,6 +33,7 @@ import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import org.joda.time.*;
+import org.osgl.$;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -54,6 +55,28 @@ public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implement
         this.app = app;
     }
 
+    @Override
+    protected void releaseResources() {
+        app = null;
+        if (null != dateTimeCodec) {
+            dateTimeCodec.destroy();
+            dateTimeCodec = null;
+        }
+        if (null != localDateCodec) {
+            localDateCodec.destroy();
+            localDateCodec = null;
+        }
+        if (null != localTimeCodec) {
+            localTimeCodec.destroy();
+            localTimeCodec = null;
+        }
+        if (null != localDateTimeCodec) {
+            localDateTimeCodec.destroy();
+            localDateTimeCodec = null;
+        }
+        super.releaseResources();
+    }
+
     public FastJsonJodaDateCodec(
             JodaDateTimeCodec dateTimeCodec,
             JodaLocalDateCodec localDateCodec,
@@ -69,7 +92,8 @@ public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implement
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
         JSONLexer lexer = parser.getLexer();
-        if (lexer.token() == JSONToken.LITERAL_STRING) {
+        int token = lexer.token();
+        if (token == JSONToken.LITERAL_STRING) {
             String text = lexer.stringVal();
             lexer.nextToken();
 
@@ -83,7 +107,6 @@ public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implement
                 return (T) localDateTime;
             } else if (type == LocalDate.class) {
                 LocalDate localDate = localDateCodec().parse(text);
-
                 return (T) localDate;
             } else if (type == LocalTime.class) {
                 LocalTime localDate = LocalTime.parse(text);
@@ -102,6 +125,9 @@ public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implement
 
                 return (T) instant;
             }
+        } else if (token == JSONToken.LITERAL_INT) {
+            long l = lexer.longValue();
+            return (T) $.convert(l).to((Class)type);
         } else {
             throw new UnsupportedOperationException();
         }

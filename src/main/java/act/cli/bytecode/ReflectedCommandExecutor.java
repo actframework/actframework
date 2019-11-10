@@ -33,6 +33,7 @@ import act.inject.param.ParamValueLoaderManager;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.util.*;
+import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -53,7 +54,6 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private CommandMethodMetaInfo methodMetaInfo;
     private App app;
     private CliContextParamLoader paramLoaderService;
-    private ClassLoader cl;
     private Class[] paramTypes;
     private Class<?> commanderClass;
     private Method method;
@@ -67,27 +67,31 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private String dateFormatPattern;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private PropertyNamingStrategy propertyNamingStrategy;
     private boolean enableCircularReferenceDetect = false;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.requireNotNull(methodMetaInfo);
         this.app = $.NPE(app);
-        this.cl = app.classLoader();
         this.paramTypes = paramTypes();
         this.paramCount = methodMetaInfo.paramCount();
         this.isStatic = methodMetaInfo.isStatic();
-        this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
+        this.commanderClass = app.classForName(methodMetaInfo.classInfo().className());
         try {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
-            this.async = null != method.getAnnotation(Async.class);
-            this.reportProgress = method.getAnnotation(ReportProgress.class);
-            FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+            this.async = null != ReflectedInvokerHelper.getAnnotation(Async.class, method);
+            this.reportProgress = ReflectedInvokerHelper.getAnnotation(ReportProgress.class, method);
+            FastJsonFilter filterAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFilter.class, method);
             if (null != filterAnno) {
                 filters = filterAnno.value();
             }
-            FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+            FastJsonFeature featureAnno = ReflectedInvokerHelper.getAnnotation(FastJsonFeature.class, method);
             if (null != featureAnno) {
                 features = featureAnno.value();
+            }
+            FastJsonPropertyNamingStrategy propertyNamingStrategyAnno = ReflectedInvokerHelper.getAnnotation(FastJsonPropertyNamingStrategy.class, method);
+            if (null != propertyNamingStrategyAnno) {
+                propertyNamingStrategy = propertyNamingStrategyAnno.value();
             }
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
@@ -98,11 +102,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         } else {
             method.setAccessible(true);
         }
-        DateFormatPattern dfp = method.getAnnotation(DateFormatPattern.class);
+        DateFormatPattern dfp = ReflectedInvokerHelper.getAnnotation(DateFormatPattern.class, method);
         if (null != dfp) {
             this.dateFormatPattern = dfp.value();
         } else {
-            Pattern pattern = method.getAnnotation(Pattern.class);
+            Pattern pattern = ReflectedInvokerHelper.getAnnotation(Pattern.class, method);
             if (null != pattern) {
                 this.dateFormatPattern = pattern.value();
             }
@@ -119,6 +123,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             context.dateFormatPattern(dateFormatPattern);
         }
         context.fastjsonFeatures(features);
+        context.fastjsonPropertyNamingStrategy(propertyNamingStrategy);
         context.fastjsonFilters(filters);
         context.prepare(parsingContext);
         if (enableCircularReferenceDetect) {
@@ -128,20 +133,24 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         final Object cmd = commanderInstance(context);
         final Object[] params = params(cmd, context);
         if (async) {
-            JobManager jobManager = context.app().jobManager();
-            String jobId = jobManager.prepare(new TrackableWorker() {
+            final JobManager jobManager = context.app().jobManager();
+            final String jobId = jobManager.randomJobId();
+            jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
-                    invoke(cmd, params);
+                    Object o = invoke(cmd, params);
+                    jobManager.cacheResult(jobId, o, methodMetaInfo);
                 }
             });
             context.setJobId(jobId);
             jobManager.now(jobId);
+            String message = "Async job started: " + jobId;
             if (null != reportProgress) {
+                context.println(message);
                 context.attribute(ReportProgress.CTX_ATTR_KEY, reportProgress);
                 return context.progress();
             } else {
-                return "Async job started: " + jobId;
+                return message;
             }
         }
         return invoke(cmd, params);
@@ -150,7 +159,6 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     @Override
     protected void releaseResources() {
         app = null;
-        cl = null;
         commandIndex = 0;
         commanderClass = null;
         method = null;
@@ -181,7 +189,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         for (int i = 0; i < paramCount; ++i) {
             CommandParamMetaInfo param = methodMetaInfo.param(i);
             String className = param.type().getClassName();
-            ca[i] = $.classForName(className, cl);
+            ca[i] = app.classForName(className);
         }
         return ca;
     }

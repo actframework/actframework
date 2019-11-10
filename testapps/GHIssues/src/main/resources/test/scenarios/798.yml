@@ -1,5 +1,5 @@
-Scenario(GH798):
-  description: "[798] `@JSONField(format = 'yyyy-MM')` setting not work"
+Scenario(798):
+  description: "`@JSONField(format = 'yyyy-MM')` setting not work"
   interactions:
   - description: Test
     request:

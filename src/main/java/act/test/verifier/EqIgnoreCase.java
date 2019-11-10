@@ -25,7 +25,7 @@ import org.osgl.util.S;
 
 import java.util.List;
 
-public class EqIgnoreCase extends Verifier<EqIgnoreCase> {
+public class EqIgnoreCase extends Verifier {
 
     @Override
     public boolean verify(Object value) {

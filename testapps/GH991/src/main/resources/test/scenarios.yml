@@ -1,0 +1,23 @@
+Scenario(Hello World):
+  description: a web page says Hello
+  interactions:
+    - description: send request to the app without parameter
+      request:
+        method: GET
+        url: /
+      response:
+        html:
+          h1: Hello World
+          head title:
+            - contains: Hello World
+            - contains: ActFramework
+          p:
+            <any>:
+              - contains: Powered by ActFramework
+    - description: send request to the app with [who = ActFramework]
+      request:
+        method: GET
+        url: /?who=ActFramework
+      response:
+        html:
+          h1: Hello ActFramework

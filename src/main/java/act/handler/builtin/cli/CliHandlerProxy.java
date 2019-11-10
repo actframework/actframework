@@ -111,12 +111,12 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     @SuppressWarnings("unchecked")
-    private void onResult(Object result, CliContext context) {
+    private void onResult(Object result, CliContext context) throws Exception {
         if (null == result) {
             return;
         }
         if (result instanceof ProgressGauge) {
-            context.print((ProgressGauge) result);
+            context.print(methodMetaInfo, (ProgressGauge) result);
         } else {
             PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
             methodMetaInfo.view().print(result, filter, context);

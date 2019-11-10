@@ -23,6 +23,7 @@ package act.route;
 import act.Act;
 import act.Destroyable;
 import act.app.*;
+import act.app.event.SysEventId;
 import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
@@ -34,6 +35,7 @@ import act.security.CORS;
 import act.security.CSRF;
 import act.util.ActContext;
 import act.util.DestroyableBase;
+import act.ws.WebSocketConnectionListener;
 import act.ws.WsEndpoint;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -44,18 +46,16 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
-import java.io.File;
-import java.io.PrintStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.regex.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.constraints.NotNull;
 
-public class Router extends AppHolderBase<Router> {
+public class Router extends AppHolderBase<Router> implements TreeNode {
+
+    public static final String PORT_DEFAULT = "default";
 
     /**
      * A visitor can be passed to the router to traverse
@@ -69,10 +69,12 @@ public class Router extends AppHolderBase<Router> {
          *         the HTTP method
          * @param path
          *         the URL path
+         * @param source
+         *         the route source
          * @param handler
          *         the handler
          */
-        void visit(H.Method method, String path, RequestHandler handler);
+        void visit(H.Method method, String path, RouteSource source, RequestHandler handler);
     }
 
     public static final String IGNORE_NOTATION = "...";
@@ -88,6 +90,8 @@ public class Router extends AppHolderBase<Router> {
     Node _DEL;
     Node _PATCH;
 
+    List<Node> roots;
+
     private Map<String, RequestHandlerResolver> resolvers = new HashMap<>();
 
     private RequestHandlerResolver handlerLookup;
@@ -100,22 +104,6 @@ public class Router extends AppHolderBase<Router> {
     private int port;
     private OptionsInfoBase optionHandlerFactory;
     private Set<RequestHandler> requireBodyParsing = new HashSet<>();
-
-    private void initControllerLookup(RequestHandlerResolver lookup) {
-        if (null == lookup) {
-            lookup = new RequestHandlerResolverBase() {
-                @Override
-                public RequestHandler resolve(String payload, App app) {
-                    if (S.eq(WsEndpoint.PSEUDO_METHOD, payload)) {
-                        return Act.network().createWebSocketConnectionHandler();
-                    }
-                    return new RequestHandlerProxy(payload, app);
-                }
-
-            };
-        }
-        handlerLookup = lookup;
-    }
 
     public Router(App app) {
         this(null, app, null);
@@ -145,18 +133,32 @@ public class Router extends AppHolderBase<Router> {
         _POST = Node.newRoot("POST", appConfig);
         _DEL = Node.newRoot("DELETE", appConfig);
         _PATCH = Node.newRoot("PATCH", appConfig);
+        roots = C.list(_GET, _PUT, _POST, _DEL, _PATCH);
     }
 
     @Override
     protected void releaseResources() {
-        _GET.destroy();
-        _DEL.destroy();
-        _POST.destroy();
-        _PUT.destroy();
-        _PATCH.destroy();
+        for (Node root : roots) {
+            root.destroy();
+        }
         handlerLookup.destroy();
         actionNames.clear();
         appConfig = null;
+    }
+
+    @Override
+    public String id() {
+        return S.blank(portId) ? "default" : portId;
+    }
+
+    @Override
+    public String label() {
+        return S.concat("Router[", id(), "]");
+    }
+
+    @Override
+    public List<TreeNode> children() {
+        return $.cast(roots);
     }
 
     public String portId() {
@@ -182,19 +184,44 @@ public class Router extends AppHolderBase<Router> {
         visit(_PATCH, H.Method.PATCH, visitor);
     }
 
+    private void initControllerLookup(RequestHandlerResolver lookup) {
+        if (null == lookup) {
+            lookup = new RequestHandlerResolverBase() {
+                @Override
+                public RequestHandler resolve(String payload, App app) {
+                    if (null != payload && payload.startsWith(WsEndpoint.PSEUDO_METHOD)) {
+                        String className = S.cut(payload).afterFirst("|");
+                        return createWebSocketConnectionHandler(className);
+                    }
+                    return new RequestHandlerProxy(payload, app);
+                }
+            };
+        }
+        handlerLookup = lookup;
+    }
+
+    private static RequestHandler createWebSocketConnectionHandler(String className) {
+        if (S.notBlank(className)) {
+            Class<?> type = Act.appClassForName(className);
+            if (WebSocketConnectionListener.class.isAssignableFrom(type)) {
+                Class<? extends WebSocketConnectionListener> listenerType = $.cast(type);
+                WebSocketConnectionListener listener = Act.app().eventEmitted(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED) ? Act.getInstance(listenerType) : new WebSocketConnectionListener.DelayedResolveProxy(listenerType);
+                return Act.network().createWebSocketConnectionHandler(listener);
+            }
+        }
+        return Act.network().createWebSocketConnectionHandler();
+    }
+
     private void visit(Node node, H.Method method, Visitor visitor) {
         RequestHandler handler = node.handler;
         if (null != handler) {
             if (handler instanceof ContextualHandler) {
                 handler = ((ContextualHandler) handler).realHandler();
             }
-            visitor.visit(method, node.path(), handler);
+            visitor.visit(method, node.path(), node.routeSource, handler);
         }
-        for (Node child : node.dynamicChilds) {
-            visit(child, method, visitor);
-        }
-        for (Node child : node.staticChildren.values()) {
-            visit(child, method, visitor);
+        for (TreeNode child : node.children()) {
+            visit((Node)child, method, visitor);
         }
     }
 
@@ -214,12 +241,9 @@ public class Router extends AppHolderBase<Router> {
             return UnknownHttpMethodHandler.INSTANCE;
         }
         node = search(node, Path.tokenizer(Unsafe.bufOf(path)), context);
-        RequestHandler handler = getInvokerFrom(node);
+        RequestHandler handler = getInvokerFrom(node, context);
         RequestHandler blockIssueHandler = app().blockIssueHandler();
-        if (null == blockIssueHandler) {
-            return handler;
-        }
-        if (handler instanceof FileGetter || handler instanceof ResourceGetter) {
+        if (null == blockIssueHandler || (handler instanceof FileGetter || handler instanceof ResourceGetter)) {
             return handler;
         }
         return blockIssueHandler;
@@ -238,18 +262,20 @@ public class Router extends AppHolderBase<Router> {
         return null == node ? null : node.handler;
     }
 
-    private RequestHandler getInvokerFrom(Node node) {
+    private RequestHandler getInvokerFrom(Node node, ActionContext context) {
         if (null == node) {
             return notFound();
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
-            for (Node targetNode : node.dynamicChilds) {
-                if (Node.MATCH_ALL == targetNode.patternTrait || targetNode.pattern.matcher("").matches()) {
-                    return getInvokerFrom(targetNode);
+            for (Node targetNode : node.dynamicChildren) {
+                if (Node.MATCH_ALL.equals(targetNode.patternTrait) || targetNode.pattern.matcher("").matches()) {
+                    return getInvokerFrom(targetNode, context);
                 }
             }
             return notFound();
+        } else {
+            context.routeSource(node.routeSource);
         }
         return handler;
     }
@@ -282,16 +308,16 @@ public class Router extends AppHolderBase<Router> {
     }
 
     private String withUrlContext(String path, String action) {
-        String sAction = action.toString();
+        String sAction = action;
         String urlContext = null;
         for (String key : urlContexts.keySet()) {
-            String sKey = key.toString();
+            String sKey = key;
             if (sAction.startsWith(sKey)) {
                 urlContext = urlContexts.get(key);
                 break;
             }
         }
-        return null == urlContext ? path : S.pathConcat(urlContext, '/', path.toString());
+        return null == urlContext ? path : S.pathConcat(urlContext, '/', path);
     }
 
     public void addMapping(H.Method method, String path, String action) {
@@ -306,13 +332,51 @@ public class Router extends AppHolderBase<Router> {
         addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
     }
 
+    private String evalConf(String s) {
+        Object o = appConfig.getIgnoreCase(s);
+        if (null == o) {
+            warn("Missing configuration for path substitution: %s", s);
+            return s;
+        }
+        return S.string(o);
+    }
+
+    private String processStringSubstitution(String s) {
+        int n = s.indexOf("${");
+        if (n < 0) {
+            return s;
+        }
+        if (n == 0 && s.endsWith(")}")) {
+            s = s.substring(2);
+            s = s.substring(0, s.length() - 1);
+            return evalConf(s);
+        }
+        int a = 0;
+        int z = n;
+        S.Buffer buf = S.buffer();
+        while (true) {
+            buf.append(s.substring(a, z));
+            n = s.indexOf("}", z);
+            a = n;
+            String part = s.substring(z + 2, a);
+            buf.append(evalConf(part));
+            n = s.indexOf("${", a);
+            if (n < 0) {
+                buf.append(s.substring(a + 1));
+                return buf.toString();
+            }
+            z = n;
+        }
+    }
+
     @SuppressWarnings("FallThrough")
-    public void addMapping(final H.Method method, final String path, RequestHandler handler, final RouteSource source) {
+    public void addMapping(final H.Method method, String path, RequestHandler handler, final RouteSource source) {
         if (isTraceEnabled()) {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
+        path = processStringSubstitution(path);
         if (!app().config().builtInReqHandlerEnabled()) {
-            String sPath = path.toString();
+            String sPath = path;
             if (sPath.startsWith("/~/")) {
                 // disable built-in handlers except those might impact application behaviour
                 // apibook is allowed here as it only available on dev mode
@@ -352,8 +416,8 @@ public class Router extends AppHolderBase<Router> {
                     break;
                 case EXIT:
                     throw new DuplicateRouteMappingException(
-                            new RouteInfo(method, path.toString(), node.handler(), existing),
-                            new RouteInfo(method, path.toString(), handler, source)
+                            new RouteInfo(method, path, node.handler(), existing),
+                            new RouteInfo(method, path, handler, source)
                     );
                 default:
                     throw E.unsupport();
@@ -366,7 +430,7 @@ public class Router extends AppHolderBase<Router> {
             RequestHandlerInfo info = (RequestHandlerInfo) handler;
             String action = info.action;
             Node root = node.root;
-            root.reverseRoutes.put(action.toString(), node);
+            root.reverseRoutes.put(action, node);
             handler = info.theHandler();
         }
         return handler;
@@ -474,7 +538,7 @@ public class Router extends AppHolderBase<Router> {
                 }
                 elements.add(s);
             } else {
-                elements.add(node.name.toString());
+                elements.add(node.toString());
             }
             node = node.parent;
         }
@@ -607,7 +671,7 @@ public class Router extends AppHolderBase<Router> {
         if (path.length() == 1 && path.charAt(0) == '/') {
             return node;
         }
-        String sUrl = path.toString();
+        String sUrl = path;
         List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
@@ -625,7 +689,7 @@ public class Router extends AppHolderBase<Router> {
         if (0 == pathLen || (1 == pathLen && path.charAt(0) == '/')) {
             return node;
         }
-        String sUrl = path.toString();
+        String sUrl = path;
         List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
@@ -695,7 +759,7 @@ public class Router extends AppHolderBase<Router> {
     public void debug(List<RouteInfo> routes) {
         for (H.Method method : supportedHttpMethods()) {
             Node node = root(method);
-            node.debug(method, routes);
+            node.debug(method, routes, new HashSet<Node>());
         }
     }
 
@@ -705,13 +769,22 @@ public class Router extends AppHolderBase<Router> {
 
     private Node search(Node rootNode, Iterator<String> path, ActionContext context) {
         Node node = rootNode;
+        Node backup = null;
+        String backupPath = null;
+        List<String> pathBackup = null;
         if (node.terminateRouteSearch() && !context.urlPath().isBuiltIn()) {
             S.Buffer sb = S.buffer();
+            pathBackup = new ArrayList<>();
             while (path.hasNext()) {
-                sb.append('/').append(path.next());
+                String pathElement = path.next();
+                pathBackup.add(pathElement);
+                sb.append('/').append(pathElement);
             }
-            context.param(ParamNames.PATH, sb.toString());
-            return node;
+            backupPath = sb.toString();
+            backup = node;
+        }
+        if (null != pathBackup) {
+            path = pathBackup.iterator();
         }
         while (null != node && path.hasNext()) {
             String nodeName = path.next();
@@ -737,6 +810,10 @@ public class Router extends AppHolderBase<Router> {
                     break;
                 }
             }
+        }
+        if (null == node && null != backup) {
+            node = backup;
+            context.param(ParamNames.PATH, backupPath);
         }
         return node;
     }
@@ -845,6 +922,8 @@ public class Router extends AppHolderBase<Router> {
      */
     private static class Node extends DestroyableBase implements Serializable, TreeNode, Comparable<Node> {
 
+        private static final S.Pair TILDE = S.pair('~', '~');
+
         // used to pass a baq request result when dynamic regex matching failed
         private static final Node BADREQUEST = new Node(Integer.MIN_VALUE, Act.appConfig()) {
             @Override
@@ -863,7 +942,9 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
 
-        static String MATCH_ALL = "(.*?)";
+        static final String MATCH_ALL = "(.*?)";
+
+        private String uid = Act.cuid();
 
         private int id;
 
@@ -872,8 +953,13 @@ public class Router extends AppHolderBase<Router> {
         // --- for static node
         private String name;
 
+        // --- for keyword matching node
+        private Keyword keyword;
+
         // ignore all the rest in URL when routing
         private boolean ignoreRestParts;
+
+        private boolean hasKeywordMatchingChild;
 
         // --- for dynamic node
         private Pattern pattern;
@@ -886,8 +972,9 @@ public class Router extends AppHolderBase<Router> {
         private Node root;
         private Node parent;
         private transient Node conflictNode;
-        private List<Node> dynamicChilds = new ArrayList<>();
+        private List<Node> dynamicChildren = new ArrayList<>();
         private Map<String, Node> staticChildren = new HashMap<>();
+        private Map<Keyword, Node> keywordMatchingChildren = new HashMap<>();
         private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
         private Map<String, Node> dynamicReverseAliases = new HashMap<>();
         private RequestHandler handler;
@@ -902,9 +989,16 @@ public class Router extends AppHolderBase<Router> {
             root = this;
         }
 
+        Node(Keyword keyword, Node parent) {
+            this.keyword = $.requireNotNull(keyword);
+            this.parent = parent;
+            this.id = keyword.hashCode();
+            this.root = parent.root;
+            this.macroLookup = parent.macroLookup;
+        }
+
         Node(String name, Node parent) {
-            E.NPE(name);
-            this.name = name;
+            this.name = S.requireNotBlank(name);
             this.parent = parent;
             this.id = name.hashCode();
             this.root = parent.root;
@@ -913,18 +1007,18 @@ public class Router extends AppHolderBase<Router> {
         }
 
         @Override
+        public String toString() {
+            return id();
+        }
+
+        @Override
         public int hashCode() {
-            return id;
+            return uid.hashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (obj instanceof Node) {
-                Node that = (Node) obj;
-                return that.id == id && that.name.equals(name);
-            }
-            return false;
+            return obj == this;
         }
 
         @Override
@@ -979,7 +1073,7 @@ public class Router extends AppHolderBase<Router> {
                     nodes.add(staticNode);
                     continue;
                 }
-                for (Node dynamicNode : parentConflictNode.dynamicChilds) {
+                for (Node dynamicNode : parentConflictNode.dynamicChildren) {
                     if (metaInfoConflict(dynamicNode.name)) {
                         nodes.add(dynamicNode);
                     }
@@ -1011,15 +1105,35 @@ public class Router extends AppHolderBase<Router> {
         @Override
         @SuppressWarnings("unchecked")
         public List<TreeNode> children() {
-            C.List<TreeNode> list = (C.List) C.list(staticChildren.values());
-            return list.append(dynamicChilds);
+            Set<Node> set = new HashSet<>();
+            set.addAll(staticChildren.values());
+            set.addAll(dynamicChildren);
+            List<TreeNode> list = new ArrayList<>();
+            list.addAll(set);
+            for (Node node : set) {
+                for (Node alias : node.dynamicAliases.values()) {
+                    if (!set.contains(alias)) {
+                        list.add(alias);
+                    }
+                }
+            }
+            return list;
         }
 
         public Node child(String name, ActionContext context) {
             Node node = staticChildren.get(name);
-            if (null == node && !dynamicChilds.isEmpty()) {
+            if (null != node) {
+                return node;
+            }
+            if (hasKeywordMatchingChild) {
+                node = keywordMatchingChildren.get(Keyword.of(name));
+                if (null != node) {
+                    return node;
+                }
+            }
+            if (!dynamicChildren.isEmpty()) {
                 UrlPath path = context.urlPath();
-                for (Node targetNode : dynamicChilds) {
+                for (Node targetNode : dynamicChildren) {
                     for (Map.Entry<UrlPath, Node> entry : targetNode.dynamicAliases.entrySet()) {
                         if (entry.getKey().equals(path)) {
                             targetNode = entry.getValue();
@@ -1027,7 +1141,7 @@ public class Router extends AppHolderBase<Router> {
                         }
                     }
                     if (MATCH_ALL == targetNode.patternTrait) {
-                        context.urlPathParam(targetNode.varNames.get(0).toString(), name.toString());
+                        context.urlPathParam(targetNode.varNames.get(0), name);
                         return targetNode;
                     }
                     Pattern pattern = targetNode.pattern;
@@ -1035,7 +1149,7 @@ public class Router extends AppHolderBase<Router> {
                     if (null != matcher && matcher.matches()) {
                         if (!targetNode.nodeValueBuilders.isEmpty()) {
                             for (String varName : targetNode.varNames) {
-                                String varNameStr = varName.toString();
+                                String varNameStr = varName;
                                 try {
                                     String varValue = matcher.group(varNameStr);
                                     if (S.notBlank(varValue)) {
@@ -1043,7 +1157,7 @@ public class Router extends AppHolderBase<Router> {
                                     }
                                 } catch (IllegalArgumentException e) {
                                     if (e.getMessage().contains("No group with name")) {
-                                        String escaped = escapeUnderscore(varNameStr).toString();
+                                        String escaped = escapeUnderscore(varNameStr);
                                         String varValue = matcher.group(escaped);
                                         if (S.notBlank(varValue)) {
                                             context.urlPathParam(varNameStr, S.string(varValue));
@@ -1053,7 +1167,7 @@ public class Router extends AppHolderBase<Router> {
                             }
                         } else {
                             String varName = targetNode.varNames.get(0);
-                            context.urlPathParam(varName.toString(), S.string(name));
+                            context.urlPathParam(varName, S.string(name));
                         }
                         return targetNode;
                     }
@@ -1065,12 +1179,12 @@ public class Router extends AppHolderBase<Router> {
 
         @Override
         public String id() {
-            return name.toString();
+            return null == name ? keyword.dashed() : name;
         }
 
         @Override
         public String label() {
-            StringBuilder sb = S.newBuilder(name);
+            StringBuilder sb = S.newBuilder(null == name ? "~" + keyword.dashed() + "~" : name);
             if (null != handler) {
                 sb.append(" -> ").append(RouteInfo.compactHandler(handler.toString()));
             }
@@ -1082,16 +1196,25 @@ public class Router extends AppHolderBase<Router> {
             if (null != handler) {
                 handler.destroy();
             }
-            Destroyable.Util.destroyAll(dynamicChilds, ApplicationScoped.class);
+            Destroyable.Util.destroyAll(dynamicChildren, ApplicationScoped.class);
             Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
         }
 
-        Node childByMetaInfoExactMatching(String s) {
-            Node node = staticChildren.get(s);
-            if (null == node && !dynamicChilds.isEmpty()) {
-                for (Node targetNode : dynamicChilds) {
-                    if (targetNode.metaInfoMatchesExactly(s)) {
+        Node childByMetaInfoExactMatching(String name) {
+            Node node = staticChildren.get(name);
+            if (null != node) {
+                return node;
+            }
+            if (hasKeywordMatchingChild) {
+                node = keywordMatchingChildren.get(Keyword.of(name));
+                if (null != node) {
+                    return node;
+                }
+            }
+            if (!dynamicChildren.isEmpty()) {
+                for (Node targetNode : dynamicChildren) {
+                    if (targetNode.metaInfoMatchesExactly(name)) {
                         return targetNode;
                     }
                 }
@@ -1099,16 +1222,15 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
 
-        Node childByMetaInfoConflictMatching(String s) {
-            Node node = staticChildren.get(s);
-            if (null == node && !dynamicChilds.isEmpty()) {
-                for (Node targetNode : dynamicChilds) {
-                    if (targetNode.metaInfoConflict(s)) {
+        Node childByMetaInfoConflictMatching(String name) {
+            if (!dynamicChildren.isEmpty()) {
+                for (Node targetNode : dynamicChildren) {
+                    if (targetNode.metaInfoConflict(name)) {
                         return targetNode;
                     }
                 }
             }
-            return node;
+            return null;
         }
 
         Node findChild(String name) {
@@ -1118,7 +1240,21 @@ public class Router extends AppHolderBase<Router> {
 
         Node addChild(String name, final String path, final String action) {
             name = name.trim();
-            Node node = childByMetaInfoExactMatching(name);
+            Keyword keyword = null;
+            if (S.is(name).wrappedWith(TILDE)) {
+                keyword = Keyword.of(S.strip(name).of(TILDE));
+                Node node = keywordMatchingChildren.get(keyword);
+                if (null == node) {
+                    node = new Node(keyword, this);
+                    keywordMatchingChildren.put(keyword, node);
+                    hasKeywordMatchingChild = true;
+                    staticChildren.put(keyword.javaVariable(), node);
+                    staticChildren.put(keyword.hyphenated(), node);
+                    staticChildren.put(keyword.underscore(), node);
+                    return node;
+                }
+            }
+            Node node = null != keyword ? keywordMatchingChildren.get(keyword) : childByMetaInfoExactMatching(name);
             if (null != node) {
                 return node;
             }
@@ -1127,7 +1263,7 @@ public class Router extends AppHolderBase<Router> {
             child.conflictNode = conflictNode;
             if (child.isDynamic()) {
                 boolean isAlias = false;
-                for (Node targetNode : dynamicChilds) {
+                for (Node targetNode : dynamicChildren) {
                     if (S.eq(targetNode.patternTrait, child.patternTrait)) {
                         targetNode.dynamicAliases.put(UrlPath.of(path), child);
                         targetNode.dynamicReverseAliases.put(action, child);
@@ -1138,9 +1274,9 @@ public class Router extends AppHolderBase<Router> {
                 if (!isAlias) {
                     child.dynamicAliases.put(UrlPath.of(path), child);
                     child.dynamicReverseAliases.put(action, child);
-                    dynamicChilds.add(child);
+                    dynamicChildren.add(child);
                 }
-                Collections.sort(dynamicChilds);
+                Collections.sort(dynamicChildren);
                 return child;
             } else {
                 staticChildren.put(name, child);
@@ -1169,30 +1305,57 @@ public class Router extends AppHolderBase<Router> {
         String path() {
             if (null == parent) return "/";
             String pPath = parent.path();
-            return S.pathConcat(pPath, '/', name.toString());
+            return S.pathConcat(pPath, '/', id());
+        }
+
+        String debugPath() {
+            if (null == parent) return "/";
+            String pPath = parent.path();
+            return S.pathConcat(pPath, '/', debugId());
+        }
+
+        private String debugId() {
+            return null == name ? "~" + keyword.dashed() + "~" : name;
         }
 
         void debug(H.Method method, PrintStream ps) {
             if (null != handler) {
-                ps.printf("%s %s %s\n", method, path(), handler);
+                ps.printf("%s %s %s\n", method, debugPath(), handler);
             }
-            for (Node node : staticChildren.values()) {
+            for (Node node : keywordMatchingChildren.values()) {
                 node.debug(method, ps);
             }
-            for (Node node : dynamicChilds) {
+            for (Node node : staticChildren.values()) {
+                if (null != node.name) {
+                    node.debug(method, ps);
+                }
+            }
+            for (Node node : dynamicChildren) {
                 node.debug(method, ps);
             }
         }
 
-        void debug(H.Method method, List<RouteInfo> routes) {
+        private void debug(H.Method method, List<RouteInfo> routes, Set<Node> circularReferenceDetector) {
+            if (circularReferenceDetector.contains(this)) {
+                return;
+            }
+            circularReferenceDetector.add(this);
             if (null != handler) {
-                routes.add(new RouteInfo(method, path(), handler));
+                routes.add(new RouteInfo(method, debugPath(), handler));
+            }
+            for (Node node : keywordMatchingChildren.values()) {
+                node.debug(method, routes, circularReferenceDetector);
             }
             for (Node node : staticChildren.values()) {
-                node.debug(method, routes);
+                if (null != node.name) {
+                    node.debug(method, routes, circularReferenceDetector);
+                }
             }
-            for (Node node : dynamicChilds) {
-                node.debug(method, routes);
+            for (Node node : dynamicChildren) {
+                node.debug(method, routes, circularReferenceDetector);
+            }
+            for (Node node : dynamicAliases.values()) {
+                node.debug(method, routes, circularReferenceDetector);
             }
         }
 
@@ -1324,7 +1487,7 @@ public class Router extends AppHolderBase<Router> {
                         if (escaped == s) {
                             throw e;
                         }
-                        pattern.set(Pattern.compile(escaped.toString()));
+                        pattern.set(Pattern.compile(escaped));
                     }
                 }
             }
@@ -1421,40 +1584,40 @@ public class Router extends AppHolderBase<Router> {
             @Override
             public RequestHandler resolve(String msg, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
-                        new ContextualHandler(new AuthenticatedEcho(msg.toString())) :
-                        new Echo(msg.toString());
+                        new ContextualHandler(new AuthenticatedEcho(msg)) :
+                        new Echo(msg);
             }
         },
         redirect() {
             @Override
             public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
-                        new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
-                        new Redirect(payload.toString());
+                        new ContextualHandler(new AuthenticatedRedirect(payload)) :
+                        new Redirect(payload);
             }
         },
         moved() {
             @Override
             public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
-                        new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
-                        new Redirect(payload.toString());
+                        new ContextualHandler(new AuthenticatedRedirect(payload)) :
+                        new Redirect(payload);
             }
         },
         redirectdir() {
             @Override
             public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
-                        new ContextualHandler(new AuthenticatedRedirectDir(payload.toString())) :
-                        new RedirectDir(payload.toString());
+                        new ContextualHandler(new AuthenticatedRedirectDir(payload)) :
+                        new RedirectDir(payload);
             }
         },
         file() {
             @Override
             public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 File file = decorators.contains(BuiltInHandlerDecorator.external) ?
-                        new File(base.toString()) :
-                        app.file(base.toString());
+                        new File(base) :
+                        app.file(base);
                 if (!file.canRead()) {
                     LOGGER.warn("file not found: %s", file.getPath());
                 }
@@ -1466,13 +1629,13 @@ public class Router extends AppHolderBase<Router> {
         authenticatedfile() {
             @Override
             public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
-                return new ContextualHandler(new AuthenticatedFileGetter(app.file(base.toString())));
+                return new ContextualHandler(new AuthenticatedFileGetter(app.file(base)));
             }
         },
         externalfile() {
             @Override
             public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
-                File file = new File(base.toString());
+                File file = new File(base);
                 if (!file.canRead()) {
                     LOGGER.warn("External file not found: %s", file.getPath());
                 }
@@ -1485,15 +1648,22 @@ public class Router extends AppHolderBase<Router> {
             @Override
             public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
-                        new ContextualHandler(new AuthenticatedResourceGetter(payload.toString())) :
-                        new ResourceGetter(payload.toString());
+                        new ContextualHandler(new AuthenticatedResourceGetter(payload)) :
+                        new ResourceGetter(payload);
             }
-        };
+        },
+        ws() {
+            @Override
+            protected RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return createWebSocketConnectionHandler(payload);
+            }
+        }
+        ;
 
         protected abstract RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators);
 
         private static RequestHandler tryResolve(String directive, String payload, App app) {
-            String s = directive.toString().toLowerCase();
+            String s = directive.toLowerCase();
             String resolver = s, sDecorators;
             BuiltInHandlerResolver r;
             EnumSet<BuiltInHandlerDecorator> decorators = EnumSet.noneOf(BuiltInHandlerDecorator.class);

@@ -22,6 +22,7 @@ package act.xio;
 
 import act.Destroyable;
 import act.controller.meta.ActionMethodMetaInfo;
+import act.ws.WebSocketConnectionListener;
 
 /**
  * Encapsulate operations provided by underline network service, e.g. netty/undertow etc
@@ -43,11 +44,25 @@ public interface Network extends Destroyable {
     WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo);
 
     /**
-     * Create a {@link WebSocketConnectionHandler} instance without message handler, i.e.
-     * the handler is pure created to handle connection request. This is typically used when
-     * client request connection for push notification from server
+     * Create a {@link WebSocketConnectionHandler} instance.
      *
-     * @return a connection handler without message processing logic
+     * This method is called when app request a websocket connection endpoint by annotating
+     * a class with `@WsEndpoint`, and the class is not a type of
+     * {@link WebSocketConnectionListener}.
+     *
+     * @return a connection handler
      */
     WebSocketConnectionHandler createWebSocketConnectionHandler();
+
+    /**
+     * Create a {@link WebSocketConnectionHandler} instance.
+     *
+     * This method is called when app request a websocket connection endpoint by annotating
+     * a class with `@WsEndpoint`, and the class is type of
+     * {@link WebSocketConnectionListener}
+     *
+     * @param listener a {@link WebSocketConnectionListener} instance
+     * @return a websocket connection handler
+     */
+    WebSocketConnectionHandler createWebSocketConnectionHandler(WebSocketConnectionListener listener);
 }

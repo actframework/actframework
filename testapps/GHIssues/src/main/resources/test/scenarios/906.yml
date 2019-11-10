@@ -1,0 +1,10 @@
+Scenario(906):
+  description: ReflectedHandlerInvoker - try to get Annotation from method in parent class if possible
+  interactions:
+  - description: Test
+    request:
+      get: /906?n=100
+    response:
+      headers:
+        Content-Type:
+          - contains: text/plain

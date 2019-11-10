@@ -20,15 +20,16 @@ package act.inject.param;
  * #L%
  */
 
-import act.cli.CliContext;
-import act.cli.Optional;
-import act.cli.Required;
+import act.Act;
+import act.cli.*;
+import act.inject.DefaultValue;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.E;
-import org.osgl.util.Keyword;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
+
+import java.lang.reflect.Array;
+import java.util.Collection;
 
 /**
  * Load command line options
@@ -39,6 +40,7 @@ class OptionLoader extends CliParamValueLoader {
     String lead1;
     String lead2;
     final String defVal;
+    final Object langDefVal;
     final String requiredGroup;
     final boolean required;
     final BeanSpec beanSpec;
@@ -49,31 +51,62 @@ class OptionLoader extends CliParamValueLoader {
         this.bindName = bindName;
         this.required = false;
         this.parseLeads(optional.lead());
-        this.defVal = optional.defVal();
+        String defVal = optional.defVal();
         this.requiredGroup = null;
         this.beanSpec = beanSpec;
         this.errorTemplate = errorTemplate(optional);
         this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundOptional();
+        if (S.blank(defVal)) {
+            DefaultValue defaultValue = beanSpec.getAnnotation(DefaultValue.class);
+            if (null != defaultValue) {
+                defVal = defaultValue.value();
+            }
+        }
+        this.defVal = defVal;
+        Class<?> rawType = beanSpec.rawType();
+        if (rawType.isArray()) {
+            this.langDefVal = Array.newInstance(rawType.getComponentType(), 0);
+        } else if ($.isPrimitiveType(rawType)) {
+            this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            this.langDefVal = Act.getInstance(rawType);
+        } else {
+            this.langDefVal = null;
+        }
     }
 
     OptionLoader(String bindName, Required required, StringValueResolver resolver, BeanSpec beanSpec) {
         this.bindName = bindName;
         this.required = true;
         this.parseLeads(required.lead());
-        this.defVal = null;
         String group = required.group();
         this.requiredGroup = S.blank(group) ? bindName : group;
         this.beanSpec = beanSpec;
         this.errorTemplate = errorTemplate(required);
         this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
+        DefaultValue defaultValue = beanSpec.getAnnotation(DefaultValue.class);
+        this.defVal = null == defaultValue ? null : defaultValue.value();
+        Class<?> rawType = beanSpec.rawType();
+        if (rawType.isArray()) {
+            this.langDefVal = Array.newInstance(rawType.getComponentType(), 0);
+        } else if ($.isPrimitiveType(rawType)) {
+            this.langDefVal = $.primitiveDefaultValue(rawType);
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            this.langDefVal = Act.getInstance(rawType);
+        } else {
+            this.langDefVal = null;
+        }
     }
 
     @Override
     public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         String optVal = ctx.paramVal(bindName);
+        if (S.blank(optVal)) {
+            optVal = this.defVal;
+        }
         if (S.blank(optVal) && required) {
             optVal = getFirstArgument(ctx);
         }
@@ -84,13 +117,11 @@ class OptionLoader extends CliParamValueLoader {
         if (null == val && null != cachedBean) {
             val = cachedBean;
         }
-        if (null == val) {
-            if (!required) {
-                val = S.notBlank(defVal) ? resolve(defVal) : resolve(null);
-            }
-        }
         if (null != val && required) {
             ctx.parsingContext().foundRequired(requiredGroup);
+        }
+        if (null == val) {
+            val = langDefVal;
         }
         return val;
     }
@@ -155,6 +186,5 @@ class OptionLoader extends CliParamValueLoader {
             lead2 = "--" + Keyword.of(bindName).dashed();
         }
     }
-
 
 }

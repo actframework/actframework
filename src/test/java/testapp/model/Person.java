@@ -20,6 +20,7 @@ package testapp.model;
  * #L%
  */
 
+import act.annotations.Label;
 import act.data.annotation.Data;
 import org.osgl.$;
 
@@ -38,6 +39,7 @@ public class Person {
         this.age = age;
     }
 
+    @Label("First name")
     public String getFirstName() {
         return firstName;
     }

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+@args String jobId
+<head>
+  <meta charset="UTF-8">
+  <link id="favicon-link" rel="icon" type="image/png"
+        href="/~/asset/img/testing.ico?v=@act.Act.VERSION.getBuildNumber()">
+  <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <script src="/~/asset/js/jsrender.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+  <style>
+        body {
+          background-color: #222;
+          color: #f1f1f1;
+          font-family: "Noto Sans", Tahoma, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+          font-size: 14px;
+        }
+        #job-result {
+            display: none;
+        }
+        #in-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: auto;
+            width: 800px;
+            height: 100px;
+            text-align: center;
+        }
+        #gauge-container {
+            width: 800px;
+            height: 2px;
+            background: #444;
+        }
+        #progress {
+            width: 0;
+            position: relative;
+            left:0;
+            top:0;
+            border: 1px solid #60ffec;
+        }
+        #progress.failure {
+            border: 1px solid red
+        }
+        #message, #progress-text {
+            font-size: 80%;
+            font-family: tahoma, verdana, arial;
+            padding: 5px 2px;
+            max-width: 800px;
+            overflow-x: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        #message {text-align: left}
+        #progress-text {text-align: right}
+        a {color: #00b8b6;}
+        h1,h2,h3,h4,h5 {
+          font-family: Tahoma, Arial, sans-serif;
+        }
+        h4 {
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 5px;
+          margin-top: 5px;
+          border-bottom: 1px dotted #888;
+          padding-bottom: 8px;
+        }
+        #act-version {
+          position:fixed;
+          bottom:0;
+          right:0;
+          font-size: 11pt;
+          padding: 5px 10px;
+        }
+        .interactions {
+          list-style: none;
+          padding-left: 0;
+          margin-top: 10px;
+          padding-bottom: 10px;
+        }
+        .PASS {
+          color: #00ee00;
+        }
+        .FAIL {
+          color: #ff3333;
+        }
+        .PENDING {
+          color: #ccc;
+        }
+        .error-message {
+          margin-left: 2em;
+        }
+        .version {
+          font-weight: 600;
+        }
+        h4.ignore {
+          color: #aaa;
+          margin-bottom: 20px;
+        }
+        ul.interactions li {
+          margin-bottom: 8px;
+        }
+        li.open-source {
+          display: none;
+        }
+        #error {
+            color: #ee0000;
+        }
+        #error-message {
+            padding: 5px 15px;
+            border: 1px solid #aaa;
+        }
+        ul#error-scenario-list {
+            text-align: left;
+            padding-left: 0;
+            list-style: none;
+            font-size: 80%;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        #result-detail {
+          margin-top: 30px;
+          padding: 10px;
+          font-family: "Envy Code R", "Fira Code", "Source Code Pro Semibold", Monaco, Courier, monospace;
+          font-weight: bold;
+          font-size: 13px;
+          border: 1px solid #666;
+          background-color: #666;
+          color: #000;
+          display: inline-block;
+          min-width: 640px;
+        }
+        #result-detail.error {
+          border-color: #ee4444;
+          background: transparent;
+          color: #ee4444;
+        }
+  </style>
+</head>
+<body>
+<div id="in-progress">
+  <div id="message">
+    <div id="scenario"><b>loading ...</b></div>
+  </div>
+  <div id="gauge-container">
+    <div id="progress"></div>
+    <div id="progress-text"></div>
+  </div>
+</div>
+<div id="job-result">
+  <h1>Job Result</h1>
+  <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
+  <pre id="result-detail"></pre>
+</div>
+<script>
+  function getResult(fail) {
+    $.getJSON('/~/jobs/@jobId/result', function(data) {
+      if (data && data.error) {
+        fail = true
+      }
+      if (fail) {
+          favicon = '/~/asset/img/test-failure.ico?v=@act.Act.VERSION.getBuildNumber()'
+      } else {
+          favicon = '/~/asset/img/test-success.ico?v=@act.Act.VERSION.getBuildNumber()'
+      }
+      $('#favicon-link').attr('href', favicon)
+      var result = JSON.stringify(data, null, 2)
+      $('#result-detail').text(result)
+      $('#in-progress').hide()
+      if (fail) {
+        $('#result-detail').addClass('error')
+      }
+      $('#job-result').show()
+    })
+  }
+  function monitorProgress() {
+    var ws = $.createWebSocket('/~/ws/jobs/@jobId/progress')
+    ws.onmessage = function(msg) {
+      var data = JSON.parse(msg.data)
+      var gauge = data.act_job_progress
+      if (gauge.done || gauge.failed) {
+        $('#progress-text').text('100/100')
+        $('#progress').width(800)
+        getResult(gauge.failed)
+      } else {
+        $('#progress-text').text((gauge.currentSteps + 1) + '/' + (gauge.maxHint))
+        $('#progress').width(gauge.progressPercent * 800 / 100)
+      }
+    }
+  }
+  monitorProgress()
+  try {
+    getResult()
+  } catch (e) {
+  }
+</script>
+</body>
+</html>

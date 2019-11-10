@@ -9,9 +9,9 @@ package act.inject.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,12 @@ package act.inject.util;
 
 import act.Act;
 import act.app.App;
+import act.app.DevModeClassLoader;
 import act.app.data.StringValueResolverManager;
+import act.util.$$;
 import act.util.HeaderMapping;
 import act.util.Jars;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -37,6 +39,7 @@ import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
+import org.osgl.util.TypeReference;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -58,6 +61,25 @@ import java.util.jar.JarFile;
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
     protected static final Logger LOGGER = LogManager.get(ResourceLoader.class);
+
+    private static abstract class ReadStageBaseAcceptor<SOURCE, STAGE extends IO.ReadStageBase> {
+
+        abstract STAGE accept(SOURCE src);
+    }
+
+    private static class UrlReadStageAcceptor extends ReadStageBaseAcceptor<URL, IO.UrlReadStage> {
+        @Override
+        IO.UrlReadStage accept(URL src) {
+            return new IO.UrlReadStage(src);
+        }
+    }
+
+    private static class StringReadStageAcceptor extends ReadStageBaseAcceptor<String, IO.CharSequenceReadStage> {
+        @Override
+        IO.CharSequenceReadStage accept(String src) {
+            return new IO.CharSequenceReadStage(src);
+        }
+    }
 
     protected Object resource;
 
@@ -93,7 +115,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      *
      * @param path the relative path to the resource
      * @param type the return value type
-     * @param <T> generic type of return value
+     * @param <T>  generic type of return value
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, Class<T> type) {
@@ -109,9 +131,9 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      *
      * If any exception encountered during resource load, this method returns `null`
      *
-     * @param path the relative path to the resource
+     * @param path          the relative path to the resource
      * @param typeReference the return value type
-     * @param <T> generic type of return value
+     * @param <T>           generic type of return value
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, TypeReference<T> typeReference) {
@@ -129,7 +151,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      * type specified by `spec`.
      *
      * @param resourcePath the resource path
-     * @param spec {@link BeanSpec} specifies the return value type
+     * @param spec         {@link BeanSpec} specifies the return value type
      * @return the resource content in a specified type or `null` if resource not found
      * @throws UnexpectedException if return value type not supported
      */
@@ -152,6 +174,10 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 LOGGER.warn("resource not found: " + resourcePath);
             }
             return null;
+        }
+        if (Act.isDev()) {
+            DevModeClassLoader classLoader = $.cast(Act.app().classLoader());
+            classLoader.registerResourceFileDetector(resourcePath);
         }
         return _load(url, spec, hint);
     }
@@ -230,22 +256,40 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return map;
         } // eof isDir
 
-        try {
-            return null == hint ? IO.read(url).to(spec) : IO.read(url).hint(hint).to(spec);
-        } catch (Exception e) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(e, "error read URL[%s] to [%s] via IO.read call", url, spec);
-            }
-            // ignore
-        }
-
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
             return url;
         }
+
+        IO.ReadStageBase readStage;
+        if (Act.appConfig().resourceFiltering()) {
+            if (isBinary(url, spec)) {
+                readStage = new IO.UrlReadStage(url);
+            } else {
+                String content = IO.readContentAsString(url);
+                content = $$.processStringSubstitution(content);
+                readStage = new IO.CharSequenceReadStage(content);
+                MimeType mimeType = MimeType.findByFileExtension(S.fileExtension(url.getFile()));
+                if (null != mimeType) {
+                    readStage.contentType(mimeType);
+                }
+            }
+        } else {
+            readStage = new IO.UrlReadStage(url);
+        }
+
+        try {
+            return null == hint ? readStage.to(spec) : readStage.hint(hint).to(spec);
+        } catch (Exception e) {
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(e, "error read URL[%s] to [%s] via IO.read call", url, spec);
+            }
+            // ignore
+        }
+
         if (rawType.isArray()) {
             if (byte[].class == rawType) {
-                return readContent(url);
+                return readStage.toByteArray();
             }
             Class<?> componentType = rawType.getComponentType();
             if (componentType.isArray()) {
@@ -254,7 +298,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 boolean isPrimitive = !isString && $.isPrimitiveType(subComponentType);
                 boolean isWrapper = !isPrimitive && !isString && $.isWrapperType(subComponentType);
                 if (isString || isPrimitive || isWrapper) {
-                    List<String> lines = IO.readLines(url);
+                    List<String> lines = readStage.toLines();
                     int len = lines.size();
                     Object a2 = Array.newInstance(componentType, len);
                     for (int i = 0; i < len; ++i) {
@@ -295,7 +339,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                     throw E.unsupport("Sub component type not supported: " + subComponentType.getName());
                 }
             } else {
-                List<String> lines = IO.readLines(url);
+                List<String> lines = readStage.toLines();
                 if (String.class == componentType) {
                     return lines.toArray(new String[lines.size()]);
                 }
@@ -306,20 +350,54 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         String resourcePath = url.getPath();
         boolean isJson = resourcePath.endsWith(".json");
         if (isJson) {
-            String content = IO.readContentAsString(url);
+            String content = readStage.toString();
             content = content.trim();
             Object o = content.startsWith("[") ? JSON.parseArray(content) : JSON.parseObject(content);
             return $.map(o).targetGenericType(spec.type()).to(rawType);
         }
-        boolean isYaml = !isJson && (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
+        boolean isYaml = (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
         if (isYaml) {
-            Object o = new Yaml().load(IO.readContentAsString(url));
-            return $.map(o).targetGenericType(spec.type()).to(rawType);
-        } else if (String.class == rawType) {
-            return IO.readContentAsString(url);
+            Object o = new Yaml().load(readStage.toString());
+            if (List.class.isAssignableFrom(rawType)) {
+                List<Type> typeParams = spec.typeParams();
+                Class<?> listElementType = (Class<?>) typeParams.get(0);
+                if (o instanceof Map) {
+                    Map src = (Map)o;
+                    List sink = new ArrayList(src.size());
+                    for (Object val : src.values()) {
+                        sink.add($.map(val).to(listElementType));
+                    }
+                    return sink;
+                } else if (o instanceof List) {
+                    List src = (List) o;
+                    List sink = new ArrayList(src.size());
+                    for (Object val : src) {
+                        sink.add($.map(val).to(listElementType));
+                    }
+                    return sink;
+                } else {
+                    return $.map(o).targetGenericType(spec.type()).to(rawType);
+                }
+            } else {
+                return $.map(o).targetGenericType(spec.type()).to(rawType);
+            }
+        }
+        boolean isXml = resourcePath.endsWith(".xml");
+        if (isXml) {
+            Object o = XML.read(readStage.toReader());
+            if ($.isCollectionType(rawType)) {
+                JSONArray array = $.convert(o).to(JSONArray.class);
+                return $.map(array).targetGenericType(spec.type()).to(rawType);
+            } else {
+                JSONObject json = $.convert(o).to(JSONObject.class);
+                return $.map(json).targetGenericType(spec.type()).to(rawType);
+            }
+        }
+        if (String.class == rawType) {
+            return readStage.toString();
         } else if (List.class.equals(rawType)) {
             List<Type> typeParams = spec.typeParams();
-            List<String> lines = IO.readLines(url);
+            List<String> lines = C.newList(readStage.toLines());
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
                     return lines;
@@ -336,17 +414,18 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             }
         } else if (Map.class.isAssignableFrom(rawType)) {
             if (resourcePath.endsWith(".properties")) {
-                Properties properties = IO.loadProperties(url);
+                Properties properties = IO.loadProperties(readStage.toInputStream());
                 if (Properties.class == rawType || Properties.class.isAssignableFrom(rawType)) {
                     return properties;
                 }
                 return $.map(properties).targetGenericType(spec.type()).to(rawType);
             } else {
                 // try my best
-                List<String> lines = IO.readLines(url);
+                C.List<String> lines = C.newList(readStage.toLines());
                 if (lines.isEmpty()) {
                     return C.Map();
                 }
+                lines = lines.filter(S.F.startsWith("#").negate());
                 ListIterator<String> itr = lines.listIterator();
                 String firstLine = itr.next();
                 while (itr.hasNext()) {
@@ -363,25 +442,37 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 } else {
                     throw new UnexpectedException("Unable to load resource into Map: " + resourcePath);
                 }
-                Map<String, String> map = new HashMap<>();
+                Map map = new HashMap<>();
+                List<Type> mapTypeParams = spec.typeParams();
+                Class<?> keyType = String.class;
+                Class<?> valType = String.class;
+                if (null != mapTypeParams && mapTypeParams.size() == 2) {
+                    keyType = (Class) mapTypeParams.get(0);
+                    valType = (Class) mapTypeParams.get(1);
+                }
                 for (String line : lines) {
                     S.Pair pair = S.binarySplit(line, sep);
-                    map.put(pair.left(), pair.right());
+                    String key = pair.left();
+                    String val = pair.right();
+                    if (val.contains("#")) {
+                        val = S.cut(val).beforeFirst("#").trim();
+                    }
+                    map.put($.convert(key).to(keyType), $.convert(val).to(valType));
                 }
                 return map;
             }
         } else if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
             if (!typeParams.isEmpty()) {
-                Collection col = (Collection)Act.getInstance(rawType);
+                Collection col = (Collection) Act.getInstance(rawType);
                 if (String.class == typeParams.get(0)) {
-                    col.addAll(IO.readLines(url));
+                    col.addAll(readStage.toLines());
                     return col;
                 } else {
                     StringValueResolverManager resolverManager = Act.app().resolverManager();
                     try {
                         Class componentType = spec.componentSpec().rawType();
-                        List<String> stringList = IO.readLines(url);
+                        List<String> stringList = readStage.toLines();
                         for (String line : stringList) {
                             col.add(resolverManager.resolve(line, componentType));
                         }
@@ -391,7 +482,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 }
             }
         } else if (ByteBuffer.class == rawType) {
-            byte[] ba = readContent(url);
+            byte[] ba = readStage.toByteArray();
             ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
             buffer.put(ba);
             buffer.flip();
@@ -405,13 +496,13 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else if (File.class.isAssignableFrom(rawType)) {
             return new File(url.getFile());
         } else if (ISObject.class.isAssignableFrom(rawType)) {
-            return SObject.of(readContent(url));
+            return SObject.of(readStage.toInputStream());
         } else if (InputStream.class == rawType) {
-            return IO.is(url);
+            return readStage.toInputStream();
         } else if (Reader.class == rawType) {
-            return new InputStreamReader(IO.is(url));
+            return readStage.toReader();
         }
-        String content = IO.readContentAsString(url);
+        String content = readStage.toString();
         try {
             return Act.app().resolverManager().resolve(content, rawType);
         } catch (RuntimeException e) {
@@ -435,7 +526,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
     }
 
     private static byte[] readContent(URL url) {
-        return IO.readContent(IO.is(url));
+        return IO.readContent(IO.inputStream(url));
     }
 
     private static URL loadResource(String path) {
@@ -445,5 +536,29 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else {
             return app.classLoader().getResource(path);
         }
+    }
+
+    private static boolean isBinary(URL url, BeanSpec spec) {
+        if (isBinary(spec)) {
+            return true;
+        }
+        return SObject.of(url).isBinary();
+    }
+
+    public static boolean isBinary(BeanSpec spec) {
+        Class<?> type = spec.rawType();
+        if (byte[].class == type) {
+            return true;
+        }
+        if (URL.class == type) {
+            return true;
+        }
+        if (InputStream.class == type) {
+            return true;
+        }
+        if (ISObject.class.isAssignableFrom(type)) {
+            return true;
+        }
+        return false;
     }
 }

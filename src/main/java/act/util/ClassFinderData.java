@@ -84,10 +84,14 @@ public class ClassFinderData {
                 @Override
                 public void visit(ClassNode classNode) throws $.Break {
                     ClassLoader cl = app.classLoader();
+
                     if (data.className.startsWith("act.")) {
                         cl = cl.getParent();
                     }
-                    Class<?> targetClass = $.classForName(classNode.name(), app.classLoader());
+                    Class<?> targetClass = app.classForName(classNode.name());
+                    if (targetClass.isAnnotationPresent(NoAutoRegister.class)) {
+                        return;
+                    }
                     Object param = targetClass;
                     if (data.paramIsInstance) {
                         param = app.getInstance(targetClass);

@@ -20,30 +20,95 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
+import act.app.data.StringValueResolverManager;
 import act.inject.DefaultValue;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 abstract class StringValueResolverValueLoaderBase extends ParamValueLoader.JsonBodySupported {
 
     protected final StringValueResolver<?> stringValueResolver;
+    private final StringValueResolverManager resolverManager;
+    private final boolean requireRuntimeType;
+    private final Injector injector;
     protected final ParamKey paramKey;
+    protected final Param param;
     protected final Object defVal;
     protected final DefaultValue defSpec;
+    protected final BeanSpec paramSpec;
+    protected final Map<Class, Object> defValMap = new HashMap<>();
+    protected final Map<Class, StringValueResolver> resolverMap = new HashMap<>();
 
 
-    public StringValueResolverValueLoaderBase(ParamKey key, StringValueResolver<?> resolver, Param param, DefaultValue def, Class<?> type, boolean simpleKeyOnly) {
+    public StringValueResolverValueLoaderBase(ParamKey key, DefaultValue def, BeanSpec spec, boolean simpleKeyOnly) {
         E.illegalArgumentIf(simpleKeyOnly && !key.isSimple());
+        this.paramSpec = spec;
+        this.param = spec.getAnnotation(Param.class);
         this.paramKey = key;
-        this.stringValueResolver = resolver;
         this.defSpec = def;
-        this.defVal = null != def ? resolver.resolve(def.value()) : defVal(param, type);
+        this.resolverManager = Act.app().resolverManager();
+        this.injector = Act.app().injector();
+        this.requireRuntimeType = !(spec.type() instanceof Class);
+        this.stringValueResolver = this.requireRuntimeType ? null : lookupResolver(spec, spec.rawType());
+        this.defVal = this.requireRuntimeType ? null : null != def ? this.stringValueResolver.resolve(def.value()) : defVal(param, spec.rawType());
+    }
+
+    protected StringValueResolverValueLoaderBase(ParamKey key, DefaultValue def, StringValueResolver resolver, BeanSpec paramSpec, boolean simpleKeyOnly) {
+        E.illegalArgumentIf(simpleKeyOnly && !key.isSimple());
+        this.paramSpec = paramSpec;
+        this.param = paramSpec.getAnnotation(Param.class);
+        this.paramKey = key;
+        this.defSpec = def;
+        this.resolverManager = Act.app().resolverManager();
+        this.injector = Act.app().injector();
+        this.requireRuntimeType = false;
+        this.stringValueResolver = resolver;
+        this.defVal = null != def ? this.stringValueResolver.resolve(def.value()) : defVal(param, paramSpec.rawType());
+    }
+
+    protected StringValueResolverValueLoaderBase(StringValueResolverValueLoaderBase parent, Class<?> runtimeType, StringValueResolver resolver, Object defVal) {
+        this.injector = parent.injector;
+        this.resolverManager = parent.resolverManager;
+        this.requireRuntimeType = false;
+        this.paramKey = parent.paramKey;
+        this.param = parent.param;
+        this.defVal = defVal;
+        this.stringValueResolver = resolver;
+        this.defSpec = parent.defSpec;
+        this.paramSpec = BeanSpec.of(runtimeType, this.injector);
+    }
+
+    @Override
+    public boolean requireRuntimeTypeInfo() {
+        return this.requireRuntimeType;
     }
 
     @Override
     public String bindName() {
         return paramKey.toString();
+    }
+
+    protected StringValueResolver lookupResolver(BeanSpec spec, Class runtimeType) {
+        StringValueResolver resolver = null;
+        Param param = spec.getAnnotation(Param.class);
+        if (null != param) {
+            Class<? extends StringValueResolver> resolverClass = param.resolverClass();
+            if (Param.DEFAULT_RESOLVER.class != resolverClass) {
+                resolver = injector.get(resolverClass);
+            }
+        }
+
+        if (null == resolver) {
+            resolver = resolverManager.resolver(runtimeType, spec);
+        }
+        return resolver;
     }
 
     static Object defVal(Param param, Class<?> rawType) {

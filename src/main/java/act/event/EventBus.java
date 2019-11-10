@@ -20,9 +20,9 @@ package act.event;
  * #L%
  */
 
+import act.Act;
 import act.Destroyable;
-import act.app.App;
-import act.app.AppServiceBase;
+import act.app.*;
 import act.app.event.SysEvent;
 import act.app.event.SysEventId;
 import act.app.event.SysEventListener;
@@ -30,7 +30,10 @@ import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.inject.util.Sorter;
 import act.job.JobManager;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -69,9 +72,20 @@ public class EventBus extends AppServiceBase<EventBus> {
         private Class[] argTypes;
         private boolean varargs;
         private Object[] args;
-        Key(Object id, SimpleEventListener eventListener) {
+        Key(Object id, List<Class> argTypeList) {
             setId(id);
-            setArgTypes(eventListener);
+            if (null == argTypeList || argTypeList.isEmpty()) {
+                this.argTypes = EMPTY_ARG_LIST;
+                return;
+            }
+            Class<?> arg0Type = argTypeList.get(0);
+            this.argTypes = convert(argTypeList);
+            int varargsIdx = 1;
+            if (this.id != arg0Type && !arg0Type.isInstance(id)) {
+                E.illegalArgumentIf(idType == IdType.CLASS, "The first argument in the event listener argument list must be event when binding to an event class (Enum or EventObject). \n\t listener signatures: %s \n\t event: %s", argTypeList, this.id);
+                varargsIdx = 0;
+            }
+            this.varargs = (varargsIdx + 1) == argTypeList.size() && Object[].class == argTypeList.get(varargsIdx);
         }
         Key(Object id, List<Class> argTypeList, Object[] args) {
             this(id, argTypeList, args, false);
@@ -83,25 +97,95 @@ public class EventBus extends AppServiceBase<EventBus> {
             this.varargs = varargs;
         }
 
-        private void setArgTypes(SimpleEventListener eventListener) {
-            List<Class> argTypeList = eventListener.argumentTypes();
-            if (null == argTypeList || argTypeList.isEmpty()) {
-                this.argTypes = EMPTY_ARG_LIST;
-                return;
-            }
-            Class<?> arg0Type = argTypeList.get(0);
-            this.argTypes = convert(argTypeList);
-            int varargsIdx = 1;
-            if (this.id != arg0Type && !arg0Type.isInstance(id)) {
-                E.illegalArgumentIf(idType == IdType.CLASS, "The first argument in the event listener argument list must be event when binding to an event class (Enum or EventObject). \n\t listener: %s \n\t event: %s", eventListener, this.id);
-                varargsIdx = 0;
-            }
-            this.varargs = (varargsIdx + 1) == argTypeList.size() && Object[].class == argTypeList.get(varargsIdx);
-        }
-
         private void setId(Object id) {
             this.idType = typeOf(id);
             this.id = IdType.CLASS == this.idType && !(id instanceof Class) ? id.getClass() : id;
+        }
+
+        public static Set<Key> keysOf(Object id, SimpleEventListener eventListener) {
+            Set<Key> retSet = new HashSet<>();
+            for (List<Class> argTypes : permutationOf(eventListener.argumentTypes())) {
+                retSet.add(new Key(id, argTypes));
+            }
+            if (retSet.isEmpty()) {
+                retSet.add(new Key(id, C.<Class>list()));
+            }
+            return retSet;
+        }
+
+        /**
+         * Find the permutation of arg types. E.g
+         *
+         * Suppose a declared argTypes is:
+         *
+         * ```
+         * (List, ISObject)
+         * ```
+         *
+         * Then permutation of the argTypes includes:
+         *
+         * ```
+         * (List, ISObject)
+         * (ArrayList, ISObject)
+         * (LinkedList, ISObject)
+         * (ArrayList, SObject)
+         * (LinkedList, SObject)
+         * ...
+         * ```
+         *
+         * @param argTypes
+         * @return
+         */
+        private static Set<List<Class>> permutationOf(List<Class> argTypes) {
+            int len = argTypes.size();
+            if (len == 0) {
+                return C.Set();
+            }
+
+            // get type candidates for each arg position
+            final AppClassLoader classLoader = Act.app().classLoader();
+            ClassInfoRepository repo = classLoader.classInfoRepository();
+            final List<List<Class>> candidates = new ArrayList<>();
+            for (int i = 0; i < len; ++i) {
+                Class type = argTypes.get(i);
+                final List<Class> list = new ArrayList<>();
+                list.add(type);
+                candidates.add(list);
+                ClassNode node = repo.findNode(type);
+                if (null != node) {
+                    node.visitPublicSubTreeNodes(new Lang.Visitor<ClassNode>() {
+                        @Override
+                        public void visit(ClassNode classNode) throws Lang.Break {
+                            list.add(Act.classForName(classNode.name()));
+                        }
+                    });
+                }
+            }
+
+            // generate permutation of argTypes
+            return permutationOf(candidates, candidates.size() - 1);
+        }
+
+        private static Set<List<Class>> permutationOf(List<List<Class>> candidates, int workingColumnId) {
+            if (workingColumnId == 0) {
+                Set<List<Class>> permutations = new HashSet<>();
+                for (Class c : candidates.get(0)) {
+                    permutations.add(C.newList(c));
+                }
+                return permutations;
+            } else {
+                Set<List<Class>> prefixPermutations = permutationOf(candidates, workingColumnId - 1);
+                List<Class> currentCandidates = candidates.get(workingColumnId);
+                Set<List<Class>> retSet = new HashSet<>();
+                for (List<Class> argList : prefixPermutations) {
+                    for (Class type : currentCandidates) {
+                        List<Class> merged = C.newList(argList);
+                        merged.add(type);
+                        retSet.add(merged);
+                    }
+                }
+                return retSet;
+            }
         }
 
         static IdType typeOf(Object id) {
@@ -131,6 +215,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         private static Class<?> VARARG_TYPE = Object[].class;
 
         private static ConcurrentMap<Class, Class> typeMap = new ConcurrentHashMap<>();
+        static {
+            typeMap.put(ArrayList.class, List.class);
+            typeMap.put(LinkedList.class, List.class);
+            typeMap.put($.Val.class, List.class);
+            typeMap.put($.Var.class, List.class);
+            typeMap.put(HashSet.class, Set.class);
+            typeMap.put(TreeSet.class, Set.class);
+            typeMap.put(LinkedHashSet.class, Set.class);
+            typeMap.put(HashMap.class, Map.class);
+            typeMap.put(LinkedHashMap.class, Map.class);
+            typeMap.put(ConcurrentHashMap.class, Map.class);
+        }
 
         // checkout https://github.com/actframework/actframework/issues/518
         private static Class effectiveTypeOf(Object o) {
@@ -148,11 +244,25 @@ public class EventBus extends AppServiceBase<EventBus> {
                         || type.isAnonymousClass()
                         || type.isLocalClass()
                         || type.isMemberClass()) {
-                    Class[] ca = type.getInterfaces();
-                    if (ca.length > 0) {
-                        for (Class intf: ca) {
-                            if (Modifier.isPublic(intf.getModifiers())) {
-                                mappedType = intf;
+                    boolean isCollection = Collection.class.isAssignableFrom(type);
+                    boolean isMap = !isCollection && Map.class.isAssignableFrom(type);
+                    if (isCollection || isMap) {
+                        if (isMap) {
+                            typeMap.putIfAbsent(type, Map.class);
+                        } else if (List.class.isAssignableFrom(type)) {
+                            typeMap.putIfAbsent(type, List.class);
+                        } else if (Set.class.isAssignableFrom(type)) {
+                            typeMap.putIfAbsent(type, Set.class);
+                        }
+                        mappedType = typeMap.get(type);
+                    }
+                    if (null == mappedType) {
+                        Class[] ca = type.getInterfaces();
+                        if (ca.length > 0) {
+                            for (Class intf : ca) {
+                                if (Modifier.isPublic(intf.getModifiers())) {
+                                    mappedType = intf;
+                                }
                             }
                         }
                     }
@@ -162,8 +272,16 @@ public class EventBus extends AppServiceBase<EventBus> {
                     }
                     typeMap.putIfAbsent(type, mappedType);
                 } else {
-                    typeMap.putIfAbsent(type, type);
-                    mappedType = type;
+                    if (List.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, List.class);
+                    } else if (Set.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, Set.class);
+                    } else if (Map.class.isAssignableFrom(type)) {
+                        typeMap.putIfAbsent(type, Map.class);
+                    } else {
+                        typeMap.putIfAbsent(type, type);
+                    }
+                    mappedType = typeMap.get(type);
                 }
             }
             return mappedType;
@@ -329,15 +447,25 @@ public class EventBus extends AppServiceBase<EventBus> {
     private static class StringEventContext extends EventContext<String> {
         StringEventContext(String event, Object[] args) {
             super(event, args);
+            validateSimpleEventArgs(args);
         }
 
         StringEventContext(boolean asyncForAsync, boolean asyncForSync, String event, Object[] args) {
             super(asyncForAsync, asyncForSync, event, args);
+            validateSimpleEventArgs(args);
         }
 
         @Override
         boolean shouldCallAdhocEventListeners(EventBus eventBus) {
             return eventBus.hasAdhocEventListenerFor(event);
+        }
+
+        private void validateSimpleEventArgs(Object[] args) {
+            for (Object arg : args) {
+                if (null == arg) {
+                    throw new NullPointerException("Simple event argument cannot be null");
+                }
+            }
         }
     }
 
@@ -1146,33 +1274,35 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     private EventBus _bind(Object event, final SimpleEventListener eventListener, boolean async) {
-        Key key = new Key(event, eventListener);
-        if (key.idType == Key.IdType.CLASS) {
-            Class<?> type = $.cast(key.id);
-            if (EventObject.class.isAssignableFrom(type)) {
-                if (1 == key.argTypes.length) {
-                    Class<? extends EventObject> eventType = $.cast(type);
-                    ActEventListener<?> actEventListener = new ActEventListenerBase() {
-                        @Override
-                        public void on(EventObject event) {
-                            eventListener.invoke(event);
+        for (Key key : Key.keysOf(event, eventListener)) {
+            if (key.idType == Key.IdType.CLASS) {
+                Class<?> type = $.cast(key.id);
+                if (EventObject.class.isAssignableFrom(type)) {
+                    if (1 == key.argTypes.length) {
+                        Class<? extends EventObject> eventType = $.cast(type);
+                        ActEventListener<?> actEventListener = new ActEventListenerBase() {
+                            @Override
+                            public void on(EventObject event) {
+                                eventListener.invoke(event);
+                            }
+                        };
+                        if (async) {
+                            bindAsync(eventType, actEventListener);
+                        } else {
+                            bindSync(eventType, actEventListener);
                         }
-                    };
-                    if (async) {
-                        bindAsync(eventType, actEventListener);
-                    } else {
-                        bindSync(eventType, actEventListener);
+                        return this;
                     }
-                    return this;
                 }
+                classesWithAdhocListeners.add(type);
+            } else if (key.idType == Key.IdType.ENUM) {
+                enumsWithAdhocListeners.add((Enum) event);
+            } else {
+                stringsWithAdhocListeners.add((String) event);
             }
-            classesWithAdhocListeners.add(type);
-        } else if (key.idType == Key.IdType.ENUM) {
-            enumsWithAdhocListeners.add((Enum) event);
-        } else {
-            stringsWithAdhocListeners.add((String) event);
+            _bind(async ? asyncAdhocEventListeners : adhocEventListeners, key, eventListener);
         }
-        return _bind(async ? asyncAdhocEventListeners : adhocEventListeners, key, eventListener);
+        return this;
     }
 
     private EventBus _bind(ConcurrentMap<Key, List<SimpleEventListener>> listeners, Key key, final SimpleEventListener eventListener) {
@@ -1339,7 +1469,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                         public void run() {
                             callOn(event, l);
                         }
-                    });
+                    }, event instanceof SysEvent);
                 }
             }
         } catch (ConcurrentModificationException e) {

@@ -23,32 +23,26 @@ package act.xio.undertow;
 import act.ActResponse;
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import io.undertow.io.DefaultIoCallback;
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.URLResource;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
+import io.undertow.util.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.Output;
-import org.osgl.util.OutputStreamOutput;
+import org.osgl.util.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 public class UndertowResponse extends ActResponse<UndertowResponse> {
@@ -80,6 +74,11 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
+    public void removeCookie(String name) {
+
+    }
+
+    @Override
     public boolean containsHeader(String name) {
         return hse.getResponseHeaders().contains(HEADER_NAMES.get(name));
     }
@@ -101,7 +100,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse writeContent(String s) {
         beforeWritingContent();
-        if ("" == s) {
+        if (s.length() == 0) {
             afterWritingContent();
         } else {
             try {
@@ -155,16 +154,45 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse send(URL url) {
         Resource resource = new URLResource(url, "");
-        resource.serve(sender(), hse, IoCallback.END_EXCHANGE);
+        resource.serve(sender(), hse, new DefaultIoCallback() {
+            @Override
+            public void onComplete(HttpServerExchange exchange, Sender sender) {
+                super.onComplete(exchange, sender);
+                afterWritingContent();
+                if (!blocking()) {
+                    ActionContext context = context();
+                    context.destroy();
+                }
+            }
+
+        });
         return me();
     }
 
     @Override
     public UndertowResponse send(File file) {
         try {
-            sender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
+            final FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+            hse.setResponseContentLength(channel.size());
+            sender().transferFrom(channel, new IoCallback() {
+                @Override
+                public void onComplete(HttpServerExchange exchange, Sender sender) {
+                    IO.close(channel);
+                    IoCallback.END_EXCHANGE.onComplete(exchange, sender);
+                    afterWritingContent();
+                    if (!blocking()) {
+                        ActionContext context = context();
+                        context.destroy();
+                    }
+                }
+
+                @Override
+                public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+                    IO.close(channel);
+                    IoCallback.END_EXCHANGE.onException(exchange, sender, exception);
+                }
+            });
             endAsync = !blocking();
-            afterWritingContent();
         } catch (IOException e) {
             endAsync = false;
             afterWritingContent();
@@ -184,7 +212,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
-    public void commit() {
+    protected void doCommit() {
         if (null != this.output) {
             IO.close(output);
         } else if (null != this.outputStream) {
@@ -247,8 +275,13 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected OutputStream createOutputStream() {
-        ensureBlocking();
-        return hse.getOutputStream();
+        if (blocking()) {
+            return hse.getOutputStream();
+        } else {
+            endAsync = true;
+            final NonBlockOutput senderOutput = new NonBlockOutput(sender());
+            return BufferedOutput.wrap(senderOutput).asOutputStream();
+        }
     }
 
     @Override

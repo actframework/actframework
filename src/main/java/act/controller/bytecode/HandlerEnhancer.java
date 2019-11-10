@@ -43,7 +43,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private HandlerMethodMetaInfo info;
     private MethodVisitor next;
     private int paramIdShift = 0;
-    private Set<Integer> skipNaming = new HashSet<Integer>();
+    private Set<Integer> skipNaming = new HashSet<>();
+    private Map<Integer, String> overriddenNames = new HashMap<>();
     private boolean notAction;
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
@@ -64,9 +65,19 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     }
 
     @Override
-    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+    public AnnotationVisitor visitParameterAnnotation(final int parameter, String desc, boolean visible) {
         if ("Ljavax/inject/Named;".equals(desc)) {
             skipNaming.add(parameter);
+        } else if ("Lorg/osgl/mvc/annotation/Param;".equals(desc)) {
+            return new AnnotationVisitor(ASM5, super.visitParameterAnnotation(parameter, desc, visible)) {
+                @Override
+                public void visit(String name, Object value) {
+                    if ("value".equals(name)) {
+                        overriddenNames.put(parameter, S.string(value));
+                    }
+                    super.visit(name, value);
+                }
+            };
         }
         return super.visitParameterAnnotation(parameter, desc, visible);
     }
@@ -114,7 +125,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         int sz = info.paramCount();
         for (int i = 0; i < sz; ++i) {
             if (!skipNaming.contains(i)) {
-                String name = info.param(i).name();
+                String name = overriddenNames.get(i);
+                if (null == name) name = info.param(i).name();
                 AnnotationVisitor av = mv.visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
                 av.visit("value", name);
             }
@@ -242,6 +254,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     }
                     lbl = lblList.get(--pos);
                 }
+                logger.warn("Unable to locate var name for param #%n, possibly because source is compiled without debug info", index);
                 return null;
             }
 
@@ -283,9 +296,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             @SuppressWarnings("FallThrough")
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
-                if (!segment.meta.hasLocalVariableTable()) {
-                    logger.warn("local variable table info not found. ActionContext render args might not be automatically populated");
-                }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = new ArrayList<>();
                 String templateLiteral = null;
@@ -330,6 +340,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 case ICONST_3:
                                 case ICONST_4:
                                 case ICONST_5:
+                                    break;
+                                case POP: // inline template
+                                    invalidParam = true;
                                     break;
                                 default:
                                     logger.warn("Invalid render argument found in %s: unknow opcode: %s", segment.meta.fullName(), node.getOpcode());

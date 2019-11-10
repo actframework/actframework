@@ -23,7 +23,7 @@ package act.test.verifier;
 import act.test.util.NamedLogic;
 import org.osgl.util.converter.TypeConverterRegistry;
 
-public abstract class Verifier<T extends Verifier> extends NamedLogic<T> {
+public abstract class Verifier extends NamedLogic {
 
     public abstract boolean verify(Object value);
 
@@ -35,5 +35,9 @@ public abstract class Verifier<T extends Verifier> extends NamedLogic<T> {
     public static void registerTypeConverters() {
         TypeConverterRegistry.INSTANCE.register(new FromLinkedHashMap(Verifier.class));
         TypeConverterRegistry.INSTANCE.register(new FromString(Verifier.class));
+    }
+
+    public Verifier meOrReversed(boolean reversed) {
+        return reversed ? new ReversedVerifier(this) : this;
     }
 }

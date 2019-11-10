@@ -80,7 +80,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                         }
                     }
                     if (matches) {
-                        loader = new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, null, def, rawType);
+                        loader = new StringValueResolverValueLoader(ParamKey.of(bindName), def, resolver, spec);
                     }
                 }
             }
@@ -104,7 +104,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                             }
                         }
                         if (matches) {
-                            loader = new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, null, def, rawType);
+                            loader = new StringValueResolverValueLoader(ParamKey.of(bindName), def, resolver, spec);
                             break;
                         }
                     }
@@ -126,7 +126,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                 resolver = resolverManager.resolver(rawType, spec);
             }
 
-            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, def, rawType) : buildLoader(ParamKey.of(bindName), spec);
+            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), def, spec) : buildLoader(ParamKey.of(bindName), spec);
         }
 
         return loader;
