@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+@import act.util.DataTable, org.osgl.Lang
+@args DataTable table
+<table class="act_data_table">
+  <thead>
+  <tr>
+  @for(table.heading()) {
+  <th>@_</th>
+  }
+  </tr>
+  </thead>
+  <tbody>
+  @def boolean isUrl(Object v) {
+    if (null == v) {return false;}
+    if (!(v instanceof String) && !(v instanceof Appendable)) {
+      return false;
+    }
+    String s = v.toString();
+    return s.startsWith("http://") || s.startsWith("https://");
+  }
+  @def String toString(Object v) {
+    if (null == v) return "";
+    if (!Lang.isSimpleType(v.getClass())) {
+  return "<pre>" + com.alibaba.fastjson.JSON.toJSONString(v, true) + "</pre>";
+    }
+    return v.toString();
+  }
+  @for(Object row: table) {
+  <tr>
+    @for(String label: table.heading()) {
+    <td
+            @if(label.equals(DataTable.KEY_FIELD)){
+              class="act_data_table_label act_data_table_left"
+            } else if(table.isRightAligned(label)) {
+              class="act_data_table_right"
+            } else {
+              class="act_data_table_left"
+            }
+    >
+      @{
+        Object v = table.val(row, label)
+      }
+      @if(isUrl(v)) {
+        <a href="@v" target="_blank">@v</a>
+      } else {
+        @toString(v).raw()
+      }
+    </td>
+    }
+  </tr>
+  }
+  </tbody>
+</table>

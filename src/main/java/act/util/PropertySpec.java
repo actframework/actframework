@@ -277,7 +277,7 @@ public @interface PropertySpec {
         }
 
         public Map<String, String> labelMapping(ActContext context) {
-            return C.Map(spec(context).labels());
+            return null == context ? labelMapping() : C.Map(spec(context).labels());
         }
 
         public Set<String> excludedFields(ActContext context) {
@@ -320,6 +320,9 @@ public @interface PropertySpec {
         }
 
         private Spec spec(ActContext context) {
+            if (null == context) {
+                return common;
+            }
             if (context instanceof ActionContext) {
                 return null == http || http.isEmpty() ? common : http;
             } else if (context instanceof CliContext) {

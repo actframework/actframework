@@ -318,6 +318,7 @@ public final class Act {
     public static void startup(AppDescriptor descriptor) {
         long start = descriptor.getStart();
         processEnvironment(descriptor);
+        registerMimeTypes();
         registerTypeConverters();
         loadConfig();
         Banner.print(descriptor);
@@ -856,6 +857,11 @@ public final class Act {
                 LOGGER.trace("set node group to %s", s);
             }
         }
+    }
+
+    public static void registerMimeTypes() {
+        MimeType.findByContentType("text/html").createAlias("htmltable");
+        MimeType.findByContentType("text/plain").createAlias("texttable");
     }
 
     public static void registerTypeConverters() {

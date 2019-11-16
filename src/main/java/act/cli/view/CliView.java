@@ -336,7 +336,9 @@ public enum CliView {
 
     protected List toList(Object result) {
         List dataList;
-        if (result instanceof Iterable) {
+        if (result instanceof List) {
+            return (List) result;
+        } else if (result instanceof Iterable) {
             dataList = C.list((Iterable) result);
         } else if (result instanceof Iterator) {
             dataList = C.list((Iterator) result);
