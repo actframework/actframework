@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.30**
+* Support `htmltable` pseudo Accept type #1244
+* Allow it specify particular part of returned data in response using `_jsonPath` parameter #1245
 * `__path` param value needs to be sanitized #1241
 * Act-Test - add an `entityId()` function #1240
 

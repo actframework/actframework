@@ -32,6 +32,7 @@ import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import com.google.zxing.BarcodeFormat;
 import org.osgl.$;
 import org.osgl.Lang;
@@ -1783,12 +1784,24 @@ public @interface Controller {
             } else {
                 H.Format fmt = actionContext.accept();
                 String fmtName = fmt.name();
-                String s = v instanceof String ? (String) v : $$.toString(v, shouldUseToString);
+                String s = fmt.isText() ? (v instanceof String ? (String) v : $$.toString(v, shouldUseToString)) : null;
                 if (S.eq(fmtName, "qrcode")) {
                     return new ZXingResult(s, BarcodeFormat.QR_CODE);
                 } else if (S.eq(fmtName, "barcode")) {
                     return new ZXingResult(s, BarcodeFormat.CODE_128);
-                } else if (fmt.isText()) {
+                } else if (S.eq(fmtName, "htmltable")) {
+                    boolean fullPage = $.bool(actionContext.paramVal("_fullPage"));
+                    actionContext.templatePath(fullPage ? "/~table_page.html" : "/~table.html");
+                    DataTable dataTable = new DataTable(v);
+                    if (1 == dataTable.rowCount()) {
+                        dataTable = dataTable.transpose();
+                    }
+                    actionContext.renderArg("table", dataTable);
+                    if (fullPage) {
+                        actionContext.renderArg("title", "Data table - " + actionContext.handlerMethod().getName());
+                    }
+                    return RenderTemplate.get();
+                } else if (null != s) {
                     return RenderText.of(status, fmt, s);
                 }
                 DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
@@ -1922,6 +1935,10 @@ public @interface Controller {
                 // the following code breaks before handler without returning result
                 //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
                 return null;
+            }
+            String jsonPath = context.paramVal("_jsonPath");
+            if (null != jsonPath) {
+                v = JSONPath.eval(v, jsonPath);
             }
             Class vCls = v.getClass();
             boolean isSimpleType = $.isSimpleType(vCls);

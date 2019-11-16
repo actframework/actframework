@@ -1,0 +1,22 @@
+table.act_data_table {
+    border-collapse: collapse;
+    font-size: 11pt;
+}
+table.act_data_table th {
+    background-color: #007;
+    padding: 5px;
+    color: #efefef;
+    border-color: #efefef;
+}
+table.act_data_table, table.act_data_table th, table.act_data_table td {
+    border: 1px solid #007;
+}
+table.act_data_table td {
+    padding: 5px;
+}
+.act_data_table_right {
+    text-align: right
+}
+.act_data_table_left {
+    text-align: left
+}
