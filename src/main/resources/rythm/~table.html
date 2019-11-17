@@ -18,6 +18,11 @@
     String s = v.toString();
     return s.startsWith("http://") || s.startsWith("https://");
   }
+  @def String addHtmlTableAccept(Object v) {
+    if (null == v) return "";
+    String url = v.toString();
+    return url + (url.contains("?") ? "&" : "?") + "_accept=htmltable";
+  }
   @def String toString(Object v) {
     if (null == v) return "";
     if (!Lang.isSimpleType(v.getClass())) {
@@ -41,7 +46,7 @@
         Object v = table.val(row, label)
       }
       @if(isUrl(v)) {
-        <a href="@v" target="_blank">@v</a>
+        <a href="@addHtmlTableAccept(v)" target="_blank">@v</a>
       } else {
         @toString(v).raw()
       }

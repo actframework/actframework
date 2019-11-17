@@ -142,7 +142,7 @@ public class ScenarioDebugHelper {
 
     @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
     public List<Scenario> runTest(App app, Keyword testId, ActionContext context, ProgressGauge gauge) {
-        if (context.accept() == H.Format.HTML) {
+        if (context.accept().isSameTypeWith(H.Format.HTML)) {
             context.templatePath("/~test.html");
         }
         List<Scenario> results = test.run(app, testId, null, false, gauge);

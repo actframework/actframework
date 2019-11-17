@@ -55,7 +55,7 @@ class RequestBuilder {
                 if (null == format) {
                     format = H.Format.resolve(accept);
                 }
-                if (H.Format.UNKNOWN == format) {
+                if (H.Format.UNKNOWN.isSameTypeWith(format)) {
                     throw new UnexpectedException("Invalid accept in request spec: " + accept);
                 }
                 accept = format.contentType();

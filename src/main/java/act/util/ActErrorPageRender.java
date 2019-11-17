@@ -24,6 +24,7 @@ import static org.osgl.http.H.Format.*;
 
 import act.Act;
 import act.app.ActionContext;
+import act.controller.Controller;
 import act.view.Template;
 import act.view.ViewManager;
 import org.osgl.$;
@@ -67,15 +68,15 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 errorMsg = translated;
             }
             H.Format accept = context.accept();
-            if (H.Format.JSON == accept) {
+            if (H.Format.JSON.isSameTypeWith(accept)) {
                 return jsonContent(error, errorCode, errorMsg);
-            } else if (HTML == accept) {
+            } else if (HTML.isSameTypeWith(accept)) {
                 String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", errorMsg);
                 return S.concat("<!DOCTYPE html><html><head><meta charset='utf-8'><title>"
                         , header
                         , "</title></head><body><h1>"
                         , header, "</h1></body></html>");
-            } else if (H.Format.XML == accept) {
+            } else if (H.Format.XML.isSameTypeWith(accept)) {
                 S.Buffer sb = S.buffer();
                 sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
                 if (null != errorCode) {
@@ -83,13 +84,13 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 }
                 sb.append("<message>").append(errorMsg).append("</message></error>");
                 return sb.toString();
-            } else if (CSV == accept) {
+            } else if (CSV.isSameTypeWith(accept)) {
                 if (null == errorCode) {
                     return S.concat("message\n", errorMsg);
                 } else {
                     return S.concat("code,message\n", Integer.toString(errorCode), ",", errorMsg);
                 }
-            } else if (H.Format.TXT == accept) {
+            } else if (H.Format.TXT.isSameTypeWith(accept)) {
                 return null == errorCode ? errorMsg : S.concat(Integer.toString(errorCode), " ", errorMsg);
             } else {
                 // Unknown accept format
@@ -113,10 +114,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
     }
 
     private boolean isAcceptGoodForErrorPage(H.Format fmt) {
-        return (HTML == fmt
-                || CSV == fmt
-                || H.Format.JSON == fmt
-                || XML == fmt);
+        return fmt.isSameTypeWithAny(HTML, CSV, JSON, XML);
     }
 
     private String jsonContent(ErrorResult error, Integer errorCode, String errorMsg) {

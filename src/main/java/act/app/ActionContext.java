@@ -26,6 +26,7 @@ import static org.osgl.http.H.Header.Names.*;
 
 import act.*;
 import act.conf.AppConfig;
+import act.controller.Controller;
 import act.controller.ParamNames;
 import act.controller.ResponseCache;
 import act.controller.captcha.CaptchaViolation;
@@ -684,19 +685,19 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean jsonEncoded() {
-        return req().contentType() == JSON;
+        return req().contentType().isSameTypeWith(JSON);
     }
 
     public boolean xmlEncoded() {
-        return req().contentType() == H.Format.XML;
+        return req().contentType().isSameTypeWith(XML);
     }
 
     public boolean acceptJson() {
-        return accept() == JSON;
+        return accept().isSameTypeWith(JSON);
     }
 
     public boolean acceptXML() {
-        return accept() == H.Format.XML;
+        return accept().isSameTypeWith(XML);
     }
 
     public boolean isAjax() {
@@ -924,9 +925,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         } else {
             if (req().method() == H.Method.POST) {
                 H.Format accept = accept();
-                if (JSON == accept) {
+                if (accept.isSameTypeWith(JSON)) {
                     return CREATED_JSON;
-                } else if (H.Format.XML == accept) {
+                } else if (accept.isSameTypeWith(XML)) {
                     return CREATED_XML;
                 } else {
                     return CREATED;
@@ -977,16 +978,16 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     private static boolean isErrorCompatible(H.Format fmt) {
-        return JSON == fmt || HTML == fmt || CSV == fmt || TXT == fmt || XML == fmt;
+        return fmt.isSameTypeWithAny(JSON, HTML, CSV, TXT, XML);
     }
 
     public static H.Format contentTypeForErrorResult(H.Request<?> req) {
         H.Format fmt = req.accept();
         if (req.isAjax()) {
-            if (H.Format.UNKNOWN == fmt) {
+            if (fmt.isSameTypeWith(UNKNOWN)) {
                 fmt = req.contentType();
             }
-            if (JSON == fmt || H.Format.XML == fmt) {
+            if (fmt.isSameTypeWithAny(XML, JSON)) {
                 return fmt;
             }
         }
@@ -999,13 +1000,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext applyContentType() {
         ActResponse resp = resp();
         H.Format lastContentType = resp.lastContentType();
-        if (null != lastContentType && $.ne(H.Format.UNKNOWN, lastContentType)) {
+        if (null != lastContentType && !lastContentType.isSameTypeWith(UNKNOWN)) {
             resp.commitContentType();
             return this;
         }
         H.Request req = req();
         H.Format fmt = req.accept();
-        if (H.Format.UNKNOWN == fmt) {
+        if (fmt.isSameTypeWith(UNKNOWN)) {
             fmt = req.contentType();
         }
         applyContentType(fmt);

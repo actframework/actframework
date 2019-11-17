@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.*;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 import javax.inject.Inject;
 
@@ -60,6 +61,8 @@ import javax.inject.Inject;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface Controller {
+
+    H.Format FMT_HTML_TABLE = H.Format.of(DataTable.HTML_TABLE);
 
     /**
      * Indicate the context path for all action methods declared
@@ -102,9 +105,9 @@ public @interface Controller {
          */
         public static Result ok() {
             H.Format accept = ActionContext.current().accept();
-            if (H.Format.JSON == accept) {
+            if (accept.isSameTypeWith(H.Format.JSON)) {
                 return OK_JSON;
-            } else if (H.Format.XML == accept) {
+            } else if (accept.isSameTypeWith(H.Format.XML)) {
                 return OK_XML;
             }
             return OK;
@@ -1748,7 +1751,8 @@ public @interface Controller {
 
         public static Result inferPrimitiveResult(
                 Object v, ActionContext actionContext, boolean requireJSON,
-                boolean requireXML, boolean requireYAML, boolean isArray, boolean shouldUseToString) {
+                boolean requireXML, boolean requireYAML, boolean isArray,
+                boolean shouldUseToString) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
                 if (isArray) {
@@ -1777,32 +1781,19 @@ public @interface Controller {
                 return RenderYAML.of(status, v);
             } else if (v instanceof byte[]) {
                 H.Format fmt = actionContext.accept();
-                if (H.Format.UNKNOWN == fmt) {
+                if (H.Format.UNKNOWN.isSameTypeWith(fmt)) {
                     actionContext.resp().contentType("application/octet-stream");
                 }
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
                 String fmtName = fmt.name();
-                String s = fmt.isText() ? (v instanceof String ? (String) v : $$.toString(v, shouldUseToString)) : null;
                 if (S.eq(fmtName, "qrcode")) {
-                    return new ZXingResult(s, BarcodeFormat.QR_CODE);
+                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.QR_CODE);
                 } else if (S.eq(fmtName, "barcode")) {
-                    return new ZXingResult(s, BarcodeFormat.CODE_128);
-                } else if (S.eq(fmtName, "htmltable")) {
-                    boolean fullPage = $.bool(actionContext.paramVal("_fullPage"));
-                    actionContext.templatePath(fullPage ? "/~table_page.html" : "/~table.html");
-                    DataTable dataTable = new DataTable(v);
-                    if (1 == dataTable.rowCount()) {
-                        dataTable = dataTable.transpose();
-                    }
-                    actionContext.renderArg("table", dataTable);
-                    if (fullPage) {
-                        actionContext.renderArg("title", "Data table - " + actionContext.handlerMethod().getName());
-                    }
-                    return RenderTemplate.get();
-                } else if (null != s) {
-                    return RenderText.of(status, fmt, s);
+                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.CODE_128);
+                } else if (fmt.isText()) {
+                    return RenderText.of(status, fmt, v2s(v, shouldUseToString));
                 }
                 DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
                 if (null == dr) {
@@ -1810,6 +1801,10 @@ public @interface Controller {
                 }
                 return new DirectRenderResult(dr, v);
             }
+        }
+
+        private static String v2s(Object v, boolean shouldUseToString) {
+            return (v instanceof String ? (String) v : $$.toString(v, shouldUseToString));
         }
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
@@ -1927,9 +1922,9 @@ public @interface Controller {
             }
 
             H.Format accept = context.accept();
-            boolean requireJSON = (accept == H.Format.JSON) || (accept == H.Format.UNKNOWN);
-            boolean requireXML = !requireJSON && accept == H.Format.XML;
-            boolean requireYAML = (!requireJSON && !requireXML) && accept == H.Format.YAML;
+            boolean requireJSON = accept.isSameTypeWithAny(H.Format.JSON, H.Format.UNKNOWN);
+            boolean requireXML = !requireJSON && accept.isSameTypeWith(H.Format.XML);
+            boolean requireYAML = (!requireJSON && !requireXML) && accept.isSameTypeWith(H.Format.YAML);
 
             if (null == v) {
                 // the following code breaks before handler without returning result
@@ -1940,10 +1935,10 @@ public @interface Controller {
             if (null != jsonPath) {
                 v = JSONPath.eval(v, jsonPath);
             }
-            Class vCls = v.getClass();
+            Class<?> vCls = v.getClass();
             boolean isSimpleType = $.isSimpleType(vCls);
             boolean shouldUseToString = $$.shouldUseToString(vCls);
-            if (accept == H.Format.HTML && !shouldUseToString) {
+            if (H.Format.HTML.isSameTypeWith(accept) && !shouldUseToString) {
                 requireJSON = true;
                 context.resp().contentType(H.Format.JSON);
             }
@@ -1958,10 +1953,9 @@ public @interface Controller {
                 return inferResult((ISObject) v, context);
             } else {
                 PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
-                if (requireJSON || H.Format.UNKNOWN == context.req().accept()) {
-                    boolean isIterable = v instanceof Iterable;
-                    if (isIterable) {
-                        v = new FastJsonIterable((Iterable) v);
+                if (requireJSON || H.Format.UNKNOWN.isSameTypeWith(accept)) {
+                    if (v instanceof Iterable) {
+                        v = new FastJsonIterable<>((Iterable) v);
                     }
                     // no need to check string case as it is already checked above
                     if (v instanceof $.Visitor) {
@@ -1973,7 +1967,7 @@ public @interface Controller {
                     return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
                 } else if (requireXML) {
                     return new FilteredRenderXML(status, v, propertySpec, context);
-                } else if (context.accept() == H.Format.CSV) {
+                } else if (context.accept().isSameTypeWith(H.Format.CSV)) {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else if (requireYAML) {
                     if (null != propertySpec) {
@@ -1984,9 +1978,32 @@ public @interface Controller {
                         v = stage.to(newRetVal);
                     }
                     return RenderYAML.of(status, v);
+                } else if (FMT_HTML_TABLE == accept) {
+                    boolean fullPage = $.not(context.paramVal("_snippet"));
+                    context.templatePath(fullPage ? "/~table_page.html" : "/~table.html");
+                    DataTable dataTable = new DataTable(v, propertySpec);
+                    if (1 == dataTable.rowCount()) {
+                        dataTable = dataTable.transpose();
+                    }
+                    context.renderArg("table", dataTable);
+                    if (fullPage) {
+                        context.renderArg("title", "Data table - " + context.handlerMethod().getName());
+                    }
+                    req.accept(H.Format.HTML);
+                    return RenderTemplate.get();
                 } else {
-                    boolean isArray = vCls.isArray();
-                    return inferPrimitiveResult(v, context, false, requireXML, requireYAML, isArray, shouldUseToString);
+                    DirectRender dr = Act.viewManager().loadDirectRender(context);
+                    if (null != dr) {
+                        return new DirectRenderResult(dr, v);
+                    }
+                    // fall back to JSON
+                    if (v instanceof $.Visitor) {
+                        return RenderJSON.of(status, ($.Visitor) v);
+                    } else if (v instanceof $.Func0) {
+                        return RenderJSON.of(status, ($.Func0) v);
+                    }
+                    JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
+                    return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
                 }
             }
         }

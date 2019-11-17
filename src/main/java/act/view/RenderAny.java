@@ -24,6 +24,7 @@ import static org.osgl.http.H.Format.*;
 
 import act.ActResponse;
 import act.app.ActionContext;
+import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -67,7 +68,7 @@ public class RenderAny extends Result {
             return;
         }
         H.Format fmt = context.accept();
-        if (fmt == UNKNOWN) {
+        if (fmt.isSameTypeWith(UNKNOWN)) {
             H.Request req = context.req();
             if (req.userAgent().isIE9Down()) {
                 fmt = HTML;
@@ -84,7 +85,7 @@ public class RenderAny extends Result {
             }
         }
         Result result = null;
-        if (JSON == fmt) {
+        if (JSON.isSameTypeWith(fmt)) {
             List<String> varNames = context.__appRenderArgNames();
             Map<String, Object> map = new HashMap<>(context.renderArgs());
             if (null != varNames && !varNames.isEmpty()) {
@@ -93,7 +94,7 @@ public class RenderAny extends Result {
                 }
             }
             result = new RenderJSON(map);
-        } else if (XML == fmt) {
+        } else if (XML.isSameTypeWith(fmt)) {
             List<String> varNames = context.__appRenderArgNames();
             Map<String, Object> map = new HashMap<>();
             if (null != varNames && !varNames.isEmpty()) {
@@ -102,13 +103,13 @@ public class RenderAny extends Result {
                 }
             }
             result = new FilteredRenderXML(map, null, context);
-        } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
+        } else if (fmt.isSameTypeWithAny(HTML, TXT, CSV)) {
             if (!ignoreMissingTemplate) {
                 throw E.unsupport("Template[%s] not found", context.templatePath());
             }
             context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.prepareRespForResultEvaluation());
             return;
-        } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
+        } else if (fmt.isSameTypeWithAny(PDF, XLS, XLSX, DOC, DOCX)) {
             List<String> varNames = context.__appRenderArgNames();
             if (null != varNames && !varNames.isEmpty()) {
                 Object firstVar = context.renderArg(varNames.get(0));

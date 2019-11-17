@@ -35,6 +35,9 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.*;
 
+import static org.osgl.http.H.Format.HTML;
+import static org.osgl.http.H.Format.TXT;
+
 public class MailerConfig extends AppHolderBase {
 
     public static final String FROM = "from";
@@ -210,7 +213,7 @@ public class MailerConfig extends AppHolderBase {
         }
         try {
             H.Format fmt = H.Format.valueOf(s);
-            if (H.Format.HTML == fmt || H.Format.TXT == fmt) {
+            if (fmt.isSameTypeWithAny(HTML, TXT)) {
                 return fmt;
             }
             throw E.invalidConfiguration("Content type not supported by mailer: %s", fmt);

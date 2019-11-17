@@ -204,7 +204,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     }
 
                     H.Format fmt = req.accept();
-                    if (H.Format.UNKNOWN == fmt) {
+                    if (H.Format.UNKNOWN.isSameTypeWith(fmt)) {
                         fmt = req.contentType();
                     }
 

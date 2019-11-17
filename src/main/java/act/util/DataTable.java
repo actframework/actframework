@@ -46,6 +46,8 @@ import java.util.*;
  */
 public class DataTable implements Iterable {
 
+    public static final String HTML_TABLE = "htmltable";
+
     public static final String KEY_FIELD = "_field";
 
     private List<String> colKeys;
@@ -351,6 +353,9 @@ public class DataTable implements Iterable {
         int max = Math.min(rowCount, 10); // probe at most 10 rows of data for labels
         SortedSet<String> keys;
         if (isPojo()) {
+            if (null == firstRow) {
+                firstRow = rows.iterator().next();
+            }
             keys = keysOf(firstRow);
         } else {
             keys = new TreeSet<>();

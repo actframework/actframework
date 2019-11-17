@@ -620,7 +620,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                         } else {
                             String payload;
                             H.Format accept = context.accept();
-                            boolean requireXML = accept == H.Format.XML;
+                            boolean requireXML = accept.isSameTypeWith(H.Format.XML);
                             JSONObject json = $.deepCopy(retVal).to(JSONObject.class);
                             if (requireXML) {
                                 Document doc = $.convert(json).to(Document.class);
@@ -648,7 +648,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
              * 1) this is an ajax call
              * 2) the accept content type is **NOT** html
              */
-            boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
+            boolean failOnViolation = context.isAjax() || !context.accept().isSameTypeWith(H.Format.HTML);
 
             if (failOnViolation) {
                 String msg = context.violationMessage(";");
@@ -687,7 +687,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept() == H.Format.HTML);
+            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept().isSameTypeWith(H.Format.HTML));
             if (renderAsyncJobPage) {
                 context.templatePath("/act/asyncJob.html");
                 context.renderArg("jobId", jobId);

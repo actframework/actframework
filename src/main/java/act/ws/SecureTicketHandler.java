@@ -55,10 +55,10 @@ public class SecureTicketHandler extends RequestHandlerBase {
         H.Response resp = context.prepareRespForResultEvaluation();
         resp.contentType(accept.contentType());
         String content;
-        if (H.Format.JSON == accept) {
+        if (H.Format.JSON.isSameTypeWith(accept)) {
             Map<String, Object> map = C.Map("ticket", ticket);
             content = JSON.toJSONString(map);
-        } else if (H.Format.XML == accept) {
+        } else if (H.Format.XML.isSameTypeWith(accept)) {
             content = S.concat("<?xml version=\"1.0\" ?><ticket>", ticket.toString(), "</ticket>");
         } else {
             content = ticket.toString();

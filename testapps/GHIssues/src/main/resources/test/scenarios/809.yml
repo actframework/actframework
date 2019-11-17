@@ -4,6 +4,8 @@ Scenario(809):
   - description: Test
     request:
       get: 809
+      headers:
+        accept: text/html
     response:
       html:
         h1: GH809

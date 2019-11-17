@@ -25,6 +25,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.handler.ExpressHandler;
 import act.view.HotReloading;
+import org.osgl.http.H;
 import org.osgl.mvc.result.Conflict;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,6 +58,7 @@ public class HotReloadingHandler extends FastRequestHandler implements ExpressHa
             HIT_COUNTER.set(delay);
         }
         context.renderArg("delay", delay);
+        context.accept(H.Format.HTML);
         HOT_RELOADING.apply(context.req(), context.prepareRespForResultEvaluation());
     }
 

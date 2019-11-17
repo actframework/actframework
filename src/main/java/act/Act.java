@@ -860,8 +860,7 @@ public final class Act {
     }
 
     public static void registerMimeTypes() {
-        MimeType.findByContentType("text/html").createAlias("htmltable");
-        MimeType.findByContentType("text/plain").createAlias("texttable");
+        MimeType.findByContentType("text/html").createAlias(DataTable.HTML_TABLE);
     }
 
     public static void registerTypeConverters() {
