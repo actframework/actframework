@@ -890,7 +890,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     private void processForceResponse(ActionContext actionContext) {
-        if (null != forceResponseContentType) {
+        if (null != forceResponseContentType && $.not(actionContext.paramVal("_accept"))) {
             actionContext.accept(forceResponseContentType);
         }
         if (null != forceResponseStatus) {

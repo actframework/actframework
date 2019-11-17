@@ -314,6 +314,11 @@ public class DataTable implements Iterable {
             rowCount = col.size();
             rows = col;
         } else if (data instanceof Iterable) {
+            Iterable iterable = $.cast(data);
+            if (iterable.iterator() == iterable) {
+                initRows(C.list(iterable));
+                return;
+            }
             rows = $.cast(data);
             rowCount = -1;
         } else {
@@ -346,7 +351,7 @@ public class DataTable implements Iterable {
             }
         }
         if (null == labelLookup) {
-            setLabelLookup(C.<String, String>Map());
+            setLabelLookup(C.<String, String>newMap());
         }
         // explore data rows to probe fields
         E.illegalArgumentIf(0 == rowCount, "Unable to probe table heading: no data found");

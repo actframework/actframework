@@ -1987,7 +1987,16 @@ public @interface Controller {
                     }
                     context.renderArg("table", dataTable);
                     if (fullPage) {
-                        context.renderArg("title", "Data table - " + context.handlerMethod().getName());
+                        String s = context.actionPath();
+                        if (s.contains(".")) {
+                            String methodName = S.cut(s).afterLast(".");
+                            String className = S.cut(s).beforeLast(".");
+                            if (className.contains(".")) {
+                                className = S.cut(className).afterLast(".");
+                            }
+                            s = S.concat(className, ".", methodName);
+                        }
+                        context.renderArg("title", s);
                     }
                     req.accept(H.Format.HTML);
                     return RenderTemplate.get();

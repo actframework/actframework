@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-@import act.util.DataTable, org.osgl.Lang
+@import act.util.DataTable, org.osgl.Lang, org.osgl.util.S
 @args DataTable table
 <table class="act_data_table">
   <thead>
@@ -26,7 +26,9 @@
   @def String toString(Object v) {
     if (null == v) return "";
     if (!Lang.isSimpleType(v.getClass())) {
-  return "<pre>" + com.alibaba.fastjson.JSON.toJSONString(v, true) + "</pre>";
+      String s = com.alibaba.fastjson.JSON.toJSONString(v, true);
+      s = S.strip(s).of(S.DOUBLE_QUOTES);
+  return "<pre>" + s + "</pre>";
     }
     return v.toString();
   }

@@ -65,6 +65,13 @@ SimpleRestfulServiceBase<
         this.dao = $.requireNotNull(dao);
     }
 
+    @Before
+    public void setPropertySpec(String _propSpec) {
+        if ($.bool(_propSpec)) {
+            PropertySpec.current.set(_propSpec);
+        }
+    }
+
     /**
      * Sub type can override this method to update the query `q` to ensure
      * the returned data list is only accessible to the current login user.
@@ -176,6 +183,7 @@ SimpleRestfulServiceBase<
      * @return ${MODEL_TYPE} records as specified above.
      */
     @GetAction
+    @PropertySpec("-idAsStr,-v")
     public Iterable<MODEL_TYPE> list(int _page, int _pageSize, String _orderBy) {
         E.illegalArgumentIf(_page < 0, "page number is less than zero");
         E.illegalArgumentIf(_pageSize < 0, "page size is less than zero");
@@ -198,6 +206,7 @@ SimpleRestfulServiceBase<
      * @return a ${MODEL_TYPE} record specified by URL path variable `model`
      */
     @GetAction("{entity}")
+    @PropertySpec("-idAsStr,-v")
     public MODEL_TYPE get(@DbBind MODEL_TYPE entity) {
         onGettingEntity(entity);
         return entity;
