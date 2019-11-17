@@ -59,9 +59,9 @@ public class DataTable implements Iterable {
     private Object firstRow;
     private Set<String> rightAlignCols;
     // key: col key; val: label
-    private Map<String, String> labelLookup;
+    private C.Map<String, String> labelLookup;
     // key: label, val: col key
-    private Map<String, String> reverseLabelLookup;
+    private C.Map<String, String> reverseLabelLookup;
 
     // the transpose table of this table
     private transient volatile DataTable transpose;
@@ -449,7 +449,7 @@ public class DataTable implements Iterable {
             if (!labelLookup.containsKey(fn)) {
                 Label label = f.getAnnotation(Label.class);
                 if (null != label) {
-                    labelLookup.put(fn, label.value());
+                    addLabelLookup(fn, label.value());
                 }
             }
             Class<?> ft = f.getType();
@@ -483,7 +483,7 @@ public class DataTable implements Iterable {
             if (!labelLookup.containsKey(key)) {
                 Label label = m.getAnnotation(Label.class);
                 if (null != label) {
-                    labelLookup.put(key, label.value());
+                    addLabelLookup(key, label.value());
                 }
             }
             Class<?> mt = m.getReturnType();
@@ -500,7 +500,12 @@ public class DataTable implements Iterable {
     }
 
     private void setLabelLookup(Map<String, String> lookup) {
-        this.labelLookup = lookup;
-        this.reverseLabelLookup = lookup.isEmpty() ? C.<String, String>Map() : C.Map(lookup).flipped();
+        this.labelLookup = C.newMap(lookup);
+        this.reverseLabelLookup = this.labelLookup.flipped();
+    }
+
+    private void addLabelLookup(String colKey, String label) {
+        this.labelLookup.put(colKey, label);
+        this.reverseLabelLookup.put(label, colKey);
     }
 }

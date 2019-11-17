@@ -1978,7 +1978,7 @@ public @interface Controller {
                         v = stage.to(newRetVal);
                     }
                     return RenderYAML.of(status, v);
-                } else if (FMT_HTML_TABLE == accept) {
+                } else if (FMT_HTML_TABLE.isSameTypeWith(accept)) {
                     boolean fullPage = $.not(context.paramVal("_snippet"));
                     context.templatePath(fullPage ? "/~table_page.html" : "/~table.html");
                     DataTable dataTable = new DataTable(v, propertySpec);
