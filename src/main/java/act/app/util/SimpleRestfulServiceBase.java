@@ -57,6 +57,9 @@ SimpleRestfulServiceBase<
     @NoBind
     protected DAO_TYPE dao;
 
+    @NoBind
+    private boolean disableDynamicPropSpec;
+
     public SimpleRestfulServiceBase() {
         exploreTypes();
     }
@@ -65,9 +68,19 @@ SimpleRestfulServiceBase<
         this.dao = $.requireNotNull(dao);
     }
 
+    protected SimpleRestfulServiceBase(boolean disableDynamicPropSpec) {
+        exploreTypes();
+        this.disableDynamicPropSpec = disableDynamicPropSpec;
+    }
+
+    protected SimpleRestfulServiceBase(DAO_TYPE dao, boolean disableDynamicPropSpec) {
+        this.dao = $.requireNotNull(dao);
+        this.disableDynamicPropSpec = disableDynamicPropSpec;
+    }
+
     @Before
     public void setPropertySpec(String _propSpec) {
-        if ($.bool(_propSpec)) {
+        if (!disableDynamicPropSpec && $.bool(_propSpec)) {
             PropertySpec.current.set(_propSpec);
         }
     }

@@ -339,6 +339,7 @@ public class DataTable implements Iterable {
     // for exploring output fields in case heading is not specified with `PropertySpec`
     private void initHeading(Object data, PropertySpec.MetaInfo colSpec) {
         Set<String> excludes = C.Set();
+        boolean headingLoaded = false;
         if (null != colSpec) {
             ActContext<?> context = ActContext.Base.currentContext();
             setLabelLookup(colSpec.labelMapping(context));
@@ -346,7 +347,7 @@ public class DataTable implements Iterable {
             if ($.not(excludes)) {
                 colKeys = colSpec.outputFields(context);
                 if ($.bool(colKeys)) {
-                    return;
+                    headingLoaded = true;
                 }
             }
         }
@@ -375,8 +376,10 @@ public class DataTable implements Iterable {
                 }
             }
         }
-        keys.removeAll(excludes);
-        colKeys = C.list(keys);
+        if (!headingLoaded) {
+            keys.removeAll(excludes);
+            colKeys = C.list(keys);
+        }
     }
 
     private boolean isNumeric(Object v) {

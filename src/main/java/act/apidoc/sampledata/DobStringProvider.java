@@ -34,18 +34,24 @@ import javax.inject.Singleton;
 public class DobStringProvider extends SampleDataProvider<String> {
     @Override
     public String get() {
-        return S.join("-", randYear(), randMon(), randDoM());
+        int y = randYear();
+        int m = randMon();
+        int d = randDoM();
+        if (m == 2 && d > 28) {
+            d = 28;
+        }
+        return S.concat(y, "-", m, "-", d);
     }
 
-    private String randYear() {
-        return S.string($.random(IntRange.of(1940, 2018)));
+    private int randYear() {
+        return $.random(IntRange.of(1940, 2018));
     }
 
-    private String randMon() {
-        return S.string($.random(IntRange.of(1, 13)));
+    private int randMon() {
+        return $.random(IntRange.of(1, 13));
     }
 
-    private String randDoM() {
-        return S.string($.random(IntRange.of(1, 31)));
+    private int randDoM() {
+        return $.random(IntRange.of(1, 29));
     }
 }

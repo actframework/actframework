@@ -111,6 +111,13 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T>
         if (S.blank(value)) {
             return null;
         }
+        if ("now".equalsIgnoreCase(value)
+                || "today".equalsIgnoreCase(value)
+                || "现在".equalsIgnoreCase(value)
+                || "今天".equalsIgnoreCase(value)
+        ) {
+            return now();
+        }
         // for #691
         int len = value.length();
         if (9 == len || 10 == len) {

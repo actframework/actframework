@@ -155,15 +155,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
         private String checkDefaultValue(BeanSpec spec) {
             DefaultValue def = spec.getAnnotation(DefaultValue.class);
+            String defStr = "";
             if (null != def) {
-                return def.value();
+                defStr = def.value();
             }
             Class<?> type = spec.rawType();
-            if (type.isPrimitive()) {
-                Object o = Act.app().resolverManager().resolve("", type);
-                return null != o ? o.toString() : null;
-            }
-            return null;
+            Object o = Act.app().resolverManager().resolve(defStr, type);
+            return S.string(o);
         }
 
         private boolean checkRequired(BeanSpec spec) {

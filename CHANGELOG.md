@@ -1,8 +1,12 @@
 # ActFramework Change Log
 
 **1.8.30**
-* Support `htmltable` pseudo Accept type #1244
+* SimpleRestfulServiceBase - property spec enhancements #1248
+* Param binding - allow specify `now` in `DefaultValue` for Date types #1247
+* API doc - DOB sample data generator generates invalid date string #1246
 * Allow it specify particular part of returned data in response using `_jsonPath` parameter #1245
+* Support `htmltable` pseudo Accept type #1244
+* Ehcache 在 热重载时 无法找到 EhCacheServiceProvider 的 _reset 方法。 #1243
 * `__path` param value needs to be sanitized #1241
 * Act-Test - add an `entityId()` function #1240
 

@@ -2050,7 +2050,10 @@ public @interface Controller {
 
     /**
      * Controller class extends this class automatically get `ActionContext` injected
-     * as a field
+     * as a field.
+     *
+     * Note this will make the controller be no longer a Singleton because the `context`
+     * field is not stateless.
      */
     class Base extends Util {
         @Inject
