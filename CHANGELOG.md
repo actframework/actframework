@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.30**
+* API Doc - Return sample for array is not correct #1250
 * SimpleRestfulServiceBase - property spec enhancements #1248
 * Param binding - allow specify `now` in `DefaultValue` for Date types #1247
 * API doc - DOB sample data generator generates invalid date string #1246

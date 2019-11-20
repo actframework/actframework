@@ -168,6 +168,10 @@ class CollectionLoader extends ParamValueLoader.JsonBodySupported {
         if (S.blank(value)) {
             return;
         }
+        // processing string like `[6000, 10000]`
+        if (value.startsWith("[") && value.endsWith("]")) {
+            value = S.strip(value, S.BRACKETS);
+        }
         // support multiple path variables like /foo/id1,id2
         String[] sa = value.split("[,;]+");
         boolean isChar = this.isChar;
