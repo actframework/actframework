@@ -53,7 +53,7 @@ public class YamlLoader extends LogSupport {
 
     protected String fixtureFolder = "/fixtures/";
 
-    protected String legacyFixtureFolder = "/test/fixtures";
+    protected String legacyFixtureFolder = "/test/fixtures/";
 
     public YamlLoader() {
         resetModelPackages();
@@ -274,6 +274,10 @@ public class YamlLoader extends LogSupport {
 
     protected File getFile(String name) {
         App app = Act.app();
+        if (null == app) {
+            // must doing unit testing
+            return null;
+        }
         E.illegalStateIf(null == app, "App instance not found");
         // try new location first
         File file = app.testResource(patchResourceName(name));
@@ -297,7 +301,12 @@ public class YamlLoader extends LogSupport {
 
     protected String getResourceAsString(String name) {
         File file = getFile(name);
-        return null == file ? null : IO.readContentAsString(file);
+        if (null != file) {
+            return IO.readContentAsString(file);
+        }
+        // unit testing! that's why we are here
+        URL url = loadResource(name);
+        return null == url ? null : IO.readContentAsString(url);
     }
 
     protected String patchResourceName(String name) {
