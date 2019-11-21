@@ -69,20 +69,8 @@ public class RenderAny extends Result {
         }
         H.Format fmt = context.accept();
         if (fmt.isSameTypeWith(UNKNOWN)) {
-            H.Request req = context.req();
-            if (req.userAgent().isIE9Down()) {
-                fmt = HTML;
-            } else {
-                H.Method method = req.method();
-                String methodInfo = S.concat(method.name(), " method to ");
-                String acceptHeader = req.header(H.Header.Names.ACCEPT);
-                throw E.unsupport(S.concat(
-                        "Unknown accept content type(",
-                        acceptHeader,
-                        "): ",
-                        methodInfo,
-                        req.url()));
-            }
+            // let's guess the request needs HTML
+            fmt = HTML;
         }
         Result result = null;
         if (JSON.isSameTypeWith(fmt)) {

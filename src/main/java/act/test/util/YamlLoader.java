@@ -38,6 +38,7 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +51,9 @@ public class YamlLoader extends LogSupport {
 
     private List<String> modelPackages = new ArrayList<>();
 
-    private String fixtureFolder = "/test/fixtures/";
+    protected String fixtureFolder = "/fixtures/";
+
+    protected String legacyFixtureFolder = "/test/fixtures";
 
     public YamlLoader() {
         resetModelPackages();
@@ -269,13 +272,40 @@ public class YamlLoader extends LogSupport {
         }
     }
 
-    protected String getResourceAsString(String name) {
+    protected File getFile(String name) {
+        App app = Act.app();
+        E.illegalStateIf(null == app, "App instance not found");
+        // try new location first
+        File file = app.testResource(patchResourceName(name));
+        if (file.exists()) {
+            return file;
+        }
+        file = app.resource(patchResourceNameWithLegacyFixtureFolder(name));
+        return file.exists() ? file : null;
+    }
+
+    protected URL loadResource(String name) {
         URL url = Act.getResource(patchResourceName(name));
-        return null == url ? null : IO.read(url).toString();
+        if (null == url && null != legacyFixtureFolder) {
+            url = Act.getResource(patchResourceNameWithLegacyFixtureFolder(name));
+            if (null != url) {
+                warn("You are using legacy folder: %s; it is recommend to move your resource to new folder: %s", legacyFixtureFolder, fixtureFolder);
+            }
+        }
+        return url;
+    }
+
+    protected String getResourceAsString(String name) {
+        File file = getFile(name);
+        return null == file ? null : IO.readContentAsString(file);
     }
 
     protected String patchResourceName(String name) {
         return S.ensure(name).startWith(fixtureFolder);
+    }
+
+    protected String patchResourceNameWithLegacyFixtureFolder(String name) {
+        return S.ensure(name).startWith(legacyFixtureFolder);
     }
 
     private Class<?> loadModelType(String type) {
@@ -293,9 +323,37 @@ public class YamlLoader extends LogSupport {
         throw new UnexpectedException("Cannot load type: %s", type);
     }
 
-    protected void setFixtureFolder(String fixtureFolder) {
+    private static final ThreadLocal<Boolean> warned = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
+    public static void resetWarned() {
+        warned.set(false);
+    }
+
+    protected void setFixtureFolder(String fixtureFolder, String legacyFixtureFolder) {
         if (S.notBlank(fixtureFolder)) {
             this.fixtureFolder = S.ensure(S.ensure(fixtureFolder.trim()).startWith("/")).endWith("/");
+        }
+        if (S.notBlank(legacyFixtureFolder)) {
+            this.legacyFixtureFolder = S.ensure(S.ensure(legacyFixtureFolder.trim()).startWith("/")).endWith("/");
+        }
+        if (warned.get()) {
+            return;
+        }
+        warned.set(true);
+        App app = Act.app();
+        if (null != app) {
+            if (S.blank(fixtureFolder) || !app.testResource(fixtureFolder).exists()) {
+                if (S.notBlank(legacyFixtureFolder) && app.resource(legacyFixtureFolder).exists()) {
+                    Act.LOGGER.warn("Legacy test resource detected: src/main/resources/test. It recommend to migrate to new place: src/test/resources");
+                } else {
+                    Act.LOGGER.warn("No test resource found");
+                }
+            }
         }
     }
 
@@ -399,7 +457,9 @@ public class YamlLoader extends LogSupport {
             addModelPackage(modelPackages);
         }
         String fixtureFolder = config.get("test.fixture-folder");
-        setFixtureFolder(fixtureFolder);
+        if (S.notBlank(fixtureFolder)) {
+            setFixtureFolder(fixtureFolder, null);
+        }
     }
 
 }

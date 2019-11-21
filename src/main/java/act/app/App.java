@@ -967,6 +967,10 @@ public class App extends LogSupportedDestroyableBase {
         return new File(this.layout().resource(appBase), path);
     }
 
+    public File testResource(String path) {
+        return new File(this.layout.testResource(appBase), path);
+    }
+
     public SampleDataProviderManager sampleDataProviderManager() {
         return sampleDataProviderManager;
     }

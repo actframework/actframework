@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.30**
+* Act-Test - Allow it to load test files from src/test/resources folder #1249
 * API Doc - Return sample for array is not correct #1250
 * SimpleRestfulServiceBase - property spec enhancements #1248
 * Param binding - allow specify `now` in `DefaultValue` for Date types #1247

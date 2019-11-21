@@ -42,7 +42,7 @@ public class RequestTemplateManager extends YamlLoader {
 
     public RequestTemplateManager() {
         super("act.test");
-        setFixtureFolder("/test/");
+        setFixtureFolder("/", "/test/");
     }
 
     public void load() {

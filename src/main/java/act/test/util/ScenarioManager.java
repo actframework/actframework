@@ -56,7 +56,7 @@ public class ScenarioManager extends YamlLoader {
 
     public ScenarioManager() {
         super("act.test");
-        setFixtureFolder("/test");
+        setFixtureFolder("/", "/test");
         configure();
     }
 
@@ -64,7 +64,7 @@ public class ScenarioManager extends YamlLoader {
         super();
         addModelPackages("act.test");
         addModelPackages(modelPackage, modelPackages);
-        setFixtureFolder("/test");
+        setFixtureFolder("/", "/test");
         configure();
     }
 
@@ -131,23 +131,21 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void loadDefault() {
-        URL url = Act.getResource(patchResourceName("scenarios.yml"));
-        if (null != url) {
-            String content = IO.readContentAsString(url);
-            parseOne(content, url.getFile());
+        File file = getFile("scenarios.yml");
+        if (null != file) {
+            parseOne(IO.readContentAsString(file), file.getName());
         }
     }
 
     private void searchScenarioFolder() {
         App app = Act.app();
-        if (null != app) {
+        if (false && null != app) {
             searchWhenInAppContext(app);
         } else {
-            URL url = Act.getResource("/test/scenarios");
-            if (null != url) {
-                File file = new File(url.getFile());
-                if (file.exists()) {
-                    loadFromScenarioDir(file);
+            File folder = getFile("scenarios");
+            if (null != folder) {
+                if (folder.exists()) {
+                    loadFromScenarioDir(folder);
                 }
             }
         }

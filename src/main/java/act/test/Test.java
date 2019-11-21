@@ -298,6 +298,7 @@ public class Test extends LogSupport {
         E.illegalStateIf(inProgress());
         info("Start running test scenarios");
         info("---------------------------------------------------------------");
+        YamlLoader.resetWarned();
         int exitCode = 0;
         EventBus eventBus = app.eventBus();
         STARTED.set(true);
