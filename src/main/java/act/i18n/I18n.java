@@ -90,7 +90,15 @@ public class I18n {
         ResourceBundle bundle;
         String msg = msgId;
         try {
-            bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), Act.app().classLoader());
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            if (null == classLoader) {
+                classLoader = I18n.class.getClassLoader();
+            }
+            App app = Act.app();
+            if (null != app && null != app.classLoader()) {
+                classLoader = app.classLoader();
+            }
+            bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), classLoader);
         } catch (MissingResourceException e) {
             if (!ignoreError) {
                 logger.warn("Cannot find bundle: %s", bundleName);
