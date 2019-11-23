@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.30**
+**1.8.30** 23/Nov/2019
 * App failed to start without error stack #1252
 * Act-Test - Allow it to load test files from src/test/resources folder #1249
 * API Doc - Return sample for array is not correct #1250
