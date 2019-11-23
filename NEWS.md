@@ -1,46 +1,42 @@
 <ul>
 <li>
+    <span class="news-date">24 Nov 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/78?closed=1">
+            act-1.8.30 released
+        </a>
+    </span>
+</li>
+<li>
+    <span class="news-date">04 Nov 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/77?closed=1">
+            act-1.8.29 released
+        </a>
+    </span>
+</li>
+<li>
+    <span class="news-date">22 Sep 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/76?closed=1">
+            act-1.8.28 released
+        </a>
+    </span>
+</li>
+<li>
+    <span class="news-date">21 Sep 2019</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/75?closed=1">
+            act-1.8.27 released
+        </a>
+    </span>
+</li>
+<li>
     <span class="news-date">21 Jul 2019</span>
     <span class="news-text">
         <a href="https://github.com/actframework/actframework/milestone/74?closed=1">
             act-1.8.26 released
         </a>
-    </span>
-</li>
-<li>
-    <span class="news-date">03 Jul 2019</span>
-    <span class="news-text">
-        <a href="https://github.com/actframework/actframework/milestone/73?closed=1">
-            act-1.8.25 released
-        </a>
-    </span>
-</li>
-<li>
-    <span class="news-date">23 Jun 2019</span>
-    <span class="news-text">
-        <a href="https://github.com/actframework/actframework/milestone/72?closed=1">
-            act-1.8.24 released
-        </a>
-    </span>
-</li>
-<li>
-    <span class="news-date">17 Jun 2019</span>
-    <span class="news-text">
-        act-morphia-1.7.2 released with big improvement on aggregation framework
-    </span>
-</li>
-<li>
-    <span class="news-date">17 Jun 2019</span>
-    <span class="news-text">
-        <a href="https://github.com/actframework/actframework/milestone/71?closed=1">
-            act-1.8.23 released along with lots of plugin updates
-        </a>
-    </span>
-</li>
-<li>
-    <span class="news-date">21 May 2019</span>
-    <span class="news-text">
-        <a href="https://github.com/actframework/actframework/milestone/70?closed=1">act-1.8.22 released</a>
     </span>
 </li>
 <li>
