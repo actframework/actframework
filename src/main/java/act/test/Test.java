@@ -54,6 +54,7 @@ import org.osgl.util.*;
 
 import javax.inject.Inject;
 import javax.persistence.MappedSuperclass;
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -77,14 +78,25 @@ public class Test extends LogSupport {
     private static String lastEmailId;
 
     public static class ConstantPool {
+
         private static Map<String, String> pool = new HashMap<>();
+
         static {
             load();
         }
+
         private static void load() {
-            URL url = Act.getResource("test/constants.properties");
-            if (null != url) {
-                Properties p = IO.loadProperties(url);
+            Properties p = null;
+            File file = Act.app().testResource("constants.properties");
+            if (file.exists()) {
+                p = IO.loadProperties(file);
+            } else {
+                URL url = Act.getResource("test/constants.properties");
+                if (null != url) {
+                    p = IO.loadProperties(url);
+                }
+            }
+            if (null != p) {
                 for (Map.Entry entry : p.entrySet()) {
                     String key = S.string(entry.getKey());
                     key = S.underscore(key);
@@ -92,6 +104,7 @@ public class Test extends LogSupport {
                 }
             }
         }
+
         public static String get(String name) {
             return pool.get(S.underscore(name));
         }

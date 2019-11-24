@@ -138,41 +138,12 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void searchScenarioFolder() {
-        App app = Act.app();
-        if (false && null != app) {
-            searchWhenInAppContext(app);
-        } else {
-            File folder = getFile("scenarios");
-            if (null != folder) {
-                if (folder.exists()) {
-                    loadFromScenarioDir(folder);
-                }
+        File folder = getFile("scenarios");
+        if (null != folder) {
+            if (folder.exists()) {
+                loadFromScenarioDir(folder);
             }
         }
-    }
-
-    private void searchWhenInAppContext(App app) {
-        File resource = RuntimeDirs.resource(app);
-        if (resource.exists()) {
-            loadFromDir(resource);
-        } else {
-            String appJarFile = System.getProperty(Act.PROP_APP_JAR_FILE);
-            if (null != appJarFile) {
-                File jarFile = new File(appJarFile);
-                loadFromJar(jarFile);
-            }
-        }
-    }
-
-    private void loadFromDir(File resourceDir) {
-        if (!resourceDir.exists()) {
-            return;
-        }
-        File scenariosDir = new File(resourceDir, "test/scenarios");
-        if (!scenariosDir.exists()) {
-            return;
-        }
-        loadFromScenarioDir(scenariosDir);
     }
 
     private void loadFromScenarioDir(File scenariosDir) {
@@ -198,25 +169,6 @@ public class ScenarioManager extends YamlLoader {
                 throw e;
             }
         }
-    }
-
-    private void loadFromJar(File jarFile) {
-        try (JarFile jar = new JarFile(jarFile)) {
-            for (JarEntry entry : C.enumerable(jar.entries())) {
-                String name = entry.getName();
-                if (isScenarioFile(name)) {
-                    InputStream is = jar.getInputStream(entry);
-                    String content = IO.readContentAsString(is);
-                    parseOne(content, null);
-                }
-            }
-        } catch (IOException e) {
-            warn(e, "Error loading scenario from jar file");
-        }
-    }
-
-    private boolean isScenarioFile(String name) {
-        return name.startsWith("test/scenarios/") && name.endsWith(".yml");
     }
 
     private void parseOne(String content, String fileName) {

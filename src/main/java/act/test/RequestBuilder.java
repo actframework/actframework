@@ -30,6 +30,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.*;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
@@ -143,15 +144,27 @@ class RequestBuilder {
                     for (Map.Entry<String, Object> entry : requestSpec.parts.entrySet()) {
                         String key = entry.getKey();
                         String val = S.string(entry.getValue());
-                        String path = S.pathConcat("test/upload", '/', val);
-                        URL fileUrl = Act.getResource(path);
-                        if (null != fileUrl) {
-                            String filePath = fileUrl.getFile();
-                            H.Format fileFormat = FileGetter.contentType(filePath);
-                            byte[] content = $.convert(fileUrl).to(byte[].class);
+                        byte[] content = null;
+                        H.Format fileFormat = null;
+                        String path = S.pathConcat("upload", '/', val);
+                        File uploadFile = Act.app().testResource(path);
+                        if (uploadFile.exists()) {
+                            fileFormat = FileGetter.contentType(path);
+                            content = IO.readContent(uploadFile);
+                        } else {
+                            path = S.pathConcat("test/upload", '/', val);
+                            URL fileUrl = Act.getResource(path);
+                            if (null != fileUrl) {
+                                String filePath = fileUrl.getFile();
+                                fileFormat = FileGetter.contentType(filePath);
+                                content = $.convert(fileUrl).to(byte[].class);
+                            }
+                        }
+                        if (null != content) {
                             String checksum = IO.checksum(content);
                             RequestBody fileBody = RequestBody.create(MediaType.parse(fileFormat.contentType()), content);
-                            formBuilder.addFormDataPart(key, S.cut(filePath).afterLast("/"), fileBody);
+                            String attachmentName = val.contains("/") ? S.cut(val).afterLast("/") : val;
+                            formBuilder.addFormDataPart(key, attachmentName, fileBody);
                             session.cache("checksum-last", checksum);
                             session.cache("checksum-" + val, checksum);
                         } else {

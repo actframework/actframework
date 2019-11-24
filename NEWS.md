@@ -3,7 +3,7 @@
     <span class="news-date">24 Nov 2019</span>
     <span class="news-text">
         <a href="https://github.com/actframework/actframework/milestone/78?closed=1">
-            act-1.8.30 released
+            act-1.8.30a released
         </a>
     </span>
 </li>

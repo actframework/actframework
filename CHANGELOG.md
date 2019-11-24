@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.30a** 24/Nov/2019
+* Fix issue - the upload file not found after moving testing resources to `src/test/resources`
+
 **1.8.30** 23/Nov/2019
 * App failed to start without error stack #1252
 * Act-Test - Allow it to load test files from src/test/resources folder #1249
