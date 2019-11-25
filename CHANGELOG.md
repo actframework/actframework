@@ -8,7 +8,6 @@
 * Act-Test - Allow it to load test files from src/test/resources folder #1249
 * API Doc - Return sample for array is not correct #1250
 * SimpleRestfulServiceBase - property spec enhancements #1248
-* Param binding - allow specify `now` in `DefaultValue` for Date types #1247
 * API doc - DOB sample data generator generates invalid date string #1246
 * Allow it specify particular part of returned data in response using `_jsonPath` parameter #1245
 * Support `htmltable` pseudo Accept type #1244
