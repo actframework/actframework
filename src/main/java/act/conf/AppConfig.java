@@ -58,8 +58,6 @@ import me.tongfei.progressbar.ProgressBarStyle;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
-import org.osgl.cache.impl.SimpleCacheService;
-import org.osgl.cache.impl.SimpleCacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -2216,11 +2214,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public String localizedDatePattern(Locale locale) {
         String s = localizedDatePatterns.get(locale);
         if (null == s) {
-            if (locale.equals(locale())) {
-                s = datePattern();
-            } else {
-                s = getLocalizedDateTimePattern(locale, DateTimeType.DATE);
-            }
+            s = getLocalizedDateTimePattern(locale, DateTimeType.DATE);
             localizedDatePatterns.put(locale, s);
         }
         return s;
@@ -2292,11 +2286,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public String localizedTimePattern(Locale locale) {
         String s = localizedTimePattern.get(locale);
         if (null == s) {
-            if (locale.equals(locale())) {
-                s = timePattern();
-            } else {
-                s = getLocalizedDateTimePattern(locale, DateTimeType.TIME);
-            }
+            s = getLocalizedDateTimePattern(locale, DateTimeType.TIME);
             localizedTimePattern.put(locale, s);
         }
         return s;
@@ -2366,28 +2356,28 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public String localizedDateTimePattern(Locale locale) {
         String s = localizedDateTimePatterns.get(locale);
         if (null == s) {
-            if (locale.equals(locale())) {
-                s = dateTimePattern();
-            } else {
-                s = getLocalizedDateTimePattern(locale, DateTimeType.DATE_TIME);
-            }
+            s = getLocalizedDateTimePattern(locale, DateTimeType.DATE_TIME);
             localizedDateTimePatterns.put(locale, s);
         }
         return s;
     }
 
+    private boolean isLocaleMatchesDefault(Locale locale) {
+        return locale().equals(locale) || baseLocale.equals(locale);
+    }
 
     private Locale locale = null;
+    private Locale baseLocale = null;
 
     protected T locale(Locale locale) {
-        E.NPE(locale);
+        this.baseLocale = baseLocaleOf(locale);
         this.locale = locale;
         return me();
     }
 
     public Locale locale() {
         if (null == locale) {
-            locale = get(LOCALE, Locale.getDefault());
+            locale(get(LOCALE, Locale.getDefault()));
         }
         return locale;
     }
@@ -2395,7 +2385,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeLocale(AppConfig conf) {
         if (!hasConfiguration(LOCALE)) {
             locale = conf.locale;
+            baseLocale = conf.baseLocale;
         }
+    }
+
+    private Locale baseLocaleOf(Locale locale) {
+        return new Locale.Builder().setLanguage(locale.getLanguage()).build();
     }
 
     private String sourceVersion = null;
@@ -3755,13 +3750,17 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             }
         }
         if (null == s) {
-            DateTimeStyle style = dateTimeStyle();
-            if (dateTimeType == DateTimeType.DATE) {
-                style = dateStyle();
-            } else if (dateTimeType == DateTimeType.TIME) {
-                style = timeStyle();
+            if (isLocaleMatchesDefault(locale)) {
+                s = dateTimeType.defaultPattern(this);
+            } else {
+                DateTimeStyle style = dateTimeStyle();
+                if (dateTimeType == DateTimeType.DATE) {
+                    style = dateStyle();
+                } else if (dateTimeType == DateTimeType.TIME) {
+                    style = timeStyle();
+                }
+                s = dateTimeType.defaultPattern(style, locale);
             }
-            s = dateTimeType.defaultPattern(style, locale);
         } else {
             if (S.eq("long", s, S.IGNORECASE)) {
                 s = dateTimeType.defaultPattern(DateTimeStyle.LONG, locale);

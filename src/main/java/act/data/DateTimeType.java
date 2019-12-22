@@ -187,7 +187,7 @@ public enum DateTimeType {
 
     public abstract String defaultPattern(AppConfig config, Locale locale);
 
-    protected abstract String defaultPattern(AppConfig config);
+    public abstract String defaultPattern(AppConfig config);
 
     protected abstract String defaultLongPattern(Locale locale);
     protected abstract String defaultMediumPattern(Locale locale);

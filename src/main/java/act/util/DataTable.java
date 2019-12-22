@@ -46,9 +46,15 @@ import java.util.*;
  */
 public class DataTable implements Iterable {
 
-    public static final String HTML_TABLE = "htmltable";
+    public static final Keyword HTML_TABLE = Keyword.of("html-table");
 
     public static final String KEY_FIELD = "_field";
+
+    /**
+     * A pseudo column key for the entire data object
+     * - used with data table of {@link org.osgl.Lang#isSimpleType(Class) simple types}.
+     */
+    public static final String KEY_THIS = "_this_";
 
     private List<String> colKeys;
     private Iterable rows;
@@ -134,7 +140,14 @@ public class DataTable implements Iterable {
             return colKeys;
         }
         List<String> heading = new ArrayList<>();
+        String idLabel = labelLookup.get("id");
+        if (null != idLabel) {
+            heading.add(idLabel);
+        }
         for (String colKey : colKeys) {
+            if ("id".equals(colKey)) {
+                continue;
+            }
             String label = labelLookup.get(colKey);
             heading.add(null != label ? label : colKey);
         }
@@ -161,6 +174,9 @@ public class DataTable implements Iterable {
      * @return the value of the column on the row
      */
     public Object val(Object row, String label) {
+        if (KEY_THIS == label) {
+            return row;
+        }
         String colKey = label;
         if (!isTranspose) {
             colKey = reverseLabelLookup.get(label);
@@ -445,6 +461,10 @@ public class DataTable implements Iterable {
     private SortedSet<String> keysOf(Object pojo) {
         Class<?> type = pojo.getClass();
         SortedSet<String> keys = new TreeSet<>();
+        if ($.isSimpleType(type)) {
+            keys.add(KEY_THIS);
+            return keys;
+        }
         // Check all public fields
         for (Field f : type.getFields()) {
             String fn = f.getName();

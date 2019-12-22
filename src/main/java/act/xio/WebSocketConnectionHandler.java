@@ -9,9 +9,9 @@ package act.xio;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -97,13 +97,10 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
         paramTypes = paramTypes(app);
 
-        try {
-            this.method = handlerClass.getMethod(methodInfo.name(), paramTypes);
-            this.isWsHandler = null != this.method.getAnnotation(WsAction.class);
-            this.disabled = this.disabled || !Env.matches(method);
-        } catch (NoSuchMethodException e) {
-            throw E.unexpected(e);
-        }
+        this.method = $.getMethod(handlerClass, methodInfo.name(), paramTypes);
+        E.unexpectedIf(null == method, "Unable to locate handler method: " + methodInfo.name());
+        this.isWsHandler = null != this.method.getAnnotation(WsAction.class);
+        this.disabled = this.disabled || !Env.matches(method);
 
         if (!isWsHandler || disabled) {
             return;
@@ -181,6 +178,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     /**
      * Called by implementation class once websocket connection established
      * at networking layer.
+     *
      * @param context the websocket context
      */
     protected final void _onConnect(WebSocketContext context) {
@@ -207,6 +205,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     /**
      * This method is used by {@link act.handler.builtin.controller.RequestHandlerProxy}
      * to check if a handler is WS handler or GET handler
+     *
      * @return `true` if this is a real WS handler
      */
     public boolean isWsHandler() {
@@ -343,7 +342,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
             return singleJsonFieldName;
         }
         Set<String> set = context.paramKeys();
-        for (BeanSpec spec: paramSpecs) {
+        for (BeanSpec spec : paramSpecs) {
             String name = spec.name();
             if (!set.contains(name)) {
                 return name;

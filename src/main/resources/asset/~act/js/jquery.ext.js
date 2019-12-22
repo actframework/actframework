@@ -128,14 +128,14 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
             if (!hasParam) url = url + "?_method=" + method.replace("JSON", "");
             submitMethod = "post";
         }
-        if (method.startsWith("get")) {
-            var hasParam = url.contains("?");
-            if (!hasParam) {
-                url = url +"?_now="+ new Date().getTime();
-            } else {
-                url = url +"&_now="+ new Date().getTime();
-            }
-        }
+//        if (method.startsWith("get")) {
+//            var hasParam = url.contains("?");
+//            if (!hasParam) {
+//                url = url +"?_now="+ new Date().getTime();
+//            } else {
+//                url = url +"&_now="+ new Date().getTime();
+//            }
+//        }
         var setup = {
             url: url,
             type: submitMethod.replace("JSON", ""),

@@ -22,17 +22,22 @@ package act.cli.builtin;
 
 import static org.osgl.$.T2;
 
+import act.cli.CliCmdInfo;
 import act.cli.CliContext;
 import act.cli.CliDispatcher;
 import act.cli.util.CommandLineParser;
+import act.cli.view.CliView;
 import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
+import act.util.PropertySpec;
 import org.fusesource.jansi.Ansi;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.SortedSet;
 
 public class Help extends CliHandlerBase {
 
@@ -40,7 +45,11 @@ public class Help extends CliHandlerBase {
 
     private static int maxWidth = 0;
 
+    private PropertySpec.MetaInfo metaInfo;
+
     private Help() {
+        metaInfo = new PropertySpec.MetaInfo();
+        metaInfo.onCli("name,shortcut,help");
     }
 
     @Override
@@ -56,6 +65,7 @@ public class Help extends CliHandlerBase {
         CommandLineParser parser = context.commandLine();
         boolean sys = parser.getBoolean("-s", "--system");
         boolean all = parser.getBoolean("-a", "--all");
+        boolean tableList = parser.getBoolean("-t", "--table");
         String q = parser.getString("-q", "--filter");
         boolean app = true;
         if (all) {
@@ -65,49 +75,61 @@ public class Help extends CliHandlerBase {
         }
 
         CliDispatcher dispatcher = context.app().cliDispatcher();
-        List<String> sysCommands = dispatcher.commands(true, false);
-        List<String> appCommands = dispatcher.commands(false, true);
-        int maxLen;
-        if (sys && !app) {
-            maxLen = calMaxCmdLen(sysCommands);
-        } else if (app && !sys) {
-            maxLen = calMaxCmdLen(appCommands);
-        } else {
-            maxLen = calMaxCmdLen(C.list(sysCommands).append(appCommands));
+        SortedSet<CliCmdInfo> sysCommands = dispatcher.commandInfoList(true, false);
+        SortedSet<CliCmdInfo> appCommands = dispatcher.commandInfoList(false, true);
+
+        int maxLen = -1;
+        if (!tableList) {
+            if (sys && !app) {
+                maxLen = calMaxCmdLen(sysCommands);
+            } else if (app && !sys) {
+                maxLen = calMaxCmdLen(appCommands);
+            } else {
+                maxLen = calMaxCmdLen(C.list(sysCommands).append(appCommands));
+            }
         }
-        String fmt = "%-" + (maxLen + 4) + "s - %s";
+        String fmt = maxLen < 0 ? null : "%-" + (maxLen + 4) + "s - %s";
+
         if (sys) {
-            list("@|bold System commands|@", fmt, sysCommands, dispatcher, context, q);
+            list("@|bold System commands|@", sysCommands, context, q, fmt);
         }
         if (app) {
             if (sys) {
                 context.println("");
             }
-            list("@|bold Application commands|@", fmt, appCommands, dispatcher, context, q);
+            list("@|bold Application commands|@", appCommands, context, q, fmt);
         }
     }
 
-    private void list(String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context, String q) {
+    private void list(String label, Collection<CliCmdInfo> commands, CliContext context, String q, String fmt) {
         List<String> lines = new ArrayList<>();
         lines.add(label.toUpperCase());
-        lines.add("");
         q = S.string(q).trim();
         boolean hasFilter = S.notEmpty(q);
-        for (String cmd : commands) {
+        List<CliCmdInfo> toBeDisplayed = new ArrayList<>();
+        for (CliCmdInfo info : commands) {
+            String cmd = info.name;
             if (hasFilter && !(cmd.toLowerCase().contains(q) || cmd.matches(q))) {
                 continue;
             }
-            CliHandler handler = dispatcher.handler(cmd);
-            T2<String, String> commandLine = handler.commandLine();
-            lines.add(S.fmt(fmt, cmd, commandLine._2));
+            if (null == fmt) {
+                toBeDisplayed.add(info);
+            } else {
+                lines.add(S.fmt(fmt, info.nameAndShortcut(), info.help));
+            }
         }
         context.println(Ansi.ansi().render(S.join("\n", lines)).toString());
+
+        if (null == fmt) {
+            // display table list
+            context.println(CliView.TABLE.render(toBeDisplayed, metaInfo, context));
+        }
     }
 
-    private int calMaxCmdLen(List<String> commands) {
+    private int calMaxCmdLen(Collection<CliCmdInfo> commands) {
         int max = 0;
-        for (String c : commands) {
-            max = Math.max(max, c.length());
+        for (CliCmdInfo info : commands) {
+            max = Math.max(max, info.nameAndShortcutLen());
         }
         return max;
     }
@@ -178,6 +200,7 @@ public class Help extends CliHandlerBase {
         List<T2<String, String>> retList = new ArrayList<>();
         retList.add(T2("-s --system", "list system commands"));
         retList.add(T2("-a --app", "list application commands"));
+        retList.add(T2("-t --table", "show command list in table"));
         return retList;
     }
 

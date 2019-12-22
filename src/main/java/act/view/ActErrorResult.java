@@ -188,9 +188,9 @@ public class ActErrorResult extends ErrorResult implements ActError {
                 return ActBadRequest.create(throwable);
             }
         };
-        x.put(IllegalArgumentException.class, badRequest);
-        x.put(InvalidRangeException.class, badRequest);
-        x.put(IndexOutOfBoundsException.class, badRequest);
+//        x.put(IllegalArgumentException.class, badRequest);
+//        x.put(InvalidRangeException.class, badRequest);
+//        x.put(IndexOutOfBoundsException.class, badRequest);
         x.put(ValidationException.class, badRequest);
         x.put(BindException.class, badRequest);
     }

@@ -20,12 +20,14 @@ package act.handler.event;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
+import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 
 public abstract class ResultEvent extends ActEvent<Result> implements SystemEvent {
@@ -57,9 +59,23 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 @Override
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, $.Break {
                     ActionContext context = request.context();
-                    context.applyCorsSpec().applyContentSecurityPolicy().applyContentType(result);
-                    if (!context.skipEvents()) {
-                        context.app().eventBus().emit(new BeforeResultCommit(result, request, response));
+                    try {
+                        context.applyCorsSpec().applyContentSecurityPolicy().applyContentType(result);
+                        if (!context.skipEvents()) {
+                            context.app().eventBus().emit(new BeforeResultCommit(result, request, response));
+                        }
+                    } catch (RuntimeException e) {
+                        if (Act.isProd()) {
+                            throw e;
+                        }
+                        if (!(result instanceof ErrorResult)) {
+                            throw e;
+                        }
+                        // it might happens in rare case
+                        // refer https://github.com/actframework/actframework/issues/1264
+                        // however we don't need to raise it or log it as it
+                        // is already logged in somewhere else
+                        // we just want to ensure the error page can be generated.
                     }
                     return null;
                 }
@@ -72,8 +88,22 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, $.Break {
                     ActionContext context = request.context();
                     context.logAccess(response);
-                    if (!context.skipEvents()) {
-                        context.app().eventBus().emit(new AfterResultCommit(result, request, response));
+                    try {
+                        if (!context.skipEvents()) {
+                            context.app().eventBus().emit(new AfterResultCommit(result, request, response));
+                        }
+                    } catch (RuntimeException e) {
+                        if (Act.isProd()) {
+                            throw e;
+                        }
+                        if (!(result instanceof ErrorResult)) {
+                            throw e;
+                        }
+                        // it might happens in rare case
+                        // refer https://github.com/actframework/actframework/issues/1264
+                        // however we don't need to raise it or log it as it
+                        // is already logged in somewhere else
+                        // we just want to ensure the error page can be generated.
                     }
                     return null;
                 }

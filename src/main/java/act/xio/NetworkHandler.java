@@ -238,11 +238,15 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 }
             }
         };
-        if (method.unsafe() || !requestHandler.express(ctx)) {
-            dispatcher.dispatch(job);
-        } else {
-            ctx.markAsNonBlock();
-            job.run();
+        try {
+            if (method.unsafe() || !requestHandler.express(ctx)) {
+                dispatcher.dispatch(job);
+            } else {
+                ctx.markAsNonBlock();
+                job.run();
+            }
+        } catch (RuntimeException e) {
+            handleException(e, ctx, "Error handling network request");
         }
     }
 
@@ -267,6 +271,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         } else if (r instanceof ErrorResult) {
             r = ActErrorResult.of(r);
         }
+        ctx.setResult(r);
         if (null == ctx.handler()) {
             ctx.handler(FastRequestHandler.dumbHandler(ctx));
         }

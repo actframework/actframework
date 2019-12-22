@@ -20,9 +20,11 @@ package act.inject.param;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 
 class ScopedParamValueLoader implements ParamValueLoader {
@@ -49,6 +51,13 @@ class ScopedParamValueLoader implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+        if (context instanceof ActionContext) {
+            ActionContext ac = $.cast(context);
+            Object renderArg = ac.renderArg(realLoader.bindName());
+            if (null != renderArg) {
+                return renderArg;
+            }
+        }
         if (supportCaching) {
             Object cached = scopeCache.get(key);
             boolean isSession = SessionScope.INSTANCE == scopeCache;

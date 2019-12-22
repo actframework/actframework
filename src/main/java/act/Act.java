@@ -860,7 +860,19 @@ public final class Act {
     }
 
     public static void registerMimeTypes() {
-        MimeType.registerMimeType(DataTable.HTML_TABLE, "text/x-html-table");
+        registerMimeType(MimeTypeExtensions.HTML_TABLE, "text/x-html-table");
+        registerMimeType(MimeTypeExtensions.STRING_LIST, "text/x-string-list");
+    }
+
+    private static void registerMimeType(Keyword keyword, String contentType) {
+        registerMimeType(keyword.javaVariable().toLowerCase(), contentType);
+        registerMimeType(keyword.javaVariable(), contentType);
+        registerMimeType(keyword.dashed(), contentType);
+        registerMimeType(keyword.underscore(), contentType);
+    }
+
+    private static void registerMimeType(String name, String contentType) {
+        MimeType.registerMimeType(name, contentType);
     }
 
     public static void registerTypeConverters() {

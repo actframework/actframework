@@ -70,4 +70,13 @@ public @interface Every {
      */
     boolean startImmediately() default true;
 
+    String EVERY_1_SECOND = "1s";
+    String EVERY_5_SECONDS = "5s";
+    String EVERY_1_MINUTE = "1mn";
+    String EVERY_5_MINUTES = "5mn";
+    String EVERY_1_HOUR = "1h";
+    String EVERY_5_HOURS = "5h";
+    String EVERY_1_DAY = "1d";
+    String EVERY_5_DAYS = "5d";
+
 }

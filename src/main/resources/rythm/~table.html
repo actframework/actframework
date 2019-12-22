@@ -5,7 +5,7 @@
   <thead>
   <tr>
   @for(table.heading()) {
-  <th>@_</th>
+  <th>@(_.equals("_this_") ? "data" : _)</th>
   }
   </tr>
   </thead>
@@ -49,6 +49,8 @@
       }
       @if(isUrl(v)) {
         <a href="@addHtmlTableAccept(v)" target="_blank">@v</a>
+      } else if (null == v || "".equals(v.toString().trim())) {
+        &nbsp;
       } else {
         @toString(v).raw()
       }

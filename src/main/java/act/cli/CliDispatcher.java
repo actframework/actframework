@@ -23,7 +23,6 @@ package act.cli;
 import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.event.SysEventId;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.builtin.IterateCursor;
@@ -39,10 +38,7 @@ import org.osgl.util.E;
 import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Dispatch console command to CLI command handler
@@ -123,12 +119,54 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         return commands(false, true);
     }
 
+    public SortedSet<CliCmdInfo> commandInfoList(boolean sys, boolean app) {
+        SortedSet<CliCmdInfo> list = new TreeSet<>();
+        boolean all = !sys && !app;
+        for (Map.Entry<Keyword, CliHandler> entry : registry.entrySet()) {
+            Keyword keyword = entry.getKey();
+            String s = rawNameRepo.get(keyword);
+            boolean isSysCmd = s.startsWith("act.");
+            if (isSysCmd && !sys && !all) {
+                continue;
+            }
+            if (!isSysCmd && !app && !all) {
+                continue;
+            }
+            CliHandler h = entry.getValue();
+            CliCmdInfo info = new CliCmdInfo();
+            info.help = h.commandLine()._2;
+            info.name = s;
+            List<String> shortcuts = shortCuts(h);
+            if (null != shortcuts && !shortcuts.isEmpty()) {
+                info.shortcut = shortcuts.get(0);
+            } else {
+                info.shortcut = info.name;
+            }
+            if (info.shortcut.length() > s.length()) {
+                info.shortcut = s;
+            }
+            if (info.shortcut.startsWith("act.")) {
+                info.shortcut = info.shortcut.substring(4);
+            }
+            list.add(info);
+        }
+        return list;
+    }
+
+    public List<String> commandsWithShortcut(boolean sys, boolean app) {
+        return commands0(sys, app, true);
+    }
+
     /**
      * Returns all commands in alphabetic order
      *
      * @return the list of commands
      */
     public List<String> commands(boolean sys, boolean app) {
+        return commands0(sys, app, false);
+    }
+
+    private List<String> commands0(boolean sys, boolean app, boolean withShortcut) {
         C.List<String> list = C.newList();
         Act.Mode mode = Act.mode();
         boolean all = !sys && !app;
@@ -143,6 +181,12 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             }
             CliHandler h = registry.get(keyword);
             if (h.appliedIn(mode)) {
+                if (withShortcut) {
+                    List<String> shortcuts = shortCuts(h);
+                    if (null != shortcuts && !shortcuts.isEmpty()) {
+                        s = s + " | " + shortcuts.get(0);
+                    }
+                }
                 list.add(s);
             }
         }

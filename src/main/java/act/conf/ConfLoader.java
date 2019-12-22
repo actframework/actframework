@@ -50,6 +50,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         rawConf.putAll((Map) sysProps);
 
         rawConf = processConf(rawConf);
+        processScanPackage(rawConf);
         return create(rawConf);
     }
 

@@ -21,13 +21,17 @@ package act.controller;
  */
 
 import act.Act;
+import act.MimeTypeExtensions;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.data.Versioned;
 import act.route.Router;
-import act.util.*;
+import act.util.$$;
+import act.util.DataTable;
+import act.util.FastJsonIterable;
 import act.util.JsonUtilConfig.JsonWriter;
+import act.util.PropertySpec;
 import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -40,16 +44,17 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
 import org.osgl.util.*;
-import org.osgl.util.Output;
 
+import javax.inject.Inject;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
-import javax.inject.Inject;
 
 /**
  * Mark a class as Controller, which contains at least one of the following:
@@ -62,7 +67,8 @@ import javax.inject.Inject;
 @Target(ElementType.TYPE)
 public @interface Controller {
 
-    H.Format FMT_HTML_TABLE = H.Format.of(DataTable.HTML_TABLE);
+    H.Format FMT_HTML_TABLE = H.Format.of(MimeTypeExtensions.HTML_TABLE.dashed());
+    H.Format FMT_STRING_LIST = H.Format.of(MimeTypeExtensions.STRING_LIST.dashed());
 
     /**
      * Indicate the context path for all action methods declared
@@ -1931,12 +1937,27 @@ public @interface Controller {
                 //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
                 return null;
             }
-            String jsonPath = context.paramVal("_jsonPath");
-            if (null != jsonPath) {
-                v = JSONPath.eval(v, jsonPath);
-            }
             Class<?> vCls = v.getClass();
             boolean isSimpleType = $.isSimpleType(vCls);
+            if (!isSimpleType) {
+                String jsonPath = context.paramVal("_jsonPath");
+                if (null != jsonPath) {
+                    String filter = null;
+                    if (null != context.propertySpec()) {
+                        filter = context.propertySpec().raw(context);
+                    }
+                    JSONObject json;
+                    if (S.notBlank(filter)) {
+                        json = $.deepCopy(v).filter(filter).to(JSONObject.class);
+                    } else {
+                        json = $.deepCopy(v).to(JSONObject.class);
+                    }
+                    v = JSONPath.eval(json, jsonPath);
+                }
+                if (null == v) {
+                    return null;
+                }
+            }
             boolean shouldUseToString = $$.shouldUseToString(vCls);
             if (H.Format.HTML.isSameTypeWith(accept) && !shouldUseToString) {
                 requireJSON = true;
@@ -2000,20 +2021,26 @@ public @interface Controller {
                     }
                     req.accept(H.Format.HTML);
                     return RenderTemplate.get();
-                } else {
-                    DirectRender dr = Act.viewManager().loadDirectRender(context);
-                    if (null != dr) {
-                        return new DirectRenderResult(dr, v);
+                } else if (FMT_STRING_LIST.isSameTypeWith(accept)) {
+                    if (v instanceof Iterable) {
+                        Iterable itr = $.cast(v);
+                        String s = S.join("\n", itr);
+                        return RenderText.of(s);
                     }
-                    // fall back to JSON
-                    if (v instanceof $.Visitor) {
-                        return RenderJSON.of(status, ($.Visitor) v);
-                    } else if (v instanceof $.Func0) {
-                        return RenderJSON.of(status, ($.Func0) v);
-                    }
-                    JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
-                    return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
+                    // otherwise - leave it to default handling
                 }
+                DirectRender dr = Act.viewManager().loadDirectRender(context);
+                if (null != dr) {
+                    return new DirectRenderResult(dr, v);
+                }
+                // fall back to JSON
+                if (v instanceof $.Visitor) {
+                    return RenderJSON.of(status, ($.Visitor) v);
+                } else if (v instanceof $.Func0) {
+                    return RenderJSON.of(status, ($.Func0) v);
+                }
+                JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
+                return context.isLargeResponse() ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
             }
         }
 

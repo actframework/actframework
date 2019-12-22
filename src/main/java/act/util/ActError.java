@@ -81,7 +81,12 @@ public interface ActError {
             if (cause instanceof SourceInfo) {
                 return (SourceInfo) cause;
             }
-            return _loadSourceInfo(cause.getStackTrace(), errorClass);
+            try {
+                return _loadSourceInfo(cause.getStackTrace(), errorClass);
+            } catch (RuntimeException e) {
+                Act.LOGGER.warn(e, "Error loading source info");
+                return null;
+            }
         }
 
         private static SourceInfo _loadSourceInfo(StackTraceElement[] sa, Class<? extends ActError> errorClass) {
@@ -114,9 +119,27 @@ public interface ActError {
                 }
                 if (handler instanceof RequestHandlerProxy) {
                     RequestHandlerProxy proxy = $.cast(handler);
-                    ControllerAction action = proxy.actionHandler();
-                    ReflectedHandlerInvoker invoker = $.cast(action.invoker());
-                    return loadSourceInfo(invoker.method());
+                    try {
+                        ControllerAction action = proxy.actionHandler();
+                        ReflectedHandlerInvoker invoker = $.cast(action.invoker());
+                        return loadSourceInfo(invoker.method());
+                    } catch (RuntimeException e) {
+                        // refer: https://github.com/actframework/actframework/issues/1264
+                        // try my best to get the method
+                        String methodName = S.cut(actionName).afterLast(".");
+                        String className = S.cut(actionName).beforeLast(".");
+                        Class<?> clz = Act.classForName(className);
+                        for (Method m : clz.getMethods()) {
+                            if (methodName.equals(m.getName())) {
+                                return loadSourceInfo(m);
+                            }
+                        }
+                        for (Method m : clz.getDeclaredMethods()) {
+                            if (methodName.equals(m.getName())) {
+                                return loadSourceInfo(m);
+                            }
+                        }
+                    }
                 }
                 return loadSourceInfo(caller, errorClass);
             } else if (ctx instanceof CliContext) {
@@ -133,7 +156,7 @@ public interface ActError {
         }
 
         public static SourceInfo loadSourceInfo(Class<? extends ActError> errorClass) {
-            return _loadSourceInfo(new RuntimeException().getStackTrace(), errorClass);
+            return loadSourceInfo(new RuntimeException(), errorClass);
         }
 
         public static List<String> stackTraceOf(ActError error) {

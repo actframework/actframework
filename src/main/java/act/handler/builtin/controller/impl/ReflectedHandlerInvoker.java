@@ -184,11 +184,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         this.xmlRootTag = config.xmlRootTag();
 
         Class[] paramTypes = paramTypes(app);
-        try {
-            method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
-        } catch (NoSuchMethodException e) {
-            throw E.unexpected(e);
-        }
+        method = $.getMethod(controllerClass, handlerMetaInfo.name(), paramTypes);
+        E.unexpectedIf(null == method, "Unable to locate handler method: " + handlerMetaInfo.name());
         this.returnType = Generics.getReturnType(method, controllerClass);
         this.returnString = this.returnType == String.class;
         Integer priority = handler.priority();

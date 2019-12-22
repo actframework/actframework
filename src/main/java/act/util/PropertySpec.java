@@ -187,15 +187,22 @@ public @interface PropertySpec {
         private Spec cli = newSpec();
         private Spec http = newSpec();
 
+        private String commonRaw;
+        private String cliRaw;
+        private String httpRaw;
+
         public void onValue(String value) {
+            commonRaw = value;
             _on(value, common);
         }
 
         public void onCli(String value) {
+            cliRaw = value;
             _on(value, cli);
         }
 
         public void onHttp(String value) {
+            httpRaw = value;
             _on(value, http);
         }
 
@@ -230,6 +237,19 @@ public @interface PropertySpec {
         @Deprecated
         public List<String> outputFields() {
             return C.list(common.outputs());
+        }
+
+        public String raw(ActContext context) {
+            if (null == context) {
+                return commonRaw;
+            } else if (context instanceof ActionContext) {
+                return S.blank(httpRaw) ? commonRaw : httpRaw;
+            } else if (context instanceof CliContext) {
+                return S.blank(cliRaw) ? commonRaw : cliRaw;
+            } else {
+                // mail context is unlikely to happen
+                throw new IllegalStateException("context not applied: " + context);
+            }
         }
 
         public List<String> outputFields(ActContext context) {

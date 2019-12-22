@@ -1316,6 +1316,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     /**
+     * Return the logged in user.
+     *
+     * Note this API returns the string set to context with {@link #login(Object)} call.
+     *
+     * @return the logged in user
+     */
+    public String loginUser() {
+        return session.get(config().sessionKeyUsername());
+    }
+
+    /**
      * Login the user and redirect back to original URL
      *
      * @param userIdentifier

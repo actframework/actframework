@@ -1,5 +1,19 @@
 # ActFramework Change Log
 
+**1.8.31**
+* ParamValueBinder - allow bind to ActionContext renderArgs #1267
+* CLI - add shortcut into the command help list #1266
+* No response on certain error scenario #1264
+* Support JSON path #1262
+* html-table rendering issue with a list of String #1261
+* IE 9 browser，got a strange error！ #1260
+* ApiDoc bug: JPA Entity field #1259
+* XML Data bind to JSONObject issue #1258
+* API Doc - sample query data issue with array type #1257
+* JSON Error message should escape `"` #1256
+* `LoadResource` - error injecting into `C.Map` typed field #1253
+* Param binding - allow specify `now` in `DefaultValue` for Date types #1247
+
 **1.8.30a** 24/Nov/2019
 * Fix issue - the upload file not found after moving testing resources to `src/test/resources`
 

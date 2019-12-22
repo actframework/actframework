@@ -27,6 +27,7 @@ import act.app.ActionContext;
 import act.controller.Controller;
 import act.view.Template;
 import act.view.ViewManager;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.ErrorPageRenderer;
@@ -122,6 +123,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         if (null != payload) {
             return com.alibaba.fastjson.JSON.toJSONString(payload);
         }
+        errorMsg = StringEscapeUtils.escapeJson(errorMsg);
         if (null == errorCode) {
             return S.concat("{\"ts\":", $.ms(),  ",\"message\":\"", errorMsg, "\"}");
         } else {

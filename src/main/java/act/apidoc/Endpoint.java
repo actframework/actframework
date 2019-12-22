@@ -161,7 +161,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             }
             Class<?> type = spec.rawType();
             Object o = Act.app().resolverManager().resolve(defStr, type);
-            return S.string(o);
+            return $.toString2(o);
         }
 
         private boolean checkRequired(BeanSpec spec) {
@@ -618,13 +618,6 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         if (S.notBlank(specName)) {
             nameChain.add(specName);
         }
-        if ($.isSimpleType(type)) {
-            Object o = generateSampleData(spec, typeParamLookup, typeChain, nameChain, false);
-            if (null == o) {
-                return "";
-            }
-            return bindName + "=" + o;
-        }
         if (type.isArray()) {
             // TODO handle datetime component type
             Class<?> elementType = type.getComponentType();
@@ -658,6 +651,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return "";
         } else if (ReadableInstant.class.isAssignableFrom(type)) {
             return bindName + "=<datetime>";
+        }
+        if ($.isSimpleType(type)) {
+            Object o = generateSampleData(spec, typeParamLookup, typeChain, nameChain, false);
+            if (null == o) {
+                return "";
+            }
+            return bindName + "=" + o;
         }
         if (null != stringValueResolver(type)) {
             return bindName + "=" + sampleDataFromAnnotation(spec, bindName);

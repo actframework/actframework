@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @UrlContext("1104")
-//@JsonView
 @SuppressWarnings("unused")
 public class Gh1104 extends BaseController {
 

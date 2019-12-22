@@ -1,0 +1,10 @@
+Scenario(1260):
+  description: "IE 9 browser，got a strange error"
+  interactions:
+  - description: test
+    request:
+      headers:
+        accept: "application/x-ms-application, image/jpeg, application/xaml+xml, image/gif, imagepeg, application/x-ms-xbap, */*"
+      get: 1260
+    response:
+      text: Hello World
