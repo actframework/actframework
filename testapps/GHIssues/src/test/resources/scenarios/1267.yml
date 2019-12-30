@@ -1,0 +1,8 @@
+Scenario(1267):
+  description: "ParamValueBinder - allow bind to ActionContext renderArgs"
+  interactions:
+  - description: test bind to render args
+    request:
+      get: 1267?name=someone&host=somewhere.com
+    response:
+      result: someone@somewhere.com
