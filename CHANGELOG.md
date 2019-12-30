@@ -4,6 +4,7 @@
 * Enable turn off QRCode/BarCode rendering based on Accept header #1269
 * ParamValueBinder - allow bind to ActionContext renderArgs #1267
 * CLI - add shortcut into the command help list #1266
+* Disable WARN message on TopLevelDomainList download error when act is running in a non-internet environment #1265
 * No response on certain error scenario #1264
 * Support JSON path #1262
 * html-table rendering issue with a list of String #1261

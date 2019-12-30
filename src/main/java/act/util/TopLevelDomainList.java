@@ -32,6 +32,7 @@ import org.osgl.util.IO;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -97,6 +98,8 @@ public class TopLevelDomainList extends LogSupport {
         }
         try {
             downloadTld();
+        } catch (UnknownHostException e) {
+            // ignore - refer to https://github.com/actframework/actframework/issues/1265
         } catch (Exception e) {
             warn(e, "error download TLD list file");
         }
