@@ -100,6 +100,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private $.Visitor<H.Format> templateChangeListener;
     private H.Status forceResponseStatus;
     private boolean cacheEnabled;
+    private boolean allowQrCodeRendering;
     private MissingAuthenticationHandler forceMissingAuthenticationHandler;
     private MissingAuthenticationHandler forceCsrfCheckingFailureHandler;
     private String urlContext;
@@ -540,9 +541,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      *         the url argument
      */
     public void forward(String url, Object... args) {
-        E.illegalArgumentIfNot(url.startsWith("/"), "forward URL must starts with single '/'");
-        E.illegalArgumentIf(url.startsWith("//"), "forward URL must starts with single `/`");
-        E.unexpectedIfNot(H.Method.GET == req().method(), "forward only support on HTTP GET request");
+        badRequestIfNot(url.startsWith("/"), "forward URL must starts with single '/'");
+        badRequestIf(url.startsWith("//"), "forward URL must starts with single `/`");
+        badRequestIfNot(H.Method.GET == req().method(), "forward only support on HTTP GET request");
         uploads.clear();
         extraParams.clear();
         bodyParams = null;
@@ -639,7 +640,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext enableCache() {
-        E.illegalArgumentIf(this.cacheEnabled, "cache already enabled in the action context");
+        E.illegalStateIf(this.cacheEnabled, "cache already enabled in the action context");
         this.cacheEnabled = true;
         this.response = new ResponseCache(response);
         return this;
@@ -651,6 +652,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public boolean isAllowIgnoreParamNamespace() {
         return allowIgnoreParamNamespace;
+    }
+
+    public void markAllowQrCodeRendering() {
+        allowQrCodeRendering = true;
+    }
+
+    public boolean allowQrCodeRendering() {
+        return allowQrCodeRendering;
     }
 
     public void allowIgnoreParamNamespace() {
@@ -781,19 +790,19 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * {@link #paramVal(String)} with `__path` as param name.
      *
      * However, this method will do sanity check on the value returned, in case
-     * there are `..` found in the value, an `IllegalArgumentException` will
+     * there are `..` found in the value, an `BadRequest` will
      * be thrown out. This is to prevent the insecure direct object reference
      * attack.
      *
      * @return the param value of `__path`
-     * @throws IllegalArgumentException when the value contains string `..`
+     * @throws org.osgl.mvc.result.BadRequest when the value contains string `..`
      */
     public String __pathParamVal() {
         String s = paramVal(ParamNames.PATH);
         if (null == s) {
             return s;
         }
-        E.illegalArgumentIf(s.contains(".."), "`..` found in path which is not allowed");
+        badRequestIf(s.contains(".."), "`..` found in path which is not allowed");
         return s;
     }
 

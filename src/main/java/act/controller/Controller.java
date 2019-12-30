@@ -1794,13 +1794,23 @@ public @interface Controller {
             } else {
                 H.Format fmt = actionContext.accept();
                 String fmtName = fmt.name();
-                if (S.eq(fmtName, "qrcode")) {
-                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.QR_CODE);
-                } else if (S.eq(fmtName, "barcode")) {
-                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.CODE_128);
-                } else if (fmt.isText()) {
+                boolean allowQrCodeRendering = actionContext.allowQrCodeRendering();
+                if (!allowQrCodeRendering) {
+                    if (S.eq(fmtName, "qrcode") || S.eq(fmtName, "barcode")) {
+                        fmt = H.Format.TXT;
+                        actionContext.req().accept(fmt);
+                    }
+                }
+                if (fmt.isText()) {
                     return RenderText.of(status, fmt, v2s(v, shouldUseToString));
                 }
+//                if (S.eq(fmtName, "qrcode")) {
+//                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.QR_CODE);
+//                } else if (S.eq(fmtName, "barcode")) {
+//                    return new ZXingResult(v2s(v, shouldUseToString), BarcodeFormat.CODE_128);
+//                } else if (fmt.isText()) {
+//                    return RenderText.of(status, fmt, v2s(v, shouldUseToString));
+//                }
                 DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
                 if (null == dr) {
                     throw E.unexpected("Cannot apply text result to format: %s", fmt);
@@ -1877,7 +1887,6 @@ public @interface Controller {
         }
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
-            H.Format.of("qrcode");
             if (context.acceptJson()) {
                 return RenderJSON.of(context.successStatus(), sobj.asString());
             } else {

@@ -1,0 +1,17 @@
+Scenario(1269):
+  description: "Enable turn off QRCode/BarCode rendering based on Accept header"
+  urlContext: 1269
+  interactions:
+  - description: test allow qrcode method
+    request:
+      get: allowQrCode?_accept=qrcode
+    response:
+      headers:
+        Content-Type: image/png
+  - description: test not allow qrcode method
+    request:
+      get: notAllowQrCode?_accept=qrcode
+    response:
+      headers:
+        Content-Type: text/plain
+      text: gh1269

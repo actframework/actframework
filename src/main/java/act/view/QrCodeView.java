@@ -37,7 +37,7 @@ public class QrCodeView extends View {
 
         @Override
         public void render(Object result, ActionContext context) {
-            new ZXingResult(S.string(result), fmt).applyMessage(context.req(), context.resp());
+            new ZXingResult(S.string(result), fmt).apply(context.req(), context.resp());
         }
     }
 

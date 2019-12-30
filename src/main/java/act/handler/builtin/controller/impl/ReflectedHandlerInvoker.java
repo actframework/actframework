@@ -171,6 +171,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private List<JsonDtoPatch> dtoPatches = new ArrayList<>();
     private boolean hasDtoPatches;
     private Class<?> returnType;
+    // see https://github.com/actframework/actframework/issues/1269
+    private boolean allowQrCodeRendering;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -238,6 +240,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         } else {
             method.setAccessible(true);
         }
+        this.allowQrCodeRendering = ReflectedInvokerHelper.isAnnotationPresent(AllowQrCodeRendering.class, method);
 
         if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == ReflectedInvokerHelper.getAnnotation(NoReturnValueAdvice.class, method)) {
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
@@ -540,6 +543,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         if (null != downloadFilename) {
             context.downloadFileName(downloadFilename);
+        }
+
+        if (allowQrCodeRendering) {
+            context.markAllowQrCodeRendering();
         }
 
         context.setReflectedHandlerInvoker(this);
