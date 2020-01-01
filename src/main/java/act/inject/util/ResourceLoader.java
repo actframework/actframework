@@ -442,7 +442,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 } else {
                     throw new UnexpectedException("Unable to load resource into Map: " + resourcePath);
                 }
-                Map map = new HashMap<>();
+                Map map = (Map)Act.getInstance(spec.rawType());
                 List<Type> mapTypeParams = spec.typeParams();
                 Class<?> keyType = String.class;
                 Class<?> valType = String.class;

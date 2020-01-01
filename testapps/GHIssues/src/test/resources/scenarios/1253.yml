@@ -1,0 +1,7 @@
+Scenario(1253):
+  description: "`LoadResource` - error injecting into `C.Map` typed field"
+  interactions:
+    - request:
+        get: 1253
+      response:
+        foo: bar
