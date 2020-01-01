@@ -135,7 +135,7 @@ public abstract class NamedLogic extends LogSupport {
             if (key.startsWith("!") || key.startsWith("-")) {
                 revert = true;
                 key = key.substring(1).trim();
-            } else if (key.startsWith("not:")) {
+            } else if (key.startsWith("not:") || key.startsWith("not ")) {
                 revert = true;
                 key = key.substring(4).trim();
             }
@@ -167,7 +167,7 @@ public abstract class NamedLogic extends LogSupport {
             if (key.startsWith("!") || key.startsWith("-")) {
                 revert = true;
                 key = key.substring(1).trim();
-            } else if (key.startsWith("not:")) {
+            } else if (key.startsWith("not:") || key.startsWith("not ")) {
                 revert = true;
                 key = key.substring(4).trim();
             }

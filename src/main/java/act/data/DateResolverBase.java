@@ -22,8 +22,10 @@ package act.data;
 
 import act.conf.AppConfig;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -68,9 +70,22 @@ public abstract class DateResolverBase<T extends Date> extends StringValueResolv
         if (S.blank(value)) {
             return null;
         }
+        if ("now".equalsIgnoreCase(value)
+                || "today".equalsIgnoreCase(value)
+                || "现在".equalsIgnoreCase(value)
+                || "今天".equalsIgnoreCase(value)
+        ) {
+            return cast(new Date());
+        }
+        // for #691
         Date date = parse(value);
+        if (null == date && S.isIntOrLong(value)) {
+            long epoc = Long.parseLong(value);
+            date = $.convert(epoc).to(Date.class);
+            return cast(date);
+        }
         if (null == date) {
-            return null;
+            throw new BadRequest("Invalid date time format: " + value);
         }
         return cast(date);
     }

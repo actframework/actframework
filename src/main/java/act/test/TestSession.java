@@ -798,7 +798,7 @@ public class TestSession extends LogSupport {
         if (name.startsWith("!") || name.startsWith("-")) {
             revert = true;
             name = name.substring(1).trim();
-        } else if (name.startsWith("not:")) {
+        } else if (name.startsWith("not:") || name.startsWith("not ")) {
             revert = true;
             name = name.substring(4).trim();
         }

@@ -1,0 +1,27 @@
+Scenario(1247):
+  description: "Param binding - allow specify `now` in `DefaultValue` for Date types"
+  urlContext: 1247
+  constants:
+    yesterday: ${yesterday()}
+  interactions:
+    - description: test bind to Joda date time
+      request:
+        get: joda-datetime
+      response:
+        result:
+          - after: ${yesterday}
+          - not after: ${now}
+    - description: test bind to Joda local date
+      request:
+        get: joda-localdate
+      response:
+        result:
+          - after: ${yesterday}
+          - not after: ${now}
+    - description: test bind to JDK date
+      request:
+        get: jdk-date
+      response:
+        result:
+          - after: ${yesterday}
+          - not after: ${now}

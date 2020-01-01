@@ -831,6 +831,7 @@ public class App extends LogSupportedDestroyableBase {
                         }
                         emit(PRE_START);
                         emit(STATELESS_PROVISIONED);
+                        $$.init();
                         emit(START);
                         if (isProd() || !wasStarted()) {
                             debug("App[%s] loaded in %sms", name(), $.ms() - ms);

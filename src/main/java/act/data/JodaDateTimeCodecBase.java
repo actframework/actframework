@@ -29,6 +29,7 @@ import act.util.ActContext;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
+import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
@@ -119,14 +120,15 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T>
             return now();
         }
         // for #691
-        int len = value.length();
-        if (9 == len || 10 == len) {
-            if (S.isIntOrLong(value)) {
-                long epoc = Long.parseLong(value);
-                return (T) $.convert(epoc).to(dateTimeType);
-            }
+        T retVal = parse(formatter(), value);
+        if (null == retVal && S.isIntOrLong(value)) {
+            long epoc = Long.parseLong(value);
+            return (T) $.convert(epoc).to(dateTimeType);
         }
-        return parse(formatter(), value);
+        if (null == retVal) {
+            throw new BadRequest("Invalid date time format: " + value);
+        }
+        return retVal;
     }
 
     public final String toJSONString(T o) {

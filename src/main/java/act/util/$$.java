@@ -22,6 +22,7 @@ package act.util;
 
 import act.Act;
 import act.data.*;
+import act.job.OnAppStart;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.*;
 import org.osgl.$;
@@ -38,24 +39,10 @@ public class $$ {
 
     private static Set<Class> dateTimeTypes = $.cast(C.set(Date.class, java.sql.Date.class, DateTime.class, LocalDate.class, LocalTime.class, LocalDateTime.class, Time.class));
 
-    private static Map<Class, ValueObject.Codec> codecs = $.cast(C.Map(
-            DateTime.class, Act.getInstance(JodaDateTimeCodec.class),
-            LocalDateTime.class, Act.getInstance(JodaLocalDateTimeCodec.class),
-            LocalDate.class, Act.getInstance(JodaLocalDateCodec.class),
-            LocalTime.class, Act.getInstance(JodaLocalTimeCodec.class)
-    ));
+    private static Map<Class, ValueObject.Codec> codecs;
 
     public static boolean isDateTimeType(Class<?> type) {
         return dateTimeTypes.contains(type);
-    }
-
-    static {
-        StringUtils.evaluator = new $.Transformer<String, String>() {
-            @Override
-            public String transform(String s) {
-                return S.string(Act.appConfig().getIgnoreCase(s));
-            }
-        };
     }
 
     public static String toString(Object v, boolean directToString) {
@@ -84,6 +71,22 @@ public class $$ {
 
     public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
         return StringUtils.processStringSubstitution(s, evaluator);
+    }
+
+    @OnAppStart
+    public static void init() {
+        StringUtils.evaluator = new $.Transformer<String, String>() {
+            @Override
+            public String transform(String s) {
+                return S.string(Act.appConfig().getIgnoreCase(s));
+            }
+        };
+        codecs = $.cast(C.Map(
+                DateTime.class, Act.getInstance(JodaDateTimeCodec.class),
+                LocalDateTime.class, Act.getInstance(JodaLocalDateTimeCodec.class),
+                LocalDate.class, Act.getInstance(JodaLocalDateCodec.class),
+                LocalTime.class, Act.getInstance(JodaLocalTimeCodec.class)
+        ));
     }
 
 }
