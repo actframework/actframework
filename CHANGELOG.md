@@ -15,6 +15,7 @@
 * XML Data bind to JSONObject issue #1258
 * API Doc - sample query data issue with array type #1257
 * JSON Error message should escape `"` #1256
+* Act should log error stack upon `IllegalArgumentException` explicitly and respond 500 status #1254
 * `LoadResource` - error injecting into `C.Map` typed field #1253
 * Param binding - allow specify `now` in `DefaultValue` for Date types #1247
 

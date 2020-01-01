@@ -1,0 +1,7 @@
+Scenario(1254):
+  description: "Act should throw IllegalArgumentException explicitly although feed `400 bad request` back"
+  interactions:
+    - request:
+        get: 1254
+      response:
+        status: 500
