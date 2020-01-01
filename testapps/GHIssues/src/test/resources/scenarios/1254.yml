@@ -4,4 +4,4 @@ Scenario(1254):
     - request:
         get: 1254
       response:
-        status: 500
+        status: 400
