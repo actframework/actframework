@@ -35,6 +35,7 @@ import act.inject.util.Sorter;
 import act.security.CORS;
 import act.security.CSRF;
 import act.util.*;
+import act.view.ActBadRequest;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
 import act.xio.WebSocketConnectionHandler;
@@ -241,10 +242,16 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 logger.error(e, "Error committing result");
             } else {
                 if (null == result) {
-                    H.Request req = context.req();
-                    result = ActErrorResult.of(e);
-                    if (result.status().isServerError()) {
-                        logger.error(e, "Server error encountered on handling request: " + req);
+                    if (e instanceof IllegalArgumentException) {
+                        String errorMsg = e.getLocalizedMessage();
+                        logger.warn(e, errorMsg);
+                        result = ActBadRequest.create(e, errorMsg);
+                    } else {
+                        H.Request req = context.req();
+                        result = ActErrorResult.of(e);
+                        if (result.status().isServerError()) {
+                            logger.error(e, "Server error encountered on handling request: " + req);
+                        }
                     }
                 }
                 try {

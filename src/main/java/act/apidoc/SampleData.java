@@ -217,6 +217,11 @@ public abstract class SampleData {
         }
     }
 
+    public static <T> List<T> generateList(Class<T> elementType) {
+        ISampleDataCategory category = null;
+        return generateList(elementType, category);
+    }
+
     public static <T> List<T> generateList(Class<T> elementType, String name) {
         return generateList(elementType, SampleDataCategoryManager.get(name));
     }
@@ -246,6 +251,11 @@ public abstract class SampleData {
             Deque<String> nameChain
     ) {
         return generateCollection(elementSpec, new ArrayList<T>(), category, typeParamLookup, typeChain, nameChain);
+    }
+
+    public static <T> Set<T> generateSet(Class<T> elementType) {
+        ISampleDataCategory category = null;
+        return generateSet(elementType, category);
     }
 
     public static <T> Set<T> generateSet(Class<T> elementType, String name) {

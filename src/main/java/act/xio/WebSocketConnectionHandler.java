@@ -29,6 +29,7 @@ import act.event.SysEventListenerBase;
 import act.handler.RequestHandlerBase;
 import act.inject.param.*;
 import act.sys.Env;
+import act.view.ActBadRequest;
 import act.ws.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
