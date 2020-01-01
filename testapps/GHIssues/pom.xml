@@ -57,6 +57,7 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>
+      <version>1.7.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

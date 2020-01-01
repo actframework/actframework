@@ -21,6 +21,7 @@ package act.test.func;
  */
 
 import act.Act;
+import act.apidoc.ISampleDataCategory;
 import act.apidoc.SampleData;
 import act.apidoc.SampleDataCategory;
 import act.apidoc.SampleDataProvider;
@@ -42,7 +43,7 @@ public abstract class SampleDataProviderAdaptor extends Func implements Cloneabl
 
     private SampleDataProviderAdaptor() {}
 
-    private SampleDataProviderAdaptor(SampleDataProvider provider, SampleDataCategory category) {
+    private SampleDataProviderAdaptor(SampleDataProvider provider, ISampleDataCategory category) {
         this.provider = provider;
         this.name = "rand-" + category.name();
         this.aliases = new ArrayList<>();
@@ -69,11 +70,14 @@ public abstract class SampleDataProviderAdaptor extends Func implements Cloneabl
 
     @SubClassFinder
     public static void found(SampleDataProvider provider) {
-        SampleData.Category anno = provider.getClass().getAnnotation(SampleData.Category.class);
-        if (null == anno) {
-            return;
+        ISampleDataCategory category = provider.category();
+        if (null == category) {
+            SampleData.Category anno = provider.getClass().getAnnotation(SampleData.Category.class);
+            if (null == anno) {
+                return;
+            }
+            category = anno.value();
         }
-        SampleDataCategory category = anno.value();
         if (category == SampleDataCategory.DOB) {
             Class<?> targetType = provider.targetType();
             // just need to support one Date type

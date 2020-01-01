@@ -33,16 +33,16 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
 
     private static class Key {
         String className;
-        SampleDataCategory category;
+        ISampleDataCategory category;
         Locale locale;
 
-        Key(String className, SampleDataCategory category, Locale locale) {
+        Key(String className, ISampleDataCategory category, Locale locale) {
             this.className = className;
             this.category = category;
             this.locale = locale;
         }
 
-        Key(Class type, SampleDataCategory category, Locale locale) {
+        Key(Class type, ISampleDataCategory category, Locale locale) {
             this.className = type.getName();
             this.category = category;
             this.locale = locale;
@@ -109,7 +109,7 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
             return;
         }
         if (null != targetType) {
-            Key key = new Key(targetType, null, null);
+            Key key = new Key(targetType, provider.category(), null);
             SampleData.Category c = provider.getClass().getAnnotation(SampleData.Category.class);
             if (null != c) {
                 key.category = c.value();
@@ -136,19 +136,19 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
         }
     }
 
-    public <T> T getSampleData(SampleDataCategory category, String fieldName, Class<T> type) {
+    public <T> T getSampleData(ISampleDataCategory category, String fieldName, Class<T> type) {
         return getSampleData(category, fieldName, type, true);
     }
 
-    public <T> T getSampleData(SampleDataCategory category, String fieldName, Class<T> type, boolean useBroaderKey) {
+    public <T> T getSampleData(ISampleDataCategory category, String fieldName, Class<T> type, boolean useBroaderKey) {
         return getSampleData(category, fieldName, null, type, useBroaderKey);
     }
 
-    public <T> T getSampleData(SampleDataCategory category, String fieldName, Locale locale, Class<T> type) {
+    public <T> T getSampleData(ISampleDataCategory category, String fieldName, Locale locale, Class<T> type) {
         return getSampleData(category, fieldName, locale, type, true);
     }
 
-    public <T> T getSampleData(SampleDataCategory category, String fieldName, Locale locale, Class<T> type, boolean useBroaderKey) {
+    public <T> T getSampleData(ISampleDataCategory category, String fieldName, Locale locale, Class<T> type, boolean useBroaderKey) {
         Key key = new Key(type, categoryOf(category, fieldName), locale);
         return getSampleData(key, useBroaderKey);
     }
@@ -179,7 +179,7 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
         return provider;
     }
 
-    static SampleDataCategory categoryOf(SampleDataCategory category, String name) {
+    static ISampleDataCategory categoryOf(ISampleDataCategory category, String name) {
         return null != category ? category : SampleDataCategory.of(name);
     }
 }

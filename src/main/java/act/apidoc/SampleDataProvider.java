@@ -45,6 +45,10 @@ public abstract class SampleDataProvider<T> extends LogSupport implements Provid
         return targetType;
     }
 
+    public ISampleDataCategory category() {
+        return null;
+    }
+
     private void exploreType() {
         List<Type> types = Generics.typeParamImplementations(getClass(), SampleDataProvider.class);
         if (types.size() != 1) {

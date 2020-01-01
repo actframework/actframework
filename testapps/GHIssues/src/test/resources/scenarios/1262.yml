@@ -1,0 +1,21 @@
+Scenario(1262):
+  description: "Support JSON path #1262"
+  interactions:
+  - description: test 1
+    request:
+      get: 1262?_jsonPath=$.roles.name
+    response:
+      json:
+        size:
+          - gt: 0
+        ?:
+          - in: guest,account_manager,user,user-manager,order-manager
+  - description: test 2
+    request:
+      get: 1262?_jsonPath=$.roles.privilege.level
+    response:
+      json:
+        size:
+          - gt: 0
+        ?:
+          - gt: 0

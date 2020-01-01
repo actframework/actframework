@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.31**
+* Act-Test - Add `In` verifier #1271
+* Create an API to allow developer generate random data #1270
 * Enable turn off QRCode/BarCode rendering based on Accept header #1269
 * ParamValueBinder - allow bind to ActionContext renderArgs #1267
 * CLI - add shortcut into the command help list #1266

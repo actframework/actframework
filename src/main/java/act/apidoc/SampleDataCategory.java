@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public enum SampleDataCategory {
+public enum SampleDataCategory implements ISampleDataCategory {
     FIRST_NAME("given name", "forename", "firstname", "fname"),
     LAST_NAME("surname", "family name", "lname", "lastname"),
     FULL_NAME("fullname"),
@@ -60,6 +60,7 @@ public enum SampleDataCategory {
         this.aliases = C.setOf(aliases);
     }
 
+    @Override
     public Set<String> aliases() {
         return aliases;
     }

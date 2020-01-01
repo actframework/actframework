@@ -66,9 +66,9 @@
     <!-- last version support java7 -->
     <okhttp.version>3.12.1</okhttp.version>
 
-    <osgl-tool.version>1.22.2-SNAPSHOT</osgl-tool.version>
+    <osgl-tool.version>1.23.0-SNAPSHOT</osgl-tool.version>
     <osgl-cache.version>1.8.0</osgl-cache.version>
-    <osgl-genie.version>1.12.0</osgl-genie.version>
+    <osgl-genie.version>1.13.0-SNAPSHOT</osgl-genie.version>
     <osgl-http.version>1.13.0-SNAPSHOT</osgl-http.version>
     <osgl-mvc.version>1.11.0</osgl-mvc.version>
     <osgl-storage.version>1.10.0</osgl-storage.version>
