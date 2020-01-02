@@ -1,5 +1,13 @@
 <ul>
 <li>
+    <span class="news-date">02 Jan 2020</span>
+    <span class="news-text">
+        <a href="https://github.com/actframework/actframework/milestone/79?closed=1">
+            act-1.8.31 released
+        </a>
+    </span>
+</li>
+<li>
     <span class="news-date">24 Nov 2019</span>
     <span class="news-text">
         <a href="https://github.com/actframework/actframework/milestone/78?closed=1">
