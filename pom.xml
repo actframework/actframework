@@ -49,7 +49,7 @@
     <act-asm.version>5.0.5</act-asm.version>
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
-    <ecj.version>3.20.0</ecj.version>
+    <ecj.version>3.12.3</ecj.version>
     <fastjson.version>1.2.62</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
