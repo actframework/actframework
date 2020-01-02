@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.31**
+**1.8.31** 02/Jan/2020
 * Act-Test - Add `In` verifier #1271
 * Create an API to allow developer generate random data #1270
 * Enable turn off QRCode/BarCode rendering based on Accept header #1269

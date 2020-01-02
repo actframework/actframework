@@ -66,11 +66,11 @@
     <!-- last version support java7 -->
     <okhttp.version>3.12.1</okhttp.version>
 
-    <osgl-tool.version>1.23.0-SNAPSHOT</osgl-tool.version>
+    <osgl-tool.version>1.23.0</osgl-tool.version>
     <osgl-cache.version>1.8.0</osgl-cache.version>
-    <osgl-genie.version>1.13.0-SNAPSHOT</osgl-genie.version>
-    <osgl-http.version>1.13.0-SNAPSHOT</osgl-http.version>
-    <osgl-mvc.version>1.11.0</osgl-mvc.version>
+    <osgl-genie.version>1.13.0</osgl-genie.version>
+    <osgl-http.version>1.13.0</osgl-http.version>
+    <osgl-mvc.version>1.13.0</osgl-mvc.version>
     <osgl-storage.version>1.10.0</osgl-storage.version>
     <osgl-tool-ext.version>1.5.0</osgl-tool-ext.version>
     <patcha.version>0.0.1</patcha.version>
