@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.32**
+* File upload generated file name might contains double `.` result in file cannot be accessed #1282
+
 **1.8.31** 02/Jan/2020
 * Act-Test - Add `In` verifier #1271
 * Create an API to allow developer generate random data #1270
@@ -1169,21 +1172,21 @@
 * ActiveRecord -> AdaptiveRecord
 * Performance tuning: enable nonblocking IO
 
-0.3.0
+**0.3.0** 10/Oct/2016
 * Catch up update to osgl-mvc 0.6.0: Bind annotation now support specifying multiple Binder implementations
 
-0.2.0
+**0.2.0** 20/Sep/2016
 * Make act be java 1.6 compatible
 * Big refactoring on
  * dependency injection now on Genie
  * param loading mechanism
  * render arg enhancement now support method call with params, and field
 
-0.1.3
+**0.1.3** 19/Jun/2016
 * testapp to implement integration test of ActFramework
 
-0.1.2
+**0.1.2** 11/Apr/2016
 * misc bug fixes
 
-0.1.1
+**0.1.1** 21/Feb/2016
 * baseline version

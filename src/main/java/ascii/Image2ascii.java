@@ -24,6 +24,7 @@ import net.sf.image4j.codec.ico.ICODecoder;
 import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.IO;
+import org.osgl.util.Keyword;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -188,15 +189,5 @@ public class Image2ascii {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        Image2ascii convert = new Image2ascii();
-        java.util.List<BufferedImage> images = ICODecoder.read(new File("/home/luog/favicon.ico"));
-        String s = convert.convert(images.get(0), true);
-        if (images.size() > 0) {
-            for (int i = 0; i < images.size(); ++i) {
-                ImageIO.write(images.get(i), "png", new File("/home/luog/f" + i + ".png"));
-            }
-        }
-        IO.writeContent(s, new File("/home/luog/a.txt"));
-    }
+
 }

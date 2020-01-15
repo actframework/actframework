@@ -790,7 +790,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * {@link #paramVal(String)} with `__path` as param name.
      *
      * However, this method will do sanity check on the value returned, in case
-     * there are `..` found in the value, an `BadRequest` will
+     * there are `../` found in the value, an `BadRequest` will
      * be thrown out. This is to prevent the insecure direct object reference
      * attack.
      *
@@ -802,7 +802,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (null == s) {
             return s;
         }
-        badRequestIf(s.contains(".."), "`..` found in path which is not allowed");
+        badRequestIf(s.contains("../"), "`../` found in path which is not allowed");
         return s;
     }
 

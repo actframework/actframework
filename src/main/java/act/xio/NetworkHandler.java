@@ -245,6 +245,8 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 ctx.markAsNonBlock();
                 job.run();
             }
+        } catch (Result r) {
+            handleErrorResult(r, ctx);
         } catch (RuntimeException e) {
             handleException(e, ctx, "Error handling network request");
         }
@@ -271,6 +273,10 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
         } else if (r instanceof ErrorResult) {
             r = ActErrorResult.of(r);
         }
+        handleErrorResult(r, ctx);
+    }
+
+    private void handleErrorResult(Result r, final ActionContext ctx) {
         ctx.setResult(r);
         if (null == ctx.handler()) {
             ctx.handler(FastRequestHandler.dumbHandler(ctx));
