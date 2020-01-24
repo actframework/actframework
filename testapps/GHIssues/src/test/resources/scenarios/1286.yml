@@ -1,0 +1,9 @@
+Scenario(1286):
+  description: Exception handling controller with field class without generic parameter specified #1286
+  interactions:
+  - description: Test
+    request:
+      get: 1286
+    response:
+      code: 1
+      result: Hello

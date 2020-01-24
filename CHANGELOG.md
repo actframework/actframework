@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.32**
+* Exception handling controller with field class without generic parameter specified #1286
 * File upload generated file name might contains double `.` result in file cannot be accessed #1282
 
 **1.8.31** 02/Jan/2020
