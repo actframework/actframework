@@ -224,10 +224,10 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         final boolean hideBuiltIn = app().config().isHideBuiltInEndpointsInApiDoc();
         router.accept(new Router.Visitor() {
             @Override
-            public void visit(H.Method method, String path, RouteSource routeSource, RequestHandler handler) {
+            public void visit(H.Method method, String path, RouteSource routeSource, List<String> varNames, RequestHandler handler) {
                 ctx.routeSource(routeSource);
                 if (showEndpoint(path, handler)) {
-                    Endpoint endpoint = new Endpoint(portNumber, method, path, handler);
+                    Endpoint endpoint = new Endpoint(portNumber, method, path, varNames, handler);
                     endpoints.add(endpoint);
                     endpointLookup.put(endpoint.getId(), endpoint);
                     if (isDev) {

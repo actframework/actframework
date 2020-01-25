@@ -71,10 +71,12 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
          *         the URL path
          * @param source
          *         the route source
+         * @param varNames
+         *         the URL path variable name list
          * @param handler
          *         the handler
          */
-        void visit(H.Method method, String path, RouteSource source, RequestHandler handler);
+        void visit(H.Method method, String path, RouteSource source, List<String> varNames, RequestHandler handler);
     }
 
     public static final String IGNORE_NOTATION = "...";
@@ -218,7 +220,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             if (handler instanceof ContextualHandler) {
                 handler = ((ContextualHandler) handler).realHandler();
             }
-            visitor.visit(method, node.path(), node.routeSource, handler);
+            visitor.visit(method, node.path(), node.routeSource, node.varNames, handler);
         }
         for (TreeNode child : node.children()) {
             visit((Node)child, method, visitor);

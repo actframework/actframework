@@ -88,10 +88,12 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public boolean headerVariable;
         public List<String> options;
         public String fieldKey;
+        public boolean body;
+        public boolean pathVar;
 
         private ParamInfo() {}
 
-        private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey) {
+        private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey, boolean pathVar, boolean body) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
             this.description = description;
@@ -101,6 +103,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             this.headerVariable = checkHeaderVariable(beanSpec);
             this.options = checkOptions(beanSpec);
             this.fieldKey = fieldKey;
+            this.pathVar = pathVar;
+            this.body = body;
         }
 
         public String getName() {
@@ -108,18 +112,25 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 return bindName + "[S]";
             } else if (headerVariable) {
                 return bindName + "[H]";
+            } else if (pathVar) {
+                return bindName + "[U]";
+            } else if (body) {
+                return bindName + "[B]";
             }
-            return bindName;
+            return bindName + "[Q]";
         }
 
         public String getTooltip() {
             if (sessionVariable) {
-                return "Session variable: " + bindName;
+                return "Session variable";
             } else if (headerVariable) {
-                return "Header variable: " + bindName;
-            } else {
-                return "Bind name: " + bindName;
+                return "Header variable";
+            } else if (pathVar) {
+                return "URL path variable";
+            } else if (body) {
+                return "JSON body or post form field";
             }
+            return "Query parameter";
         }
 
         public String getType() {
@@ -247,6 +258,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private Map<String, Class> typeLookups;
 
+    private List<String> urlPathVarNames;
+
     public String returnSample;
 
     public transient Object returnSampleObject;
@@ -266,13 +279,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private Endpoint() {}
 
-    Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
+    Endpoint(int port, H.Method httpMethod, String path, List<String> urlPathVarNames, RequestHandler handler) {
         AppConfig conf = Act.appConfig();
         this.httpMethod = $.requireNotNull(httpMethod);
         String urlContext = conf.urlContext();
         this.path = null == urlContext || path.startsWith("/~/") ? $.requireNotNull(path) : S.concat(urlContext, $.requireNotNull(path));
         this.handler = handler.toString();
         this.port = port;
+        this.urlPathVarNames = urlPathVarNames;
         this.sampleDataProviderManager = Act.app().sampleDataProviderManager();
         explore(handler);
     }
@@ -496,7 +510,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             ParamInfo info = paramInfo(type, typeParamLookup, annos, injector, null, null, body);
             if (null != info) {
                 params.add(info);
-                if (path.contains("{" + info.getName() + "}")) {
+                if (info.pathVar) {
                     // no sample data for URL path variable
                     continue;
                 }
@@ -552,7 +566,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
     }
 
-    private ParamInfo paramInfo(Type type, Map<String, Class> typeParamLookup, Annotation[] annos, DependencyInjector injector, String name, String fieldKey, boolean body) {
+    private ParamInfo paramInfo(
+            Type type, Map<String, Class> typeParamLookup, Annotation[] annos,
+            DependencyInjector injector, String name, String fieldKey, boolean body
+    ) {
         if (isLoginUser(annos)) {
             return null;
         }
@@ -560,18 +577,19 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         if (ParamValueLoaderService.providedButNotDbBind(spec, injector)) {
             return null;
         }
+        if (org.osgl.util.S.blank(name)) {
+            name = spec.name();
+        }
+        boolean pathVar = urlPathVarNames.contains(name);
         if (ParamValueLoaderService.hasDbBind(spec.allAnnotations())) {
-            if (org.osgl.util.S.blank(name)) {
-                name = spec.name();
-            }
-            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey);
+            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey, pathVar, body);
         }
         String description = "";
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();
         }
-        return new ParamInfo(body ? spec.name() + " (body)" : spec.name(), spec, description, fieldKey);
+        return new ParamInfo(name, spec, description, fieldKey, pathVar, body);
     }
 
     private boolean isLoginUser(Annotation[] annos) {
