@@ -3,13 +3,26 @@ table.act_data_table {
     font-size: 11pt;
     font-family: cousine, "Droid Sans Mono Dotted", "Envy Code R", "Fira Code", Monaco, monospaced;
 }
-table.act_data_table th {
+table.act_data_table th, table.act_data_table td.act_data_table_label {
     background-color: #007;
     padding: 5px;
     color: #efefef;
     border-color: #efefef;
+    font-weight: bold;
 }
-table.act_data_table, table.act_data_table th, table.act_data_table td {
+table.act_data_table th:first-child {
+    border-left-color: #007;
+}
+table.act_data_table th:last-child {
+    border-right-color: #007;
+}
+table.act_data_table tbody tr:first-child td.act_data_table_label {
+    border-top-color: #007;
+}
+table.act_data_table tbody tr:last-child td.act_data_table_label {
+    border-bottom-color: #007;
+}
+table.act_data_table, table.act_data_table td {
     border: 1px solid #007;
 }
 table.act_data_table td {

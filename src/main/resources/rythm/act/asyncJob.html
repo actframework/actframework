@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-@args String jobId
+@args String jobId, String targetAccept
 <head>
   <meta charset="UTF-8">
   <link id="favicon-link" rel="icon" type="image/png"
@@ -172,8 +172,14 @@
       $('#in-progress').hide()
       if (fail) {
         $('#result-detail').addClass('error')
+        $('#job-result').show()
+      } else {
+        @if("json".equalsIgnoreCase(targetAccept) || "html".equalsIgnoreCase(targetAccept)) {
+          $('#job-result').show()
+        } else {
+          location.href="/~/jobs/@jobId/result?_accept=@targetAccept"
+        }
       }
-      $('#job-result').show()
     })
   }
   function monitorProgress() {

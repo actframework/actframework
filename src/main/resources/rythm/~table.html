@@ -2,6 +2,7 @@
 @import act.util.DataTable, org.osgl.Lang, org.osgl.util.S
 @args DataTable table
 <table class="act_data_table">
+  @if(!table.isTransposed()) {
   <thead>
   <tr>
   @for(table.heading()) {
@@ -9,6 +10,7 @@
   }
   </tr>
   </thead>
+  }
   <tbody>
   @def boolean isUrl(Object v) {
     if (null == v) {return false;}
@@ -37,7 +39,7 @@
     @for(String label: table.heading()) {
     <td
             @if(label.equals(DataTable.KEY_FIELD)){
-              class="act_data_table_label act_data_table_left"
+              class="act_data_table_label act_data_table_right"
             } else if(table.isRightAligned(label)) {
               class="act_data_table_right"
             } else {

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.32**
+* async request handling - render report using cached accept type #1287
 * Async endpoint result page style needs to be updated #1285
 * API doc - URL path variable in POST endpoint info is incorrect #1284
 * Exception handling controller with field class without generic parameter specified #1286

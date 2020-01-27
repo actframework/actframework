@@ -613,7 +613,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         Map<String, ConstraintViolation> violations = context.violations();
         if (HANDLING == context.state() && !violations.isEmpty()) {
-
             if (null != validateViolationAdvice) {
                 Result r = null;
                 try {
@@ -691,15 +690,30 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            boolean renderAsyncJobPage = reportAsyncProgress && (context.req().accept().isSameTypeWith(H.Format.HTML));
-            if (renderAsyncJobPage) {
-                context.templatePath("/act/asyncJob.html");
-                context.renderArg("jobId", jobId);
-                return RenderTemplate.get();
-            } else {
-                String resultUrl = context.router().fullUrl("/~/jobs/%s/result", jobId);
-                    return new RenderJSON(C.Map("jobId", jobId, "resultUrl", resultUrl));
+            /*
+             * We need to decide how to render the response here:
+             * 1. if it require json, then return json response directly
+             * 2. otherwise we want to check the {@link H.Request#rawAccept()},
+             * 2.1 in case raw accept is HTML then cache current accept and render Async status page, once done render
+             *     result page using cached accept
+             * 2.2 in case raw accept is not HTML then cache current accept and render JSON response
+             */
+            H.Format wantedAccept = null;
+            boolean renderJson = !reportAsyncProgress;
+            if (!renderJson) {
+                H.Request<?> req = context.req();
+                wantedAccept = req.accept();
+                renderJson = wantedAccept.isSameTypeWith(H.Format.JSON) || !req.rawAccept().isSameTypeWith(H.Format.HTML);
             }
+            if (renderJson) {
+                String resultUrl = context.router().fullUrl("/~/jobs/%s/result", jobId);
+                return new RenderJSON(C.Map("jobId", jobId, "resultUrl", resultUrl));
+            }
+            context.renderArg("targetAccept", wantedAccept.name());
+            context.accept(H.Format.HTML);
+            context.templatePath("/act/asyncJob.html");
+            context.renderArg("jobId", jobId);
+            return RenderTemplate.get();
         }
 
         try {
