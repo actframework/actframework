@@ -49,7 +49,7 @@ public abstract class DbPlugin extends AppServicePlugin implements Plugin {
      * @return entity class annotations
      */
     public Set<Class<? extends Annotation>> entityAnnotations() {
-        return C.set();
+        return C.Set();
     }
 
     @Override
