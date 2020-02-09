@@ -58,7 +58,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
-import java.beans.Transient;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -83,6 +83,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         public String type;
         public String description;
         public String defaultValue;
+        public H.Method httpMethod;
         public boolean required;
         public boolean sessionVariable;
         public boolean headerVariable;
@@ -93,9 +94,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
         private ParamInfo() {}
 
-        private ParamInfo(String bindName, BeanSpec beanSpec, String description, String fieldKey, boolean pathVar, boolean body) {
+        private ParamInfo(H.Method httpMethod, String bindName, BeanSpec beanSpec, String description, String fieldKey, boolean pathVar, boolean body) {
             this.bindName = bindName;
             this.beanSpec = beanSpec;
+            this.httpMethod = httpMethod;
             this.description = description;
             this.defaultValue = checkDefaultValue(beanSpec);
             this.required = checkRequired(beanSpec);
@@ -114,10 +116,12 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 return bindName + "[H]";
             } else if (pathVar) {
                 return bindName + "[U]";
+            } else if (httpMethod == H.Method.GET) {
+                return bindName + "[Q]";
             } else if (body) {
                 return bindName + "[B]";
             }
-            return bindName + "[Q]";
+            return bindName;
         }
 
         public String getTooltip() {
@@ -171,8 +175,12 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                 defStr = def.value();
             }
             Class<?> type = spec.rawType();
-            Object o = Act.app().resolverManager().resolve(defStr, type);
-            return $.toString2(o);
+            try {
+                Object o = Act.app().resolverManager().resolve(defStr, type);
+                return $.toString2(o);
+            } catch (Exception e) {
+                return "";
+            }
         }
 
         private boolean checkRequired(BeanSpec spec) {
@@ -468,7 +476,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         Module methodModule = method.getAnnotation(Module.class);
         this.module = null == methodModule ? classModuleText : methodModule.value();
         boolean payloadMethod = H.Method.POST == httpMethod || H.Method.PUT == httpMethod || H.Method.PATCH == httpMethod;
-        boolean body = payloadMethod && null != invoker.singleJsonFieldName();
+        boolean body = payloadMethod && (null != invoker.singleJsonFieldName() || invoker.fieldsAndParamsCount() - urlPathVarNames.size() == 1);
         exploreParamInfo(method, typeParamLookup, body);
         if (!Modifier.isStatic(method.getModifiers())) {
             exploreParamInfo(controllerClass, typeParamLookup, body);
@@ -537,7 +545,9 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             if (null != payload && $.isSimpleType(payload.getClass())) {
                 payload = sampleData;
             }
-            sampleJsonPost = null == payload ? null : JSON.toJSONString(payload, true);
+            if (null != payload) {
+                sampleJsonPost = JSON.toJSONString(payload, true);
+            }
         }
         if (!sampleQuery.isEmpty()) {
             this.sampleQuery = S.join("&", sampleQuery);
@@ -582,14 +592,14 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         }
         boolean pathVar = urlPathVarNames.contains(name);
         if (ParamValueLoaderService.hasDbBind(spec.allAnnotations())) {
-            return new ParamInfo(name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey, pathVar, body);
+            return new ParamInfo(httpMethod, name, BeanSpec.of(String.class, injector, typeParamLookup), name + " id", fieldKey, pathVar, body);
         }
         String description = "";
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();
         }
-        return new ParamInfo(name, spec, description, fieldKey, pathVar, body);
+        return new ParamInfo(httpMethod, name, spec, description, fieldKey, pathVar, body);
     }
 
     private boolean isLoginUser(Annotation[] annos) {
@@ -833,8 +843,10 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                     return BigDecimal.valueOf(1.1);
                 } else if (BigInteger.class == classType) {
                     return BigInteger.valueOf(1);
-                } else if (ISObject.class.isAssignableFrom(classType)) {
-                    return SObject.of("blob data");
+                } else if (File.class == classType) {
+                    return new File("/path/to/upload/file");
+                } else if (ISObject.class.isAssignableFrom(classType) || SObject.class.isAssignableFrom(classType)) {
+                    return SObject.of("/path/to/upload/file", "");
                 } else if (Map.class.isAssignableFrom(classType)) {
                     Map map = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();

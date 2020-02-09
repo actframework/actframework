@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.32**
+* API Doc - improve sample data generation for `ISObject` type #1289
+* HTML table view - make table header sticky at the top #1290
 * async request handling - render report using cached accept type #1287
 * Async endpoint result page style needs to be updated #1285
 * API doc - URL path variable in POST endpoint info is incorrect #1284

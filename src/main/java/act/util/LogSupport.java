@@ -43,6 +43,10 @@ public class LogSupport {
         logger = LogManager.get(getClass());
     }
 
+    public final Logger logger() {
+        return logger;
+    }
+
     /**
      * Print a line of 80 `=` chars
      */

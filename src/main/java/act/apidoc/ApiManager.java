@@ -36,8 +36,11 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.inject.util.ResourceLoader;
 import act.route.RouteSource;
 import act.route.Router;
+import act.util.FastJsonFileSerializer;
+import act.util.FastJsonSObjectSerializer;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NamedNode;
@@ -52,6 +55,8 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -143,6 +148,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         Set<Class> controllerClasses = new HashSet<>();
         ApiDocCompileContext ctx = new ApiDocCompileContext();
         ctx.saveCurrent();
+        SerializeConfig fjConfig = SerializeConfig.globalInstance;
+        Class<?> stringSObjectType = SObject.of("").getClass();
+        fjConfig.put(stringSObjectType, new FastJsonSObjectSerializer());
         try {
             load(router, null, config, controllerClasses, ctx);
             for (NamedPort port : app.config().namedPorts()) {

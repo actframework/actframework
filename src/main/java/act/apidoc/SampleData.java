@@ -30,10 +30,13 @@ import org.osgl.$;
 import org.osgl.OsglConfig;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.io.File;
 import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -208,6 +211,10 @@ public abstract class SampleData {
             } else if (spec.isSet()) {
                 BeanSpec elementSpec = spec.componentSpec();
                 return (T) generateSet(elementSpec, category, typeParamLookup, typeChain, nameChain);
+            } else if (File.class.isAssignableFrom(spec.rawType())) {
+                return (T) new File("/path/to/upload/file");
+            } else if (ISObject.class.isAssignableFrom(spec.rawType())) {
+                return (T) SObject.of("/path/to/upload/file", "");
             } else {
                 return (T) generateSamplePojo(spec, typeParamLookup, typeChain, nameChain);
             }
