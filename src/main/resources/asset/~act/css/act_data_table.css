@@ -2,6 +2,7 @@ table.act_data_table {
     border-collapse: collapse;
     font-size: 11pt;
     font-family: cousine, "Droid Sans Mono Dotted", "Envy Code R", "Fira Code", Monaco, monospaced;
+    position: relative;
 }
 table.act_data_table th, table.act_data_table td.act_data_table_label {
     background-color: #007;
@@ -37,4 +38,8 @@ table.act_data_table td {
 table.act_data_table pre {
     margin: 0;
     font-family: cousine, "Droid Sans Mono Dotted", "Envy Code R", "Fira Code", Monaco, monospaced;
+}
+table.act_data_table th {
+    position: sticky;
+    top: 0
 }
