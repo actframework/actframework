@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.32**
+* Act-Test - it shall send session header token from last headers automatically #1294
+* Allow it use request parameter to pass session token #1293
 * API Doc - improve sample data generation for `ISObject` type #1289
 * HTML table view - make table header sticky at the top #1290
 * async request handling - render report using cached accept type #1287

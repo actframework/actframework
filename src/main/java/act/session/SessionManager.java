@@ -92,4 +92,8 @@ public class SessionManager extends LogSupportedDestroyableBase {
         mapper.write(encodedSession, encodedFlash, response);
     }
 
+    public String generateSessionToken(H.Session session, int ttlInSeconds) {
+        return codec.encodeSession(session, ttlInSeconds);
+    }
+
 }

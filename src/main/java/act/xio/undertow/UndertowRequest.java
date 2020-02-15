@@ -70,6 +70,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     private Map<Keyword, Deque<String>> queryParamsByKeyword;
     private boolean keywordMatching;
     private Map<HttpString, String> headerCache = new HashMap<>();
+    private static final String NULL_HEADER_VAL = "_NULL_";
 
     public UndertowRequest(HttpServerExchange exchange, AppConfig config) {
         super(config);
@@ -117,9 +118,9 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
             if (null == val) {
                 val = hse.getRequestHeaders().get(key, 0);
             }
-            headerCache.put(key, val);
+            headerCache.put(key, null == val ? NULL_HEADER_VAL : val);
         }
-        return val;
+        return NULL_HEADER_VAL == val ? null : val;
     }
 
     private String headerQueryKey(String header) {

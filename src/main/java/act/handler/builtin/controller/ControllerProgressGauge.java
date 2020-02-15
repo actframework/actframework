@@ -53,6 +53,9 @@ public class ControllerProgressGauge extends SimpleProgressGauge {
     }
 
     public void commitFinalState() {
+        if (null == this.error) {
+            markAsDone();
+        }
         triggerUpdateEvent(true);
     }
 }

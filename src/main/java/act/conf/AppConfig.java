@@ -3069,7 +3069,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sessionHeader() {
         if (!sessionHeaderSet) {
-            sessionHeader = get(SESSION_HEADER, null);
+            sessionHeader = get(SESSION_HEADER, S.pathConcat(sessionHeaderPrefix(), '-', "Session"));
             sessionHeaderSet = true;
         }
         return sessionHeader;
@@ -3114,6 +3114,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeSessionHeaderPayloadPrefix(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SESSION_HEADER_PAYLOAD_PREFIX)) {
             sessionHeaderPayloadPrefix = config.sessionHeaderPayloadPrefix;
+        }
+    }
+
+    private String sessionQueryParamName;
+    protected T sessionQueryParamName(String paramName) {
+        sessionQueryParamName = paramName;
+        return me();
+    }
+    public String getSessionQueryParamName() {
+        if (null == sessionQueryParamName) {
+            sessionQueryParamName = get(SESSION_QUERY_PARAM_NAME, sessionHeader());
+        }
+        return sessionQueryParamName;
+    }
+    private void _mergeSessionQueryParamName(AppConfig config) {
+        if (!hasConfiguration(SESSION_QUERY_PARAM_NAME)) {
+            sessionQueryParamName = config.sessionQueryParamName;
         }
     }
 

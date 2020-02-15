@@ -1161,6 +1161,16 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_HEADER("session.header"),
 
     /**
+     * `session.query.param.name` - specify the name of the query parameter
+     * used to specify session token.
+     *
+     * Refer: https://github.com/actframework/actframework/issues/1293
+     *
+     * Default value: the value of {@link #SESSION_HEADER}
+     */
+    SESSION_QUERY_PARAM_NAME("session.query.param.name"),
+
+    /**
      * `session.header.prefix`, specify the prefix of session
      * header.
      *

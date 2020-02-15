@@ -37,6 +37,7 @@ act.util.TypeConverterRegister
 act.validation.ValidationPlugin
 act.Zen
 act.apidoc.Endpoint.Service
+act.session.ShortLifeTokenGenerator
 org.osgl.util.FastJsonKvCodec
 act.ws.WebSocketAdminConsole
 act.ws.WebSocketConnectionListener$Manager$Finder

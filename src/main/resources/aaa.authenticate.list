@@ -5,6 +5,7 @@
 -act.Zen.
 -act.monitor.
 -act.conf.CsrfConfAdmin
+-act.session.ShortLifeTokenGenerator
 
 # The following endpoints are only public on dev mode
 [dev]-act.apidoc.
