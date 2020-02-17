@@ -1902,11 +1902,11 @@ public @interface Controller {
             }
             MimeType type = MimeType.findByName(S.fileExtension(file.getName()));
             boolean isText = null != type && type.hasTrait(MimeType.Trait.text);
-            boolean isImage = null != type && type.hasTrait(MimeType.Trait.image);
+            boolean isImageOrPdf = null != type && (type.hasTrait(MimeType.Trait.image) || type.hasTrait(MimeType.Trait.pdf));
             if (isText && actionContext.acceptJson()) {
                 return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(file));
             } else {
-                if (isText || isImage) {
+                if (isText || isImageOrPdf) {
                     return new RenderBinary(file).status(actionContext.successStatus());
                 } else {
                     return new RenderBinary(file, ActionContext.current().attachmentName(file), false).status(actionContext.successStatus());
@@ -1921,11 +1921,11 @@ public @interface Controller {
             String contentType = sobj.getContentType();
             MimeType type = null != contentType ? MimeType.findByContentType(contentType) : null;
             boolean isText = null != type && type.hasTrait(MimeType.Trait.text);
-            boolean isImage = null != type && type.hasTrait(MimeType.Trait.image);
+            boolean isImageOrPdf = null != type && (type.hasTrait(MimeType.Trait.image) || type.hasTrait(MimeType.Trait.pdf));
             if (isText && context.acceptJson()) {
                 return RenderJSON.of(context.successStatus(), sobj.asString());
             } else {
-                if (isText || isImage) {
+                if (isText || isImageOrPdf) {
                     return binary(sobj).status(context.successStatus());
                 } else {
                     return download(sobj).status(context.successStatus());
