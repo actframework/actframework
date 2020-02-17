@@ -258,7 +258,7 @@ public class RouterTest extends RouterTestBase {
         router.addMapping(GET, "/public", staticDirHandler);
         router.getInvoker(GET, "/public/foo/bar.txt", ctx).handle(ctx);
         verify(staticDirHandler).handle(ctx);
-        verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
+        verify(ctx).param(ParamNames.PATH, "foo/bar.txt");
     }
 
     @Test
