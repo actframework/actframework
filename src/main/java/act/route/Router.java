@@ -798,7 +798,10 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                     } else {
                         S.Buffer sb = S.buffer();
                         while (path.hasNext()) {
-                            sb.append('/').append(path.next());
+                            if (!sb.isEmpty()) {
+                                sb.append('/');
+                            }
+                            sb.append(path.next());
                         }
                         context.param(ParamNames.PATH, sb.toString());
                     }
@@ -806,7 +809,10 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                 } else if (node.ignoreRestParts()) {
                     S.Buffer sb = S.buffer();
                     while (path.hasNext()) {
-                        sb.append('/').append(path.next());
+                        if (!sb.isEmpty()) {
+                            sb.append('/');
+                        }
+                        sb.append(path.next());
                     }
                     context.param(ParamNames.PATH, sb.toString());
                     break;

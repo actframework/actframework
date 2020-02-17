@@ -31,9 +31,7 @@ import act.asm.AsmException;
 import act.exception.BindException;
 import act.util.ActError;
 import org.osgl.$;
-import org.osgl.exception.InvalidRangeException;
-import org.osgl.exception.ToBeImplemented;
-import org.osgl.exception.UnsupportedException;
+import org.osgl.exception.*;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.result.ErrorResult;
@@ -165,12 +163,14 @@ public class ActErrorResult extends ErrorResult implements ActError {
         $.Function<Throwable, Result> unsupported = new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
                 return ActNotImplemented.create(throwable);
             }
         };
         x.put(ToBeImplemented.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
                 return ActToBeImplemented.create();
             }
         });
@@ -179,12 +179,28 @@ public class ActErrorResult extends ErrorResult implements ActError {
         x.put(IllegalStateException.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
                 return ActConflict.create(throwable);
+            }
+        });
+        x.put(ResourceNotFoundException.class, new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
+                return ActNotFound.create(throwable);
+            }
+        });
+        x.put(AccessDeniedException.class, new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
+                return ActForbidden.create(throwable);
             }
         });
         $.Transformer<Throwable, Result> badRequest = new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
+                Act.LOGGER.warn(throwable, "Error:");
                 return ActBadRequest.create(throwable);
             }
         };

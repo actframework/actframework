@@ -40,6 +40,7 @@ import com.alibaba.fastjson.JSONPath;
 import com.google.zxing.BarcodeFormat;
 import org.osgl.$;
 import org.osgl.Lang;
+import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -1367,8 +1368,15 @@ public @interface Controller {
          *         the {@link ISObject} instance
          * @return the result
          */
-        public static RenderBinary binary(ISObject sobj) {
-            return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), true);
+        public static Result binary(ISObject sobj) {
+            if (null == sobj) {
+                return ActNotFound.get();
+            }
+            InputStream is = sobj.asInputStream();
+            if (null == is) {
+                return ActNotFound.get();
+            }
+            return new RenderBinary(is, sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), true);
         }
 
         /**
@@ -1378,7 +1386,7 @@ public @interface Controller {
          *         the {@link ISObject} instance
          * @return the result
          */
-        public static RenderBinary renderBinary(ISObject sobj) {
+        public static Result renderBinary(ISObject sobj) {
             return binary(sobj);
         }
 
@@ -1389,8 +1397,15 @@ public @interface Controller {
          * @param sobj
          *         the {@link ISObject} instance
          */
-        public static RenderBinary download(ISObject sobj) {
-            return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), false);
+        public static Result download(ISObject sobj) {
+            if (null == sobj) {
+                return ActNotFound.get();
+            }
+            InputStream is = sobj.asInputStream();
+            if (null == is) {
+                return ActNotFound.get();
+            }
+            return new RenderBinary(is, sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), false);
         }
 
         /**
@@ -1401,8 +1416,14 @@ public @interface Controller {
          *         the file to be rendered
          * @return a result
          */
-        public static RenderBinary binary(File file) {
-            return new RenderBinary(file);
+        public static Result binary(File file) {
+            if (null == file || !file.exists()) {
+                return ActNotFound.get();
+            }
+            if (!file.canRead()) {
+                return ActConflict.create("File not readable: %s", file.getPath());
+            }
+            return new RenderBinary(file).status(ActionContext.current().successStatus());
         }
 
         /**
@@ -1412,7 +1433,7 @@ public @interface Controller {
          *         the file to be rendered
          * @return a result
          */
-        public static RenderBinary renderBinary(File file) {
+        public static Result renderBinary(File file) {
             return binary(file);
         }
 
@@ -1879,18 +1900,36 @@ public @interface Controller {
             if (!file.canRead()) {
                 return forbidden();
             }
-            if (actionContext.acceptJson()) {
+            MimeType type = MimeType.findByName(S.fileExtension(file.getName()));
+            boolean isText = null != type && type.hasTrait(MimeType.Trait.text);
+            boolean isImage = null != type && type.hasTrait(MimeType.Trait.image);
+            if (isText && actionContext.acceptJson()) {
                 return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(file));
             } else {
-                return new RenderBinary(file).status(actionContext.successStatus());
+                if (isText || isImage) {
+                    return new RenderBinary(file).status(actionContext.successStatus());
+                } else {
+                    return new RenderBinary(file, ActionContext.current().attachmentName(file), false).status(actionContext.successStatus());
+                }
             }
         }
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
-            if (context.acceptJson()) {
+            if (null == sobj) {
+                return notFound();
+            }
+            String contentType = sobj.getContentType();
+            MimeType type = null != contentType ? MimeType.findByContentType(contentType) : null;
+            boolean isText = null != type && type.hasTrait(MimeType.Trait.text);
+            boolean isImage = null != type && type.hasTrait(MimeType.Trait.image);
+            if (isText && context.acceptJson()) {
                 return RenderJSON.of(context.successStatus(), sobj.asString());
             } else {
-                return binary(sobj).status(context.successStatus());
+                if (isText || isImage) {
+                    return binary(sobj).status(context.successStatus());
+                } else {
+                    return download(sobj).status(context.successStatus());
+                }
             }
         }
 
