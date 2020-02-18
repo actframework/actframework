@@ -144,7 +144,7 @@ public class DataTable implements Iterable {
         if (null != idLabel) {
             heading.add(idLabel);
         } else {
-            heading.add("ID");
+            heading.add("id");
         }
         for (String colKey : colKeys) {
             if ("id".equals(colKey)) {

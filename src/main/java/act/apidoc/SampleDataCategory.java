@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 public enum SampleDataCategory implements ISampleDataCategory {
+    ID("id", "no"),
     FIRST_NAME("given name", "forename", "firstname", "fname"),
     LAST_NAME("surname", "family name", "lname", "lastname"),
     FULL_NAME("fullname"),
