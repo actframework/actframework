@@ -2007,9 +2007,14 @@ public @interface Controller {
                 }
             }
             boolean shouldUseToString = $$.shouldUseToString(vCls);
-            if (H.Format.HTML.isSameTypeWith(accept) && !shouldUseToString) {
-                requireJSON = true;
-                context.resp().contentType(H.Format.JSON);
+            if (!shouldUseToString && H.Format.HTML.isSameTypeWith(accept)) {
+                if (v instanceof Iterable) {
+                    // for iterable raw html view make it default to HTML table
+                    accept = H.Format.of("html-table");
+                } else {
+                    requireJSON = true;
+                    context.resp().contentType(H.Format.JSON);
+                }
             }
             if (isSimpleType || shouldUseToString) {
                 boolean isArray = vCls.isArray();

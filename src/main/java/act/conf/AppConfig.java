@@ -44,6 +44,7 @@ import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.internal.util.StrBufRetentionLimitCalculator;
+import act.route.Router;
 import act.security.CSRFProtector;
 import act.session.*;
 import act.util.*;
@@ -87,8 +88,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public static final String CONF_FILE_NAME = "app.conf";
     public static final String CSRF_TOKEN_NAME = "__csrf__";
-    public static final String PORT_CLI_OVER_HTTP = "__admin__";
-    public static final String PORT_SYS = "__sys__";
+    public static final String PORT_CLI_OVER_HTTP = Router.PORT_CLI_OVER_HTTP;
+    public static final String PORT_ADMIN = Router.PORT_ADMIN;
+    public static final String PORT_SYS = Router.PORT_SYS;
 
     private App app;
 
@@ -818,7 +820,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean cliOverHttp() {
         if (null == cliOverHttp) {
-            cliOverHttp = get(CLI_OVER_HTTP, false);
+            cliOverHttp = get(CLI_OVER_HTTP, true);
         }
         return cliOverHttp;
     }

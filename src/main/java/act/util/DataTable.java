@@ -143,6 +143,8 @@ public class DataTable implements Iterable {
         String idLabel = labelLookup.get("id");
         if (null != idLabel) {
             heading.add(idLabel);
+        } else {
+            heading.add("ID");
         }
         for (String colKey : colKeys) {
             if ("id".equals(colKey)) {
@@ -356,7 +358,8 @@ public class DataTable implements Iterable {
     private void initHeading(Object data, PropertySpec.MetaInfo colSpec) {
         Set<String> excludes = C.Set();
         boolean headingLoaded = false;
-        if (null != colSpec) {
+        boolean colSpecPresented = null != colSpec;
+        if (colSpecPresented) {
             ActContext<?> context = ActContext.Base.currentContext();
             setLabelLookup(colSpec.labelMapping(context));
             excludes = colSpec.excludedFields(context);
@@ -366,6 +369,7 @@ public class DataTable implements Iterable {
                     headingLoaded = true;
                 }
             }
+            colSpecPresented = $.bool(colKeys) || $.bool(excludes);
         }
         if (null == labelLookup) {
             setLabelLookup(C.<String, String>newMap());
@@ -373,12 +377,12 @@ public class DataTable implements Iterable {
         // explore data rows to probe fields
         E.illegalArgumentIf(0 == rowCount, "Unable to probe table heading: no data found");
         int max = Math.min(rowCount, 10); // probe at most 10 rows of data for labels
-        SortedSet<String> keys;
+        Set<String> keys;
         if (isPojo()) {
             if (null == firstRow) {
                 firstRow = rows.iterator().next();
             }
-            keys = keysOf(firstRow);
+            keys = keysOf(firstRow, colSpecPresented);
         } else {
             keys = new TreeSet<>();
             for (Object row : rows) {
@@ -458,9 +462,9 @@ public class DataTable implements Iterable {
         return Number.class.isAssignableFrom(ft);
     }
 
-    private SortedSet<String> keysOf(Object pojo) {
+    private Set<String> keysOf(Object pojo, boolean propSpecPresented) {
         Class<?> type = pojo.getClass();
-        SortedSet<String> keys = new TreeSet<>();
+        Set<String> keys = propSpecPresented ? new LinkedHashSet<String>() : new TreeSet<String>();
         if ($.isSimpleType(type)) {
             keys.add(KEY_THIS);
             return keys;

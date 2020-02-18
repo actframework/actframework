@@ -56,6 +56,9 @@ import javax.validation.constraints.NotNull;
 public class Router extends AppHolderBase<Router> implements TreeNode {
 
     public static final String PORT_DEFAULT = "default";
+    public static final String PORT_CLI_OVER_HTTP = "__cli__";
+    public static final String PORT_ADMIN = "__admin__";
+    public static final String PORT_SYS = "__sys__";
 
     /**
      * A visitor can be passed to the router to traverse

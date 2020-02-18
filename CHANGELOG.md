@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.32**
+* When it rendering data in HTML table, the column heading does not follow `PropertySpec` specification #1299
+* When requesting data from browser directly render the data using HTML table format if it is an `Iterable` #1298
+* Automatically register all CLI command handler as Get request handler to CLI over HTTP port #1297
 * Render attachment or inline response when request handler return `File` or `ISObject` type based on its content type #1296
 * Act-Test - it shall send session header token from last headers automatically #1294
 * Allow it use request parameter to pass session token #1293

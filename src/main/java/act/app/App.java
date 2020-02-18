@@ -415,7 +415,15 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public Router sysRouter() {
-        return router(AppConfig.PORT_SYS);
+        return router(Router.PORT_SYS);
+    }
+
+    public Router cliOverHttpRouter() {
+        return router(Router.PORT_CLI_OVER_HTTP);
+    }
+
+    public Router adminRouter() {
+        return router(Router.PORT_ADMIN);
     }
 
     public Router router(String name) {
@@ -1761,10 +1769,6 @@ public class App extends LogSupportedDestroyableBase {
             router.addMapping(GET, "/webjars/", webjars, RouteSource.BUILD_IN);
             router.addContext("act.", "/~");
             router.addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
-        }
-        if (config.cliOverHttp()) {
-            Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
-            router.addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         }
     }
 

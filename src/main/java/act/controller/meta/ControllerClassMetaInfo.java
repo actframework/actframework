@@ -26,6 +26,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.cli.Command;
 import act.controller.annotation.UrlContext;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
@@ -515,7 +516,8 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
             PutAction.class, H.Method.PUT,
             DeleteAction.class, H.Method.DELETE,
             PatchAction.class, H.Method.PATCH,
-            WsAction.class, H.Method.GET
+            WsAction.class, H.Method.GET,
+            Command.class, H.Method.GET
     );
 
     private static final Set<Class<? extends Annotation>> NO_DEF_PATH_ACTIONS = new HashSet<>();

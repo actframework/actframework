@@ -26,6 +26,7 @@ import act.app.event.SysEventId;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
+import act.cli.Command;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.controller.annotation.Port;
@@ -106,12 +107,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         private String[] ports = {};
         private Set<String> methodNames = new HashSet<>();
+        private Set<String> methodNamesOfCli = new HashSet<>();
 
-        private void checkMethodName(String methodName) {
-            if (methodNames.contains(methodName)) {
+        private void checkMethodName(String methodName, boolean cli) {
+            Set<String> set = cli ? methodNamesOfCli : methodNames;
+            if (!set.add(methodName)) {
                 throw AsmException.of("Duplicate action/interceptor method name found: %s", methodName);
             }
-            methodNames.add(methodName);
         }
 
         @Override
@@ -338,6 +340,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private String methodName;
             private String desc;
             private String signature;
+            private boolean isCmd;
             private boolean isStatic;
             private boolean requireScan;
             private boolean disableJsonCircularRefDetect;
@@ -395,7 +398,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return eav;
                 }
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
-                    checkMethodName(methodName);
+                    isCmd = Command.class == c;
+                    checkMethodName(methodName, isCmd);
                     markRequireScan();
                     methodInfo = new ActionMethodMetaInfo(classInfo);
                     classInfo.addAction((ActionMethodMetaInfo) methodInfo);
@@ -406,7 +410,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 } else if (ControllerClassMetaInfo.isUrlContextAnnotation(c)) {
                     return new MethodUrlContextAnnotationVisitor(av, ControllerClassMetaInfo.isUrlContextAnnotationSupportAbsolutePath(c));
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
-                    checkMethodName(methodName);
+                    checkMethodName(methodName, false);
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
                     methodInfo = visitor.info;
@@ -746,6 +750,15 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     this.noDefPath = noDefPath;
                 }
 
+                // For @Command cli over http only
+                @Override
+                public void visit(String name, Object value) {
+                    if ("value".equals(name) || "name".equals(name)) {
+                        paths.add((String) value);
+                    }
+                    super.visit(name, value);
+                }
+
                 @Override
                 public AnnotationVisitor visitArray(String name) {
                     AnnotationVisitor av = super.visitArray(name);
@@ -791,10 +804,16 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
 
                     /*
-                     * Note we need to schedule route registration after all app code scanned because we need the
+                     * Note
+                     *
+                     * 1. we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
+                     *
+                     * 2. cmd handler will get add to router when registered to CliDispatcher
                      */
-                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, "ActionAnnotationVisitor:registerRoute-" + registerRouteTaskCounter.getAndIncrement(), new RouteRegister(envMatched, httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
+                    if (!isCmd) {
+                        app().jobManager().on(SysEventId.APP_CODE_SCANNED, "ActionAnnotationVisitor:registerRoute-" + registerRouteTaskCounter.getAndIncrement(), new RouteRegister(envMatched, httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
+                    }
                 }
 
             }

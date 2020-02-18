@@ -30,7 +30,9 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
+import act.route.Router;
 import org.osgl.$;
+import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -55,8 +57,11 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private Map<CliHandler, List<String>> nameMap = new HashMap<>();
     private Map<CliHandler, List<String>> shortCutMap = new HashMap<>();
 
+    private Router cmdRouter;
+
     public CliDispatcher(App app) {
         super(app);
+        cmdRouter = app.cliOverHttpRouter();
         app.jobManager().now(new Runnable() {
             @Override
             public void run() {
@@ -72,6 +77,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 throw E.invalidConfiguration("Command %s already registered", command);
             }
             addToRegistry(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
+            addRouterMapping(s, methodMetaInfo);
             logger.debug("Command registered: %s", s);
         }
         return this;
@@ -230,6 +236,13 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         Help.updateMaxWidth(name.length());
         updateNameIndex(name, handler);
         registerShortCut(name, handler);
+    }
+
+    private void addRouterMapping(String name, CommandMethodMetaInfo methodMetaInfo) {
+        if (null != cmdRouter) {
+            String urlPath = S.concat("/~/cmd/~", name, "~");
+            cmdRouter.addMapping(H.Method.GET, urlPath, methodMetaInfo.fullName());
+        }
     }
 
     private void resolveCommandPrefix() {
