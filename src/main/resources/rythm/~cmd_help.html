@@ -75,12 +75,12 @@
     </li>
     }
 </ul>
-<a id="run-cmd" href="/~/cmd/run/@cmd.name" target="@cmd.name">Run</a>
+<a id="run-cmd" href="/~/cmd/run/@cmd.httpName()" target="@cmd.httpName()">Run</a>
 &nbsp;
 <a href="/~/cmd">Index</a>
 <script>
 $('input').on('change', function() {
-    var link = '/~/cmd/run/@cmd.name?ts=1'
+    var link = '/~/cmd/run/@cmd.httpName()?ts=1'
     $('#params li input').each(function(id, input){
         var name = $(input).attr('name')
         var val = $(input).val()

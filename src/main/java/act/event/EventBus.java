@@ -1361,7 +1361,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
         final Object[] args = key.args;
         JobManager jobManager = async ? app().jobManager() : null;
-        for (final SimpleEventListener listener: list) {
+        for (final SimpleEventListener listener: C.list(list)) {
             if (async) {
                 jobManager.now(new Runnable() {
                     @Override

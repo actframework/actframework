@@ -21,7 +21,7 @@
         @for(CliCmdInfo cmd: cmds) {
         <tr>
             <td class="cmd-name">
-                <a href="/~/cmd/@cmd.name">@cmd.name</a>
+                <a href="/~/cmd/@cmd.httpName()" target="@cmd.httpName()">@cmd.name</a>
             </td>
             <td class="cmd-shortcut">@cmd.shortcut</td>
             <td class="cmd-help">@cmd.help</td>

@@ -20,6 +20,7 @@ package act.cli;
  * #L%
  */
 
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.util.Map;
@@ -45,8 +46,14 @@ public class CliCmdInfo implements Comparable<CliCmdInfo> {
         return help.length();
     }
 
+    public String httpName() {
+        return Keyword.of(name).kebabCase();
+    }
+
     @Override
     public int compareTo(CliCmdInfo o) {
         return name.compareTo(o.name);
     }
+
+
 }

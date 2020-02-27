@@ -32,6 +32,7 @@ import org.osgl.$;
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.E;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
@@ -73,7 +74,7 @@ public class HelpPage {
         notFoundIfNull(handler);
         CliCmdInfo cmd = getCmdInfo(handler);
         notFoundIfNull(cmd);
-        cmd.name = cmdName;
+        cmd.name = Keyword.of(cmdName).kebabCase();
         render("~cmd_help.html", cmd);
     }
 

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.32**
+* ConcurrentModificationException calling eventBus.triggerAsync #1308
 * Allow access CLI over HTTP #1305
 * Act-Test - allow specify collection size when generating List/Set random collection #1301
 * Act-Test create sample data provider for `id` field #1300
