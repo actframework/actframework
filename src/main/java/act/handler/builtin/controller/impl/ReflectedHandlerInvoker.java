@@ -22,10 +22,12 @@ package act.handler.builtin.controller.impl;
 
 import static act.app.ActionContext.State.HANDLING;
 import static act.app.ActionContext.State.INTERCEPTING;
+import static org.osgl.util.Generics.buildTypeParamImplLookup;
 
 import act.Act;
 import act.Trace;
 import act.annotations.*;
+import act.apidoc.SampleData;
 import act.app.*;
 import act.cli.ReportProgress;
 import act.conf.AppConfig;
@@ -62,6 +64,7 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.exception.ToBeImplemented;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.*;
@@ -87,6 +90,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
+    private boolean mock;
     private App app;
     private AppConfig config;
     private ControllerClassMetaInfo controller;
@@ -177,6 +181,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
         this.config = app.config();
+        this.mock = config.mockServer();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = app.classForName(controller.className());
@@ -1083,6 +1088,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
     }
 
+    private Object mockReturn() {
+        if (returnType == Void.class || returnType == void.class) {
+            return null;
+        }
+        BeanSpec returnSpec = BeanSpec.of(method.getGenericReturnType(), Act.injector());
+        return SampleData.generate(returnSpec, null);
+    }
+
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object retVal;
         String invocationInfo = null;
@@ -1105,7 +1118,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private Object invoke(ActionContext context, Object controller, Object[] params) {
         Object retVal;
-        retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        try {
+            retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        } catch (ToBeImplemented e) {
+            if (mock) {
+                retVal = mockReturn();
+            } else {
+                throw e;
+            }
+        }
         if (returnString && context.acceptJson()) {
             retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
         }

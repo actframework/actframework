@@ -139,7 +139,7 @@ public class SysUtilAdmin {
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")
     public String pwd() {
-        return pwd(context).getAbsolutePath();
+        return _pwd(context).getAbsolutePath();
     }
 
     @Command(name = "act.ls, act.dir, act.ll", help = "List files in the current working directory")
@@ -246,10 +246,10 @@ public class SysUtilAdmin {
     }
 
     private File curDir() {
-        return pwd(context);
+        return _pwd(context);
     }
 
-    private static File pwd(CliContext context) {
+    private static File _pwd(CliContext context) {
         return context.curDir();
     }
 

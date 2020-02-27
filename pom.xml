@@ -53,7 +53,7 @@
     <fastjson.version>1.2.62</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
-    <jansi.version>1.16</jansi.version>
+    <jansi.version>1.18</jansi.version>
     <javaparser.version>2.4.0</javaparser.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>

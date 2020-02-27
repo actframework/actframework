@@ -783,6 +783,14 @@ public enum AppConfigKey implements ConfigKey {
     METRIC_ENABLED("metric.enabled"),
 
     /**
+     * `mock-server.enabled`
+     * Turn on/off mock data to API endpoint
+     *
+     * Default value: `true` when run in Dev mode, `false` otherwise
+     */
+    MOCK_SERVER_ENABLED("mock-server.enabled"),
+
+    /**
      * {@code act.modules}
      *
      * Declare additional app base (for maven modules)

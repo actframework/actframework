@@ -7,6 +7,7 @@ act.app.util.SimpleRestfulServiceBase
 act.app.conf.AppConfigPlugin
 act.controller.builtin.CliOverHttp
 act.controller.captcha.CaptchaService
+act.controller.builtin.HelpPage
 act.db.DbBind
 act.db.util.Page
 act.test.Test

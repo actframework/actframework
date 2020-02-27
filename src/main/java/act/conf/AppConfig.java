@@ -1509,6 +1509,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean mockServer;
+    protected T mockServer(boolean enabled) {
+        mockServer = enabled;
+        return me();
+    }
+    public boolean mockServer() {
+        if (null == mockServer) {
+            mockServer = get(MOCK_SERVER_ENABLED, app.isDev());
+        }
+        return mockServer;
+    }
+    private void _mergeMockServer(AppConfig config) {
+        if (!hasConfiguration(MOCK_SERVER_ENABLED)) {
+            mockServer = config.mockServer;
+        }
+    }
+
     Integer ipEffectiveBytes;
 
     protected T ipEffectiveBytes(int n) {

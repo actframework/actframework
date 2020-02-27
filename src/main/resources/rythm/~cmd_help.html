@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+@import act.cli.*
+@args CliCmdInfo cmd
+<html lang="en">
+<head>
+    <title>CLI Help - @cmd.name</title>
+    <style>
+        body {
+            font-family: "Roboto", "Trebuchet MS", "Dejavu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        h1,h2,h3,h4,h5 {
+            font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
+            font-weight: bold;
+        }
+        h1 {
+          font-size: 42px;
+        }
+        h2 {
+          font-size: 36px;
+        }
+        h3 {
+          font-size: 28px;
+        }
+        h4 {
+          font-size: 21px;
+        }
+        h5 {
+          font-size: 18px;
+        }
+        ul {
+            margin-top: 15px;
+            list-style: none;
+            margin-left: 0;
+        }
+        ul li {
+            margin-top: 10px;
+        }
+        #run-cmd {
+            margin: 10px;
+            padding: 5px 15px;
+            border: 1px solid #aaa;
+            cursor: pointer;
+        }
+        #run-cmd:hover {
+            background-color: #aaa;
+        }
+        label {
+            display: inline-block;
+            width: 220px;
+            text-align: right;
+            padding: 5px;
+            padding-right: 8px;
+            background-color: darkcyan;
+            color: white;
+        }
+        input {
+            padding: 5px 8px;
+            width: 300px;
+        }
+    </style>
+    <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+</head>
+<body>
+<h1>CLI Help - @cmd.name</h1>
+<div class="help">
+    @cmd.help
+</div>
+<h3>Parameters</h3>
+<ul class="options" id="params">
+    @for(String param: cmd.params.keySet()) {
+    <li>
+        <label>@param</label>
+        <input name="@param" placeholder="@cmd.params.get(param)">
+    </li>
+    }
+</ul>
+<a id="run-cmd" href="/~/cmd/run/@cmd.name" target="@cmd.name">Run</a>
+&nbsp;
+<a href="/~/cmd">Index</a>
+<script>
+$('input').on('change', function() {
+    var link = '/~/cmd/run/@cmd.name?ts=1'
+    $('#params li input').each(function(id, input){
+        var name = $(input).attr('name')
+        var val = $(input).val()
+        if (val) {
+            link = link + '&' + name + '=' + val
+            $('#run-cmd').attr('href', link)
+        }
+    })
+})
+</script>
+</body>
+</html>

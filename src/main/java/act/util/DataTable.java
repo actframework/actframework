@@ -140,16 +140,16 @@ public class DataTable implements Iterable {
             return colKeys;
         }
         List<String> heading = new ArrayList<>();
-        String idLabel = labelLookup.get("id");
-        if (null != idLabel) {
-            heading.add(idLabel);
-        } else {
-            heading.add("id");
+        List<String> colKeys = new ArrayList(this.colKeys);
+        if (colKeys.remove("id")) {
+            String idLabel = labelLookup.get("id");
+            if (null != idLabel) {
+                heading.add(idLabel);
+            } else {
+                heading.add("id");
+            }
         }
         for (String colKey : colKeys) {
-            if ("id".equals(colKey)) {
-                continue;
-            }
             String label = labelLookup.get(colKey);
             heading.add(null != label ? label : colKey);
         }

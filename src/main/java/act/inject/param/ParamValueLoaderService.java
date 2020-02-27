@@ -125,7 +125,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         noBindCache.clear();
     }
 
-    public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
+    public ParamValueLoader hostBeanLoader(Class beanClass) {
         ParamValueLoader loader = classRegistry.get(beanClass);
         if (null == loader) {
             ParamValueLoader newLoader = findBeanLoader(beanClass);
@@ -134,6 +134,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 loader = newLoader;
             }
         }
+        return loader;
+    }
+
+    public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
+        ParamValueLoader loader = hostBeanLoader(beanClass);
         return loader.load(null, ctx, false);
     }
 

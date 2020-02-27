@@ -37,6 +37,9 @@
   @for(Object row: table) {
   <tr>
     @for(String label: table.heading()) {
+    @{
+      Object v = table.val(row, label)
+    }
     <td
             @if(label.equals(DataTable.KEY_FIELD)){
               class="act_data_table_label act_data_table_right"
@@ -45,10 +48,10 @@
             } else {
               class="act_data_table_left"
             }
-    >
-      @{
-        Object v = table.val(row, label)
+      @if(toString(v).length() > 50) {
+      title="@toString(v).raw()"
       }
+    >
       @if(isUrl(v)) {
         <a href="@addHtmlTableAccept(v)" target="_blank">@v</a>
       } else if (null == v || "".equals(v.toString().trim())) {

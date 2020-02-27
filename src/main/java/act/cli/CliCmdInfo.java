@@ -22,11 +22,16 @@ package act.cli;
 
 import org.osgl.util.S;
 
+import java.util.Map;
+
 public class CliCmdInfo implements Comparable<CliCmdInfo> {
 
     public String name;
     public String shortcut;
     public String help = "<no help message>";
+    public Map<String, String> params;
+    public boolean hasReturnValue;
+    public boolean requireCliContext;
 
     public String nameAndShortcut() {
         return S.buffer(name).a("(").a(shortcut).a(")").toString();

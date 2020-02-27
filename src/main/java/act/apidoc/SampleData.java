@@ -40,6 +40,7 @@ import java.io.File;
 import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.DelayQueue;
 
 /**
  * Namespace
@@ -211,6 +212,15 @@ public abstract class SampleData {
             } else if (spec.isSet()) {
                 BeanSpec elementSpec = spec.componentSpec();
                 return (T) generateSet(elementSpec, category, typeParamLookup, typeChain, nameChain, randCollectionSize());
+            } else if (spec.isMap()) {
+                List<Type> typeParams = spec.typeParams();
+                if (typeParams.size() < 2) {
+                    return (T) Act.getInstance(spec.rawType());
+                }
+                BeanSpec keySpec = spec.componentSpec();
+                BeanSpec valSpec = BeanSpec.of(typeParams.get(0), Act.injector());
+                Map map = (Map) Act.getInstance(spec.rawType());
+                return (T) generateMap(keySpec, valSpec, map, typeParamLookup, typeChain, nameChain, randCollectionSize());
             } else if (File.class.isAssignableFrom(spec.rawType())) {
                 return (T) new File("/path/to/upload/file");
             } else if (ISObject.class.isAssignableFrom(spec.rawType())) {
@@ -350,6 +360,27 @@ public abstract class SampleData {
             K key = generate(keyType, category);
             V val = generate(valType, category);
             map.put(key, val);
+        }
+        return map;
+    }
+
+    private static <K, V> Map<K, V> generateMap(
+            BeanSpec keySpec,
+            BeanSpec valSpec,
+            Map map,
+            Map<String, Class> typeParamLookup,
+            Set<Type> typeChain,
+            Deque<String> nameChain,
+            int sz
+    ) {
+        if (!nameChain.isEmpty()) {
+            String lastName = nameChain.pop();
+            nameChain.push(S.singularize(lastName));
+        }
+        for (int i = 0; i < sz; ++i) {
+            K k = generate(keySpec, null, typeParamLookup, typeChain, nameChain);
+            V v = generate(valSpec, null, typeParamLookup, typeChain, nameChain);
+            map.put(k, v);
         }
         return map;
     }
@@ -516,7 +547,7 @@ public abstract class SampleData {
     }
     
     private static int randCollectionSize() {
-        return N.randInt(3, 7);
+        return N.randInt(3, 17);
     }
 
 }

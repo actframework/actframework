@@ -20,6 +20,9 @@ package act.inject;
  * #L%
  */
 
+import org.osgl.inject.annotation.InjectTag;
+import org.osgl.inject.annotation.LoadValue;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -29,6 +32,8 @@ import java.lang.annotation.Target;
  * Indicate binding from a {@link org.osgl.http.H.Header} to a controller field or action handler
  * parameter
  */
+@InjectTag
+@LoadValue(HeaderValueLoader.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface HeaderVariable {

@@ -64,7 +64,7 @@ public class JobAdmin {
     @Command(value = "act.job.list,act.job,act.jobs", help = "List jobs")
     @PropertySpec(Job.BRIEF_VIEW)
     @TableView
-    public List<Job> listJobs(@Optional(lead = "-q") final String q, JobManager jobManager) {
+    public List<Job> listJobs(@Optional(lead = "-q", help = "search string") final String q, JobManager jobManager) {
         C.List<Job> jobs = jobManager.jobs().append(jobManager.virtualJobs()).unique(_UNIQ_JOB_FILTER);
         if (S.notBlank(q)) {
             jobs = jobs.filter(new $.Predicate<Job>() {

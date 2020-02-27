@@ -58,14 +58,50 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private Map<CliHandler, List<String>> shortCutMap = new HashMap<>();
 
     private Router cmdRouter;
+    private Router defRouter;
 
     public CliDispatcher(App app) {
         super(app);
         cmdRouter = app.cliOverHttpRouter();
+        if (app.isDev()) {
+            defRouter = app.router();
+        }
         app.jobManager().now(new Runnable() {
             @Override
             public void run() {
                 registerBuiltInHandlers();
+            }
+        });
+        app.jobManager().beforeAppStart(new Runnable() {
+            @Override
+            public void run() {
+                for (Map.Entry<Keyword, CliHandler> entry : registry.entrySet()) {
+                    Keyword keyword = entry.getKey();
+                    CliHandler handler = entry.getValue();
+                    if (handler instanceof CliHandlerProxy) {
+                        CliHandlerProxy proxy = $.cast((handler));
+                        CommandMethodMetaInfo methodMetaInfo = proxy.methodMetaInfo();
+                        String handlerName = methodMetaInfo.fullName();
+                        Set<String> variations = new TreeSet<>();
+                        variations.add(keyword.kebabCase());
+                        variations.add(keyword.snakeCase());
+                        variations.add(keyword.javaVariable());
+                        variations.add(keyword.dotted());
+                        for (String s : variations) {
+                            S.Buffer buf = S.buffer();
+                            if (!handlerName.startsWith("act.")) {
+                                buf.a("/~/cmd/run/");
+                            } else {
+                                buf.a("/cmd/run/");
+                            }
+                            String urlPath = buf.a(s).toString();
+                            cmdRouter.addMapping(H.Method.GET, urlPath, handlerName);
+                            if (null != defRouter) {
+                                defRouter.addMapping(H.Method.GET, urlPath, handlerName);
+                            }
+                        }
+                    }
+                }
             }
         });
     }
@@ -77,7 +113,6 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 throw E.invalidConfiguration("Command %s already registered", command);
             }
             addToRegistry(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
-            addRouterMapping(s, methodMetaInfo);
             logger.debug("Command registered: %s", s);
         }
         return this;
@@ -240,7 +275,8 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     private void addRouterMapping(String name, CommandMethodMetaInfo methodMetaInfo) {
         if (null != cmdRouter) {
-            String urlPath = S.concat("/~/cmd/~", name, "~");
+            String handlerName = methodMetaInfo.fullName();
+            String urlPath = S.concat("~/cmd/run/", name);
             cmdRouter.addMapping(H.Method.GET, urlPath, methodMetaInfo.fullName());
         }
     }

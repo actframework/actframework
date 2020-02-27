@@ -170,7 +170,7 @@ public class Help extends CliHandlerBase {
 
         if (names.size() > 1) {
             lines.add("");
-            lines.add("@|Aliases|@: " + S.join(", ", C.list(names).tail()));
+            lines.add("@|bold Aliases|@: " + S.join(", ", C.list(names).tail()));
         }
 
         List<String> shortCuts = dispatcher.shortCuts(handler);
