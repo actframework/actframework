@@ -12,13 +12,14 @@
 * Render attachment or inline response when request handler return `File` or `ISObject` type based on its content type #1296
 * Act-Test - it shall send session header token from last headers automatically #1294
 * Allow it use request parameter to pass session token #1293
+* System boot process crashed when there is problem generating banner image from icon file #1292
+* HTML table view - make table header sticky at the top #1290
 * API Doc - improve sample data generation for `ISObject` type #1289
 * Add jackson into jar black list. Refer: #1288
-* HTML table view - make table header sticky at the top #1290
 * async request handling - render report using cached accept type #1287
+* Exception handling controller with field class without generic parameter specified #1286
 * Async endpoint result page style needs to be updated #1285
 * API doc - URL path variable in POST endpoint info is incorrect #1284
-* Exception handling controller with field class without generic parameter specified #1286
 * File upload generated file name might contains double `.` result in file cannot be accessed #1282
 
 **1.8.31** 02/Jan/2020
