@@ -24,6 +24,7 @@ import act.app.ActionContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ValueLoader;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.Map;
 
@@ -34,6 +35,10 @@ public class SessionValueLoader implements ValueLoader<String> {
     @Override
     public void init(Map<String, Object> map, BeanSpec beanSpec) {
         this.sessionKey = (String) map.get("value");
+        if (S.blank(this.sessionKey)) {
+            this.sessionKey = beanSpec.name();
+        }
+        E.unexpectedIf(S.blank(this.sessionKey), "session key not found");
     }
 
     @Override

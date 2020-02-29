@@ -42,6 +42,7 @@ import act.test.req_modifier.RequestModifier;
 import act.test.util.*;
 import act.test.verifier.Verifier;
 import act.util.*;
+import act.util.ProgressGauge;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarStyle;
 import org.fusesource.jansi.Ansi;

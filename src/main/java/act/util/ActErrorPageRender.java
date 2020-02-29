@@ -99,7 +99,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
         }
         if (HTML == context.accept()) {
-            String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", MvcConfig.errorMessage(error.status()));
+            String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", error.getMessage());
 
             context.renderArg("header", header);
         }

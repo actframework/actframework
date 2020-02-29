@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>actissue</groupId>
+  <artifactId>gh1304</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <name>My Awesome Application</name>
+
+  <parent>
+    <groupId>org.actframework</groupId>
+    <artifactId>act-starter-parent</artifactId>
+    <version>1.8.31.0</version>
+  </parent>
+
+  <properties>
+    <!-- remove the following line if you are on Java 7-->
+    <java.version>1.8</java.version>
+    <app.entry>actissue.AppEntry</app.entry>
+
+    <!-- tune your JVM arguments here
+    <vmargs.heap.init>256M</vmargs.heap.init>
+    <vmargs.heap.max>2G</vmargs.heap.max>
+    <vmargs.extended />
+    -->
+
+    <!-- set your docker configuration here if needed
+    <docker.repo>org.actframework/archetype-quickstart</docker.repo>
+    <docker.profile>prod</docker.profile>
+    <docker.group>default</docker.group>
+    <docker.http.port>5460</docker.http.port>
+    <docker.cli.port>5461</docker.cli.port>
+    -->
+
+    <!-- lombok support
+    <act.lombok>/path/to/lombok.jar</act.lombok>
+    -->
+  </properties>
+
+  <dependencies>
+    <!-- add your dependencies here -->
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-ebean</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>

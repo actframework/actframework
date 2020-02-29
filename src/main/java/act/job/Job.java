@@ -30,6 +30,7 @@ import act.event.SysEventListenerBase;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.route.DuplicateRouteMappingException;
 import act.util.*;
+import act.util.ProgressGauge;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.exception.*;

@@ -1,0 +1,26 @@
+Scenario(GH1304):
+  description: Transaction not rolled back when exception encountered
+  interactions:
+    - description: create the first record into database
+      request:
+        post: /
+        json:
+          author:
+            name: author1
+          project:
+            name: p1304
+    - description: "send the second record into database - exception expected"
+      request:
+        post: /
+        json:
+          author:
+            name: author2
+          project:
+            name: p1304 # same with first batch, expect exception raised here
+      response:
+        status: 500
+    - description: "fetch author list - there should only one author in the list"
+      request:
+        get: /authors
+      response:
+        size: 1

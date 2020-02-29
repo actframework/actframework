@@ -54,6 +54,7 @@ import act.security.*;
 import act.sys.Env;
 import act.util.*;
 import act.util.Output;
+import act.util.ProgressGauge;
 import act.view.*;
 import act.ws.WebSocketConnectionManager;
 import com.alibaba.fastjson.*;
