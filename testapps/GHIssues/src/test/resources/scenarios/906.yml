@@ -6,5 +6,4 @@ Scenario(906):
       get: /906?n=100
     response:
       headers:
-        Content-Type:
-          - contains: text/plain
+        Content-Type: application/json

@@ -13,5 +13,6 @@ Scenario(1269):
       get: notAllowQrCode?_accept=qrcode
     response:
       headers:
-        Content-Type: text/plain
+        Content-Type:
+          - startsWith: text/plain
       text: gh1269
