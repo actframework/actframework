@@ -669,6 +669,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             final JobManager jobManager = context.app().jobManager();
             final String jobId = jobManager.randomJobId();
             final String reqInfo = context.req().toString();
+            context.attachmentName(); // ensure attachment name get initialized
+            context.keep();
             jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
@@ -680,14 +682,26 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                         if (null == o) {
                             o = "done";
                         }
-                        jobManager.cacheResult(jobId, o, method);
+                        Map<String, Object> payload = C.Map("attachmentName", context.rawAttachmentName());
+                        jobManager.cacheResult(jobId, o, method, payload);
                         context.progress().commitFinalState();
+                        boolean canDestroy = false;
+                        synchronized (context) {
+                            if (context.isKeep()) {
+                                context.unKeep();
+                            } else {
+                                canDestroy = true;
+                            }
+                        }
+                        if (canDestroy) {
+                            context.destroy();
+                        }
                     } catch (Exception e) {
                         String errMsg = S.buffer("Error handling request: ").append(reqInfo).toString();
                         warn(e, errMsg);
                         ControllerProgressGauge gauge = context.progress();
                         gauge.fail(errMsg);
-                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method);
+                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method, null);
                         gauge.commitFinalState();
                     }
                 }

@@ -439,9 +439,12 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
-    public void cacheResult(String jobId, Object result, Object meta) {
+    public void cacheResult(String jobId, Object result, Object meta, Map<String, Object> payload) {
         jobResultCache.put("__jr_" + jobId, result, 60);
         jobResultCache.put("__jm_" + jobId, meta, 60);
+        if (null != payload) {
+            jobResultCache.put("__jp_" + jobId, payload, 60);
+        }
     }
 
     public Object cachedResult(String jobId) {
@@ -450,6 +453,11 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     public Object cachedMeta(String jobId) {
         return jobResultCache.get("__jm_" + jobId);
+    }
+
+    public Object cachedPayload(String jobId, String key) {
+        Map<String, Object> payload = jobResultCache.get("__jp_" + jobId);
+        return null == payload ? null : payload.get(key);
     }
 
     ScheduledThreadPoolExecutor executor() {

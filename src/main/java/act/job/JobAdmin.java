@@ -22,6 +22,7 @@ package act.job;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import act.app.ActionContext;
 import act.cli.*;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.util.CsvView;
@@ -150,6 +151,10 @@ public class JobAdmin {
                 if (null != rct) {
                     context.accept(rct.value().format());
                 }
+            }
+            String attachmentName = (String) jobManager.cachedPayload(jobId, "attachmentName");
+            if (null != attachmentName && context instanceof ActionContext) {
+                ((ActionContext) context).downloadFileName(attachmentName);
             }
             return result;
         }

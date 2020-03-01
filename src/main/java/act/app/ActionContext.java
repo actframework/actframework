@@ -38,6 +38,7 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
 import act.inject.param.ParamValueLoaderService;
+import act.job.JobManager;
 import act.route.*;
 import act.security.CORS;
 import act.session.SessionManager;
@@ -126,6 +127,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private String patchedJsonBody;
     private boolean nonBlock;
     public act.metric.Timer handleTimer;
+    // indicate the current context need to be kept for async thread to access
+    private boolean keep;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -240,6 +243,19 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return handler.skipEvents(this);
     }
 
+    public ActionContext keep() {
+        this.keep = true;
+        return this;
+    }
+
+    public boolean isKeep() {
+        return keep;
+    }
+
+    public void unKeep() {
+        this.keep = false;
+    }
+
     public void markAsConsumed() {
         consumed = true;
     }
@@ -253,6 +269,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean isReadyForDestroy() {
+        synchronized (this) {
+            if (keep) {
+                keep = false;
+                return false;
+            }
+        }
         return readyForDestroy;
     }
 
@@ -336,7 +358,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             }
             attachmentName = s;
         }
-        return attachmentName + "." + accept().name();
+        if (!attachmentName.contains(accept().name())) {
+            return attachmentName + "." + accept().name();
+        }
+        return attachmentName;
+    }
+
+    public String rawAttachmentName() {
+        return attachmentName;
     }
 
     /**
