@@ -2,6 +2,7 @@ package testapp.endpoint.binding.collection;
 
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
+import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
@@ -87,6 +88,7 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     protected final void _verify(String expected, String urlPath, List data, ParamEncoding paramEncoding, RequestMethod method) throws Exception {
         context
                 .expected(expected, e2(), es2())
+                .accept(H.Format.JSON)
                 .url(processUrl(urlPath))
                 .params(paramEncoding.encode(null == data ? "v" : PARAM, null == data ? C.list() : data))
                 .method(method)

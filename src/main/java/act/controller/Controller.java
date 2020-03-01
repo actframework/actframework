@@ -2027,6 +2027,11 @@ public @interface Controller {
                 return inferResult((ISObject) v, context);
             } else {
                 PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
+                if (FMT_HTML_TABLE.isSameTypeWith(accept) && $.not(v)) {
+                    // if there is no data to probe the header columns then we don't
+                    // display the HTML table
+                    requireJSON = true;
+                }
                 if (requireJSON || H.Format.UNKNOWN.isSameTypeWith(accept)) {
                     if (v instanceof Iterable) {
                         v = new FastJsonIterable<>((Iterable) v);

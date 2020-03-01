@@ -21,6 +21,7 @@ package act.inject;
  */
 
 import act.app.ActionContext;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ValueLoader;
 import org.osgl.util.E;
@@ -28,9 +29,10 @@ import org.osgl.util.S;
 
 import java.util.Map;
 
-public class SessionValueLoader implements ValueLoader<String> {
+public class SessionValueLoader implements ValueLoader<Object> {
 
     private String sessionKey;
+    private Class<?> targetType;
 
     @Override
     public void init(Map<String, Object> map, BeanSpec beanSpec) {
@@ -39,12 +41,13 @@ public class SessionValueLoader implements ValueLoader<String> {
             this.sessionKey = beanSpec.name();
         }
         E.unexpectedIf(S.blank(this.sessionKey), "session key not found");
+        this.targetType = beanSpec.rawType();
     }
 
     @Override
-    public String get() {
+    public Object get() {
         ActionContext ctx = ActionContext.current();
         E.illegalStateIf(null == ctx, "Not in request handling context");
-        return ctx.session(sessionKey);
+        return $.convert(ctx.session(sessionKey)).to(targetType);
     }
 }

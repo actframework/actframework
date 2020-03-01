@@ -28,6 +28,7 @@ import act.Constants;
 import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppClassLoaderInitialized;
 import act.app.event.AppConfigLoaded;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
@@ -153,9 +154,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         AppConfigKey.onApp(app);
         EventBus eventBus = app.eventBus();
         if (null != eventBus) {
-            eventBus.bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+            eventBus.bind(SysEventId.CLASS_LOADER_INITIALIZED, new SysEventListenerBase<AppClassLoaderInitialized>() {
                 @Override
-                public void on(AppConfigLoaded event) throws Exception {
+                public void on(AppClassLoaderInitialized event) throws Exception {
                     routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
                 }
             });

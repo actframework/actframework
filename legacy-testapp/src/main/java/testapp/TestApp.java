@@ -33,6 +33,7 @@ public class TestApp extends AppConfigurator<TestApp> {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println(System.getenv("act_env_gh636_conf"));
         System.setProperty("act.http.port", "6111");
         System.setProperty("act.cli.port", "6222");
         System.setProperty("act.i18n", "true");
