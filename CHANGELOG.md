@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.32**
+**1.8.32** 04/Mar/2020
 * ConcurrentModificationException calling eventBus.triggerAsync #1308
 * Allow access CLI over HTTP #1305
 * CLI help message not displayed correctly #1303
