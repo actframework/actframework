@@ -188,6 +188,10 @@ public abstract class SampleData {
             Set<Type> typeChain,
             Deque<String> nameChain
     ) {
+        ProvidedBy providedBy = spec.getAnnotation(ProvidedBy.class);
+        if (null != providedBy) {
+            return (T) Act.getInstance(providedBy.value()).get();
+        }
         try {
             SampleDataProviderManager sampleDataProviderManager = Act.getInstance(SampleDataProviderManager.class);
             Class<T> type = spec.rawType();
