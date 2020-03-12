@@ -49,6 +49,7 @@ import org.osgl.util.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.constraints.NotNull;
@@ -109,6 +110,13 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
     private int port;
     private OptionsInfoBase optionHandlerFactory;
     private Set<RequestHandler> requireBodyParsing = new HashSet<>();
+
+    private static final ThreadLocal<AtomicInteger> varIdCounter = new ThreadLocal<AtomicInteger>() {
+        @Override
+        protected AtomicInteger initialValue() {
+            return new AtomicInteger(0);
+        }
+    };
 
     public Router(App app) {
         this(null, app, null);
@@ -520,6 +528,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         }
         C.List<String> elements = C.newList();
         args = new HashMap<>(args);
+        int varId = 0;
         while (root != node) {
             if (node.isDynamic()) {
                 Node targetNode = node;
@@ -536,7 +545,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                 }
                 String s = buffer.toString();
                 if (S.blank(s)) {
-                    s = S.string(args.remove(S.string(targetNode.varNames.get(0))));
+                    s = S.string(args.remove(S.string(targetNode.varNames.get(varId++))));
                 }
                 if (S.blank(s)) {
                     s = S.string("-");
@@ -773,6 +782,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
     }
 
     private Node search(Node rootNode, Iterator<String> path, ActionContext context) {
+        varIdCounter.get().set(0);
         Node node = rootNode;
         Node backup = null;
         String backupPath = null;
@@ -1006,6 +1016,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = keyword.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
+            this.varNames.addAll(parent.varNames);
         }
 
         Node(String name, Node parent) {
@@ -1014,6 +1025,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = name.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
+            this.varNames.addAll(parent.varNames);
             parseDynaName(name);
         }
 
@@ -1131,7 +1143,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             return list;
         }
 
-        public Node child(String name, ActionContext context) {
+        private Node child(String name, ActionContext context) {
             Node node = staticChildren.get(name);
             if (null != node) {
                 return node;
@@ -1152,7 +1164,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                         }
                     }
                     if (MATCH_ALL == targetNode.patternTrait) {
-                        context.urlPathParam(targetNode.varNames.get(0), name);
+                        context.urlPathParam(targetNode.varNames.get(varIdCounter.get().getAndIncrement()), name);
                         return targetNode;
                     }
                     Pattern pattern = targetNode.pattern;
@@ -1177,7 +1189,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                                 }
                             }
                         } else {
-                            String varName = targetNode.varNames.get(0);
+                            String varName = targetNode.varNames.get(varIdCounter.get().getAndIncrement());
                             context.urlPathParam(varName, S.string(name));
                         }
                         return targetNode;
@@ -1439,7 +1451,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                 $.T2<? extends String, Pattern> t2 = parseVarBlock(name, leftPos + 1, pos);
                 final String varName = t2._1;
                 if (null != varNames) {
-                    varNames.add(varName);
+                    addVarName(varName, varNames);
                 }
                 Pattern pattern1 = t2._2;
                 String patternStr = ".*?";
@@ -1561,17 +1573,17 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
 
             if (0 == pos) {
                 if (null != varNames) {
-                    varNames.add(name.substring(1));
+                    addVarName(name.substring(1), varNames);
                 }
             } else {
                 int len = name.length();
                 if (pos == len - 1) {
                     if (null != varNames) {
-                        varNames.add(name.substring(0, len - 2));
+                        addVarName(name.substring(0, len - 2), varNames);
                     }
                 } else {
                     if (null != varNames) {
-                        varNames.add(name.substring(0, pos));
+                        addVarName(name.substring(0, pos), varNames);
                     }
                     String patternStr = name.substring(pos + 1, name.length());
                     patternStr = macroLookup.expand(patternStr).intern();
@@ -1583,6 +1595,13 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             }
 
             return true;
+        }
+
+        private static void addVarName(String varName, List<String> varNames) {
+            if (varNames.contains(varName)) {
+                throw new RouteMappingException("Duplicate URL path variable: " + varName);
+            }
+            varNames.add(varName);
         }
     }
 

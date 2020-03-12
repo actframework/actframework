@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* API doc - URL path variable in POST endpoint info is incorrect #1284
 * `SampleData.ProvidedBy` is not effective on int type field #1310
 
 **1.8.32** 04/Mar/2020

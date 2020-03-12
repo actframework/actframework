@@ -24,19 +24,17 @@ import act.app.SourceInfoAvailableActAppException;
 import org.osgl.$;
 import org.osgl.util.S;
 
-public class DuplicateRouteMappingException extends SourceInfoAvailableActAppException {
+public class RouteMappingException extends SourceInfoAvailableActAppException {
 
-    private RouteInfo existingRouteMapping;
-    private RouteInfo newRouteMapping;
+    private String cause;
 
-    public DuplicateRouteMappingException(RouteInfo existingRoute, RouteInfo newRoute) {
-        this.existingRouteMapping = $.requireNotNull(existingRoute);
-        this.newRouteMapping = $.requireNotNull(newRoute);
+    public RouteMappingException(String cause, Object ... args) {
+        this.cause = $.fmt(cause, args);
     }
 
     @Override
     public String getErrorTitle() {
-        return "Duplicate route mapping";
+        return "Error route mapping";
     }
 
     @Override
@@ -46,6 +44,7 @@ public class DuplicateRouteMappingException extends SourceInfoAvailableActAppExc
 
     @Override
     public String getErrorDescription() {
-        return S.fmt("Can not overwrite existing route mapping:\n\t%s\nwith new route mapping:\n\t%s", existingRouteMapping, newRouteMapping);
+        return S.fmt("Error setting route mapping: %s", cause);
     }
+
 }

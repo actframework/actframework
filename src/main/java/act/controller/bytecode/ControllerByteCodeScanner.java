@@ -9,9 +9,9 @@ package act.controller.bytecode;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -280,6 +280,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         private class ClassUrlContextAnnotationVisitor extends AnnotationVisitor {
             private final boolean supportInheritance;
+
             ClassUrlContextAnnotationVisitor(AnnotationVisitor av, boolean supportInheritance) {
                 super(ASM5, av);
                 this.supportInheritance = supportInheritance;
@@ -713,6 +714,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
             private class MethodUrlContextAnnotationVisitor extends AnnotationVisitor {
                 private final boolean supportAbsolutePath;
+
                 MethodUrlContextAnnotationVisitor(AnnotationVisitor av, boolean supportAbsolutePath) {
                     super(ASM5, av);
                     this.supportAbsolutePath = supportAbsolutePath;
@@ -966,8 +968,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         $.Var<Boolean> isVirtual;
         boolean noRegister; // do not register virtual method of an abstract class
         $.Var<Boolean> envMatched;
+        SourceInfo sourceInfo;
 
-        RouteRegister($.Var<Boolean> envMatched, List<H.Method> methods, List<String> paths, String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
+        RouteRegister(
+                $.Var<Boolean> envMatched, List<H.Method> methods, List<String> paths, String methodName,
+                List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual
+        ) {
             this.routers = routers;
             this.paths = paths;
             this.methodName = methodName;
@@ -976,6 +982,46 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             this.noRegister = noRegister;
             this.isVirtual = isVirtual;
             this.envMatched = envMatched;
+            this.probeSourceInfo();
+        }
+
+        private void probeSourceInfo() {
+            if (Act.isProd()) {
+                return;
+            }
+            String className = this.classInfo.className();
+            DevModeClassLoader cl = (DevModeClassLoader) Act.app().classLoader();
+            Source source = cl.source(className);
+            if (null == source) {
+                return;
+            }
+            Integer lineNo = AsmContext.line();
+            if (null == lineNo) {
+                List<String> lines = source.lines();
+                boolean foundMethod = false;
+                for (int i = lines.size() - 1; i >= 0; --i) {
+                    String line = lines.get(i);
+                    if (foundMethod && (line.contains("@GetAction") ||
+                            line.contains("@PostAction") ||
+                            line.contains("@PutAction") ||
+                            line.contains("@PatchAction") ||
+                            line.contains("@DeleteAction") ||
+                            line.contains("@Action") ||
+                            line.contains("@WsAction"))
+                    ) {
+                        lineNo = i + 1;
+                        break;
+                    }
+                    if (line.contains("public ") && (line.contains(" " + methodName + " ") || line.contains(" " + methodName + "("))) {
+                        foundMethod = true;
+                    }
+                }
+            }
+            if (null == lineNo) {
+                logger.warn("Cannot find line number of action annotation for: %s.%s()", className, methodName);
+                return;
+            }
+            this.sourceInfo = new SourceInfoImpl(source, lineNo);
         }
 
         @Override
@@ -987,7 +1033,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             if (!noRegister) {
                 String contextPath = classInfo.urlContext();
                 String className = classInfo.className();
-                String action = WsEndpoint.PSEUDO_METHOD == methodName ? "ws:" + className : S.concat(className, ".", methodName);
+                String action = WsEndpoint.PSEUDO_METHOD.equals(methodName) ? "ws:" + className : S.concat(className, ".", methodName);
                 registerOnContext(contextPath, action);
                 contexts.add(contextPath);
             }
@@ -1047,6 +1093,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         try {
                             r.addMapping(m, urlPath, action, routeSource);
                         } catch (DuplicateRouteMappingException e) {
+                            e.setSourceInfo(sourceInfo);
+                            Act.app().setBlockIssue(e);
+                        } catch (RouteMappingException e) {
+                            e.setSourceInfo(sourceInfo);
                             Act.app().setBlockIssue(e);
                         } catch (RuntimeException e) {
                             logger.error(e, "add router mapping failed: \n\tmethod[%s]\n\turl path: %s\n\taction: %s", m, urlPath, action);

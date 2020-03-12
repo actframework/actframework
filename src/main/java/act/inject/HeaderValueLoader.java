@@ -20,6 +20,7 @@ package act.inject;
  * #L%
  */
 
+import act.apidoc.ApiManager;
 import act.app.ActionContext;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
@@ -48,6 +49,9 @@ public class HeaderValueLoader implements ValueLoader<Object> {
 
     @Override
     public Object get() {
+        if (ApiManager.inProgress()) {
+            return null;
+        }
         ActionContext ctx = ActionContext.current();
         E.illegalStateIf(null == ctx, "Not in request handling context");
         return $.convert(ctx.req().header(headerName)).to(targetType);
