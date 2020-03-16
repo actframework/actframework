@@ -89,6 +89,9 @@ public class UploadFileStorageService extends FileSystemService {
             retVal = getFull(key);
         } else {
             int size = output.written;
+            if (0 == size) {
+                return null;
+            }
             byte[] buf = output.buf();
             retVal = SObject.of(key, buf, size);
         }
