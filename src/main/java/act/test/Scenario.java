@@ -28,16 +28,17 @@ import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
 import act.test.util.*;
+import act.util.AdaptiveBeanBase;
 import act.util.ProgressGauge;
 import org.osgl.$;
-import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
+import javax.validation.ValidationException;
 import java.util.*;
 
-public class Scenario implements ScenarioPart {
+public class Scenario extends AdaptiveBeanBase<Scenario> implements ScenarioPart {
 
     private static final Logger LOGGER = LogManager.get(Scenario.class);
 
@@ -45,6 +46,7 @@ public class Scenario implements ScenarioPart {
 
     private static final ThreadLocal<Scenario> current = new ThreadLocal<>();
 
+    public String engine;
     public String name;
     public String issueKey;
     public boolean noIssue;
@@ -136,6 +138,14 @@ public class Scenario implements ScenarioPart {
         return interaction.errorMessage;
     }
 
+    public TestEngine getEngine() {
+        if (S.blank(engine)) {
+            return DefaultTestEngine.instance();
+        }
+        TestEngineManager manager = TestEngineManager.instance();
+        return manager.getEngine(engine);
+    }
+
     public void resolveDependencies() {
         if (!allDepends.isEmpty()) {
             // already resolved
@@ -169,7 +179,7 @@ public class Scenario implements ScenarioPart {
     }
 
     @Override
-    public void validate(TestSession session) throws UnexpectedException {
+    public void validate(TestSession session) throws ValidationException {
         errorIf(S.blank(name), "Scenario name not defined");
         for (Interaction interaction : interactions) {
             interaction.validate(session);
@@ -252,13 +262,13 @@ public class Scenario implements ScenarioPart {
         }
         Timer timer = metric.startTimer("run");
         try {
-            return generateTestData(session) && runInteractions(session, gauge);
+            return generateTestData(session) && getEngine().run(this, session, gauge);
         } finally {
             timer.stop();
         }
     }
 
-    private boolean runInteractions(TestSession session, ProgressGauge gauge) {
+    boolean runInteractions(TestSession session, ProgressGauge gauge) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("run interactions for " + name);
         }

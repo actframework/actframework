@@ -22,6 +22,8 @@ package act.test;
 
 import org.osgl.exception.UnexpectedException;
 
+import javax.xml.bind.ValidationException;
+
 public interface ScenarioPart {
     /**
      * Check if the data is valid.
@@ -30,7 +32,7 @@ public interface ScenarioPart {
      *
      * @throws {@link UnexpectedException} if the data is not valid
      */
-    void validate(TestSession session) throws UnexpectedException;
+    void validate(TestSession session) throws ValidationException;
 
     void reset();
 }

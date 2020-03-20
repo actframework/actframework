@@ -9,9 +9,9 @@ package act.test;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +21,13 @@ package act.test;
  */
 
 import act.util.AdaptiveBeanBase;
-import act.util.EnhancedAdaptiveMap;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
+import javax.validation.ValidationException;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,7 +50,7 @@ public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements Inte
     public Type __type;
 
     @Override
-    public void validate(Interaction interaction) throws UnexpectedException {
+    public void validate(Interaction interaction) throws ValidationException {
         checkForEmpty(interaction);
     }
 
@@ -61,7 +61,7 @@ public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements Inte
 
     private void checkForEmpty(Interaction interaction) {
         if (size() == 0) {
-            throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
+            throw new ValidationException(S.fmt("Empty response spec found in interaction[%s]", interaction));
         }
         Map<String, Object> map = this.toMap();
         String accept;
@@ -110,7 +110,7 @@ public class ResponseSpec extends AdaptiveBeanBase<ResponseSpec> implements Inte
         if (S.notBlank(downloadFilename)) {
             return;
         }
-        throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);
+        throw new ValidationException(S.fmt("Empty response spec found in interaction[%s]", interaction));
     }
 
 }

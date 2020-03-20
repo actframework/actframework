@@ -29,6 +29,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.*;
 
+import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,7 +91,7 @@ public class RequestSpec implements InteractionPart {
     }
 
     @Override
-    public void validate(Interaction interaction) throws UnexpectedException {
+    public void validate(Interaction interaction) throws ValidationException {
         if (S.notBlank(email)) {
             return;
         }
@@ -107,7 +108,9 @@ public class RequestSpec implements InteractionPart {
             method = H.Method.DELETE;
             url = delete;
         }
-        E.unexpectedIf(null == method, "method not specified in request spec of interaction[%s]", interaction);
+        if (null == method) {
+            throw new ValidationException(S.fmt("method not specified in request spec of interaction[%s]", interaction));
+        }
         if (null == url || ".".equals(url)) {
             url = "";
         }

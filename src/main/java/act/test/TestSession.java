@@ -167,9 +167,10 @@ public class TestSession extends LogSupport {
         gauge.clearPayload();
         gauge.setPayload(Test.PG_PAYLOAD_SCENARIO, scenario.title());
         boolean okay;
+        TestEngine engine = scenario.getEngine();
         try {
             running = $.requireNotNull(scenario);
-            scenario.validate(this);
+            engine.validate(scenario, this);
             constants.putAll(running.constants);
             okay = createFixtures() && scenario.run(this, gauge);
             scenario.status = TestStatus.of(okay);

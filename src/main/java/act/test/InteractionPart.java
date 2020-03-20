@@ -22,15 +22,17 @@ package act.test;
 
 import org.osgl.exception.UnexpectedException;
 
+import javax.xml.bind.ValidationException;
+
 public interface InteractionPart {
     /**
      * Check if the interaction part is valid.
      *
-     * If the data is not valid then throw out {@link UnexpectedException}
+     * If the data is not valid then throw out {@link ValidationException}
      *
      * @param interaction
      *      the interaction in which this part is in
-     * @throws {@link UnexpectedException} if the data is not valid
+     * @throws {@link ValidationException} if the data is not valid
      */
-    void validate(Interaction interaction) throws UnexpectedException;
+    void validate(Interaction interaction) throws ValidationException;
 }

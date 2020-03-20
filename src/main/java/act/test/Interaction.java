@@ -31,13 +31,12 @@ import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.IO;
-import org.osgl.util.N;
 import org.osgl.util.S;
 
+import javax.validation.ValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -65,8 +64,10 @@ public class Interaction implements ScenarioPart {
     private transient Metric metric = Act.metricPlugin().metric(ACT_TEST_INTERACTION);
 
     @Override
-    public void validate(TestSession session) throws UnexpectedException {
-        E.unexpectedIf(null == request, "request spec not specified in interaction[%s]", this);
+    public void validate(TestSession session) throws ValidationException {
+        if (null == request) {
+            throw new ValidationException(S.fmt("request spec not specified in interaction[%s]", this));
+        }
         //E.unexpectedIf(null == response, "response spec not specified");
         act.metric.Timer timer = metric.startTimer("validate");
         try {

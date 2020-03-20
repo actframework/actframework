@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* support plugin test engine
 * wrong file object inject from form field into the controller param #1316
 * API doc - URL path variable in POST endpoint info is incorrect #1284
 * `SampleData.ProvidedBy` is not effective on int type field #1310
