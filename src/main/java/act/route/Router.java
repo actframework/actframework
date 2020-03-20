@@ -538,14 +538,16 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                         break;
                     }
                 }
-                S.Buffer buffer = S.buffer();
-                for ($.Transformer<Map<String, Object>, String> builder : targetNode.nodeValueBuilders) {
-                    String s = builder.transform(args);
-                    buffer.append(s);
-                }
-                String s = buffer.toString();
-                if (S.blank(s)) {
-                    s = S.string(args.remove(S.string(targetNode.varNames.get(varId++))));
+                String s = "";
+                if (!args.isEmpty()) {
+                    S.Buffer buffer = S.buffer();
+                    for ($.Transformer<Map<String, Object>, String> builder : targetNode.nodeValueBuilders) {
+                        buffer.append(builder.transform(args));
+                    }
+                    s = buffer.toString();
+                    if (S.blank(s) && targetNode.varNames.size() <= varId) {
+                        s = S.string(args.remove(S.string(targetNode.varNames.get(varId++))));
+                    }
                 }
                 if (S.blank(s)) {
                     s = S.string("-");
