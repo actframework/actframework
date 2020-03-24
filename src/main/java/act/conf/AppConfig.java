@@ -72,9 +72,11 @@ import osgl.version.Version;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -1877,7 +1879,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int httpPort() {
         if (-1 == httpPort) {
-            httpPort = get(HTTP_PORT, 5460);
+            if ("test".equalsIgnoreCase(Act.profile())) {
+                httpPort = randomPort();
+            } else {
+                httpPort = get(HTTP_PORT, 5460);
+            }
         }
         return httpPort;
     }
@@ -1885,6 +1891,18 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeHttpPort(AppConfig conf) {
         if (!hasConfiguration(HTTP_PORT)) {
             httpPort = conf.httpPort;
+        }
+    }
+
+    private static int randomPort() {
+        ServerSocket ss = null;
+        try {
+            ss = new ServerSocket(0);
+            return ss.getLocalPort();
+        } catch (IOException e) {
+            throw E.ioException(e);
+        } finally {
+            IO.close(ss);
         }
     }
 
