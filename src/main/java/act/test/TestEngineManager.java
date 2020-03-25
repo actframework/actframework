@@ -39,4 +39,10 @@ public class TestEngineManager extends SingletonBase {
         return null == engine ? engineLookup.get(DefaultTestEngine.NAME) : engine;
     }
 
+    public void setupEngines() {
+        for (TestEngine engine : engineLookup.values()) {
+            engine.setup();
+        }
+    }
+
 }

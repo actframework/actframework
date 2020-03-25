@@ -114,18 +114,21 @@ public class TestSession extends LogSupport {
 
     public void run(ProgressGauge gauge) {
         current.set(this);
-        prepareHttp();
-        gauge.incrMaxHintBy(dependencies.size() + 2);
-        reset();
-        gauge.step();
-        proceed = runAll(gauge, dependencies);
-        if (proceed) {
-            proceed = runOne(target, gauge);
+        target.getEngine().setupSession(this);
+        try {
+            gauge.incrMaxHintBy(dependencies.size() + 2);
+            gauge.step();
+            proceed = runAll(gauge, dependencies);
+            if (proceed) {
+                proceed = runOne(target, gauge);
+            }
+            gauge.step();
+        } finally {
+            target.getEngine().teardownSession(this);
         }
-        gauge.step();
     }
 
-    private boolean reset() {
+    boolean reset() {
         Collections.sort(dependencies, new ScenarioComparator(target.partition));
         for (Scenario scenario : dependencies) {
             scenario.reset();
@@ -261,7 +264,7 @@ public class TestSession extends LogSupport {
         }
     }
 
-    private void prepareHttp() {
+    void prepareHttp() {
         if (isTraceEnabled()) {
             trace("prepareHTTP for scenario: " + target.name);
         }

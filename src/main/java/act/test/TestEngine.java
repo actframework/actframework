@@ -60,5 +60,19 @@ public interface TestEngine {
      */
     boolean run(Scenario scenario, TestSession session, ProgressGauge gauge);
 
+    /**
+     * Set up the test engine before running any test.
+     */
+    void setup();
+
+    /**
+     * Prepare to run a {@link TestSession}
+     */
+    void setupSession(TestSession session);
+
+    /**
+     * Tear down after running a {@link TestSession}
+     */
+    void teardownSession(TestSession session);
 
 }

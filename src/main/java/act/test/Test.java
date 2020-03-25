@@ -323,6 +323,8 @@ public class Test extends LogSupport {
             eventBus.trigger(TestStart.INSTANCE);
             app.captchaManager().disable();
             registerTypeConverters();
+            TestEngineManager tem = Act.getInstance(TestEngineManager.class);
+            tem.setupEngines();
             RequestTemplateManager requestTemplateManager = new RequestTemplateManager();
             requestTemplateManager.load();
             final ScenarioManager scenarioManager = new ScenarioManager();

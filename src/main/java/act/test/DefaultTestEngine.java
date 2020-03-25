@@ -43,4 +43,19 @@ public class DefaultTestEngine extends SingletonBase implements TestEngine {
     public boolean run(Scenario scenario, TestSession session, ProgressGauge gauge) {
         return scenario.runInteractions(session, gauge);
     }
+
+    @Override
+    public void setup() {
+
+    }
+
+    @Override
+    public void setupSession(TestSession session) {
+        session.prepareHttp();
+        session.reset();
+    }
+
+    @Override
+    public void teardownSession(TestSession session) {
+    }
 }
