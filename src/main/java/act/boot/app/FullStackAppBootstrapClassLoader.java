@@ -106,6 +106,9 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                     LOGGER.trace("classInfoRegistry not recovered, start searching through libBC (with total %s classes)", libBCSize());
                 }
                 for (String className : C.list(libBC.keySet())) {
+                    if (className.endsWith(".module-info")) {
+                        continue;
+                    }
                     try {
                         Class<?> c = loadClass(className, true);
                         cache(c);
