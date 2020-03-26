@@ -25,6 +25,7 @@ import act.test.verifier.ReversedVerifier;
 import act.test.verifier.Verifier;
 import act.util.LogSupport;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.util.*;
 
 import java.util.*;
@@ -143,9 +144,13 @@ public abstract class NamedLogic extends LogSupport {
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
             logic.init(entry.getValue());
-            if (revert && logic instanceof Verifier) {
-                final Verifier v = $.cast(logic);
-                return $.cast(new ReversedVerifier(v));
+            if (revert) {
+                if (logic instanceof ReversibleLogic) {
+                    final ReversibleLogic v = $.cast(logic);
+                    return $.cast(v.reversed());
+                } else {
+                    throw new UnexpectedException("reverse decorator used on non reversible logic: " + key);
+                }
             }
             return logic;
         }
@@ -174,9 +179,13 @@ public abstract class NamedLogic extends LogSupport {
             T logic = register.get(toType, key);
             E.illegalArgumentIf(null == logic, "%s not found: %s", toType.getName(), key);
             logic = $.cloneOf(logic);
-            if (revert && logic instanceof Verifier) {
-                final Verifier v = $.cast(logic);
-                return $.cast(new ReversedVerifier(v));
+            if (revert) {
+                if (logic instanceof ReversibleLogic) {
+                    final ReversibleLogic v = $.cast(logic);
+                    return $.cast(v.reversed());
+                } else {
+                    throw new UnexpectedException("reverse decorator used on non reversible logic: " + key);
+                }
             }
             return logic;
         }

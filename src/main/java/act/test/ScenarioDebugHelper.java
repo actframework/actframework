@@ -124,7 +124,7 @@ public class ScenarioDebugHelper {
     }
 
     @PostAction({"e2e", "test", "tests"})
-    @PropertySpec("name, ignore, source, status, issueUrl, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
+    //@PropertySpec("name, ignore, source, status, issueUrl, title, errorMessage, interactions.status, interactions.description, interactions.stackTrace, interactions.errorMessage")
     @Async
     public List<Scenario> run(App app, String partition, ActionContext context, ProgressGauge gauge) {
         List<Scenario> results = test.run(app, null, partition, false, gauge);

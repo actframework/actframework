@@ -25,7 +25,7 @@ import org.osgl.$;
 
 @NoAutoRegister
 public class ReversedVerifier extends Verifier {
-    private Verifier v;
+    Verifier v;
 
     public ReversedVerifier(Verifier v) {
         this.v = $.requireNotNull(v);

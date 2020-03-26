@@ -259,7 +259,7 @@ public class Test extends LogSupport {
         if (null != o) {
             delay.set($.convert(o).to(Long.class));
         }
-        boolean run = shallRunAutomatedTest(app);
+        boolean run = shouldRunAutomatedTest(app);
         if (run) {
             app.jobManager().post(SysEventId.POST_STARTED, new Runnable() {
                 @Override
@@ -287,12 +287,12 @@ public class Test extends LogSupport {
         }
     }
 
-    public static boolean shallRunAutomatedTest(App app) {
+    public static boolean shouldRunAutomatedTest(App app) {
         return $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
     }
 
     @GetAction("test/result")
-    @PropertySpec("error, scenario.partition, scenarios.name, scenarios.ignoreReason, scenarios.ignore, scenarios.source, scenarios.status, " +
+    @PropertySpec("error, scenarios.partition, scenarios.name, scenarios.ignoreReason, scenarios.ignore, scenarios.source, scenarios.status, " +
             "scenarios.issueUrl, scenarios.issueUrlIcon, scenarios.title, scenarios.errorMessage, " +
             "scenarios.interactions.status, scenarios.interactions.description, " +
             "scenarios.interactions.stackTrace, scenarios.interactions.errorMessage")
@@ -349,7 +349,7 @@ public class Test extends LogSupport {
                     if (S.notBlank(partition) && S.neq(partition, scenario.partition)) {
                         continue;
                     }
-                    if (scenario.interactions.isEmpty()) {
+                    if (scenario.getEngine().isEmpty(scenario)) {
                         continue;
                     }
                     if (!candidates.contains(scenario)) {

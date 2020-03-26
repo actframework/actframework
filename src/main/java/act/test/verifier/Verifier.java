@@ -21,9 +21,10 @@ package act.test.verifier;
  */
 
 import act.test.util.NamedLogic;
+import act.test.util.ReversibleLogic;
 import org.osgl.util.converter.TypeConverterRegistry;
 
-public abstract class Verifier extends NamedLogic {
+public abstract class Verifier extends NamedLogic implements ReversibleLogic<Verifier> {
 
     public abstract boolean verify(Object value);
 
@@ -37,7 +38,15 @@ public abstract class Verifier extends NamedLogic {
         TypeConverterRegistry.INSTANCE.register(new FromString(Verifier.class));
     }
 
+    @Override
+    public Verifier reversed() {
+        if (this instanceof ReversedVerifier) {
+            return ((ReversedVerifier)this).v;
+        }
+        return new ReversedVerifier(this);
+    }
+
     public Verifier meOrReversed(boolean reversed) {
-        return reversed ? new ReversedVerifier(this) : this;
+        return reversed ? this.reversed() : this;
     }
 }

@@ -229,6 +229,8 @@ public abstract class SampleData {
                 return (T) new File("/path/to/upload/file");
             } else if (ISObject.class.isAssignableFrom(spec.rawType())) {
                 return (T) SObject.of("/path/to/upload/file", "");
+            } else if (Throwable.class.isAssignableFrom(spec.rawType())) {
+                return null;
             } else {
                 return (T) generateSamplePojo(spec, typeParamLookup, typeChain, nameChain);
             }

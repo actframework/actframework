@@ -22,6 +22,7 @@ package act.test;
 
 import act.util.ProgressGauge;
 import act.util.SingletonBase;
+import org.osgl.$;
 
 import javax.validation.ValidationException;
 
@@ -32,6 +33,11 @@ public class DefaultTestEngine extends SingletonBase implements TestEngine {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public boolean isEmpty(Scenario scenario) {
+        return $.not(scenario.interactions);
     }
 
     @Override

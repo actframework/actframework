@@ -1,4 +1,4 @@
-package act.test;
+package act.test.util;
 
 /*-
  * #%L
@@ -20,28 +20,10 @@ package act.test;
  * #L%
  */
 
-import org.osgl.inject.annotation.MapKey;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Map;
-
-@Singleton
-public class TestEngineManager {
-
-    @Inject
-    @MapKey("name")
-    private Map<String, TestEngine> engineLookup;
-
-    public TestEngine getEngine(String name) {
-        TestEngine engine = engineLookup.get(name);
-        return null == engine ? engineLookup.get(DefaultTestEngine.NAME) : engine;
-    }
-
-    public void setupEngines() {
-        for (TestEngine engine : engineLookup.values()) {
-            engine.setup();
-        }
-    }
-
+public interface ReversibleLogic<T extends NamedLogic> {
+    /**
+     * Return a reversed logic of this logic
+     * @return the reversed logic of this logic
+     */
+    T reversed();
 }

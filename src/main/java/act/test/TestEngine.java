@@ -39,6 +39,13 @@ public interface TestEngine {
     String getName();
 
     /**
+     * Check if there are any test steps provisioned in a {@link Scenario test scenario}.
+     * @param scenario the test scenario to be tested.
+     * @return `true` if there are test steps in the scenario or `false` otherwise.
+     */
+    boolean isEmpty(Scenario scenario);
+
+    /**
      * Validate a {@link Scenario test scenario}.
      *
      * If there are any issue with the test scenario then a {@link ValidationException}

@@ -35,6 +35,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
+import javax.persistence.Transient;
 import javax.validation.ValidationException;
 import java.util.*;
 
@@ -122,6 +123,8 @@ public class Scenario extends AdaptiveBeanBase<Scenario> implements ScenarioPart
         return S.eq("true", ignore, S.IGNORECASE) ? "ignored" : ignore;
     }
 
+
+
     public String causeStackTrace() {
         return null == cause ? null: E.stackTrace(cause);
     }
@@ -138,12 +141,61 @@ public class Scenario extends AdaptiveBeanBase<Scenario> implements ScenarioPart
         return interaction.errorMessage;
     }
 
+    @Transient
     public TestEngine getEngine() {
         if (S.blank(engine)) {
-            return DefaultTestEngine.instance();
+            return Act.getInstance(DefaultTestEngine.class);
         }
-        TestEngineManager manager = TestEngineManager.instance();
+        TestEngineManager manager = Act.getInstance(TestEngineManager.class);
         return manager.getEngine(engine);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getIssueUrl() {
+        return issueUrl;
+    }
+
+    public String getIssueUrlIcon() {
+        return issueUrlIcon;
+    }
+
+    public String getIgnore() {
+        return ignore;
+    }
+
+    public List<Interaction> getInteractions() {
+        return interactions;
+    }
+
+    public TestStatus getStatus() {
+        return status;
+    }
+
+    public String getUrlContext() {
+        return urlContext;
+    }
+
+    public String getPartition() {
+        return partition;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public Throwable getCause() {
+        return cause;
     }
 
     public void resolveDependencies() {
