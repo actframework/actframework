@@ -29,7 +29,6 @@ import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
 import act.app.event.AppClassLoaderInitialized;
-import act.app.event.AppConfigLoaded;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
@@ -56,7 +55,12 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import me.tongfei.progressbar.ProgressBarStyle;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
@@ -142,12 +146,40 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
+        loadFromConfServer();
     }
 
     // for unit test
     public AppConfig() {
         this((Map) System.getProperties());
         this.routerRegexMacroLookup = new RouterRegexMacroLookup(this);
+    }
+
+    private void loadFromConfServer() {
+        String confServerEndpoint = get(CONF_SERVER_ENDPOINT, "");
+        if (S.blank(confServerEndpoint)) {
+            return;
+        }
+        E.invalidConfigurationIf(!confServerEndpoint.startsWith("http"), "conf-server.endpoint must be full URL, found: %s", confServerEndpoint);
+        String privateKey = confPrivateKey();
+        E.invalidConfigurationIf(S.blank(privateKey), "conf.private-key not configured for conf-server: " + confServerEndpoint);
+        String confId = confId();
+        E.invalidConfigurationIf(S.blank(confId), "conf.id not configured correctly for conf-server: " + confServerEndpoint);
+        OkHttpClient http = new OkHttpClient.Builder().build();
+        String url = S.concat(confServerEndpoint, "?id=", confId);
+        Request req = new Request.Builder().url(url).get().addHeader("Accept", "application/json").build();
+        try {
+            Response resp = http.newCall(req).execute();
+            if (!resp.isSuccessful()) {
+                warn("Error fetching configuration from conf-server. Response code: %s; Respond body: %s", resp.code(), resp.body().string());
+            } else {
+                String data = Crypto.decryptRSA(resp.body().string(), privateKey);
+                JSONObject json = JSON.parseObject(data);
+                raw.putAll(json);
+            }
+        } catch (IOException e) {
+            warn(e, "Error fetching configuration from conf-server: " + confServerEndpoint);
+        }
     }
 
     public AppConfig<T> app(App app) {
@@ -283,6 +315,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeHideBuiltInEndpointsInApiDoc(AppConfig conf) {
         if (!hasConfiguration(API_DOC_HIDE_BUILT_IN_ENDPOINTS)) {
             this.apiDocBuiltInHide = conf.apiDocBuiltInHide;
+        }
+    }
+
+    private String appName;
+
+    protected T appName(String name) {
+        this.appName = S.requireNotBlank(name);
+        return me();
+    }
+
+    public String appName() {
+        if (S.blank(appName)) {
+            // - `app` not initialized yet: appName = get(APP_NAME, app.name());
+            appName = get(APP_NAME, Act.app().name());
+        }
+        return appName;
+    }
+
+    private void _mergeAppName(AppConfig conf) {
+        if (!hasConfiguration(APP_NAME)) {
+            this.appName = conf.appName;
         }
     }
 
@@ -435,6 +488,44 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeReCaptchaSecret(AppConfig config) {
         if (!hasConfiguration(CAPTCHA_RECAPTCHA_SECRET)) {
             reCaptchaSecret = config.reCaptchaSecret;
+        }
+    }
+
+    private String confId;
+
+    protected T confId(String key) {
+        this.confId = S.requireNotBlank(key);
+        return me();
+    }
+
+    public String confId() {
+        if (S.blank(confId)) {
+            confId = get(CONF_ID, S.concat(appName(), "-", Act.profile()));
+        }
+        return confId;
+    }
+
+    private void _mergeConfId(AppConfig conf) {
+        if (!hasConfiguration(CONF_ID)) {
+            this.confId = conf.confId;
+        }
+    }
+
+    private String confPrivateKey;
+
+    protected T confPrivateKey(String key) {
+        this.confPrivateKey = key;
+        return me();
+    }
+    private String confPrivateKey() {
+        if (S.blank(confPrivateKey)) {
+            confPrivateKey = get(CONF_PRIVATE_KEY, "");
+        }
+        return confPrivateKey;
+    }
+    private void _mergeConfPrivateId(AppConfig conf) {
+        if (!hasConfiguration(CONF_PRIVATE_KEY)) {
+            confPrivateKey = conf.confPrivateKey;
         }
     }
 

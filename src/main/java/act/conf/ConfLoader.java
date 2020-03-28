@@ -101,6 +101,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         String profile = SysProps.get(AppConfigKey.PROFILE.key());
         if (S.blank(profile)) {
             profile = Act.mode().name().toLowerCase();
+            System.setProperty(AppConfigKey.PROFILE.key(), profile);
         }
         return profile;
     }

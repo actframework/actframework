@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* Allow app to fetch configuration from a configuration server #1318
 * skip loading "META-INF/versions/9/module-info" class #1288
 * Choose port randomly when running automation test in batch mode #1317
 * wrong file object inject from form field into the controller param #1316
