@@ -44,6 +44,7 @@ import org.osgl.util.VM;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Properties;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -110,11 +111,24 @@ public class Info {
         pid.applyTo(context);
     }
 
-    @JsonView
     @GetAction("version")
     @Description("Get version info in JSON format. This include both application version and actframework version.")
     public void version(ActionContext context) {
         version.applyTo(context);
+    }
+
+    @Env.RequireMode(Act.Mode.DEV)
+    @GetAction("system/properties")
+    @Description("Get all System Properties")
+    public Properties sysProperties() {
+        return System.getProperties();
+    }
+
+    @Env.RequireMode(Act.Mode.DEV)
+    @GetAction("system/properties/{propName}")
+    @Description("Get System Property by name")
+    public String sysProperty(String propName) {
+        return System.getProperty(propName);
     }
 
     @Command(name = "act.version, act.ver", help = "Print app/actframework version")

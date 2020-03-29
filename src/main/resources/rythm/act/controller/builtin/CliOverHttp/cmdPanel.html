@@ -21,9 +21,7 @@ act.cli.CliDispatcher dispatcher
 
 <form action="/cmd" method="post">
   <input type="hidden" name="cmd" value="@cmd">
-  @for ($.Tuple
-  <String
-  , String> option: handler.options()) {
+  @for ($.Tuple<String, String> option: handler.options()) {
   <label>@option._1</label>
   <input type="text" class="u-full-width" placeholder="@option._2" title="@option._2" name="@option._1">
   }
