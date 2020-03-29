@@ -96,8 +96,10 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                             }
                             String urlPath = buf.a(s).toString();
                             cmdRouter.addMapping(H.Method.GET, urlPath, handlerName);
+                            cmdRouter.addMapping(H.Method.POST, urlPath, handlerName);
                             if (null != defRouter) {
                                 defRouter.addMapping(H.Method.GET, urlPath, handlerName);
+                                defRouter.addMapping(H.Method.POST, urlPath, handlerName);
                             }
                         }
                     }
@@ -278,6 +280,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             String handlerName = methodMetaInfo.fullName();
             String urlPath = S.concat("~/cmd/run/", name);
             cmdRouter.addMapping(H.Method.GET, urlPath, methodMetaInfo.fullName());
+            cmdRouter.addMapping(H.Method.POST, urlPath, methodMetaInfo.fullName());
         }
     }
 

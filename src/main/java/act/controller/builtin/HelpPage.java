@@ -20,6 +20,7 @@ package act.controller.builtin;
  * #L%
  */
 
+import act.annotations.MultiLines;
 import act.app.App;
 import act.cli.*;
 import act.conf.AppConfig;
@@ -39,9 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeMap;
+import java.util.*;
 
 import static act.controller.Controller.Util.*;
 
@@ -89,11 +88,12 @@ public class HelpPage {
     private CliCmdInfo getCmdInfo(CliHandlerProxy proxy) {
         CliCmdInfo info = new CliCmdInfo();
         info.help = proxy.commandLine().right();
-        info.params = getCmdParamInfo(proxy);
+        info.multiLinesParams = new HashSet<>();
+        info.params = getCmdParamInfo(proxy, info.multiLinesParams);
         return info;
     }
 
-    private Map<String, String> getCmdParamInfo(CliHandlerProxy proxy) {
+    private Map<String, String> getCmdParamInfo(CliHandlerProxy proxy, Set<String> multiLinesParams) {
         CommandExecutor executor = proxy.executor();
         Class<?> host = $.getProperty(executor, "commanderClass");
         Method method = $.getProperty(executor, "method");
@@ -105,6 +105,9 @@ public class HelpPage {
             Named named = _getAnno(paramAnns, i, Named.class);
             E.unexpectedIf(null == named, "Cannot find name of the param: %s.%s(%s|%s)", host.getSimpleName(), method.getName(), i, pt.getSimpleName());
             String pn = named.value();
+            if (null != _getAnno(paramAnns, i, MultiLines.class)) {
+                multiLinesParams.add(pn);
+            }
             Required required = _getAnno(paramAnns, i, Required.class);
             if (null != required) {
                 map.put(pn, helpOf(required));
