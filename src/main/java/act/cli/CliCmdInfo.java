@@ -24,6 +24,7 @@ import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.util.Map;
+import java.util.Set;
 
 public class CliCmdInfo implements Comparable<CliCmdInfo> {
 
@@ -31,6 +32,7 @@ public class CliCmdInfo implements Comparable<CliCmdInfo> {
     public String shortcut;
     public String help = "<no help message>";
     public Map<String, String> params;
+    public Set<String> multiLinesParams;
     public boolean hasReturnValue;
     public boolean requireCliContext;
 
@@ -55,5 +57,8 @@ public class CliCmdInfo implements Comparable<CliCmdInfo> {
         return name.compareTo(o.name);
     }
 
+    public boolean isMultiLines(String paramName) {
+        return multiLinesParams.contains(paramName);
+    }
 
 }
