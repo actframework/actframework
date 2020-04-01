@@ -264,10 +264,4 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         return keywordMatching ? queryParamsByKeyword.get(Keyword.of(name)) : queryParams.get(name);
     }
 
-    public static void main(String[] args) {
-        HttpString a = HEADER_NAMES.get("X-Forwarded-For");
-        HttpString b = HEADER_NAMES.get("x-forwarded-for");
-        System.out.println(a.equals(b));
-    }
-
 }
