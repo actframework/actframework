@@ -164,7 +164,9 @@ class ParamTree {
 
             }
         }
-        addTokenToList(list, token);
+        if (!token.isEmpty()) {
+            addTokenToList(list, token);
+        }
         return list.toArray(new String[list.size()]);
     }
 
