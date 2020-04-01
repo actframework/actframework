@@ -2,6 +2,7 @@
 
 ##1.8.33**
 * support plugin test engine
+* Invalid warning msg: "empty index encountered" #1322
 * CLI over HTTP - allow specify big string which require textarea as input #1321
 * Add helper endpoint in dev mode to get Java System Properties #1320
 * FileBinder - When running command from CLI over HTTP, bind to new File #1319

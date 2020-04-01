@@ -1,0 +1,14 @@
+<html>
+<body>
+<form action="/1322" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="text" name="foo[bar]" value="123" />
+    <button>Submit</button>
+</form>
+
+<form action="/1322" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="text" name="foo.bar" value="123" />
+    <button>Submit</button>
+</form>
+
+</body>
+</html>
