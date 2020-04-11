@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* It needs to expose CORS control headers to all kind of requests #1325
 * Invalid warning msg: "empty index encountered" #1322
 * CLI over HTTP - allow specify big string which require textarea as input #1321
 * Add helper endpoint in dev mode to get Java System Properties #1320
