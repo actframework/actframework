@@ -189,18 +189,20 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             boolean supportCache = this.supportCache && method == GET || (cacheSupport.supportPost && method == POST);
             String cacheKey = null;
             if (supportCache) {
-                cacheKey = cacheSupport.cacheKey(context);
-                ResponseCache cached = this.cache.get(cacheKey);
-                if (null != cached && cached.isValid()) {
-                    String etag = cached.etag();
-                    if (null != etag && context.req().etagMatches(etag)) {
-                        NotModified.of(etag).apply(context.req(), context.resp());
-                    } else {
-                        cached.applyTo(context.prepareRespForResultEvaluation());
-                    }
-                    return;
-                }
                 context.enableCache();
+                if (!this.cacheSupport.etagOnly) {
+                    cacheKey = cacheSupport.cacheKey(context);
+                    ResponseCache cached = this.cache.get(cacheKey);
+                    if (null != cached && cached.isValid()) {
+                        String etag = cached.etag();
+                        if (null != etag && context.req().etagMatches(etag)) {
+                            NotModified.of(etag).apply(context.req(), context.resp());
+                        } else {
+                            cached.applyTo(context.prepareRespForResultEvaluation());
+                        }
+                        return;
+                    }
+                }
             }
             saveActionPath(context);
             setHandlerClass(context);
@@ -222,13 +224,24 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = context.nullValueResult();
             }
             if (supportCache) {
-                String s = cacheSupport.usePrivate ? "private, max-age=" : "public, max-age=";
                 if (!cacheSupport.noCacheControl) {
-                    context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
+                    S.Buffer buf = S.buffer();
+                    if (cacheSupport.usePrivate) {
+                        buf.append("private ");
+                    }
+                    if (cacheSupport.noCache || cacheSupport.etagOnly) {
+                        buf.append("no-cache ");
+                    }
+                    buf.append("max-age=");
+                    context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, buf.append(cacheSupport.ttl).toString());
+                }
+                String newEtag = S.string(context.resultHashForEtag());
+                if (context.req().etagMatches(newEtag)) {
+                    result = NotModified.of(newEtag);
                 }
             }
             onResult(result, context);
-            if (supportCache) {
+            if (supportCache && !cacheSupport.etagOnly) {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
                 cacheKeys.add(cacheKey);
             }

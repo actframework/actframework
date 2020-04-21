@@ -2991,7 +2991,13 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String cookiePrefix() {
         if (null == cookiePrefix) {
-            cookiePrefix = get(COOKIE_PREFIX, S.concat(app().shortId(), "-"));
+            String profile = Act.profile();
+            S.Buffer buf = S.buffer(app().shortId());
+            if (null != buf && S.neq("prod", profile, S.IGNORECASE)) {
+                buf.a("-").a(profile);
+            }
+            buf.a("-");
+            cookiePrefix = get(COOKIE_PREFIX, buf.toString());
             cookiePrefix = cookiePrefix.trim().toLowerCase();
             set(COOKIE_PREFIX, cookiePrefix);
         }

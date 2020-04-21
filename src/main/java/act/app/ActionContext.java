@@ -476,6 +476,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public int resultHashForEtag() {
+        return resultHash;
+    }
+
     public void applyResultHashToEtag() {
         if (resultHash > Integer.MIN_VALUE) {
             resp().addHeaderIfNotAdded(ETAG, S.string(resultHash));

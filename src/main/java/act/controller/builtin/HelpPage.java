@@ -112,7 +112,7 @@ public class HelpPage {
             if (null != required) {
                 map.put(pn, helpOf(required));
             } else {
-                Optional optional = _getAnno(paramAnns, i, Optional.class);
+                act.cli.Optional optional = _getAnno(paramAnns, i, act.cli.Optional.class);
                 if (null != optional) {
                     String help = helpOf(optional);
                     map.put(pn, help);
@@ -129,7 +129,7 @@ public class HelpPage {
         return S.blank(help) ? required.value() : help;
     }
 
-    private static String helpOf(Optional optional) {
+    private static String helpOf(act.cli.Optional optional) {
         String help = optional.help();
         return S.blank(help) ? optional.value() : help;
     }
