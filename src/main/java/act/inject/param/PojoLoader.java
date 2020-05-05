@@ -27,6 +27,7 @@ import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
+import org.osgl.util.S;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -47,6 +48,11 @@ class PojoLoader extends ParamValueLoader.JsonBodySupported {
         this.service = service;
         this.provided = service.provided(spec, injector);
         this.fieldLoaders = fieldLoaders(key, spec);
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("pojo loader [", bindName(), "|", spec.rawType().getSimpleName(), "]");
     }
 
     @Override

@@ -89,6 +89,11 @@ class MapLoader extends ParamValueLoader.JsonBodySupported {
     }
 
     @Override
+    public String toString() {
+        return S.concat("map loader[", bindName(), "]");
+    }
+
+    @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key, context);

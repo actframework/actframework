@@ -50,6 +50,11 @@ class SessionValueLoader extends ParamValueLoader.NonCacheable {
     }
 
     @Override
+    public String toString() {
+        return S.concat("session value loader[", bindName(), "]");
+    }
+
+    @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (context instanceof ActionContext) {
             return load((ActionContext) context, noDefaultValue);

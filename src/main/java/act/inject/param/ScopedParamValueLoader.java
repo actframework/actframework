@@ -26,6 +26,7 @@ import act.inject.genie.SessionScope;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.util.S;
 
 class ScopedParamValueLoader implements ParamValueLoader {
     private ParamValueLoader realLoader;
@@ -47,6 +48,11 @@ class ScopedParamValueLoader implements ParamValueLoader {
         this.key = parent.key;
         this.scopeCache = parent.scopeCache;
         this.supportCaching = parent.supportCaching;
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("scoped|", realLoader);
     }
 
     @Override

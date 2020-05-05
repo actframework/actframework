@@ -25,14 +25,17 @@
     String url = v.toString();
     return url + (url.contains("?") ? "&" : "?") + "_accept=htmltable";
   }
-  @def String toString(Object v) {
+  @def String toString(Object v, boolean withPre) {
     if (null == v) return "";
     if (!Lang.isSimpleType(v.getClass())) {
       String s = com.alibaba.fastjson.JSON.toJSONString(v, true);
       s = S.strip(s).of(S.DOUBLE_QUOTES);
-  return "<pre>" + s + "</pre>";
+  return withPre ? "<pre>" + s + "</pre>" : s;
     }
     return v.toString();
+  }
+  @def String toString(Object v) {
+    return toString(v, true);
   }
   @for(Object row: table) {
   <tr>
@@ -49,7 +52,7 @@
               class="act_data_table_left"
             }
       @if(toString(v).length() > 50) {
-      title="@toString(v).raw()"
+      title="@toString(v, false)"
       }
     >
       @if(isUrl(v)) {

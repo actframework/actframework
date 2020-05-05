@@ -24,6 +24,7 @@ import act.cli.CliContext;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
 import org.osgl.inject.util.ArrayLoader;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.util.ArrayList;
@@ -38,6 +39,11 @@ class CliVarArgumentLoader extends CliParamValueLoader {
         this.componentType = componentType;
         this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundArgument(null);
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("cli var arg loader[", bindName(), "]");
     }
 
     @Override

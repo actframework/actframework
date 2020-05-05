@@ -24,6 +24,7 @@ import act.app.ActionContext;
 import act.controller.ParamNames;
 import act.util.ActContext;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 public class PartialPathLoader extends ParamValueLoader.NonCacheable {
 
@@ -31,6 +32,11 @@ public class PartialPathLoader extends ParamValueLoader.NonCacheable {
 
     public PartialPathLoader(String bindName) {
         this.bindName = bindName;
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("partial path loader[", bindName(), "]");
     }
 
     @Override

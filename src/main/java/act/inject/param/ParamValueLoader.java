@@ -23,6 +23,7 @@ package act.inject.param;
 import act.cli.CliContext;
 import act.util.*;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 /**
  * Responsible for providing the value to a method parameter
@@ -33,6 +34,11 @@ public interface ParamValueLoader {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return S.concat("nil loader[", bindName(), "]");
         }
     };
 

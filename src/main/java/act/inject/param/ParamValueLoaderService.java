@@ -69,6 +69,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return ((ActionContext) context).result();
         }
+
+        @Override
+        public String toString() {
+            return S.concat("result loader[", bindName(), "]");
+        }
     };
 
     private static class ThrowableLoader extends ParamValueLoader.NonCacheable {
@@ -76,6 +81,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
 
         public ThrowableLoader(Class<? extends Throwable> throwableType) {
             this.throwableType = throwableType;
+        }
+
+        @Override
+        public String toString() {
+            return S.concat("throwable loader[", bindName(), "|", throwableType.getSimpleName(), "]");
         }
 
         @Override
@@ -226,6 +236,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         final boolean hasField = !loaders.isEmpty();
         final $.Var<Boolean> hasValidateConstraint = $.var();
         ParamValueLoader loader = new ParamValueLoader.NonCacheable() {
+            @Override
+            public String toString() {
+                return S.concat("findBeanLoader[", bindName(), "]");
+            }
+
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
                 if (null == bean) {
@@ -421,6 +436,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 }
                 return anno;
             }
+
+            @Override
+            public String toString() {
+                return S.concat("findHandlerMethodAnnotation[", bindName(), "]");
+            }
         };
     }
 
@@ -439,7 +459,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 for (Class<? extends Binder> binderClass : bind.value()) {
                     Binder binder = injector.get(binderClass);
                     if (rawType.isAssignableFrom(binder.targetType())) {
-                        loader = new BoundedValueLoader(binder, bindName);
+                        loader = new BoundValueLoader(binder, bindName);
                         break;
                     }
                 }
@@ -454,7 +474,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                         Binder binder = injector.get(binderClass);
                         binder.attributes($.evaluate(a));
                         if (rawType.isAssignableFrom(binder.targetType())) {
-                            loader = new BoundedValueLoader(binder, bindName);
+                            loader = new BoundValueLoader(binder, bindName);
                             break;
                         }
                     }
@@ -464,7 +484,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         if (null == loader) {
             Binder binder = binderManager.binder(rawType);
             if (null != binder) {
-                loader = new BoundedValueLoader(binder, bindName);
+                loader = new BoundValueLoader(binder, bindName);
             }
         }
         return loader;

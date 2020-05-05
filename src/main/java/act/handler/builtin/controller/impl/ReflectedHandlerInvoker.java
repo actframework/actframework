@@ -839,7 +839,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (hasDtoPatches) {
             for (JsonDtoPatch patch : dtoPatches) {
                 Object bean = dto.get(patch.name());
-                patch.applyChildren(bean);
+                if (null != bean) {
+                    patch.applyChildren(bean);
+                }
             }
         }
     }
