@@ -120,7 +120,7 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T>
             return now();
         }
         // for #691
-        T retVal = parse(formatter(), value);
+        T retVal = tryParse(value);
         if (null == retVal && S.isIntOrLong(value)) {
             long epoc = Long.parseLong(value);
             return (T) $.convert(epoc).to(dateTimeType);
@@ -129,6 +129,14 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T>
             throw new BadRequest("Invalid date time format: " + value);
         }
         return retVal;
+    }
+
+    private T tryParse(String value) {
+        try {
+            return parse(formatter(), value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public final String toJSONString(T o) {

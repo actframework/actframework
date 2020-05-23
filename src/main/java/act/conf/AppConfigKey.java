@@ -69,6 +69,13 @@ public enum AppConfigKey implements ConfigKey {
     API_DOC_HIDE_BUILT_IN_ENDPOINTS("api_doc.built_in.hide.enabled"),
 
     /**
+     * `app.name` the application name.
+     *
+     * Default value: {@link App#name()}
+     */
+    APP_NAME("app.name"),
+
+    /**
      * {@code act.basic_authentication.enabled} turn on/off Basic Authentication
      * in Act application.
      *
@@ -265,6 +272,33 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: `true`
      */
     CLI_OVER_HTTP_SYS_CMD("cli_over_http.syscmd.enabled"),
+
+    /**
+     * `conf-server.endpoint` specify the remote configuration server endpoint.
+     *
+     * Once this is set when app configuration initialised it will send a GET
+     * request to `${conf-server.endpoint}?id=${conf.id}
+     *
+     * Note the endpoint must be a full URL
+     *
+     * Default value: null
+     */
+    CONF_SERVER_ENDPOINT("conf-server.endpoint"),
+
+    /**
+     * `conf.id` set the configuration id - could be used to fetch configuration from configuration server
+     *
+     * Default value: ${app.name}-${profile}
+     */
+    CONF_ID("conf.id"),
+
+    /**
+     * `conf.private-key` specifies the private key app used to decrypt
+     * the respond coming from configuration server.
+     *
+     * Default value: null
+     */
+    CONF_PRIVATE_KEY("conf.private-key"),
 
     /**
      * `act.cookie.domain_provider.impl` specify the provider
@@ -783,6 +817,14 @@ public enum AppConfigKey implements ConfigKey {
     METRIC_ENABLED("metric.enabled"),
 
     /**
+     * `mock-server.enabled`
+     * Turn on/off mock data to API endpoint
+     *
+     * Default value: `true` when run in Dev mode, `false` otherwise
+     */
+    MOCK_SERVER_ENABLED("mock-server.enabled"),
+
+    /**
      * {@code act.modules}
      *
      * Declare additional app base (for maven modules)
@@ -1159,6 +1201,16 @@ public enum AppConfigKey implements ConfigKey {
      */
     // TODO: change it to `header.session`
     SESSION_HEADER("session.header"),
+
+    /**
+     * `session.query.param.name` - specify the name of the query parameter
+     * used to specify session token.
+     *
+     * Refer: https://github.com/actframework/actframework/issues/1293
+     *
+     * Default value: the value of {@link #SESSION_HEADER}
+     */
+    SESSION_QUERY_PARAM_NAME("session.query.param.name"),
 
     /**
      * `session.header.prefix`, specify the prefix of session

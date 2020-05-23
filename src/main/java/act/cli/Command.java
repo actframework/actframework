@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 /**
  * Mark a class method as a console command
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Command {
     /**

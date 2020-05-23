@@ -83,6 +83,11 @@ public class JsonDtoPatch {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return name();
+    }
+
     public void applyChildren(Object host) {
         for (JsonDtoPatch child : fieldsPatches) {
             child.apply(host);

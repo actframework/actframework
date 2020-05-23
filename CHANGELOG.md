@@ -1,12 +1,44 @@
 # ActFramework Change Log
 
-**1.8.32**
-* API Doc - improve sample data generation for `ISObject` type #1289
+##1.8.33**
+* Param value loader framework - allow inject another controller class #1336
+* `EnhancedAdaptiveMap.asMap(EnhancedAdaptiveMap)` generated `Map` shall implement hashCode and equals methods #1333
+* Session cache shall be cleared after app hot reload #1330 - update osgl-http to 1.13.2
+* Improve http cache support #1328
+* Add profile to default session cookie name #1326
+* It needs to expose CORS control headers to all kind of requests #1325
+* Invalid warning msg: "empty index encountered" #1322
+* CLI over HTTP - allow specify big string which require textarea as input #1321
+* Add helper endpoint in dev mode to get Java System Properties #1320
+* FileBinder - When running command from CLI over HTTP, bind to new File #1319
+* Allow app to fetch configuration from a configuration server #1318
+* skip loading "META-INF/versions/9/module-info" class #1288
+* Choose port randomly when running automation test in batch mode #1317
+* wrong file object inject from form field into the controller param #1316
+* API doc - URL path variable in POST endpoint info is incorrect #1284
+* `SampleData.ProvidedBy` is not effective on int type field #1310
+
+**1.8.32** 04/Mar/2020
+* ConcurrentModificationException calling eventBus.triggerAsync #1308
+* Allow access CLI over HTTP #1305
+* CLI help message not displayed correctly #1303
+* Act-Test - allow specify collection size when generating List/Set random collection #1301
+* Act-Test create sample data provider for `id` field #1300
+* When it rendering data in HTML table, the column heading does not follow `PropertySpec` specification #1299
+* When requesting data from browser directly render the data using HTML table format if it is an `Iterable` #1298
+* Automatically register all CLI command handler as Get request handler to CLI over HTTP port #1297
+* Render attachment or inline response when request handler return `File` or `ISObject` type based on its content type #1296
+* It respond with 500 error when file not found raised from IStorageService #1295
+* Act-Test - it shall send session header token from last headers automatically #1294
+* Allow it use request parameter to pass session token #1293
+* System boot process crashed when there is problem generating banner image from icon file #1292
 * HTML table view - make table header sticky at the top #1290
+* API Doc - improve sample data generation for `ISObject` type #1289
+* Add jackson into jar black list. Refer: #1288
 * async request handling - render report using cached accept type #1287
+* Exception handling controller with field class without generic parameter specified #1286
 * Async endpoint result page style needs to be updated #1285
 * API doc - URL path variable in POST endpoint info is incorrect #1284
-* Exception handling controller with field class without generic parameter specified #1286
 * File upload generated file name might contains double `.` result in file cannot be accessed #1282
 
 **1.8.31** 02/Jan/2020

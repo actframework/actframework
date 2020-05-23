@@ -27,6 +27,8 @@ import act.cli.CliOverHttpAuthority;
 import act.cli.CliOverHttpContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
+import act.controller.annotation.Port;
+import act.controller.annotation.UrlContext;
 import act.handler.CliHandler;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Before;
@@ -45,7 +47,9 @@ import static act.controller.Controller.Util.*;
 /**
  * Handles CLI over http requests
  */
-@Controller(port = AppConfig.PORT_CLI_OVER_HTTP)
+@Deprecated
+@UrlContext("cli")
+@Port(AppConfig.PORT_CLI_OVER_HTTP)
 public class CliOverHttp {
 
     private static final int MRU_LIMIT = 8;

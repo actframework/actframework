@@ -77,6 +77,16 @@ public class DefaultSessionCodec extends LogSupportedDestroyableBase implements 
     }
 
     @Override
+    public String encodeSession(H.Session session, int ttlInMillis) {
+        if (null == session || session.isEmpty()) {
+            return null;
+        }
+        session.id(); // ensure session ID is generated
+        session.put(KEY_EXPIRATION, $.ms() + ttlInMillis);
+        return dissolveIntoCookieContent(session, true);
+    }
+
+    @Override
     public String encodeFlash(H.Flash flash) {
         if (null == flash || flash.isEmpty()) {
             return null;

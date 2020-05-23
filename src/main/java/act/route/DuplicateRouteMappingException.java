@@ -20,11 +20,11 @@ package act.route;
  * #L%
  */
 
-import act.app.ActAppException;
+import act.app.SourceInfoAvailableActAppException;
 import org.osgl.$;
 import org.osgl.util.S;
 
-public class DuplicateRouteMappingException extends ActAppException {
+public class DuplicateRouteMappingException extends SourceInfoAvailableActAppException {
 
     private RouteInfo existingRouteMapping;
     private RouteInfo newRouteMapping;
@@ -48,5 +48,4 @@ public class DuplicateRouteMappingException extends ActAppException {
     public String getErrorDescription() {
         return S.fmt("Can not overwrite existing route mapping:\n\t%s\nwith new route mapping:\n\t%s", existingRouteMapping, newRouteMapping);
     }
-
 }

@@ -110,6 +110,11 @@ public final class CliHandlerProxy extends CliHandlerBase {
         return methodMetaInfo.options(classMetaInfo, app.classLoader());
     }
 
+    public CommandExecutor executor() {
+        ensureAgentsReady();
+        return executor;
+    }
+
     @SuppressWarnings("unchecked")
     private void onResult(Object result, CliContext context) throws Exception {
         if (null == result) {

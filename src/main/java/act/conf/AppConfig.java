@@ -28,7 +28,7 @@ import act.Constants;
 import act.act_messages;
 import act.app.*;
 import act.app.conf.AppConfigurator;
-import act.app.event.AppConfigLoaded;
+import act.app.event.AppClassLoaderInitialized;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
@@ -44,6 +44,7 @@ import act.handler.*;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.internal.util.StrBufRetentionLimitCalculator;
+import act.route.Router;
 import act.security.CSRFProtector;
 import act.session.*;
 import act.util.*;
@@ -54,7 +55,12 @@ import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import me.tongfei.progressbar.ProgressBarStyle;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.osgl.*;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
@@ -70,9 +76,11 @@ import osgl.version.Version;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -87,8 +95,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public static final String CONF_FILE_NAME = "app.conf";
     public static final String CSRF_TOKEN_NAME = "__csrf__";
-    public static final String PORT_CLI_OVER_HTTP = "__admin__";
-    public static final String PORT_SYS = "__sys__";
+    public static final String PORT_CLI_OVER_HTTP = Router.PORT_CLI_OVER_HTTP;
+    public static final String PORT_ADMIN = Router.PORT_ADMIN;
+    public static final String PORT_SYS = Router.PORT_SYS;
 
     private App app;
 
@@ -137,6 +146,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
+        loadFromConfServer();
     }
 
     // for unit test
@@ -145,15 +155,42 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         this.routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
+    private void loadFromConfServer() {
+        String confServerEndpoint = get(CONF_SERVER_ENDPOINT, "");
+        if (S.blank(confServerEndpoint)) {
+            return;
+        }
+        E.invalidConfigurationIf(!confServerEndpoint.startsWith("http"), "conf-server.endpoint must be full URL, found: %s", confServerEndpoint);
+        String privateKey = confPrivateKey();
+        E.invalidConfigurationIf(S.blank(privateKey), "conf.private-key not configured for conf-server: " + confServerEndpoint);
+        String confId = confId();
+        E.invalidConfigurationIf(S.blank(confId), "conf.id not configured correctly for conf-server: " + confServerEndpoint);
+        OkHttpClient http = new OkHttpClient.Builder().build();
+        String url = S.concat(confServerEndpoint, "?id=", confId);
+        Request req = new Request.Builder().url(url).get().addHeader("Accept", "application/json").build();
+        try {
+            Response resp = http.newCall(req).execute();
+            if (!resp.isSuccessful()) {
+                warn("Error fetching configuration from conf-server. Response code: %s; Respond body: %s", resp.code(), resp.body().string());
+            } else {
+                String data = Crypto.decryptRSA(resp.body().string(), privateKey);
+                JSONObject json = JSON.parseObject(data);
+                raw.putAll(json);
+            }
+        } catch (IOException e) {
+            warn(e, "Error fetching configuration from conf-server: " + confServerEndpoint);
+        }
+    }
+
     public AppConfig<T> app(App app) {
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
         EventBus eventBus = app.eventBus();
         if (null != eventBus) {
-            eventBus.bind(SysEventId.CONFIG_LOADED, new SysEventListenerBase<AppConfigLoaded>() {
+            eventBus.bind(SysEventId.CLASS_LOADER_INITIALIZED, new SysEventListenerBase<AppClassLoaderInitialized>() {
                 @Override
-                public void on(AppConfigLoaded event) throws Exception {
+                public void on(AppClassLoaderInitialized event) throws Exception {
                     routerRegexMacroLookup = new RouterRegexMacroLookup(AppConfig.this);
                 }
             });
@@ -278,6 +315,27 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeHideBuiltInEndpointsInApiDoc(AppConfig conf) {
         if (!hasConfiguration(API_DOC_HIDE_BUILT_IN_ENDPOINTS)) {
             this.apiDocBuiltInHide = conf.apiDocBuiltInHide;
+        }
+    }
+
+    private String appName;
+
+    protected T appName(String name) {
+        this.appName = S.requireNotBlank(name);
+        return me();
+    }
+
+    public String appName() {
+        if (S.blank(appName)) {
+            // - `app` not initialized yet: appName = get(APP_NAME, app.name());
+            appName = get(APP_NAME, Act.app().name());
+        }
+        return appName;
+    }
+
+    private void _mergeAppName(AppConfig conf) {
+        if (!hasConfiguration(APP_NAME)) {
+            this.appName = conf.appName;
         }
     }
 
@@ -430,6 +488,44 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeReCaptchaSecret(AppConfig config) {
         if (!hasConfiguration(CAPTCHA_RECAPTCHA_SECRET)) {
             reCaptchaSecret = config.reCaptchaSecret;
+        }
+    }
+
+    private String confId;
+
+    protected T confId(String key) {
+        this.confId = S.requireNotBlank(key);
+        return me();
+    }
+
+    public String confId() {
+        if (S.blank(confId)) {
+            confId = get(CONF_ID, S.concat(appName(), "-", Act.profile()));
+        }
+        return confId;
+    }
+
+    private void _mergeConfId(AppConfig conf) {
+        if (!hasConfiguration(CONF_ID)) {
+            this.confId = conf.confId;
+        }
+    }
+
+    private String confPrivateKey;
+
+    protected T confPrivateKey(String key) {
+        this.confPrivateKey = key;
+        return me();
+    }
+    private String confPrivateKey() {
+        if (S.blank(confPrivateKey)) {
+            confPrivateKey = get(CONF_PRIVATE_KEY, "");
+        }
+        return confPrivateKey;
+    }
+    private void _mergeConfPrivateId(AppConfig conf) {
+        if (!hasConfiguration(CONF_PRIVATE_KEY)) {
+            confPrivateKey = conf.confPrivateKey;
         }
     }
 
@@ -818,7 +914,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean cliOverHttp() {
         if (null == cliOverHttp) {
-            cliOverHttp = get(CLI_OVER_HTTP, false);
+            cliOverHttp = get(CLI_OVER_HTTP, true);
         }
         return cliOverHttp;
     }
@@ -1507,6 +1603,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean mockServer;
+    protected T mockServer(boolean enabled) {
+        mockServer = enabled;
+        return me();
+    }
+    public boolean mockServer() {
+        if (null == mockServer) {
+            mockServer = get(MOCK_SERVER_ENABLED, app.isDev());
+        }
+        return mockServer;
+    }
+    private void _mergeMockServer(AppConfig config) {
+        if (!hasConfiguration(MOCK_SERVER_ENABLED)) {
+            mockServer = config.mockServer;
+        }
+    }
+
     Integer ipEffectiveBytes;
 
     protected T ipEffectiveBytes(int n) {
@@ -1857,7 +1970,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int httpPort() {
         if (-1 == httpPort) {
-            httpPort = get(HTTP_PORT, 5460);
+            if ("test".equalsIgnoreCase(Act.profile())) {
+                httpPort = randomPort();
+            } else {
+                httpPort = get(HTTP_PORT, 5460);
+            }
         }
         return httpPort;
     }
@@ -1865,6 +1982,18 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeHttpPort(AppConfig conf) {
         if (!hasConfiguration(HTTP_PORT)) {
             httpPort = conf.httpPort;
+        }
+    }
+
+    private static int randomPort() {
+        ServerSocket ss = null;
+        try {
+            ss = new ServerSocket(0);
+            return ss.getLocalPort();
+        } catch (IOException e) {
+            throw E.ioException(e);
+        } finally {
+            IO.close(ss);
         }
     }
 
@@ -2862,7 +2991,13 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String cookiePrefix() {
         if (null == cookiePrefix) {
-            cookiePrefix = get(COOKIE_PREFIX, S.concat(app().shortId(), "-"));
+            String profile = Act.profile();
+            S.Buffer buf = S.buffer(app().shortId());
+            if (null != buf && S.neq("prod", profile, S.IGNORECASE)) {
+                buf.a("-").a(profile);
+            }
+            buf.a("-");
+            cookiePrefix = get(COOKIE_PREFIX, buf.toString());
             cookiePrefix = cookiePrefix.trim().toLowerCase();
             set(COOKIE_PREFIX, cookiePrefix);
         }
@@ -3069,7 +3204,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sessionHeader() {
         if (!sessionHeaderSet) {
-            sessionHeader = get(SESSION_HEADER, null);
+            sessionHeader = get(SESSION_HEADER, S.pathConcat(sessionHeaderPrefix(), '-', "Session"));
             sessionHeaderSet = true;
         }
         return sessionHeader;
@@ -3114,6 +3249,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeSessionHeaderPayloadPrefix(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SESSION_HEADER_PAYLOAD_PREFIX)) {
             sessionHeaderPayloadPrefix = config.sessionHeaderPayloadPrefix;
+        }
+    }
+
+    private String sessionQueryParamName;
+    protected T sessionQueryParamName(String paramName) {
+        sessionQueryParamName = paramName;
+        return me();
+    }
+    public String getSessionQueryParamName() {
+        if (null == sessionQueryParamName) {
+            sessionQueryParamName = get(SESSION_QUERY_PARAM_NAME, sessionHeader());
+        }
+        return sessionQueryParamName;
+    }
+    private void _mergeSessionQueryParamName(AppConfig config) {
+        if (!hasConfiguration(SESSION_QUERY_PARAM_NAME)) {
+            sessionQueryParamName = config.sessionQueryParamName;
         }
     }
 

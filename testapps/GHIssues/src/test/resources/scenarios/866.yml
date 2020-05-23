@@ -3,7 +3,7 @@ Scenario(866):
   interactions:
     - description: test
       request:
-        accept: text/html
+        accept: application/json
         get: 866
       response:
         json:

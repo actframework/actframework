@@ -101,6 +101,11 @@ class OptionLoader extends CliParamValueLoader {
     }
 
     @Override
+    public String toString() {
+        return S.concat("cli option loader[", this.bindName, "]");
+    }
+
+    @Override
     public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         String optVal = ctx.paramVal(bindName);

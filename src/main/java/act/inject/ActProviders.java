@@ -265,7 +265,12 @@ public final class ActProviders {
     public static final NamedProvider<DbService> NAMED_DB_SERVICE_PROVIDER = new NamedProvider<DbService>() {
         @Override
         public DbService get(String name) {
-            return app().dbServiceManager().dbService(name);
+            DbServiceManager mgr = app().dbServiceManager();
+            DbService svc = mgr.dbService(name);
+            if (null == svc && ("svc".equalsIgnoreCase(name) || "dbService".equalsIgnoreCase(name) || "dbSvc".equalsIgnoreCase(name) || "service".equalsIgnoreCase(name))) {
+                return mgr.dbService(DB.DEFAULT);
+            }
+            return svc;
         }
     };
 

@@ -25,6 +25,7 @@ import act.inject.DefaultValue;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +48,11 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
 
     private StringValueResolverValueLoader(StringValueResolverValueLoader me, Class<?> runtimeType, StringValueResolver resolver, Object defVal) {
         super(me, runtimeType, resolver, defVal);
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("string resolver loader[", bindName(), "]");
     }
 
     @Override

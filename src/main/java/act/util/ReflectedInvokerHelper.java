@@ -23,6 +23,7 @@ package act.util;
 import act.Act;
 import act.apidoc.ApiManager;
 import act.app.*;
+import act.cli.Command;
 import act.inject.util.LoadConfig;
 import act.inject.util.LoadResource;
 import act.job.JobContext;
@@ -69,7 +70,8 @@ public class ReflectedInvokerHelper {
     private static Set<Class<? extends Annotation>> ACTION_ANNO_TYPES = C.set(
             Action.class, GetAction.class, PostAction.class, PutAction.class,
             DeleteAction.class, PatchAction.class, WsAction.class,
-            Catch.class, Before.class, After.class, Finally.class
+            Catch.class, Before.class, After.class, Finally.class,
+            Command.class
     );
 
     private static Map<Method, Annotation[][]> requestHandlerMethodParamAnnotationCache;

@@ -27,6 +27,7 @@ import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
 import act.util.*;
 import org.osgl.inject.BeanSpec;
+import org.osgl.util.S;
 
 import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
@@ -46,6 +47,11 @@ public class ProvidedValueLoader extends ParamValueLoader.NonCacheable {
         }
         this.beanSpec = beanSpec;
         this.injector = injector;
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("provided loader[", bindName(), "|", beanSpec.rawType().getSimpleName(), "]");
     }
 
     @Override

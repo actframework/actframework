@@ -1,7 +1,7 @@
-table.act_data_table {
+    table.act_data_table {
     border-collapse: collapse;
-    font-size: 11pt;
-    font-family: cousine, "Droid Sans Mono Dotted", "Envy Code R", "Fira Code", Monaco, monospaced;
+    font-size: 10pt;
+    font-family: "Droid Sans Mono Dotted", "Envy Code R", "Fira Code", Monaco, monospaced;
     position: relative;
 }
 table.act_data_table th, table.act_data_table td.act_data_table_label {
@@ -28,6 +28,9 @@ table.act_data_table, table.act_data_table td {
 }
 table.act_data_table td {
     padding: 5px;
+    max-width: 500px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 .act_data_table_right {
     text-align: right

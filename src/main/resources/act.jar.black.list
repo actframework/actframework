@@ -11,6 +11,7 @@ guava
 hamcrest
 idea_rt
 image4j
+jackson
 jansi
 java
 javaparser

@@ -21,6 +21,8 @@ package act.inject;
  */
 
 import act.cli.CliSession;
+import org.osgl.inject.annotation.InjectTag;
+import org.osgl.inject.annotation.LoadValue;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -36,6 +38,8 @@ import javax.inject.Qualifier;
  * parameter
  */
 @Qualifier
+@InjectTag
+@LoadValue(SessionValueLoader.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface SessionVariable {

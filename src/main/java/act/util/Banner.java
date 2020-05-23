@@ -157,7 +157,12 @@ public class Banner {
         if (null == url) {
             return "";
         }
-        return removeEndingBlankLines(Image2ascii.render(url, true, isIcon));
+        try {
+            return removeEndingBlankLines(Image2ascii.render(url, true, isIcon));
+        } catch (Exception e) {
+            // just ignore it - refer GH 1292
+            return "";
+        }
     }
 
     private static String asciiArt(String s) {

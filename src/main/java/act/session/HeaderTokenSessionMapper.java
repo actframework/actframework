@@ -36,6 +36,7 @@ public class HeaderTokenSessionMapper implements SessionMapper {
     public static final String DEF_HEADER_PREFIX = "X-Act-";
     public static final String DEF_PAYLOAD_PREFIX = "";
     private String sessionHeader;
+    private String sessionQueryParamName;
     private String flashHeader;
     private String sessionPayloadPrefix;
     private boolean hasSessionPayloadPrefix;
@@ -43,13 +44,9 @@ public class HeaderTokenSessionMapper implements SessionMapper {
 
     @Inject
     public HeaderTokenSessionMapper(AppConfig config) {
-        String prefix = config.sessionHeaderPrefix();
-        String headerPrefix = S.blank(prefix) ? DEF_HEADER_PREFIX : prefix;
         sessionHeader = config.sessionHeader();
-        if (null == sessionHeader) {
-            sessionHeader = S.pathConcat(headerPrefix, '-', "Session");
-        }
-        flashHeader = S.pathConcat(headerPrefix, '-', "Flash");
+        flashHeader = S.pathConcat(config.sessionHeaderPrefix(), '-', "Flash");
+        sessionQueryParamName = config.getSessionQueryParamName();
         sessionPayloadPrefix = config.sessionHeaderPayloadPrefix();
         hasSessionPayloadPrefix = S.notBlank(sessionPayloadPrefix);
         expirationMapper = new ExpirationMapper(config);
@@ -76,6 +73,10 @@ public class HeaderTokenSessionMapper implements SessionMapper {
     @Override
     public String readSession(H.Request request) {
         String payload = request.header(sessionHeader);
+        if (null == payload) {
+            // try query parameter
+            payload = request.paramVal(sessionQueryParamName);
+        }
         return null == payload ? null : hasSessionPayloadPrefix ? S.afterFirst(payload, sessionPayloadPrefix) : payload;
     }
 

@@ -25,6 +25,7 @@ import org.osgl.$;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.storage.ISObject;
+import org.osgl.util.S;
 
 import java.io.File;
 
@@ -36,6 +37,13 @@ public class FileBinder extends Binder<File> {
     @Override
     public File resolve(File file, String s, ParamValueProvider paramValueProvider) {
         ActionContext ctx = $.cast(paramValueProvider);
+        if (ctx.req().url().startsWith("/~/cmd/run")) {
+            String fileName = ctx.paramVal(s);
+            if (S.isBlank(fileName)) {
+                return null;
+            }
+            return new File(fileName);
+        }
         ISObject sobj = ctx.upload(s);
         return null == sobj ? null : sobj.asFile();
     }

@@ -53,7 +53,7 @@ public @interface CacheFor {
 
     /**
      * Specify the keys to extract parameter/post variables to build the final
-     * cache key
+     * cache key.
      *
      * If not supplied then framework will try to iterate through all query
      * parameters to build the cache key
@@ -64,7 +64,9 @@ public @interface CacheFor {
 
     /**
      * In some edge case (e.g. facebook post to app to get the landing page) POST
-     * is treated as GET, we should allow cache the result in that case
+     * is treated as GET, we should allow cache the result in that case.
+     *
+     * default value: `false`
      *
      * @return `true` if enable cache on POST request
      */
@@ -72,15 +74,40 @@ public @interface CacheFor {
 
     /**
      * Specify it shall use `private` for `Cache-Control`
+     *
+     * default value: `false`.
+     *
      * @return
      */
     boolean usePrivate() default false;
 
     /**
      * Suppress `Cache-Control` header setting.
+     *
+     * default value: `false`
+     *
      * @return
      */
     boolean noCacheControl() default false;
+
+    /**
+     * Indicate Do not cache result into local server cache
+     *
+     * This is useful when the result is coming from an external
+     * system that might or might not change. In which case we
+     * really just want to calculate the result's etag and compare
+     * it with request's `If-None-Match` header.
+     *
+     * Default value is `false`.
+     */
+    boolean eTagOnly() default false;
+
+    /**
+     * Set `no-cache` to `Cache-Control` header.
+     *
+     * Default value: the value of {@link #eTagOnly()}
+     */
+    boolean noCache() default false;
 
     @Singleton
     class Manager extends LogSupportedDestroyableBase {

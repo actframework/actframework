@@ -9,9 +9,9 @@ package act.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,8 +32,11 @@ public class CacheSupportMetaInfo {
     public boolean supportPost;
     public boolean usePrivate;
     public boolean noCacheControl;
+    public boolean etagOnly;
+    public boolean noCache;
 
-    private CacheSupportMetaInfo() {}
+    private CacheSupportMetaInfo() {
+    }
 
     public String cacheKey(ActionContext context) {
         return keyGenerator.apply(context);
@@ -43,7 +46,16 @@ public class CacheSupportMetaInfo {
         return new CacheSupportMetaInfo();
     }
 
-    public static CacheSupportMetaInfo enabled($.Function<ActionContext, String> keyGenerator, String cacheForId, int ttl, boolean supportPost, boolean usePrivate, boolean noCacheControl) {
+    public static CacheSupportMetaInfo enabled(
+            $.Function<ActionContext, String> keyGenerator,
+            String cacheForId,
+            int ttl,
+            boolean supportPost,
+            boolean usePrivate,
+            boolean noCacheControl,
+            boolean etagOnly,
+            boolean noCache
+    ) {
         CacheSupportMetaInfo meta = new CacheSupportMetaInfo();
         meta.enabled = true;
         meta.id = cacheForId;
@@ -52,6 +64,8 @@ public class CacheSupportMetaInfo {
         meta.usePrivate = usePrivate;
         meta.keyGenerator = $.requireNotNull(keyGenerator);
         meta.noCacheControl = noCacheControl;
+        meta.etagOnly = etagOnly;
+        meta.noCache = noCache;
         return meta;
     }
 }

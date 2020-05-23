@@ -40,6 +40,7 @@ import java.io.File;
 import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.DelayQueue;
 
 /**
  * Namespace
@@ -187,6 +188,10 @@ public abstract class SampleData {
             Set<Type> typeChain,
             Deque<String> nameChain
     ) {
+        ProvidedBy providedBy = spec.getAnnotation(ProvidedBy.class);
+        if (null != providedBy) {
+            return (T) Act.getInstance(providedBy.value()).get();
+        }
         try {
             SampleDataProviderManager sampleDataProviderManager = Act.getInstance(SampleDataProviderManager.class);
             Class<T> type = spec.rawType();
@@ -202,15 +207,24 @@ public abstract class SampleData {
                 return (T) generateRandomSimpleTypedValue(spec);
             } else if (spec.isArray()) {
                 BeanSpec elementSpec = spec.componentSpec();
-                List list = generateList(elementSpec, category, typeParamLookup, typeChain, nameChain);
+                List list = generateList(elementSpec, category, typeParamLookup, typeChain, nameChain, randCollectionSize());
                 Object[] array = (Object[]) Array.newInstance(elementSpec.rawType(), list.size());
                 return (T) list.toArray(array);
             } else if (spec.isList()) {
                 BeanSpec elementSpec = spec.componentSpec();
-                return (T) generateList(elementSpec, category, typeParamLookup, typeChain, nameChain);
+                return (T) generateList(elementSpec, category, typeParamLookup, typeChain, nameChain, randCollectionSize());
             } else if (spec.isSet()) {
                 BeanSpec elementSpec = spec.componentSpec();
-                return (T) generateSet(elementSpec, category, typeParamLookup, typeChain, nameChain);
+                return (T) generateSet(elementSpec, category, typeParamLookup, typeChain, nameChain, randCollectionSize());
+            } else if (spec.isMap()) {
+                List<Type> typeParams = spec.typeParams();
+                if (typeParams.size() < 2) {
+                    return (T) Act.getInstance(spec.rawType());
+                }
+                BeanSpec keySpec = spec.componentSpec();
+                BeanSpec valSpec = BeanSpec.of(typeParams.get(0), Act.injector());
+                Map map = (Map) Act.getInstance(spec.rawType());
+                return (T) generateMap(keySpec, valSpec, map, typeParamLookup, typeChain, nameChain, randCollectionSize());
             } else if (File.class.isAssignableFrom(spec.rawType())) {
                 return (T) new File("/path/to/upload/file");
             } else if (ISObject.class.isAssignableFrom(spec.rawType())) {
@@ -229,25 +243,46 @@ public abstract class SampleData {
         return generateList(elementType, category);
     }
 
+    public static <T> List<T> generateList(Class<T> elementType, int sz) {
+        ISampleDataCategory category = null;
+        return generateList(elementType, category, sz);
+    }
+
     public static <T> List<T> generateList(Class<T> elementType, String name) {
         return generateList(elementType, SampleDataCategoryManager.get(name));
+    }
+
+    public static <T> List<T> generateList(Class<T> elementType, String name, int sz) {
+        return generateList(elementType, SampleDataCategoryManager.get(name), sz);
     }
 
     public static <T> List<T> generateList(BeanSpec elementSpec, String name) {
         return generateList(elementSpec, SampleDataCategoryManager.get(name));
     }
 
+    public static <T> List<T> generateList(BeanSpec elementSpec, String name, int sz) {
+        return generateList(elementSpec, SampleDataCategoryManager.get(name), sz);
+    }
+
     public static <T> List<T> generateList(Class<T> elementType, ISampleDataCategory category) {
         return generateList(BeanSpec.of(elementType, Act.injector()), category);
     }
 
+    public static <T> List<T> generateList(Class<T> elementType, ISampleDataCategory category, int sz) {
+        return generateList(BeanSpec.of(elementType, Act.injector()), category, sz);
+    }
+
     public static <T> List<T> generateList(BeanSpec elementSpec, ISampleDataCategory category) {
+        return generateList(elementSpec, category, randCollectionSize());
+    }
+
+    public static <T> List<T> generateList(BeanSpec elementSpec, ISampleDataCategory category, int sz) {
         Class elementType = elementSpec.rawType();
         Map<String, Class> typeParamLookup = C.Map();
         if (elementType.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(elementType);
         }
-        return generateList(elementSpec, category, typeParamLookup, new HashSet<Type>(), new LinkedList<String>());
+        return generateList(elementSpec, category, typeParamLookup, new HashSet<Type>(), new LinkedList<String>(), sz);
     }
 
     private static <T> List<T> generateList(
@@ -255,35 +290,56 @@ public abstract class SampleData {
             ISampleDataCategory category,
             Map<String, Class> typeParamLookup,
             Set<Type> typeChain,
-            Deque<String> nameChain
+            Deque<String> nameChain,
+            int sz
     ) {
-        return generateCollection(elementSpec, new ArrayList<T>(), category, typeParamLookup, typeChain, nameChain);
+        return generateCollection(elementSpec, new ArrayList<T>(), category, typeParamLookup, typeChain, nameChain, sz);
     }
 
     public static <T> Set<T> generateSet(Class<T> elementType) {
+        return generateSet(elementType, randCollectionSize());
+    }
+
+    public static <T> Set<T> generateSet(Class<T> elementType, int sz) {
         ISampleDataCategory category = null;
-        return generateSet(elementType, category);
+        return generateSet(elementType, category, sz);
     }
 
     public static <T> Set<T> generateSet(Class<T> elementType, String name) {
-        return generateSet(elementType, SampleDataCategoryManager.get(name));
+        return generateSet(elementType, name, randCollectionSize());
+    }
+
+    public static <T> Set<T> generateSet(Class<T> elementType, String name, int sz) {
+        return generateSet(elementType, SampleDataCategoryManager.get(name), sz);
     }
 
     public static <T> Set<T> generateSet(BeanSpec elementSpec, String name) {
-        return generateSet(elementSpec, SampleDataCategoryManager.get(name));
+        return generateSet(elementSpec, name, randCollectionSize());
+    }
+
+    public static <T> Set<T> generateSet(BeanSpec elementSpec, String name, int sz) {
+        return generateSet(elementSpec, SampleDataCategoryManager.get(name), sz);
     }
 
     public static <T> Set<T> generateSet(Class<T> elementType, ISampleDataCategory category) {
-        return generateSet(BeanSpec.of(elementType, Act.injector()), category);
+        return generateSet(elementType, category, randCollectionSize());
+    }
+
+    public static <T> Set<T> generateSet(Class<T> elementType, ISampleDataCategory category, int sz) {
+        return generateSet(BeanSpec.of(elementType, Act.injector()), category, sz);
     }
 
     public static <T> Set<T> generateSet(BeanSpec elementSpec, ISampleDataCategory category) {
+        return generateSet(elementSpec, category, randCollectionSize());
+    }
+    
+    public static <T> Set<T> generateSet(BeanSpec elementSpec, ISampleDataCategory category, int sz) {
         Class elementType = elementSpec.rawType();
         Map<String, Class> typeParamLookup = C.Map();
         if (elementType.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(elementType);
         }
-        return generateSet(elementSpec, category, typeParamLookup, new HashSet<Type>(), new LinkedList<String>());
+        return generateSet(elementSpec, category, typeParamLookup, new HashSet<Type>(), new LinkedList<String>(), sz);
     }
 
     private static <T> Set<T> generateSet(
@@ -291,9 +347,10 @@ public abstract class SampleData {
             ISampleDataCategory category,
             Map<String, Class> typeParamLookup,
             Set<Type> typeChain,
-            Deque<String> nameChain
+            Deque<String> nameChain,
+            int sz
     ) {
-        return generateCollection(elementSpec, new HashSet<T>(), category, typeParamLookup, typeChain, nameChain);
+        return generateCollection(elementSpec, new HashSet<T>(), category, typeParamLookup, typeChain, nameChain, sz);
     }
 
     public static <K, V> Map<K, V> generateMap(Class<K> keyType, Class<V> valType, String name) {
@@ -307,6 +364,27 @@ public abstract class SampleData {
             K key = generate(keyType, category);
             V val = generate(valType, category);
             map.put(key, val);
+        }
+        return map;
+    }
+
+    private static <K, V> Map<K, V> generateMap(
+            BeanSpec keySpec,
+            BeanSpec valSpec,
+            Map map,
+            Map<String, Class> typeParamLookup,
+            Set<Type> typeChain,
+            Deque<String> nameChain,
+            int sz
+    ) {
+        if (!nameChain.isEmpty()) {
+            String lastName = nameChain.pop();
+            nameChain.push(S.singularize(lastName));
+        }
+        for (int i = 0; i < sz; ++i) {
+            K k = generate(keySpec, null, typeParamLookup, typeChain, nameChain);
+            V v = generate(valSpec, null, typeParamLookup, typeChain, nameChain);
+            map.put(k, v);
         }
         return map;
     }
@@ -426,9 +504,9 @@ public abstract class SampleData {
             ISampleDataCategory category,
             Map<String, Class> typeParamLookup,
             Set<Type> typeChain,
-            Deque<String> nameChain
+            Deque<String> nameChain,
+            int sz
     ) {
-        int sz = N.randInt(2, 5);
         if (!nameChain.isEmpty()) {
             String lastName = nameChain.pop();
             nameChain.push(S.singularize(lastName));
@@ -470,6 +548,10 @@ public abstract class SampleData {
             }
         }
         return categoryManager.getCategory(name);
+    }
+    
+    private static int randCollectionSize() {
+        return N.randInt(3, 17);
     }
 
 }

@@ -16,7 +16,7 @@ public class EndPointTestContext {
             @Override
             public void verify(EndpointTester tester, EndPointTestContext context) throws Exception {
                 tester.setup();
-                tester.url(context.url).get(context.params);
+                tester.url(context.url).get(context.params).accept(context.accept);
                 tester.bodyEq(context.expected);
             }
         },
@@ -24,7 +24,7 @@ public class EndPointTestContext {
             @Override
             public void verify(EndpointTester tester, EndPointTestContext context) throws Exception {
                 tester.setup();
-                tester.url(context.url).post(context.params);
+                tester.url(context.url).accept(context.accept).post(context.params);
                 tester.bodyEq(context.expected);
             }
         }, POST_JSON () {

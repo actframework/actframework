@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+@import act.cli.*
+@args CliCmdInfo cmd
+<html lang="en">
+<head>
+    <title>CLI Help - @cmd.name</title>
+    <style>
+        body {
+            font-family: "Roboto", "Trebuchet MS", "Dejavu Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        h1,h2,h3,h4,h5 {
+            font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
+            font-weight: bold;
+        }
+        h1 {
+          font-size: 42px;
+        }
+        h2 {
+          font-size: 36px;
+        }
+        h3 {
+          font-size: 28px;
+        }
+        h4 {
+          font-size: 21px;
+        }
+        h5 {
+          font-size: 18px;
+        }
+        ul {
+            margin-top: 15px;
+            list-style: none;
+            margin-left: 0;
+        }
+        ul li {
+            margin-top: 10px;
+        }
+        #run-cmd {
+            margin: 10px;
+            padding: 5px 15px;
+            border: 1px solid #aaa;
+            cursor: pointer;
+        }
+        #run-cmd:hover {
+            background-color: #aaa;
+        }
+        label {
+            display: inline-block;
+            width: 220px;
+            text-align: right;
+            padding: 5px;
+            padding-right: 8px;
+            background-color: darkcyan;
+            color: white;
+            vertical-align: top
+        }
+        input, textarea {
+            padding: 5px 8px;
+            width: 500px;
+        }
+        textarea {
+            height: 350px;
+        }
+        textarea#result {
+            width: 800px;
+            height: 600px;
+        }
+    </style>
+    <script src="/~/asset/js/jquery.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+    <script src="/~/asset/js/jquery.ext.js?v=@act.Act.VERSION.getBuildNumber()"></script>
+</head>
+<body>
+<h1>CLI Help - @cmd.name</h1>
+<div class="help">
+    @cmd.help
+</div>
+<h3>Parameters</h3>
+<form action="/~/cmd/run/@cmd.httpName()" id="cmd-form">
+<ul class="options" id="params">
+    @for(String param: cmd.params.keySet()) {
+    <li>
+        <label>@param</label>
+        @if(cmd.isMultiLines(param)) {
+        <textarea name="@param" placeholder="@cmd.params.get(param)"></textarea>
+        } else {
+        <input name="@param" placeholder="@cmd.params.get(param)">
+        }
+    </li>
+    }
+</ul>
+</form>
+<a href="/~/cmd">Index</a>
+&nbsp;
+<button type="button" id="run-cmd">Run</button>
+<div>Result</div>
+<textarea id="result"></textarea>
+<script>
+$('#run-cmd').click(function() {
+    $.postJSON('/~/cmd/run/@cmd.httpName()', $('#cmd-form').serialize(), function(data) {
+        $('#result').val(JSON.stringify(data))
+    })
+})
+</script>
+</body>
+</html>

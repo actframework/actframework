@@ -1,4 +1,4 @@
-package act.inject.param;
+package act.route;
 
 /*-
  * #%L
@@ -20,30 +20,31 @@ package act.inject.param;
  * #L%
  */
 
-import act.util.ActContext;
-import org.osgl.mvc.util.Binder;
+import act.app.SourceInfoAvailableActAppException;
+import org.osgl.$;
+import org.osgl.util.S;
 
-/**
- * Use {@link org.osgl.mvc.util.Binder} to load param value
- */
-class BoundedValueLoader extends ParamValueLoader.Cacheable {
+public class RouteMappingException extends SourceInfoAvailableActAppException {
 
-    private Binder binder;
-    private String bindModel;
+    private String cause;
 
-    BoundedValueLoader(Binder binder, String model) {
-        this.binder = binder;
-        this.bindModel = model;
+    public RouteMappingException(String cause, Object ... args) {
+        this.cause = $.fmt(cause, args);
     }
 
     @Override
-    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        return binder.resolve(bean, bindModel, context);
+    public String getErrorTitle() {
+        return "Error route mapping";
     }
 
     @Override
-    public String bindName() {
-        return bindModel;
+    public String getMessage() {
+        return getErrorDescription();
+    }
+
+    @Override
+    public String getErrorDescription() {
+        return S.fmt("Error setting route mapping: %s", cause);
     }
 
 }

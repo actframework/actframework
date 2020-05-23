@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+@import act.cli.*
+@args Set<CliCmdInfo> appCommands, Set<CliCmdInfo> sysCommands
+<html lang="en">
+<head>
+    <title>CLI Help</title>
+    <link rel="stylesheet" href="/~/asset/css/act_data_table.css">
+</head>
+<body>
+
+@def listCommands(Set<CliCmdInfo> cmds) {
+    <table class="act_data_table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Shortcut</th>
+            <th>Help</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(CliCmdInfo cmd: cmds) {
+        <tr>
+            <td class="cmd-name">
+                <a href="/~/cmd/@cmd.httpName()" target="@cmd.httpName()">@cmd.name</a>
+            </td>
+            <td class="cmd-shortcut">@cmd.shortcut</td>
+            <td class="cmd-help">@cmd.help</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@if(appCommands) {
+<h2>App Commands</h2>
+@listCommands(appCommands)
+}
+
+<h2>System Commands</h2>
+@listCommands(sysCommands)
+</body>
+</html>

@@ -21,6 +21,7 @@ package act.test;
  */
 
 import act.Act;
+import act.conf.AppConfig;
 import act.handler.builtin.FileGetter;
 import act.test.req_modifier.RequestModifier;
 import com.alibaba.fastjson.JSON;
@@ -33,6 +34,7 @@ import org.osgl.util.*;
 import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static org.osgl.http.H.Header.Names.ACCEPT;
@@ -68,6 +70,16 @@ class RequestBuilder {
         }
         for (RequestModifier modifier : requestSpec.modifiers) {
             modifier.modifyRequest(builder);
+        }
+        if (null != session) {
+            Headers lastHeaders = session.lastHeaders.get();
+            if (null != lastHeaders) {
+                String sessionHeader = Act.appConfig().sessionHeader();
+                String val = lastHeaders.get(sessionHeader);
+                if (S.notBlank(val)) {
+                    builder.addHeader(sessionHeader, val);
+                }
+            }
         }
         for (Map.Entry<String, Object> entry : requestSpec.headers.entrySet()) {
             String headerName = entry.getKey();

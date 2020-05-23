@@ -115,7 +115,7 @@ public interface ProgressGauge extends Destroyable {
      *
      * Once this method is called, there is no payload in the gauge.
      * This method shall not trigger update event
-]     */
+     */
     void clearPayload();
 
     /**

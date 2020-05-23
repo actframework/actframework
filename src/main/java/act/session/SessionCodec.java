@@ -36,6 +36,14 @@ public interface SessionCodec {
     String encodeSession(H.Session session);
 
     /**
+     * Encode a session into a string using specified expiry in seconds
+     * @param session the session to be encoded.
+     * @param ttlInSeconds time to live in seconds
+     * @return the encoded session
+     */
+    String encodeSession(H.Session session, int ttlInSeconds);
+
+    /**
      * Encode a flash into a string
      * @param flash
      * @return

@@ -1,0 +1,8 @@
+Scenario(1316):
+  description: "wrong file object inject from form field into the controller param"
+  interactions:
+  - description: test
+    request:
+      post: 1316
+    response:
+      status: 404

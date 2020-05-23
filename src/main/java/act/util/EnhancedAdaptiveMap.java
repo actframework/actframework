@@ -205,7 +205,8 @@ public interface EnhancedAdaptiveMap<T extends EnhancedAdaptiveMap> extends Adap
         public static Map<String, Object> asMap(final EnhancedAdaptiveMap ar) {
             final Map<String, Object> kv = ar.internalMap();
             // TODO: should we check the field value on size, remove, containsXxx etc methods?
-            return new Map<String, Object>() {
+            return new AbstractMap<String, Object>() {
+
                 @Override
                 public int size() {
                     return ar.size();

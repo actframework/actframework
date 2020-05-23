@@ -22,10 +22,12 @@ package act.handler.builtin.controller.impl;
 
 import static act.app.ActionContext.State.HANDLING;
 import static act.app.ActionContext.State.INTERCEPTING;
+import static org.osgl.util.Generics.buildTypeParamImplLookup;
 
 import act.Act;
 import act.Trace;
 import act.annotations.*;
+import act.apidoc.SampleData;
 import act.app.*;
 import act.cli.ReportProgress;
 import act.conf.AppConfig;
@@ -52,6 +54,7 @@ import act.security.*;
 import act.sys.Env;
 import act.util.*;
 import act.util.Output;
+import act.util.ProgressGauge;
 import act.view.*;
 import act.ws.WebSocketConnectionManager;
 import com.alibaba.fastjson.*;
@@ -62,6 +65,7 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.exception.ToBeImplemented;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.*;
@@ -87,6 +91,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
+    private boolean mock;
     private App app;
     private AppConfig config;
     private ControllerClassMetaInfo controller;
@@ -177,6 +182,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
         this.config = app.config();
+        this.mock = config.mockServer();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = app.classForName(controller.className());
@@ -663,6 +669,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             final JobManager jobManager = context.app().jobManager();
             final String jobId = jobManager.randomJobId();
             final String reqInfo = context.req().toString();
+            context.attachmentName(); // ensure attachment name get initialized
+            context.keep();
             jobManager.prepare(jobId, new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {
@@ -674,14 +682,26 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                         if (null == o) {
                             o = "done";
                         }
-                        jobManager.cacheResult(jobId, o, method);
+                        Map<String, Object> payload = C.Map("attachmentName", context.rawAttachmentName());
+                        jobManager.cacheResult(jobId, o, method, payload);
                         context.progress().commitFinalState();
+                        boolean canDestroy = false;
+                        synchronized (context) {
+                            if (context.isKeep()) {
+                                context.unKeep();
+                            } else {
+                                canDestroy = true;
+                            }
+                        }
+                        if (canDestroy) {
+                            context.destroy();
+                        }
                     } catch (Exception e) {
                         String errMsg = S.buffer("Error handling request: ").append(reqInfo).toString();
                         warn(e, errMsg);
                         ControllerProgressGauge gauge = context.progress();
                         gauge.fail(errMsg);
-                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method);
+                        jobManager.cacheResult(jobId, C.Map("error", e.getLocalizedMessage()), method, null);
                         gauge.commitFinalState();
                     }
                 }
@@ -819,7 +839,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (hasDtoPatches) {
             for (JsonDtoPatch patch : dtoPatches) {
                 Object bean = dto.get(patch.name());
-                patch.applyChildren(bean);
+                if (null != bean) {
+                    patch.applyChildren(bean);
+                }
             }
         }
     }
@@ -972,7 +994,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 cacheFor.value(),
                 cacheFor.supportPost(),
                 cacheFor.usePrivate(),
-                cacheFor.noCacheControl()
+                cacheFor.noCacheControl(),
+                cacheFor.eTagOnly(),
+                cacheFor.noCache()
         );
     }
 
@@ -1083,6 +1107,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
     }
 
+    private Object mockReturn() {
+        if (returnType == Void.class || returnType == void.class) {
+            return null;
+        }
+        BeanSpec returnSpec = BeanSpec.of(method.getGenericReturnType(), Act.injector());
+        return SampleData.generate(returnSpec, null);
+    }
+
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object retVal;
         String invocationInfo = null;
@@ -1105,11 +1137,21 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
     private Object invoke(ActionContext context, Object controller, Object[] params) {
         Object retVal;
-        retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        try {
+            retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        } catch (ToBeImplemented e) {
+            if (mock) {
+                retVal = mockReturn();
+            } else {
+                throw e;
+            }
+        }
         if (returnString && context.acceptJson()) {
             retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
         }
-        context.calcResultHashForEtag(retVal);
+        if (null != retVal) {
+            context.calcResultHashForEtag(retVal);
+        }
         return retVal;
     }
 

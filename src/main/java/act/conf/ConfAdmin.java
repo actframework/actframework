@@ -40,7 +40,6 @@ import javax.inject.Singleton;
 @UrlContext("conf")
 @Singleton
 @ExpressController
-@Port({Router.PORT_DEFAULT, AppConfig.PORT_SYS})
 public class ConfAdmin {
 
     @Inject
@@ -86,12 +85,12 @@ public class ConfAdmin {
         return list;
     }
 
-    @Command("act.conf.trace-handler")
+    @Command(name = "act.conf.trace-handler", help = "disable enable TraceHandler")
     public void toggleTraceHandler(@Required boolean enabled) {
         appConfig.toggleTraceHandler(enabled);
     }
 
-    @Command("act.conf.trace-request")
+    @Command(name = "act.conf.trace-request", help = "disable enable request trace")
     public void toggleTraceRequest(@Required boolean enabled) {
         appConfig.toggleTraceRequest(enabled);
     }

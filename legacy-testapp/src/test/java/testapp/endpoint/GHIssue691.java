@@ -11,21 +11,10 @@ public class GHIssue691 extends EndpointTester {
         checkRespCode();
     }
 
-    @Test(expected = BadRequest.class)
-    public void test1OutOfRange() throws Exception {
-        url("/gh/691/1?timestamp=10000000").get();
-        checkRespCode();
-    }
-
     @Test
     public void test2() throws Exception {
         url("/gh/691/2?timestamp=2500000000").get();
         checkRespCode();
     }
 
-    @Test(expected = BadRequest.class)
-    public void test2OutOfRange() throws Exception {
-        url("/gh/691/2?timestamp=12500000000").get();
-        checkRespCode();
-    }
 }

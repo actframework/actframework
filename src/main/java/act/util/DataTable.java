@@ -140,14 +140,16 @@ public class DataTable implements Iterable {
             return colKeys;
         }
         List<String> heading = new ArrayList<>();
-        String idLabel = labelLookup.get("id");
-        if (null != idLabel) {
-            heading.add(idLabel);
+        List<String> colKeys = new ArrayList(this.colKeys);
+        if (colKeys.remove("id")) {
+            String idLabel = labelLookup.get("id");
+            if (null != idLabel) {
+                heading.add(idLabel);
+            } else {
+                heading.add("id");
+            }
         }
         for (String colKey : colKeys) {
-            if ("id".equals(colKey)) {
-                continue;
-            }
             String label = labelLookup.get(colKey);
             heading.add(null != label ? label : colKey);
         }
@@ -335,6 +337,7 @@ public class DataTable implements Iterable {
                 initRows(C.list(iterable));
                 return;
             }
+            firstRow = iterable.iterator().hasNext() ? iterable.iterator().next() : null;
             rows = $.cast(data);
             rowCount = -1;
         } else {
@@ -356,7 +359,8 @@ public class DataTable implements Iterable {
     private void initHeading(Object data, PropertySpec.MetaInfo colSpec) {
         Set<String> excludes = C.Set();
         boolean headingLoaded = false;
-        if (null != colSpec) {
+        boolean colSpecPresented = null != colSpec;
+        if (colSpecPresented) {
             ActContext<?> context = ActContext.Base.currentContext();
             setLabelLookup(colSpec.labelMapping(context));
             excludes = colSpec.excludedFields(context);
@@ -366,6 +370,7 @@ public class DataTable implements Iterable {
                     headingLoaded = true;
                 }
             }
+            colSpecPresented = $.bool(colKeys) || $.bool(excludes);
         }
         if (null == labelLookup) {
             setLabelLookup(C.<String, String>newMap());
@@ -373,14 +378,17 @@ public class DataTable implements Iterable {
         // explore data rows to probe fields
         E.illegalArgumentIf(0 == rowCount, "Unable to probe table heading: no data found");
         int max = Math.min(rowCount, 10); // probe at most 10 rows of data for labels
-        SortedSet<String> keys;
+        Set<String> keys;
         if (isPojo()) {
             if (null == firstRow) {
                 firstRow = rows.iterator().next();
             }
-            keys = keysOf(firstRow);
+            keys = keysOf(firstRow, colSpecPresented);
         } else {
             keys = new TreeSet<>();
+            if (max < 0) {
+                max = 10;
+            }
             for (Object row : rows) {
                 if (--max < 0) break;
                 if (isMap) {
@@ -458,15 +466,18 @@ public class DataTable implements Iterable {
         return Number.class.isAssignableFrom(ft);
     }
 
-    private SortedSet<String> keysOf(Object pojo) {
+    private Set<String> keysOf(Object pojo, boolean propSpecPresented) {
         Class<?> type = pojo.getClass();
-        SortedSet<String> keys = new TreeSet<>();
+        Set<String> keys = propSpecPresented ? new LinkedHashSet<String>() : new TreeSet<String>();
         if ($.isSimpleType(type)) {
             keys.add(KEY_THIS);
             return keys;
         }
         // Check all public fields
         for (Field f : type.getFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                continue;
+            }
             String fn = f.getName();
             keys.add(fn);
             if (!labelLookup.containsKey(fn)) {
