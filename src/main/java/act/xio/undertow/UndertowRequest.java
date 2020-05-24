@@ -59,7 +59,9 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
             HEADER_NAMES.get("Proxy-Client-Ip"),
             HEADER_NAMES.get("Wl-Proxy-Client-Ip"),
             HEADER_NAMES.get("HTTP_CLIENT_IP"),
-            HEADER_NAMES.get("HTTP_X_FORWARDED_FOR")
+            HEADER_NAMES.get("HTTP_X_FORWARDED_FOR"),
+            HEADER_NAMES.get("If-None-Match"),
+            HEADER_NAMES.get("If-Match")
     );
 
     private String path;

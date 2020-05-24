@@ -22,18 +22,24 @@ package act.inject.param;
 
 import act.util.ActContext;
 import org.osgl.mvc.util.Binder;
+import org.osgl.util.S;
 
 /**
  * Use {@link org.osgl.mvc.util.Binder} to load param value
  */
-class BoundedValueLoader extends ParamValueLoader.Cacheable {
+class BoundValueLoader extends ParamValueLoader.Cacheable {
 
     private Binder binder;
     private String bindModel;
 
-    BoundedValueLoader(Binder binder, String model) {
+    BoundValueLoader(Binder binder, String model) {
         this.binder = binder;
         this.bindModel = model;
+    }
+
+    @Override
+    public String toString() {
+        return S.concat("bound value loader[", bindModel, "]");
     }
 
     @Override

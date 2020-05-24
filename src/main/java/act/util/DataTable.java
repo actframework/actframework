@@ -337,6 +337,7 @@ public class DataTable implements Iterable {
                 initRows(C.list(iterable));
                 return;
             }
+            firstRow = iterable.iterator().hasNext() ? iterable.iterator().next() : null;
             rows = $.cast(data);
             rowCount = -1;
         } else {
@@ -385,6 +386,9 @@ public class DataTable implements Iterable {
             keys = keysOf(firstRow, colSpecPresented);
         } else {
             keys = new TreeSet<>();
+            if (max < 0) {
+                max = 10;
+            }
             for (Object row : rows) {
                 if (--max < 0) break;
                 if (isMap) {
@@ -471,6 +475,9 @@ public class DataTable implements Iterable {
         }
         // Check all public fields
         for (Field f : type.getFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                continue;
+            }
             String fn = f.getName();
             keys.add(fn);
             if (!labelLookup.containsKey(fn)) {

@@ -596,7 +596,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
          * the internal network, thus assume we do not have secure http channel on top
          * of that
          */
-        boolean secure = null != portId && config.httpSecure();
+        boolean secure = null == portId && config.httpSecure();
         String scheme = secure ? "https" : "http";
 
         String domain = config.host();

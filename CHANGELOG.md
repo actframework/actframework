@@ -2,6 +2,12 @@
 
 ##1.8.33**
 * support plugin test engine
+* Param value loader framework - allow inject another controller class #1336
+* `EnhancedAdaptiveMap.asMap(EnhancedAdaptiveMap)` generated `Map` shall implement hashCode and equals methods #1333
+* Session cache shall be cleared after app hot reload #1330 - update osgl-http to 1.13.2
+* Improve http cache support #1328
+* Add profile to default session cookie name #1326
+* It needs to expose CORS control headers to all kind of requests #1325
 * Invalid warning msg: "empty index encountered" #1322
 * CLI over HTTP - allow specify big string which require textarea as input #1321
 * Add helper endpoint in dev mode to get Java System Properties #1320

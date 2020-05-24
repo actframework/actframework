@@ -32,6 +32,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 public @interface InvokeAfter {
+
     /**
      * Specifies the ID of the Job that will be invoked prior to the invocation
      * of the annotated method

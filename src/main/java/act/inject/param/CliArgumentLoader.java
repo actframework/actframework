@@ -35,6 +35,11 @@ class CliArgumentLoader extends CliParamValueLoader {
     }
 
     @Override
+    public String toString() {
+        return S.concat("cli argument loader[", bindName(), "]");
+    }
+
+    @Override
     public Object load(Object cached, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         CliContext.ParsingContext ptx = ctx.parsingContext();

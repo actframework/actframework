@@ -27,6 +27,7 @@ import act.validation.Password;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.inject.InjectException;
+import org.osgl.util.S;
 
 import java.lang.reflect.Field;
 
@@ -100,6 +101,6 @@ class FieldLoader {
 
     @Override
     public String toString() {
-        return "FieldLoader[" + field.getName() + "]";
+        return S.concat("field loader|", loader);
     }
 }

@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
@@ -29,6 +30,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.util.S;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -47,12 +49,13 @@ class JsonParamValueLoader implements ParamValueLoader {
     private ParamValueLoader fallBack;
     private BeanSpec spec;
     private Provider defValProvider;
+    private boolean notController;
 
     JsonParamValueLoader(ParamValueLoader fallBack, BeanSpec spec, DependencyInjector<?> injector) {
         this.fallBack = $.requireNotNull(fallBack);
         this.spec = $.requireNotNull(spec);
         this.defValProvider = findDefValProvider(spec, injector);
-        ActionContext ctx = ActionContext.current();
+        this.notController = null == Act.app().classLoader().controllerClassMetaInfo(spec.rawType().getName());
     }
 
     private JsonParamValueLoader(JsonParamValueLoader parent, Class runtimeType) {
@@ -62,11 +65,16 @@ class JsonParamValueLoader implements ParamValueLoader {
     }
 
     @Override
+    public String toString() {
+        return S.concat("json param|", fallBack);
+    }
+
+    @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (context instanceof ActionContext && ((ActionContext)context).isPathVar(spec.name())) {
             return fallBack.load(bean, context, noDefaultValue);
         }
-        JsonDto dto = context.attribute(JsonDto.CTX_ATTR_KEY);
+        JsonDto dto = notController ? (JsonDto) context.attribute(JsonDto.CTX_ATTR_KEY) : null;
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {

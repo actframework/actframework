@@ -273,15 +273,15 @@ public class CORS {
             if (null != origin) {
                 r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             }
+            if (null != exposeHeaders) {
+                r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders);
+            }
+            if (null != allowCredentials) {
+                r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_CREDENTIALS, S.string(allowCredentials));
+            }
             if (context.isOptionsMethod()) {
                 if (null != methods) {
                     r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_METHODS, methods);
-                }
-                if (null != exposeHeaders) {
-                    r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders);
-                }
-                if (null != allowCredentials) {
-                    r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_CREDENTIALS, S.string(allowCredentials));
                 }
                 if (null != allowHeaders) {
                     r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);

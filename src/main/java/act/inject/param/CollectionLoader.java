@@ -76,6 +76,11 @@ class CollectionLoader extends ParamValueLoader.JsonBodySupported {
     }
 
     @Override
+    public String toString() {
+        return S.concat("collection loader[", bindName(), "]");
+    }
+
+    @Override
     public String bindName() {
         return key.toString();
     }

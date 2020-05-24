@@ -839,7 +839,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (hasDtoPatches) {
             for (JsonDtoPatch patch : dtoPatches) {
                 Object bean = dto.get(patch.name());
-                patch.applyChildren(bean);
+                if (null != bean) {
+                    patch.applyChildren(bean);
+                }
             }
         }
     }
@@ -992,7 +994,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 cacheFor.value(),
                 cacheFor.supportPost(),
                 cacheFor.usePrivate(),
-                cacheFor.noCacheControl()
+                cacheFor.noCacheControl(),
+                cacheFor.eTagOnly(),
+                cacheFor.noCache()
         );
     }
 
@@ -1145,7 +1149,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (returnString && context.acceptJson()) {
             retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
         }
-        context.calcResultHashForEtag(retVal);
+        if (null != retVal) {
+            context.calcResultHashForEtag(retVal);
+        }
         return retVal;
     }
 
