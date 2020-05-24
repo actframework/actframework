@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* Scenario manager - support loading test scenario files from child folders recursively #1337
 * Param value loader framework - allow inject another controller class #1336
 * `EnhancedAdaptiveMap.asMap(EnhancedAdaptiveMap)` generated `Map` shall implement hashCode and equals methods #1333
 * Session cache shall be cleared after app hot reload #1330 - update osgl-http to 1.13.2

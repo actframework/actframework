@@ -147,26 +147,28 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void loadFromScenarioDir(File scenariosDir) {
-        File[] ymlFiles = scenariosDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".yml");
-            }
-        });
+        File[] ymlFiles = scenariosDir.listFiles();
         if (null == ymlFiles) {
             return;
         }
         for (File file : ymlFiles) {
-            String content = IO.read(file).toString();
-            if (S.blank(content)) {
-                warn("Empty yaml file found: " + file.getPath());
-                continue;
-            }
-            try {
-                parseOne(content, file.getAbsolutePath());
-            } catch (RuntimeException e) {
-                error(e, "Error parsing scenario file: %s", file.getName());
-                throw e;
+            if (file.isDirectory()) {
+                loadFromScenarioDir(file);
+            } else {
+                String fileName = file.getName();
+                if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
+                    String content = IO.read(file).toString();
+                    if (S.blank(content)) {
+                        warn("Empty yaml file found: " + file.getPath());
+                        continue;
+                    }
+                    try {
+                        parseOne(content, file.getAbsolutePath());
+                    } catch (RuntimeException e) {
+                        error(e, "Error parsing scenario file: %s", file.getName());
+                        throw e;
+                    }
+                }
             }
         }
     }

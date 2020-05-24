@@ -414,26 +414,23 @@ public class TestSession extends LogSupport {
                 }
             }
         }
-        key = S.underscore(key);
-        o = constants.get(key);
+        String underscoredKey = S.underscore(key);
+        o = constants.get(underscoredKey);
         if (null != o) {
             return o;
         }
-        o = Test.constant(key);
+        o = Test.constant(underscoredKey);
         if (null != o) {
             return o;
         }
         try {
             return evalFunc(key);
         } catch (Exception e) {
-            if (!"last".equals(key)) {
-                try {
-                    return getVal("last", key);
-                } catch (Exception e1) {
-                    throw E.unexpected("Unable to get value by key: %s", key);
-                }
+            try {
+                return getLastVal(key);
+            } catch (Exception e1) {
+                throw E.unexpected("Unable to get value by key: %s", key);
             }
-            return null;
         }
     }
 
