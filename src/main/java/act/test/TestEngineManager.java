@@ -21,20 +21,26 @@ package act.test;
  */
 
 import org.osgl.inject.annotation.MapKey;
+import org.osgl.util.Keyword;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
+import java.util.Set;
 
 @Singleton
 public class TestEngineManager {
 
     @Inject
     @MapKey("name")
-    private Map<String, TestEngine> engineLookup;
+    private Map<Keyword, TestEngine> engineLookup;
+
+    public Set<Keyword> engineNames() {
+        return engineLookup.keySet();
+    }
 
     public TestEngine getEngine(String name) {
-        TestEngine engine = engineLookup.get(name);
+        TestEngine engine = engineLookup.get(Keyword.of(name));
         return null == engine ? engineLookup.get(DefaultTestEngine.NAME) : engine;
     }
 

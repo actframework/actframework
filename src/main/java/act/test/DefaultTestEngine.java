@@ -23,16 +23,17 @@ package act.test;
 import act.util.ProgressGauge;
 import act.util.SingletonBase;
 import org.osgl.$;
+import org.osgl.util.Keyword;
 
 import javax.validation.ValidationException;
 
 public class DefaultTestEngine extends SingletonBase implements TestEngine {
 
-    public static final String NAME = "default";
+    public static final Keyword NAME = Keyword.of("default");
 
     @Override
     public String getName() {
-        return NAME;
+        return NAME.toString();
     }
 
     @Override

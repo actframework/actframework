@@ -26,6 +26,7 @@ import act.app.DaoLocator;
 import act.app.RuntimeDirs;
 import act.conf.AppConfig;
 import act.test.Scenario;
+import act.test.TestEngineManager;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
@@ -147,26 +148,28 @@ public class ScenarioManager extends YamlLoader {
     }
 
     private void loadFromScenarioDir(File scenariosDir) {
-        File[] ymlFiles = scenariosDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".yml");
-            }
-        });
+        File[] ymlFiles = scenariosDir.listFiles();
         if (null == ymlFiles) {
             return;
         }
         for (File file : ymlFiles) {
-            String content = IO.read(file).toString();
-            if (S.blank(content)) {
-                warn("Empty yaml file found: " + file.getPath());
-                continue;
-            }
-            try {
-                parseOne(content, file.getAbsolutePath());
-            } catch (RuntimeException e) {
-                error(e, "Error parsing scenario file: %s", file.getName());
-                throw e;
+            if (file.isDirectory()) {
+                loadFromScenarioDir(file);
+            } else {
+                String fileName = file.getName();
+                if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
+                    String content = IO.read(file).toString();
+                    if (S.blank(content)) {
+                        warn("Empty yaml file found: " + file.getPath());
+                        continue;
+                    }
+                    try {
+                        parseOne(content, file.getAbsolutePath());
+                    } catch (RuntimeException e) {
+                        error(e, "Error parsing scenario file: %s", file.getName());
+                        throw e;
+                    }
+                }
             }
         }
     }
@@ -186,6 +189,7 @@ public class ScenarioManager extends YamlLoader {
         for (Map.Entry<String, Scenario> entry : loaded.entrySet()) {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
+            trySetTestEngine(scenario, fileName);
             scenario.scenarioManager = this;
             scenario.requestTemplateManager = this.requestTemplateManager;
             scenario.name = key;
@@ -255,6 +259,28 @@ public class ScenarioManager extends YamlLoader {
                 scenario.issueUrlIcon = inferIssueUrlIcon(scenario.issueUrl);
             }
         }
+    }
+
+    /**
+     * In case engine is not set on the scenario and the scenarios file name part
+     * matches a certain test engine name, e.g. `selenium`, then default that
+     * engine to the scenario.
+     *
+     * @param scenario the scenario
+     * @param fileName the file name
+     */
+    private void trySetTestEngine(Scenario scenario, String fileName) {
+        if ($.bool(scenario.engine)) {
+            return;
+        }
+        C.Set<Keyword> parts = C.Set(S.split(fileName, File.separatorChar).map(Keyword.F.FROM_STRING));
+        TestEngineManager tem = Act.getInstance(TestEngineManager.class);
+        Set<Keyword> engines = tem.engineNames();
+        Set<Keyword> set = parts.withIn(engines);
+        if (set.isEmpty()) {
+            return;
+        }
+        scenario.engine = set.iterator().next().toString();
     }
 
 }

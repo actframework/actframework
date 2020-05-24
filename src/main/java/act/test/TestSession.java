@@ -66,21 +66,20 @@ import static act.test.util.ErrorMessage.errorIfNot;
  */
 public class TestSession extends LogSupport {
 
-    private static ThreadLocal<TestSession> current = new ThreadLocal<>();
+    private static final ThreadLocal<TestSession> current = new ThreadLocal<>();
 
     static TestSession current() {
         return current.get();
     }
 
-    private boolean proceed;
     private Scenario running;
-    private Scenario target;
-    private List<Scenario> dependencies = new ArrayList<>();
-    private App app;
+    private final Scenario target;
+    private final List<Scenario> dependencies = new ArrayList<>();
+    private final App app;
     private int port = 5460;
     private OkHttpClient http;
     private CookieStore cookieStore;
-    private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
+    private final transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
@@ -118,9 +117,9 @@ public class TestSession extends LogSupport {
         try {
             gauge.incrMaxHintBy(dependencies.size() + 2);
             gauge.step();
-            proceed = runAll(gauge, dependencies);
+            boolean proceed = runAll(gauge, dependencies);
             if (proceed) {
-                proceed = runOne(target, gauge);
+                runOne(target, gauge);
             }
             gauge.step();
         } finally {
@@ -418,26 +417,23 @@ public class TestSession extends LogSupport {
                 }
             }
         }
-        key = S.underscore(key);
-        o = constants.get(key);
+        String underscoredKey = S.underscore(key);
+        o = constants.get(underscoredKey);
         if (null != o) {
             return o;
         }
-        o = Test.constant(key);
+        o = Test.constant(underscoredKey);
         if (null != o) {
             return o;
         }
         try {
             return evalFunc(key);
         } catch (Exception e) {
-            if (!"last".equals(key)) {
-                try {
-                    return getVal("last", key);
-                } catch (Exception e1) {
-                    throw E.unexpected("Unable to get value by key: %s", key);
-                }
+            try {
+                return getLastVal(key);
+            } catch (Exception e1) {
+                throw E.unexpected("Unable to get value by key: %s", key);
             }
-            return null;
         }
     }
 

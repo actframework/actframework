@@ -72,7 +72,7 @@ public class Scenario extends AdaptiveBeanBase<Scenario> implements ScenarioPart
     public String urlContext;
     public String partition = PARTITION_DEFAULT;
     public String source;
-    private transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
+    private final transient Metric metric = Act.metricPlugin().metric(MetricInfo.ACT_TEST_SCENARIO);
 
     public ScenarioManager scenarioManager;
     public RequestTemplateManager requestTemplateManager;
