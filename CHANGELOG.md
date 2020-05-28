@@ -1,7 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
-* support plugin test engine
+* support plugin test engine #1339
 * Scenario manager - support loading test scenario files from child folders recursively #1337
 * Param value loader framework - allow inject another controller class #1336
 * `EnhancedAdaptiveMap.asMap(EnhancedAdaptiveMap)` generated `Map` shall implement hashCode and equals methods #1333

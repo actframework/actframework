@@ -65,4 +65,9 @@ public class DefaultTestEngine extends SingletonBase implements TestEngine {
     @Override
     public void teardownSession(TestSession session) {
     }
+
+    @Override
+    public void teardown() {
+    }
+
 }

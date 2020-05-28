@@ -319,12 +319,12 @@ public class Test extends LogSupport {
         this.error = null;
         this.result = C.list();
         this.gauge = gauge;
+        TestEngineManager engineManager = Act.getInstance(TestEngineManager.class);
         try {
             eventBus.trigger(TestStart.INSTANCE);
             app.captchaManager().disable();
             registerTypeConverters();
-            TestEngineManager tem = Act.getInstance(TestEngineManager.class);
-            tem.setupEngines();
+            engineManager.setupEngines();
             RequestTemplateManager requestTemplateManager = new RequestTemplateManager();
             requestTemplateManager.load();
             final ScenarioManager scenarioManager = new ScenarioManager();
@@ -460,6 +460,7 @@ public class Test extends LogSupport {
             } else {
                 app.captchaManager().enable();
             }
+            engineManager.teardownEngines();
             eventBus.trigger(TestStop.INSTANCE);
         }
     }

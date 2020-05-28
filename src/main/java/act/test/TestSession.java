@@ -92,6 +92,7 @@ public class TestSession extends LogSupport {
     public TestSession(Scenario scenario, RequestTemplateManager requestTemplateManager) {
         this.requestTemplateManager = requestTemplateManager;
         dependencies.addAll(scenario.allDepends);
+        Collections.sort(dependencies, new ScenarioComparator(false));
         target = scenario;
         app = Act.app();
         if (null != app) {

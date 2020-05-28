@@ -82,4 +82,9 @@ public interface TestEngine {
      */
     void teardownSession(TestSession session);
 
+    /**
+     * Tear down after running all tests
+     */
+    void teardown();
+
 }

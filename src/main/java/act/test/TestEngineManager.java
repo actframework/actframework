@@ -50,4 +50,10 @@ public class TestEngineManager {
         }
     }
 
+    public void teardownEngines() {
+        for (TestEngine engine: engineLookup.values()) {
+            engine.teardown();
+        }
+    }
+
 }
