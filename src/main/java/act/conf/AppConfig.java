@@ -57,6 +57,7 @@ import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.ParserConfig;
 import me.tongfei.progressbar.ProgressBarStyle;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -134,6 +135,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 return translated;
             }
         });
+        // Refer https://cloud.tencent.com/announce/detail/1112
+        ParserConfig.getGlobalInstance().setSafeMode(true);
     }
 
     private RouterRegexMacroLookup routerRegexMacroLookup;
