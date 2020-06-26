@@ -266,7 +266,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private Map<String, Class> typeLookups;
 
-    private List<String> urlPathVarNames;
+    private Set<String> urlPathVarNames;
 
     public String returnSample;
 
@@ -287,7 +287,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private Endpoint() {}
 
-    Endpoint(int port, H.Method httpMethod, String path, List<String> urlPathVarNames, RequestHandler handler) {
+    Endpoint(int port, H.Method httpMethod, String path, Set<String> urlPathVarNames, RequestHandler handler) {
         AppConfig conf = Act.appConfig();
         this.httpMethod = $.requireNotNull(httpMethod);
         String urlContext = conf.urlContext();

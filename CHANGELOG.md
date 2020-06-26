@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* In case Route mapping exception occurred, it shall display the relevant source file and highlight the place where mapping failed #1313
+* update fastjson to 1.2.71
+* API doc - URL path variable in POST endpoint info is incorrect #1284
 * Scenario manager - support loading test scenario files from child folders recursively #1337
 * Param value loader framework - allow inject another controller class #1336
 * `EnhancedAdaptiveMap.asMap(EnhancedAdaptiveMap)` generated `Map` shall implement hashCode and equals methods #1333

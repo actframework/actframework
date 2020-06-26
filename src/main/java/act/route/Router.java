@@ -80,7 +80,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
          * @param handler
          *         the handler
          */
-        void visit(H.Method method, String path, RouteSource source, List<String> varNames, RequestHandler handler);
+        void visit(H.Method method, String path, RouteSource source, Set<String> varNames, RequestHandler handler);
     }
 
     public static final String IGNORE_NOTATION = "...";
@@ -231,7 +231,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             if (handler instanceof ContextualHandler) {
                 handler = ((ContextualHandler) handler).realHandler();
             }
-            visitor.visit(method, node.path(), node.routeSource, node.varNames, handler);
+            visitor.visit(method, node.path(), node.routeSource, node.allVarNames(), handler);
         }
         for (TreeNode child : node.children()) {
             visit((Node)child, method, visitor);
@@ -1224,6 +1224,21 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             Destroyable.Util.destroyAll(dynamicChildren, ApplicationScoped.class);
             Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
+        }
+
+        /**
+         * Returns all URL path variable names including var name of parent/ancestors
+         * @return
+         */
+        public Set<String> allVarNames() {
+            Set<String> set = new HashSet<>();
+            set.addAll(varNames);
+            Node cur = parent;
+            while (cur != root) {
+                set.addAll(cur.varNames);
+                cur = cur.parent;
+            }
+            return set;
         }
 
         Node childByMetaInfoExactMatching(String name) {

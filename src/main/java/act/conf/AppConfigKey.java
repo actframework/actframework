@@ -281,9 +281,17 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Note the endpoint must be a full URL
      *
-     * Default value: null
+     * Default value: `null`
      */
     CONF_SERVER_ENDPOINT("conf-server.endpoint"),
+
+    /**
+     * `conf-loader.impl` specify customized application configuration loader.
+     * it should be a class name of an implementation of {@link ExtendedAppConfLoader}.
+     *
+     * Default value: `null`
+     */
+    CONF_LOADER("conf-loader.impl"),
 
     /**
      * `conf.id` set the configuration id - could be used to fetch configuration from configuration server

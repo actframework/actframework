@@ -150,6 +150,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
         loadFromConfServer();
+        raw.putAll(extendedConfigurations());
     }
 
     // for unit test
@@ -491,6 +492,32 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeReCaptchaSecret(AppConfig config) {
         if (!hasConfiguration(CAPTCHA_RECAPTCHA_SECRET)) {
             reCaptchaSecret = config.reCaptchaSecret;
+        }
+    }
+
+    private Map<String, Object> extendedConfigurations;
+
+    protected T extendedConfigurations(Map<String, Object> conf) {
+        this.extendedConfigurations = conf;
+        return me();
+    }
+
+    private Map<String, Object> extendedConfigurations() {
+        if (null == extendedConfigurations) {
+            try {
+                Object confLoader = get(CONF_LOADER, new ExtendedAppConfLoader.DumbLoader());
+                this.extendedConfigurations = $.invokeVirtual(confLoader, "loadConfigurations");
+            } catch (Exception e) {
+                warn(e, "Error loading extended configurations");
+                this.extendedConfigurations = C.Map();
+            }
+        }
+        return extendedConfigurations;
+    }
+
+    private void _mergeExtendedAppConfLoader(AppConfig conf) {
+        if (!hasConfiguration(CONF_LOADER)) {
+            extendedConfigurations = conf.extendedConfigurations;
         }
     }
 
