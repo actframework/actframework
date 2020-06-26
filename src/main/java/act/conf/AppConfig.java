@@ -3023,7 +3023,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         if (null == cookiePrefix) {
             String profile = Act.profile();
             S.Buffer buf = S.buffer(app().shortId());
-            if (null != buf && S.neq("prod", profile, S.IGNORECASE)) {
+            if (S.neq("prod", profile, S.IGNORECASE)) {
                 buf.a("-").a(profile);
             }
             buf.a("-");
