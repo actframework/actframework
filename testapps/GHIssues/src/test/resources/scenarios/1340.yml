@@ -1,0 +1,23 @@
+Scenario(1340):
+  description: "Missing fields exporting AdaptiveRecords in csv format"
+  interactions:
+  - description: Test
+    request:
+      get: 1340/adaptiveMap
+      accept: text/csv
+    response:
+      text:
+        - contains: foo
+        - contains: 2
+        - contains: bar
+        - contains: 3
+  - description: Test Map
+    request:
+      get: 1340/map
+      accept: text/csv
+    response:
+      text:
+        - contains: foo
+        - contains: 2
+        - contains: bar
+        - contains: 3

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 ##1.8.33**
+* Missing fields exporting AdaptiveRecords in csv format #1340
 * In case Route mapping exception occurred, it shall display the relevant source file and highlight the place where mapping failed #1313
 * update fastjson to 1.2.71
 * API doc - URL path variable in POST endpoint info is incorrect #1284

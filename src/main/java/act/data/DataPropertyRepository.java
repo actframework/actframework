@@ -88,8 +88,8 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return ls;
     }
 
-    public List<S.Pair> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
-        return outputFieldsCache.getOutputFields(spec, componentClass, context);
+    public List<S.Pair> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, Object firstElement, ActContext context) {
+        return outputFieldsCache.getOutputFields(spec, componentClass, firstElement, context);
     }
 
     private List<S.Pair> propertyListOf(Class<?> c, Set<Class<?>> circularReferenceDetector, Map<String, Class> typeImplLookup) {

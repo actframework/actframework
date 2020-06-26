@@ -28,6 +28,7 @@ import org.osgl.$;
 import org.osgl.util.AdaptiveMap;
 import org.osgl.util.C;
 import org.osgl.util.S;
+import org.osgl.util.Str;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -70,17 +71,17 @@ class OutputFieldsCache {
 
     private Map<K, List<S.Pair>> cache = new HashMap<>();
 
-    public List<S.Pair> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
+    public List<S.Pair> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, Object firstElement, ActContext context) {
         K k = new K(spec.excludedFields(context), spec.outputFieldsAndLabel(context), componentClass);
         List<S.Pair> outputs = cache.get(k);
         if (null == outputs) {
-            outputs = calculateOutputs(k);
+            outputs = calculateOutputs(k, firstElement);
             cache.put(k, outputs);
         }
         return outputs;
     }
 
-    List<S.Pair> calculateOutputs(K k) {
+    List<S.Pair> calculateOutputs(K k, Object firstElement) {
         Class<?> type = k.componentType;
         if ($.isSimpleType(type) && k.excluded.isEmpty() && k.outputs.isEmpty()) {
             return C.list();
@@ -90,6 +91,40 @@ class OutputFieldsCache {
         Set<String> excluded = k.excluded;
         DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
         List<S.Pair> allFields = repo.propertyListOf(k.componentType);
+        if (AdaptiveMap.class.isInstance(firstElement)) {
+            Set<String> mapped = new HashSet<>();
+            for (S.Pair pair : allFields) {
+                mapped.add(pair._1);
+            }
+            AdaptiveMap am = $.cast(firstElement);
+            Map map = am.internalMap();
+            for (Object o : map.keySet()) {
+                String key = S.string(o);
+                if (!mapped.contains(key)) {
+                    allFields.add(S.pair(key, key));
+                }
+            }
+        } else if (Map.class.isInstance(firstElement)) {
+            Set<String> mapped = new HashSet<>();
+            List<S.Pair> toBeRemoved = new ArrayList<>();
+            for (S.Pair pair : allFields) {
+                if ("empty".equalsIgnoreCase(pair._1)) {
+                    toBeRemoved.add(pair);
+                } else if ("innerMap.empty".equalsIgnoreCase(pair._1)) {
+                    toBeRemoved.add(pair);
+                } else {
+                    mapped.add(pair._1);
+                }
+            }
+            allFields.removeAll(toBeRemoved);
+            Map map = $.cast(firstElement);
+            for (Object o : map.keySet()) {
+                String key = S.string(o);
+                if (!mapped.contains(key)) {
+                    allFields.add(S.pair(key, key));
+                }
+            }
+        }
         if (hasPattern || outputs.isEmpty()) {
             if (!excluded.isEmpty()) {
                 List<S.Pair> finalOutputs;

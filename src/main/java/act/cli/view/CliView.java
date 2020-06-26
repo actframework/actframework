@@ -88,7 +88,7 @@ public enum CliView {
                 }
             }
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
-            List<S.Pair> outputFields = repo.outputFields(spec, componentType, context);
+            List<S.Pair> outputFields = repo.outputFields(spec, componentType, dataList.get(0), context);
             if (outputFields.isEmpty()) {
                 outputFields = C.<S.Pair>list(S.pair("this as Item", "this as Item"));
             }
@@ -245,7 +245,7 @@ public enum CliView {
                 spec = new PropertySpec.MetaInfo();
                 spec.onValue("-not_exists");
             }
-            List<S.Pair> outputFields = repo.outputFields(spec, componentType, context);
+            List<S.Pair> outputFields = repo.outputFields(spec, componentType, firstElement, context);
             if (outputFields.isEmpty()) {
                 return;
             }
@@ -279,6 +279,8 @@ public enum CliView {
             } else {
                 if (data instanceof AdaptiveMap) {
                     return escape(S.string(((AdaptiveMap) data).getValue(prop._1)));
+                } else if (data instanceof Map) {
+                    return escape(S.string(((Map) data).get(prop._1)));
                 }
                 return escape($.getProperty(data, prop._1));
             }
