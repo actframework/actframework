@@ -1234,7 +1234,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             Set<String> set = new HashSet<>();
             set.addAll(varNames);
             Node cur = parent;
-            while (cur != root) {
+            while (cur != root && cur != null) {
                 set.addAll(cur.varNames);
                 cur = cur.parent;
             }
