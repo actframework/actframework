@@ -328,11 +328,16 @@ public class TestSession extends LogSupport {
             String paramStr = S.cut(funcExpr).afterFirst("(");
             paramStr = S.cut(paramStr).beforeLast(")");
             if (S.notBlank(paramStr)) {
-                vals = C.newList(S.fastSplit(paramStr, ","));
-                for (int i = 0; i < vals.size(); ++i) {
-                    String val = S.ensure(vals.get(i).trim()).strippedOff(S.DOUBLE_QUOTES);
-                    val = processStringSubstitution(val);
-                    vals.set(i, val);
+                if (S.is(paramStr).wrappedWith(S.DOUBLE_QUOTES) || S.is(paramStr).wrappedWith(S.SINGLE_QUOTES)) {
+                    paramStr = paramStr.substring(1, paramStr.length() - 1);
+                    vals = C.list(paramStr);
+                } else {
+                    vals = C.newList(S.fastSplit(paramStr, ","));
+                    for (int i = 0; i < vals.size(); ++i) {
+                        String val = S.ensure(vals.get(i).trim()).strippedOff(S.DOUBLE_QUOTES);
+                        val = processStringSubstitution(val);
+                        vals.set(i, val);
+                    }
                 }
             }
         }
@@ -596,6 +601,9 @@ public class TestSession extends LogSupport {
                 String varName = s.substring(0, s.length() - 1);
 
                 Object val = $.getProperty(obj, varName);
+                if (val instanceof CharSequence) {
+                    val = S.wrap(val).with(S.DOUBLE_QUOTES);
+                }
                 val = evalFunc(funcName + "(" + val + ")");
                 verifyValue(key, val, entry.getValue());
             } else {

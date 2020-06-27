@@ -2561,7 +2561,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sourceVersion() {
         if (null == sourceVersion) {
-            sourceVersion = get(AppConfigKey.SOURCE_VERSION, "1." + $.JAVA_VERSION);
+            sourceVersion = get(AppConfigKey.SOURCE_VERSION, null);
+            if (null == sourceVersion) {
+                int javaVersion = Math.min(8, $.JAVA_VERSION);
+                sourceVersion = "1." + javaVersion;
+            }
             if (sourceVersion.startsWith("1.")) {
                 sourceVersion = sourceVersion.substring(0, 3);
             }
@@ -2601,7 +2605,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String targetVersion() {
         if (null == targetVersion) {
-            targetVersion = get(TARGET_VERSION, "1." + $.JAVA_VERSION);
+            targetVersion = get(TARGET_VERSION, sourceVersion());
             if (targetVersion.startsWith("1.")) {
                 targetVersion = targetVersion.substring(0, 3);
             }
