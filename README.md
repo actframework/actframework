@@ -4,9 +4,9 @@
 [![Maven Central](https://img.shields.io/maven-central/v/org.actframework/act.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.actframework%22%20AND%20a%3A%22act%22)
 [![Build Status](https://travis-ci.org/actframework/actframework.svg?branch=1.4)](https://travis-ci.org/actframework/actframework)
 [![Javadocs](http://www.javadoc.io/badge/org.actframework/act.svg?color=blue)](http://www.javadoc.io/doc/org.actframework/act)
-[![Feature Requests](http://feathub.com/actframework/actframework?format=svg)](http://feathub.com/actframework/actframework)
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Get Support on StackOverflow](https://img.shields.io/stackexchange/stackoverflow/t/actframework.svg)](https://stackoverflow.com/questions/tagged/actframework)
+[![Feature Requests](http://feathub.com/actframework/actframework?format=svg)](http://feathub.com/actframework/actframework)
 
 ## Install
 
