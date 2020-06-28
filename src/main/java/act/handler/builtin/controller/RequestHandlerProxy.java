@@ -262,9 +262,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                     } else {
                         H.Request req = context.req();
                         result = ActErrorResult.of(e);
-                        if (result.status().isServerError()) {
-                            logger.error(e, "Server error encountered on handling request: " + req);
-                        }
                     }
                 }
                 try {

@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.33.0-SNAPSHOT</version>
+  <version>1.9.0-SNAPSHOT</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.32.0</version>
+    <version>1.8.33.0</version>
   </parent>
 
   <properties>
@@ -23,17 +23,22 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act</artifactId>
-      <version>1.8.33-SNAPSHOT</version>
+      <groupId>org.osgl</groupId>
+      <artifactId>aaa-core</artifactId>
+      <version>1.10.0</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
-      <artifactId>act-excel-java7</artifactId>
+      <artifactId>act</artifactId>
+      <version>1.9.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-excel</artifactId>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP-java7</artifactId>
+      <artifactId>HikariCP</artifactId>
     </dependency>
     <!--<dependency>-->
       <!--<groupId>org.actframework</groupId>-->
@@ -57,7 +62,6 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>
-      <version>1.7.2-SNAPSHOT</version>
     </dependency>
 
     <!-- uncomment when running on JVM 9+

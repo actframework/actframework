@@ -1,7 +1,9 @@
 # ActFramework Change Log
 
 **1.9.0** 28/Jun/2020
+* The error triggered during rendering response get warned twice #1341
 * Support running act app in Java9 or above #1342
+* SimpleBean bytecode enhancer caused "java.lang.ClassFormatError: Interface cannot have a method named <init>" issue #1344
 
 **1.8.33b** 27/Jun/2020
 * Update to osgl-tool 1.25.0

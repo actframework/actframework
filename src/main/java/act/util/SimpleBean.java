@@ -159,7 +159,7 @@ public interface SimpleBean {
             if (null == node) {
                 return false;
             }
-            return node.hasInterface(INTF_SIMPLE_BEAN);
+            return !node.isInterface() && node.hasInterface(INTF_SIMPLE_BEAN);
         }
 
         public MetaInfo get(String className) {

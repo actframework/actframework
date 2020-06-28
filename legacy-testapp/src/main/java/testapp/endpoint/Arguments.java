@@ -1,8 +1,8 @@
 package testapp.endpoint;
 
 import act.cli.Command;
-import act.cli.JsonView;
 import act.cli.Optional;
+import act.util.JsonView;
 import org.osgl.util.C;
 
 import java.util.List;
