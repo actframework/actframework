@@ -12,13 +12,13 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.9.0.1
+    -DarchetypeVersion=1.9.0.2
 ```
 
 #### Create Project interactively
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.9.0.1
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.9.0.2
 ```
 
 ## Hello Service
@@ -33,13 +33,13 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-simple-restful-service \
-    -DarchetypeVersion=1.9.0.1
+    -DarchetypeVersion=1.9.0.2
 ```
 
 #### Create Project interactively
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.9.0.1
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.9.0.2
 ```
 
 ## Bookmark
@@ -56,13 +56,13 @@ mvn archetype:generate -B \
     -DartifactId=bookmark \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-bookmark \
-    -DarchetypeVersion=1.9.0.1
+    -DarchetypeVersion=1.9.0.2
 ```
 
 #### Create Project interactively
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-bookmark -DarchetypeVersion=1.9.0.1
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-bookmark -DarchetypeVersion=1.9.0.2
 ```
 
 ## Chatroom
@@ -77,13 +77,13 @@ mvn archetype:generate -B \
     -DartifactId=chatroom \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-chatroom \
-    -DarchetypeVersion=1.9.0.1
+    -DarchetypeVersion=1.9.0.2
 ```
 
 #### Create Project interactively
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-chatroom -DarchetypeVersion=1.9.0.1
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-chatroom -DarchetypeVersion=1.9.0.2
 ```
 
 
