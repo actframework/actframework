@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.9.0** 28/Jun/2020
+**1.9.0a** 28/Jun/2020
+* Add `@Inject` to CliDispatcher constructor - allow it be injected in - e.g. - HelpPage
 * The error triggered during rendering response get warned twice #1341
 * Support running act app in Java9 or above #1342
 * SimpleBean bytecode enhancer caused "java.lang.ClassFormatError: Interface cannot have a method named <init>" issue #1344
