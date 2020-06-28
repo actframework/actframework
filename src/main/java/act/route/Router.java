@@ -1227,12 +1227,11 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         }
 
         /**
-         * Returns all URL path variable names including var name of parent/ancestors
-         * @return
+         * Returns all URL path variable names including var name of parent/ancestors.
+         * @return all URL path variable names as described above
          */
         public Set<String> allVarNames() {
-            Set<String> set = new HashSet<>();
-            set.addAll(varNames);
+            Set<String> set = new HashSet<>(varNames);
             Node cur = parent;
             while (cur != root && cur != null) {
                 set.addAll(cur.varNames);

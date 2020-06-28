@@ -21,7 +21,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.8.34b-SNAPSHOT</version>
+  <version>1.9.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -49,7 +49,7 @@
     <act-asm.version>5.0.6</act-asm.version>
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
-    <ecj.version>3.12.3</ecj.version>
+    <ecj.version>3.22.0</ecj.version>
     <fastjson.version>1.2.71</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
@@ -60,11 +60,10 @@
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.6</jline.version>
     <jpa.version>1.0.0.Final</jpa.version>
-    <joda-time.version>2.10.1</joda-time.version>
+    <joda-time.version>2.10.6</joda-time.version>
     <jsoup.version>1.12.1</jsoup.version>
 
-    <!-- last version support java7 -->
-    <okhttp.version>3.12.1</okhttp.version>
+    <okhttp.version>4.7.2</okhttp.version>
 
     <osgl-tool.version>1.25.0</osgl-tool.version>
     <osgl-cache.version>1.8.1</osgl-cache.version>
@@ -77,9 +76,14 @@
     <reflectasm.version>1.11.9</reflectasm.version>
     <rythmengine.version>1.3.0</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    <undertow.version>1.4.28.Final</undertow.version>
+    <undertow.version>2.1.3.Final</undertow.version>
     <snakeyaml.version>1.25</snakeyaml.version>
-    <zxing.javase.version>3.3.3</zxing.javase.version> <!-- 3.3.3 is the last version support java 7 -->
+    <zxing.javase.version>3.4.0</zxing.javase.version> <!-- 3.3.3 is the last version support java 7 -->
+
+    <!-- only used when running in Java 9 or above -->
+    <jaxb.version>2.3.1</jaxb.version>
+    <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+
   </properties>
 
   <scm>
@@ -366,6 +370,17 @@
       <version>${jpa.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>${jaxb.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>${javax.annotation-api.version}</version>
+    </dependency>
 
   </dependencies>
 

@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-##1.8.33b**
+**1.9.0** 28/Jun/2020
+* Support running act app in Java9 or above #1342
+
+**1.8.33b** 27/Jun/2020
 * Update to osgl-tool 1.25.0
 * Missing fields exporting AdaptiveRecords in csv format #1340
 * In case Route mapping exception occurred, it shall display the relevant source file and highlight the place where mapping failed #1313

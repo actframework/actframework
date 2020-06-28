@@ -2561,14 +2561,24 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String sourceVersion() {
         if (null == sourceVersion) {
-            sourceVersion = get(AppConfigKey.SOURCE_VERSION, null);
-            if (null == sourceVersion) {
-                int javaVersion = Math.min(8, $.JAVA_VERSION);
-                sourceVersion = "1." + javaVersion;
-            }
-            if (sourceVersion.startsWith("1.")) {
-                sourceVersion = sourceVersion.substring(0, 3);
-            }
+            sourceVersion = get(SOURCE_VERSION, S.string($.JAVA_VERSION));
+//            sourceVersion = get(AppConfigKey.SOURCE_VERSION, null);
+//            if (null == sourceVersion) {
+//                int n = $.JAVA_VERSION;
+//                if (n > 8) {
+//                    warn("ActFramework support compiling source code up to Java 8 only");
+//                    n = 8;
+//                }
+//                sourceVersion = S.string(n);
+//            } else {
+//                if (sourceVersion.contains("1.")) {
+//                    sourceVersion = sourceVersion.substring(2);
+//                }
+//                if (Integer.parseInt(sourceVersion) > 8) {
+//                    warn("ActFramework support compiling source code up to Java 8 only");
+//                    sourceVersion = "8";
+//                }
+//            }
         }
         return sourceVersion;
     }
@@ -2605,9 +2615,22 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String targetVersion() {
         if (null == targetVersion) {
-            targetVersion = get(TARGET_VERSION, sourceVersion());
-            if (targetVersion.startsWith("1.")) {
-                targetVersion = targetVersion.substring(0, 3);
+            targetVersion = get(TARGET_VERSION, null);
+            if (null == targetVersion) {
+                int n = $.JAVA_VERSION;
+                if (n > 8) {
+                    warn("ActFramework support compiling source code up to Java 8 only");
+                    n = 8;
+                }
+                targetVersion = S.string(n);
+            } else {
+                if (targetVersion.contains("1.")) {
+                    targetVersion = targetVersion.substring(2);
+                }
+                if (Integer.parseInt(targetVersion) > 8) {
+                    warn("ActFramework support compiling source code up to Java 8 only");
+                    targetVersion = "8";
+                }
             }
         }
         return targetVersion;

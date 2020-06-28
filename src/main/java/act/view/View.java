@@ -52,7 +52,7 @@ public abstract class View extends AppServicePlugin {
 
     public boolean appliedTo(ActContext context) {
         H.Format format = context.accept();
-        return format.isText();
+        return format.isText() || H.Format.UNKNOWN == format;
     }
 
     /**

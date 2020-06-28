@@ -106,7 +106,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                     LOGGER.trace("classInfoRegistry not recovered, start searching through libBC (with total %s classes)", libBCSize());
                 }
                 for (String className : C.list(libBC.keySet())) {
-                    if (className.endsWith(".module-info")) {
+                    if (className.endsWith("module-info") || className.startsWith("META-INF.versions.")) {
                         continue;
                     }
                     try {
@@ -202,6 +202,10 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             ignores += ("," + appIgnores);
         }
         blackList.addAll(S.fastSplit(ignores, ","));
+        if ($.JAVA_VERSION < 9) {
+            blackList.add("jaxb-");
+            blackList.add("javax.annotation-");
+        }
         return new $.Predicate<File>() {
             @Override
             public boolean test(File file) {
