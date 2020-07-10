@@ -366,7 +366,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         if (null == actionHandler) {
             synchronized (this) {
                 if (null == actionHandler) {
-                    generateHandlers();
+                    try {
+                        generateHandlers();
+                    } catch (RuntimeException e) {
+                        app.handleBlockIssue(e);
+                    }
                 }
             }
         }

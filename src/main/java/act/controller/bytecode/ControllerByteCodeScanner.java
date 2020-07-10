@@ -1094,10 +1094,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             r.addMapping(m, urlPath, action, routeSource);
                         } catch (DuplicateRouteMappingException e) {
                             e.setSourceInfo(sourceInfo);
-                            Act.app().setBlockIssue(e);
+                            Act.app().handleBlockIssue(e);
                         } catch (RouteMappingException e) {
                             e.setSourceInfo(sourceInfo);
-                            Act.app().setBlockIssue(e);
+                            Act.app().handleBlockIssue(e);
                         } catch (RuntimeException e) {
                             logger.error(e, "add router mapping failed: \n\tmethod[%s]\n\turl path: %s\n\taction: %s", m, urlPath, action);
                         }

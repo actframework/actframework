@@ -324,7 +324,7 @@ public class AppClassLoader
                     logger.error(e, "Error scanning bytecode at %s", e.context());
                     ActErrorResult error = ActErrorResult.scanningError(e);
                     if (Act.isDev()) {
-                        app.setBlockIssue(error);
+                        app.handleBlockIssue(error);
                     } else {
                         throw error;
                     }

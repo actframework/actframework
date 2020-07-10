@@ -576,23 +576,27 @@ public class App extends LogSupportedDestroyableBase {
         refresh();
     }
 
-    public synchronized void setBlockIssue(Throwable e) {
+    public synchronized void handleBlockIssue(Throwable e) {
         fatal(e, "Block issue encountered");
-        if (null != blockIssue || null != blockIssueCause) {
-            // do not overwrite previous block issue
-            return;
-        }
-        if (e instanceof ActErrorResult) {
-            blockIssue = (ActErrorResult) e;
-        } else {
-            if (null != classLoader()) {
-                blockIssue = ActErrorResult.of(e);
-                blockIssueCause = null;
-            } else {
-                blockIssueCause = e;
+        if (Act.isDev()) {
+            if (null != blockIssue || null != blockIssueCause) {
+                // do not overwrite previous block issue
+                return;
             }
+            if (e instanceof ActErrorResult) {
+                blockIssue = (ActErrorResult) e;
+            } else {
+                if (null != classLoader()) {
+                    blockIssue = ActErrorResult.of(e);
+                    blockIssueCause = null;
+                } else {
+                    blockIssueCause = e;
+                }
+            }
+            throw BlockIssueSignal.INSTANCE;
+        } else {
+            Act.shutdown(App.instance());
         }
-        throw BlockIssueSignal.INSTANCE;
     }
 
     /**
@@ -835,7 +839,7 @@ public class App extends LogSupportedDestroyableBase {
                     @Override
                     public void run() {
                         if (null != blockIssueCause) {
-                            setBlockIssue(blockIssueCause);
+                            handleBlockIssue(blockIssueCause);
                         }
                         emit(PRE_START);
                         emit(STATELESS_PROVISIONED);
@@ -1234,7 +1238,7 @@ public class App extends LogSupportedDestroyableBase {
                 } else {
                     logger.error("Bad enhanced class: " + className);
                 }
-                setBlockIssue(error);
+                handleBlockIssue(error);
             } else {
                 logger.fatal(error, "Bad enhanced class found: " + className);
                 shutdown(-1);
