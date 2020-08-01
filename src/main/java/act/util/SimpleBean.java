@@ -35,6 +35,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -190,6 +191,9 @@ public interface SimpleBean {
 
         private static class SimpleBeanByteCodeVisitor extends ByteCodeVisitor {
 
+            private static final String RECORD = "java/lang/Record";
+            private static final String SIMPLE_BEAN = "act/util/SimpleBean";
+
             private static final String ALIAS_DESC = Type.getType(Alias.class).getDescriptor();
             private static final String LABEL_DESC = Type.getType(Label.class).getDescriptor();
             private String className;
@@ -198,18 +202,24 @@ public interface SimpleBean {
             private Map<String, $.T2<String, String>> publicFields = new LinkedHashMap<>();
             private Map<String, String> aliases = new LinkedHashMap<>();
             private Map<String, String> labels = new LinkedHashMap<>();
+            private boolean isRecord;
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
                 if (isPublic(access)) {
                     isPublicClass = true;
                     className = Type.getObjectType(name).getClassName();
+                    isRecord = RECORD.equals(superName);
+                    if (isRecord) {
+                        interfaces = new String[] {SIMPLE_BEAN};
+                    }
                 }
                 super.visit(version, access, name, signature, superName, interfaces);
             }
 
             @Override
             public FieldVisitor visitField(int access, final String name, String desc, String signature, Object value) {
+                if (isRecord) access = Modifier.PUBLIC;
                 FieldVisitor fv = super.visitField(access, name, desc, signature, value);
                 if (isPublicClass && AsmTypes.isPublic(access) && !AsmTypes.isStatic(access)) {
                     publicFields.put(name, $.T2(desc, signature));

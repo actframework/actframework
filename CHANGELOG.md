@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.1**
+* Support Java 14 Record class #1354
 * Allow developer to specify ECJ compiler options #1353
 
 **1.9.0a** 28/Jun/2020
