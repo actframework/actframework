@@ -61,13 +61,13 @@ public class StaticFileGetterTest extends ActTestBase {
         when(req.method()).thenReturn(H.Method.GET);
         ctx = ActionContext.create(mockApp, req, resp);
         when(req.context()).thenReturn(ctx);
+        when(req.accept()).thenReturn(H.Format.HTML);
         pathHandler = new FileGetter("/public", mockApp);
         fileHandler = new FileGetter("/public/foo/bar.txt", mockApp);
     }
 
     @Test
     public void invokePathHandlerOnNonExistingResource() {
-        when(ctx.accept()).thenReturn(H.Format.HTML);
         ctx.param(ParamNames.PATH, "/some/where/non_exists.txt");
         pathHandler.handle(ctx);
         eq(resp.status, 404);

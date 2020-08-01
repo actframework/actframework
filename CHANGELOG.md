@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.9.1**
+* Allow developer to specify ECJ compiler options #1353
+
 **1.9.0a** 28/Jun/2020
 * Add `@Inject` to CliDispatcher constructor - allow it be injected in - e.g. - HelpPage
 * The error triggered during rendering response get warned twice #1341

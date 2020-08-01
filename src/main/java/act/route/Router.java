@@ -1018,7 +1018,6 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = keyword.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
-            this.varNames.addAll(parent.varNames);
         }
 
         Node(String name, Node parent) {
@@ -1027,7 +1026,6 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = name.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
-            this.varNames.addAll(parent.varNames);
             parseDynaName(name);
         }
 
