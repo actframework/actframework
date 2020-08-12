@@ -1167,7 +1167,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             invoker.checkTemplate(context);
             return result;
         }
-        HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
+        final HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
         final boolean hasReturn = handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult();
         if (null == retVal && hasReturn) {
             // ActFramework respond 404 Not Found when
