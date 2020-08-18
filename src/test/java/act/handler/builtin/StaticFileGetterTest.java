@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class StaticFileGetterTest extends ActTestBase {
+    RequestImplBase req;
     ActionContext ctx;
     MockResponse resp;
     FileGetter pathHandler;
@@ -57,13 +58,14 @@ public class StaticFileGetterTest extends ActTestBase {
             }
         });
         when(mockAppConfig.errorTemplatePathResolver()).thenCallRealMethod();
-        RequestImplBase req = mock(RequestImplBase.class);
+        req = mock(RequestImplBase.class);
         when(req.method()).thenReturn(H.Method.GET);
         ctx = ActionContext.create(mockApp, req, resp);
         when(req.context()).thenReturn(ctx);
         when(req.accept()).thenReturn(H.Format.HTML);
         pathHandler = new FileGetter("/public", mockApp);
         fileHandler = new FileGetter("/public/foo/bar.txt", mockApp);
+        ctx.saveLocal();
     }
 
     @Test
