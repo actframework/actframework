@@ -254,6 +254,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (context.resp().isClosed()) {
                 logger.error(e, "Error committing result");
             } else {
+                logger.error(e, "Error handling request: " + context.req().url());
                 if (null == result) {
                     if (e instanceof IllegalArgumentException) {
                         String errorMsg = e.getLocalizedMessage();

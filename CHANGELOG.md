@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.1**
+* 500 Error but not error stack in console log #1358
 * Support Java 14 Record class #1354
 * Allow developer to specify ECJ compiler options #1353
 
