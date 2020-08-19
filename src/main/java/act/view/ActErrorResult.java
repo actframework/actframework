@@ -163,14 +163,12 @@ public class ActErrorResult extends ErrorResult implements ActError {
         $.Function<Throwable, Result> unsupported = new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActNotImplemented.create(throwable);
             }
         };
         x.put(ToBeImplemented.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActToBeImplemented.create();
             }
         });
@@ -179,28 +177,24 @@ public class ActErrorResult extends ErrorResult implements ActError {
         x.put(IllegalStateException.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActConflict.create(throwable);
             }
         });
         x.put(ResourceNotFoundException.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActNotFound.create(throwable);
             }
         });
         x.put(AccessDeniedException.class, new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActForbidden.create(throwable);
             }
         });
         $.Transformer<Throwable, Result> badRequest = new $.Transformer<Throwable, Result>() {
             @Override
             public Result transform(Throwable throwable) {
-                Act.LOGGER.warn(throwable, "Error:");
                 return ActBadRequest.create(throwable);
             }
         };
