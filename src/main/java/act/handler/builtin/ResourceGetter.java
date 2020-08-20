@@ -33,6 +33,7 @@ import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.util.$$;
+import act.util.StringUtils;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
@@ -273,7 +274,7 @@ public class ResourceGetter extends FastRequestHandler {
                     resp.send(file);
                 } else {
                     String content = IO.readContentAsString(file);
-                    content = $$.processStringSubstitution(content);
+                    content = StringUtils.processStringSubstitution(content, true);
                     resp.writeContent(content);
                 }
             } else if (largeResource.contains(path)) {
