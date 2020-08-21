@@ -55,6 +55,9 @@ public class ApacheMultipartParser extends RequestBodyParser {
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 ISObject sobj = UploadFileStorageService.store(item, context.app());
+                if (null == sobj || sobj.getLength() == 0L) {
+                    continue;
+                }
                 String fieldName = item.getFieldName();
                 if (item.isFormField()) {
                     // must resolve encoding
