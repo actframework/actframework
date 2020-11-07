@@ -146,7 +146,8 @@ public class UndertowNetwork extends NetworkBase {
                 .set(Options.CONNECTION_LOW_WATER, 1000000)
                 .set(Options.TCP_NODELAY, true)
                 .set(Options.CORK, true)
-                .getMap());
+                .getMap()
+        );
     }
 
     private OptionMap createSocketOptions() {

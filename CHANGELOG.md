@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.1**
+* ApacheMultipartParser NullPointerException #1369
 * Error encountered requesting `/asset/extjs-all.js` #1359
 * 500 Error but not error stack in console log #1358
 * Support Java 14 Record class #1354
