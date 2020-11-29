@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.1**
+* EhCache raised `ClassCastException` after reload in dev mode #1368
 * ApacheMultipartParser NullPointerException #1369
 * Error encountered requesting `/asset/extjs-all.js` #1359
 * 500 Error but not error stack in console log #1358

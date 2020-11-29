@@ -84,6 +84,7 @@ import act.ws.*;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.cache.CacheService;
+import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -1616,6 +1617,7 @@ public class App extends LogSupportedDestroyableBase {
 
     private void initCache() {
         if (isDev()) {
+            CacheServiceProvider.Impl.setClassLoader(this.classLoader);
             config().cacheServiceProvider().reset();
         }
         cache = cache(config().cacheName());
