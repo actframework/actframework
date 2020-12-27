@@ -1,0 +1,11 @@
+Scenario(1255):
+  description: "I18n - date format setting not effective"
+  interactions:
+    - description: test
+      request:
+        headers:
+          Accept-Language: en
+        get: ?date=12:12:2019
+      response:
+        result:
+          - before: ${today}

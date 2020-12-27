@@ -1,12 +1,17 @@
 # ActFramework Change Log
 
 **1.9.1**
-* EhCache raised `ClassCastException` after reload in dev mode #1368
+* It reports `UNKNOWN` for OS when running act on macOS #1373
+* Hot reload not working for Bundle Resource properties #1372
+* Cannot start ActFramework: port xxxxx is occupied #1370
 * ApacheMultipartParser NullPointerException #1369
+* EhCache raised `ClassCastException` after reload in dev mode #1368
+* act-test: number verification logic error #1361
 * Error encountered requesting `/asset/extjs-all.js` #1359
 * 500 Error but not error stack in console log #1358
 * Support Java 14 Record class #1354
-* Allow developer to specify ECJ compiler options #1353
+* Allow the developers to specify ECJ compiler options #1353
+* `null` file object inject from form field into the request handler argument list #1352
 
 **1.9.0a** 28/Jun/2020
 * Add `@Inject` to CliDispatcher constructor - allow it be injected in - e.g. - HelpPage

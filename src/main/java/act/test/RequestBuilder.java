@@ -155,32 +155,66 @@ class RequestBuilder {
                     MultipartBody.Builder formBuilder = new MultipartBody.Builder();
                     for (Map.Entry<String, Object> entry : requestSpec.parts.entrySet()) {
                         String key = entry.getKey();
-                        String val = S.string(entry.getValue());
-                        byte[] content = null;
-                        H.Format fileFormat = null;
-                        String path = S.pathConcat("upload", '/', val);
-                        File uploadFile = Act.app().testResource(path);
-                        if (uploadFile.exists()) {
-                            fileFormat = FileGetter.contentType(path);
-                            content = IO.readContent(uploadFile);
-                        } else {
-                            path = S.pathConcat("test/upload", '/', val);
-                            URL fileUrl = Act.getResource(path);
-                            if (null != fileUrl) {
-                                String filePath = fileUrl.getFile();
-                                fileFormat = FileGetter.contentType(filePath);
-                                content = $.convert(fileUrl).to(byte[].class);
+                        Object obj = entry.getValue();
+                        if (obj instanceof String) {
+                            String val = S.string(entry.getValue());
+                            byte[] content = null;
+                            H.Format fileFormat = null;
+                            String path = S.pathConcat("upload", '/', val);
+                            File uploadFile = Act.app().testResource(path);
+                            if (uploadFile.exists()) {
+                                fileFormat = FileGetter.contentType(path);
+                                content = IO.readContent(uploadFile);
+                            } else {
+                                path = S.pathConcat("test/upload", '/', val);
+                                URL fileUrl = Act.getResource(path);
+                                if (null != fileUrl) {
+                                    String filePath = fileUrl.getFile();
+                                    fileFormat = FileGetter.contentType(filePath);
+                                    content = $.convert(fileUrl).to(byte[].class);
+                                }
                             }
-                        }
-                        if (null != content) {
-                            String checksum = IO.checksum(content);
-                            RequestBody fileBody = RequestBody.create(MediaType.parse(fileFormat.contentType()), content);
-                            String attachmentName = val.contains("/") ? S.cut(val).afterLast("/") : val;
-                            formBuilder.addFormDataPart(key, attachmentName, fileBody);
-                            session.cache("checksum-last", checksum);
-                            session.cache("checksum-" + val, checksum);
-                        } else {
-                            formBuilder.addFormDataPart(key, val);
+                            if (null != content) {
+                                String checksum = IO.checksum(content);
+                                RequestBody fileBody = RequestBody.create(MediaType.parse(fileFormat.contentType()), content);
+                                String attachmentName = val.contains("/") ? S.cut(val).afterLast("/") : val;
+                                formBuilder.addFormDataPart(key, attachmentName, fileBody);
+                                session.cache("checksum-last", checksum);
+                                session.cache("checksum-" + val, checksum);
+                            } else {
+                                formBuilder.addFormDataPart(key, val);
+                            }
+                        } else if (obj instanceof Collection) {
+                            Collection col = (Collection) obj;
+                            for (Object element : col) {
+                                String val = S.string(element);
+                                byte[] content = null;
+                                H.Format fileFormat = null;
+                                String path = S.pathConcat("upload", '/', val);
+                                File uploadFile = Act.app().testResource(path);
+                                if (uploadFile.exists()) {
+                                    fileFormat = FileGetter.contentType(path);
+                                    content = IO.readContent(uploadFile);
+                                } else {
+                                    path = S.pathConcat("test/upload", '/', val);
+                                    URL fileUrl = Act.getResource(path);
+                                    if (null != fileUrl) {
+                                        String filePath = fileUrl.getFile();
+                                        fileFormat = FileGetter.contentType(filePath);
+                                        content = $.convert(fileUrl).to(byte[].class);
+                                    }
+                                }
+                                if (null != content) {
+                                    String checksum = IO.checksum(content);
+                                    RequestBody fileBody = RequestBody.create(MediaType.parse(fileFormat.contentType()), content);
+                                    String attachmentName = val.contains("/") ? S.cut(val).afterLast("/") : val;
+                                    formBuilder.addFormDataPart(key, attachmentName, fileBody);
+                                    session.cache("checksum-last", checksum);
+                                    session.cache("checksum-" + val, checksum);
+                                } else {
+                                    formBuilder.addFormDataPart(key, val);
+                                }
+                            }
                         }
                     }
                     body = formBuilder.build();

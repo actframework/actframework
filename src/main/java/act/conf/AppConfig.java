@@ -547,12 +547,14 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         this.confPrivateKey = key;
         return me();
     }
+
     private String confPrivateKey() {
         if (S.blank(confPrivateKey)) {
             confPrivateKey = get(CONF_PRIVATE_KEY, "");
         }
         return confPrivateKey;
     }
+
     private void _mergeConfPrivateId(AppConfig conf) {
         if (!hasConfiguration(CONF_PRIVATE_KEY)) {
             confPrivateKey = conf.confPrivateKey;
@@ -629,7 +631,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            corsHeadersExpose = get(CORS_HEADERS_EXPOSE,"");
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE, "");
             if (S.blank(corsHeadersExpose)) {
                 corsHeadersExpose = corsHeaders();
                 if (S.notBlank(corsHeadersExpose)) {
@@ -1285,16 +1287,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private String xmlRootTag;
+
     protected T xmlRootTag(String tag) {
         this.xmlRootTag = tag;
         return me();
     }
+
     public String xmlRootTag() {
         if (null == xmlRootTag) {
             xmlRootTag = get(XML_ROOT, "xml");
         }
         return xmlRootTag;
     }
+
     private void _mergeXmlRootTag(AppConfig conf) {
         if (!hasConfiguration(XML_ROOT)) {
             this.xmlRootTag = conf.xmlRootTag;
@@ -1634,16 +1639,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private Boolean mockServer;
+
     protected T mockServer(boolean enabled) {
         mockServer = enabled;
         return me();
     }
+
     public boolean mockServer() {
         if (null == mockServer) {
             mockServer = get(MOCK_SERVER_ENABLED, app.isDev());
         }
         return mockServer;
     }
+
     private void _mergeMockServer(AppConfig config) {
         if (!hasConfiguration(MOCK_SERVER_ENABLED)) {
             mockServer = config.mockServer;
@@ -1912,16 +1920,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private Boolean jsonBodyPatch;
+
     protected T jsonBodyPatch(boolean enabled) {
         jsonBodyPatch = enabled;
         return me();
     }
+
     public boolean allowJsonBodyPatch() {
         if (null == jsonBodyPatch) {
             jsonBodyPatch = get(JSON_BODY_PATCH, true);
         }
         return jsonBodyPatch;
     }
+
     private void _mergeJsonBodyPatch(AppConfig conf) {
         if (!hasConfiguration(JSON_BODY_PATCH)) {
             jsonBodyPatch = conf.jsonBodyPatch;
@@ -2000,8 +2011,8 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int httpPort() {
         if (-1 == httpPort) {
-            if ("test".equalsIgnoreCase(Act.profile())) {
-                httpPort = randomPort();
+            if (Act.isTest()) {
+                httpPort = chooseRandomDefaultHttpPort();
             } else {
                 httpPort = get(HTTP_PORT, 5460);
             }
@@ -2013,6 +2024,47 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         if (!hasConfiguration(HTTP_PORT)) {
             httpPort = conf.httpPort;
         }
+    }
+
+    private static void clearRandomServerSockets() {
+        for (ServerSocket ss : randomServerSockets.values()) {
+            IO.close(ss);
+        }
+        randomServerSockets.clear();
+    }
+
+    public static void clearRandomServerSocket(int port) {
+        ServerSocket ss = randomServerSockets.remove(port);
+        IO.close(ss);
+    }
+
+    private static Map<Integer, ServerSocket> randomServerSockets = new HashMap<>();
+
+    private static int chooseRandomDefaultHttpPort() {
+        int maxTry = 10;
+        while (maxTry-- > 0) {
+            clearRandomServerSockets();
+            boolean ok = true;
+            int httpPort = randomPort();
+            Act.LOGGER.debug("Random port detected: " + httpPort);
+            for (int i = 1; i < 4; ++i) {
+                int port = httpPort + i;
+                ServerSocket ss = null;
+                try {
+                    ss = new ServerSocket(port);
+                    randomServerSockets.put(port, ss);
+                    Act.LOGGER.debug("Successfully bind to port: " + port);
+                } catch (IOException e) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) {
+                Act.LOGGER.info("Default port allocated for testing: " + httpPort);
+                return httpPort;
+            }
+        }
+        throw new IllegalStateException("Unable to find random HTTP port");
     }
 
     private static int randomPort() {
@@ -2590,16 +2642,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private Boolean selfHealing;
+
     protected T selfHealing(boolean on) {
         selfHealing = on;
         return me();
     }
+
     public boolean selfHealing() {
         if (null == selfHealing) {
             selfHealing = get(SYS_SELF_HEALING, false);
         }
         return selfHealing;
     }
+
     private void _mergeSelfHealing(AppConfig conf) {
         if (!hasConfiguration(SYS_SELF_HEALING)) {
             selfHealing = conf.selfHealing;
@@ -2654,7 +2709,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 return false;
             }
             if (s.contains("$")) {
-                for (String pkg: scanList) {
+                for (String pkg : scanList) {
                     if (s.startsWith(pkg + "$")) {
                         return true;
                     }
@@ -2967,6 +3022,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private String serverHeader;
     private static final String DEF_SERVER_HEADER = "act/" + Act.VERSION.getProjectVersion();
     private static String DEF_APP_SERVER_HEADER = appServerHeader();
+
     private static String appServerHeader() {
         App app = Act.app();
         if (null == app) {
@@ -2999,16 +3055,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private Boolean serverHeaderUseApp;
+
     protected T serverHeaderUseApp(boolean b) {
         serverHeaderUseApp = b;
         return me();
     }
+
     private boolean serverHeaderUseApp() {
         if (null == serverHeaderUseApp) {
             serverHeaderUseApp = get(AppConfigKey.SERVER_HEADER_USE_APP, true);
         }
         return serverHeaderUseApp;
     }
+
     private void _mergeServerHeaderUseApp(AppConfig config) {
         if (!hasConfiguration(SERVER_HEADER_USE_APP)) {
             serverHeaderUseApp = config.serverHeaderUseApp;
@@ -3135,16 +3194,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private boolean sessionPassThrough;
     private boolean sessionPassThroughSet; // use this to save auto-box of sessionPassThrough flag
+
     protected T sessionPassThrough(boolean b) {
         sessionPassThrough = b;
         return me();
     }
+
     public boolean sessionPassThrough() {
         if (!sessionPassThroughSet) {
             sessionPassThrough = get(SESSION_PASS_THROUGH, false);
         }
         return sessionPassThrough;
     }
+
     private void _mergeSessionPassThrough(AppConfig config) {
         if (!hasConfiguration(SESSION_PASS_THROUGH)) {
             sessionPassThrough = config.sessionPassThrough;
@@ -3310,16 +3372,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     private String sessionQueryParamName;
+
     protected T sessionQueryParamName(String paramName) {
         sessionQueryParamName = paramName;
         return me();
     }
+
     public String getSessionQueryParamName() {
         if (null == sessionQueryParamName) {
             sessionQueryParamName = get(SESSION_QUERY_PARAM_NAME, sessionHeader());
         }
         return sessionQueryParamName;
     }
+
     private void _mergeSessionQueryParamName(AppConfig config) {
         if (!hasConfiguration(SESSION_QUERY_PARAM_NAME)) {
             sessionQueryParamName = config.sessionQueryParamName;
@@ -3395,8 +3460,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     /**
      * Set `secret.rotate.period` in terms of minute
      *
-     * @param period
-     *         the minutes between two secret rotate happening
+     * @param period the minutes between two secret rotate happening
      * @return this config object
      * @see AppConfigKey#SECRET_ROTATE_PERIOD
      */
@@ -3892,8 +3956,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
      * settings has lower priority as it's hardcoded thus only when configuration file
      * does not provided the settings, the app configurator will take effect
      *
-     * @param conf
-     *         the application configurator
+     * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
         app.emit(SysEventId.CONFIG_PREMERGE);

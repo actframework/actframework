@@ -667,10 +667,13 @@ public class App extends LogSupportedDestroyableBase {
                 listener.preHotReload();
             }
             if (null != classLoader && config().i18nEnabled()) {
+                debug("clearing resource bundle with classLoader: %s", classLoader);
+                ResourceBundle.clearCache(App.class.getClassLoader());
                 // clear resource bundle cache for Act I18n
                 ResourceBundle.clearCache(classLoader);
                 // clear resource bundle cache for Rythm I18n
                 ResourceBundle.clearCache(I18N.class.getClassLoader());
+                I18N.clearBundleCache();
             }
         }
 

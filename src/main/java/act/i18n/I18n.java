@@ -98,6 +98,7 @@ public class I18n {
             if (null != app && null != app.classLoader()) {
                 classLoader = app.classLoader();
             }
+            logger.debug("loading resource bundle[%s] with classLoader[%s]", bundleName, classLoader);
             bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), classLoader);
         } catch (MissingResourceException e) {
             if (!ignoreError) {

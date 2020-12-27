@@ -40,10 +40,10 @@ import static act.handler.builtin.controller.RequestHandlerProxy.insertIntercept
  * Manage interceptors at App level
  */
 public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager> {
-    private List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
-    private List<AfterInterceptor> afterInterceptors = new ArrayList<>();
-    private List<ExceptionInterceptor> exceptionInterceptors = new ArrayList<>();
-    private List<FinallyInterceptor> finallyInterceptors = new ArrayList<>();
+    private final List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
+    private final List<AfterInterceptor> afterInterceptors = new ArrayList<>();
+    private final List<ExceptionInterceptor> exceptionInterceptors = new ArrayList<>();
+    private final List<FinallyInterceptor> finallyInterceptors = new ArrayList<>();
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);

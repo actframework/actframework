@@ -1,0 +1,44 @@
+{
+  "remark": "",
+  "shOrder": {
+    "actualtotalprice": 149957,
+    "copId": 1,
+    "createTime": 1597915313613,
+    "id": 97,
+    "mobile": "",
+    "openid": "",
+    "out_trade_no": "1597915313617WXSPJS97",
+    "staffId": 1,
+    "stationId": 1,
+    "status": "Daizhifu",
+    "totalprice": 149957,
+    "type": "0",
+    "updateTime": 1597915313613,
+    "userId": 1,
+    "zhifumethod": "WEIXIN_FUWUSHANG_H5SCAN"
+  },
+  "shOrderDetailList": [
+    {
+      "actualTotalPrice": 249987,
+      "copId": 1,
+      "createTime": 1597915313619,
+      "giftId": 56,
+      "num": 1,
+      "orderId": 97,
+      "price": 249987,
+      "staffAProfit": 1100,
+      "staffAProfitPrice": 27498,
+      "staffAProfitType": "1",
+      "staffId": 1,
+      "stationId": 1,
+      "stationProfit": 100000,
+      "stationProfitPrice": 100000,
+      "stationProfitType": "2",
+      "status": "Daizhifu",
+      "totalPrice": 300000,
+      "type": 0,
+      "updateTime": 1597915313619
+    }
+  ],
+  "succ": true
+}
