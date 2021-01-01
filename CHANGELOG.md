@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.1**
+* Act-Test - support sending request with file array #1375
 * It reports `UNKNOWN` for OS when running act on macOS #1373
 * Hot reload not working for Bundle Resource properties #1372
 * Cannot start ActFramework: port xxxxx is occupied #1370
@@ -12,6 +13,8 @@
 * Support Java 14 Record class #1354
 * Allow the developers to specify ECJ compiler options #1353
 * `null` file object inject from form field into the request handler argument list #1352
+* When it detect error during generating request handler instance it shall mark it as a fatal error #1347
+* Support customised resource bundle encoding #1329
 
 **1.9.0a** 28/Jun/2020
 * Add `@Inject` to CliDispatcher constructor - allow it be injected in - e.g. - HelpPage

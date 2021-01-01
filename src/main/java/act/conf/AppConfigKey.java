@@ -58,7 +58,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `true` when app running in `dev` mode, or `false` otherwise
      */
-    API_DOC_EABLED("api_doc.enabled"),
+    API_DOC_ENABLED("api_doc.enabled"),
 
     /**
      * `act.api_doc.built_in.hide` turns on/off built-in endpoints in
@@ -991,6 +991,18 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@link TemplatePathResolver}</p>
      */
     RESOLVER_TEMPLATE_PATH("resolver.template_path.impl"),
+
+    /**
+     * `resource_bundle.encoding` specifies encoding of resource bundles.
+     *
+     * This configuration allows override the default resource bundle
+     * encoding setting used by specific Java runtime:
+     * - Before Java 9: ISO-8859-1
+     * - Java 9 and above: UTF-8
+     *
+     * Default value: `null` meaning follow JDK default encoding setting
+     */
+    RESOURCE_BUNDLE_ENCODING("resource_bundle.encoding"),
 
     /**
      *  `resource.filtering`

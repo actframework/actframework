@@ -640,13 +640,14 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         return S.concat(urlContext, path);
     }
 
-    public String fullUrl(String path, Object... args) {
-        path = S.fmt(path, args);
+    public String fullUrl(final String pathTemplate, Object... args) {
+        String path = S.fmt(pathTemplate, args);
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
         }
-        if (path.contains(".") || path.contains("(")) {
-            path = reverseRoute(path);
+        if (!path.contains("/") && (path.contains(".") || path.contains("("))) {
+            String reversedPath = reverseRoute(path);
+            path = null != reversedPath ? reversedPath : path;
         }
         S.Buffer sb = S.newBuffer(urlBase());
         path = ensureUrlContext(path);

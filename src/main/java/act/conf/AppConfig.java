@@ -21,6 +21,7 @@ package act.conf;
  */
 
 import static act.conf.AppConfigKey.*;
+import static java.util.ResourceBundle.Control.FORMAT_DEFAULT;
 import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 
 import act.Act;
@@ -78,10 +79,14 @@ import osgl.version.Version;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.ServerSocket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -291,13 +296,13 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean apiDocEnabled() {
         if (null == apiDoc) {
-            this.apiDoc = get(API_DOC_EABLED, Act.isDev());
+            this.apiDoc = get(API_DOC_ENABLED, Act.isDev());
         }
         return this.apiDoc;
     }
 
     private void _mergeApiDocEnabled(AppConfig conf) {
-        if (!hasConfiguration(API_DOC_EABLED)) {
+        if (!hasConfiguration(API_DOC_ENABLED)) {
             this.apiDoc = conf.apiDoc;
         }
     }
@@ -3839,6 +3844,74 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         if (!hasConfiguration(RESOURCE_FILTERING)) {
             this.resourceFiltering = conf.resourceFiltering;
         }
+    }
+
+    private static final ResourceBundle.Control DEF_RBC = ResourceBundle.Control.getControl(FORMAT_DEFAULT);
+    private String resourceBundleEncoding = null;
+    protected T resourceBundleEncoding(String encoding) {
+        resourceBundleEncoding = encoding;
+        return me();
+    }
+    public String resourceBundleEncoding() {
+        if (null == resourceBundleEncoding) {
+            resourceBundleEncoding = get(RESOURCE_BUNDLE_ENCODING, "default");
+        }
+        return resourceBundleEncoding;
+    }
+    private void _mergeResourceBundleEncoding(AppConfig conf) {
+        if (!hasConfiguration(RESOURCE_BUNDLE_ENCODING)) {
+            this.resourceBundleEncoding = conf.resourceBundleEncoding;
+            this.resourceBundleControl = null;
+        }
+    }
+    private ResourceBundle.Control resourceBundleControl;
+    public ResourceBundle.Control resourceBundleControl() {
+        synchronized (DEF_RBC) {
+            if (null != resourceBundleControl) {
+                return resourceBundleControl;
+            }
+            final String encoding = resourceBundleEncoding();
+            if ("default".equals(encoding)) {
+                resourceBundleControl = DEF_RBC;
+            } else {
+                resourceBundleControl = new ResourceBundle.Control() {
+                    @Override
+                    public ResourceBundle newBundle(
+                            String baseName, Locale locale,
+                            String format, ClassLoader loader,
+                            boolean reload
+                    ) throws IllegalAccessException, InstantiationException, IOException {
+                        // The below is a copy of the default implementation.
+                        String bundleName = toBundleName(baseName, locale);
+                        String resourceName = toResourceName(bundleName, "properties");
+                        ResourceBundle bundle = null;
+                        InputStream stream = null;
+                        if (reload) {
+                            URL url = loader.getResource(resourceName);
+                            if (url != null) {
+                                URLConnection connection = url.openConnection();
+                                if (connection != null) {
+                                    connection.setUseCaches(false);
+                                    stream = connection.getInputStream();
+                                }
+                            }
+                        } else {
+                            stream = loader.getResourceAsStream(resourceName);
+                        }
+                        if (stream != null) {
+                            try {
+                                // Only this line is changed to make it to read properties files as UTF-8.
+                                bundle = new PropertyResourceBundle(new InputStreamReader(stream, encoding));
+                            } finally {
+                                stream.close();
+                            }
+                        }
+                        return bundle;
+                    }
+                };
+            }
+        }
+        return resourceBundleControl;
     }
 
     private Integer uploadInMemoryCacheThreshold;
