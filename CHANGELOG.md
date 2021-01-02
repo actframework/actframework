@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.9.1**
+**1.9.1** 02/Jan/2021
 * Shutdown app gracefully in Runtime shutdown hook
 * Act-Test - support sending request with file array #1375
 * It reports `UNKNOWN` for OS when running act on macOS #1373
