@@ -99,7 +99,7 @@ public class UndertowNetwork extends NetworkBase {
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
         if (Act.isTest()) {
-            info("Try clearing random server socket: " + port);
+            debug("Try clearing random server socket: " + port);
             AppConfig.clearRandomServerSocket(port);
         }
         if (!secure) {

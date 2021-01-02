@@ -16,11 +16,11 @@ Add `act-starter-parent` into into your pom.xml file
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.9.0.1</version>
+    <version>1.9.1.0</version>
   </parent>
 ```
 
-Or use maven archetype to start an new project:
+Or use maven archetype to start a new project:
 
 ```
 mvn archetype:generate -B \
@@ -28,13 +28,13 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.9.0.2
+    -DarchetypeVersion=1.9.1.0
 ```
 
 **tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.9.0.2
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.9.1.0
 ```
 
 **Note** There are more ActFramework application archetypes for use. Please get them [here](ARCHETYPES.md). 
