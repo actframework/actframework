@@ -661,7 +661,7 @@ public class App extends LogSupportedDestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        info("App shutting down ....");
+        info("Shutting down app [%s]....", name());
         if (Act.isDev()) {
             for (HotReloadListener listener : hotReloadListeners) {
                 listener.preHotReload();

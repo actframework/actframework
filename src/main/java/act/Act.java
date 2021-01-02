@@ -370,23 +370,44 @@ public final class Act {
         shutdown(app(), 0);
     }
 
+    public static void shutdownNow() {
+        shutdown(app(), 0, false);
+    }
+
     public static void shutdown(final App app) {
         shutdown(app, 0);
     }
 
     public static void shutdown(final App app, final int exitCode) {
+        shutdown(app, exitCode, true);
+    }
+
+    private static void shutdown(final App app, final int exitCode, boolean async) {
         if (null == appManager) {
             return;
         }
-        new Thread() {
-            @Override
-            public void run() {
+        if (async) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        if (!appManager.unload(app)) {
+                            app.destroy();
+                        }
+                    } finally {
+                        shutdownAct(exitCode);
+                    }
+                }
+            }.start();
+        } else {
+            try {
                 if (!appManager.unload(app)) {
                     app.destroy();
                 }
+            } finally {
                 shutdownAct(exitCode);
             }
-        }.start();
+        }
     }
 
     public static RequestServerRestart requestRestart() {
@@ -1205,7 +1226,12 @@ public final class Act {
         return app().config().httpPort();
     }
 
+    private static boolean shutdownStarted = false;
     private static void shutdownAct(int exitCode) {
+        if (shutdownStarted) {
+            return;
+        }
+        shutdownStarted = true;
         clearPidFile();
         shutdownNetworkLayer();
         destroyApplicationManager();
@@ -1219,6 +1245,7 @@ public final class Act {
         destroyMetricPlugin();
         unloadConfig();
         destroyNetworkLayer();
+        LOGGER.info("All components shutdown, bye!");
         if (0 != exitCode) {
             System.exit(exitCode);
         }
@@ -1260,6 +1287,7 @@ public final class Act {
                 @Override
                 public void run() {
                     clearPidFile();
+                    Act.shutdownNow();
                 }
             });
         } catch (Exception e) {
@@ -1271,7 +1299,7 @@ public final class Act {
         String pidFile = pidFile();
         try {
             File file = new File(pidFile);
-            if (!file.delete()) {
+            if (null != file && file.canRead() && !file.delete()) {
                 file.deleteOnExit();
             }
         } catch (Exception e) {
