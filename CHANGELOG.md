@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.9.2** 
+* URL Path parameter binding failure #1379
+
 **1.9.1** 02/Jan/2021
 * Shutdown app gracefully in Runtime shutdown hook
 * Act-Test - support sending request with file array #1375

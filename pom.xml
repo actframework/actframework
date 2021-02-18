@@ -97,50 +97,6 @@
 
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>**/*.version</include>
-          <include>**/*.api-book</include>
-          <include>**/*.properties</include>
-          <include>**/*.css</include>
-          <include>**/*.csv</include>
-          <include>**/*.html</include>
-          <include>**/*.js</include>
-          <include>**/*.json</include>
-          <include>**/*.list</include>
-          <include>**/*.tag</include>
-          <include>**/*.txt</include>
-          <include>**/*.xml</include>
-          <include>**/*.yml</include>
-          <include>**/*.yaml</include>
-          <include>**/*.tag</include>
-          <include>**/*.svg</include>
-          <include>rythm/**</include>
-          <include>*.flf</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>**/*.gif</include>
-          <include>**/*.png</include>
-          <include>**/*.jpg</include>
-          <include>**/*.jpeg</include>
-          <include>**/*.doc</include>
-          <include>**/*.docx</include>
-          <include>**/*.xls</include>
-          <include>**/*.xlsx</include>
-          <include>**/*.ppt</include>
-          <include>**/*.pptx</include>
-          <include>**/*.pdf</include>
-          <include>**/*.ico</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
 
   <dependencies>

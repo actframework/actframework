@@ -1,0 +1,18 @@
+Scenario(1379):
+  description: "URL Path parameter binding failure"
+  interactions:
+  - description: test
+    request:
+      get: 1379/foo/bar
+    response:
+      result: foo-bar
+  - description: test2
+    request:
+      get: 1379/2/bar-foo
+    response:
+      result: bar-foo
+  - description: test3
+    request:
+      get: 1379/3/abc/at/xyz
+    response:
+      result: abc-xyz

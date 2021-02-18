@@ -85,5 +85,3 @@ mvn archetype:generate -B \
 ```
 mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-chatroom -DarchetypeVersion=1.9.1.0
 ```
-
-
