@@ -33,11 +33,10 @@ import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.inject.util.ResourceLoader;
 import act.route.RouteSource;
 import act.route.Router;
-import act.util.FastJsonFileSerializer;
 import act.util.FastJsonSObjectSerializer;
+import act.view.ActNotFound;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeConfig;
@@ -55,7 +54,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.storage.ISObject;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
@@ -69,6 +68,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Keep track endpoints defined in the system
  */
 public class ApiManager extends AppServiceBase<ApiManager> {
+
+    public static final String SYS_PROP_ENABLE_API_MANAGER_ON_TEST_MODE = "act-enable-api-manager-on-test-mode";
 
     private static final String FILENAME = ".act.api-book";
 
@@ -96,7 +97,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     public ApiManager(final App app) {
         super(app);
-        this.enabled = app.config().apiDocEnabled() && !Act.isTest();
+        this.enabled = app.config().apiDocEnabled() && (!Act.isTest() || enabledOnTestMode());
         if (!this.enabled) {
             return;
         }
@@ -112,7 +113,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
             }
         });
         Router router = app.isDev() ? app.router() : app.sysRouter();
-        router.addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointsHandler(this));
+        router.addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointListHandler(this));
         router.addMapping(H.Method.GET, "/~/apibook/modules", new GetModulesHandler(this));
         ResourceGetter apidocHandler = new ResourceGetter("asset/~act/apibook/index.html");
         router.addMapping(H.Method.GET, "/~/api", apidocHandler);
@@ -459,16 +460,25 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         }
     }
 
-    private class GetEndpointsHandler extends RequestHandlerBase {
+    private class GetEndpointListHandler extends RequestHandlerBase {
 
         private ApiManager api;
 
-        public GetEndpointsHandler(ApiManager api) {
+        public GetEndpointListHandler(ApiManager api) {
             this.api = api;
         }
 
         @Override
         public void handle(ActionContext context) {
+            String id = context.paramVal("id");
+            if (S.notBlank(id)) {
+                Endpoint endpoint = api.endpoint(id);
+                if (null == endpoint) {
+                    throw ActNotFound.create();
+                }
+                renderJson(endpoint).apply(context.req(), context.prepareRespForResultEvaluation());
+                return;
+            }
             String module = context.paramVal("module");
             Collection<Endpoint> endpoints = S.notBlank(module) ? api.moduleLookup.get(module) : api.endpoints;
             renderJson(endpoints).apply(context.req(), context.prepareRespForResultEvaluation());
@@ -509,4 +519,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     }
 
 
+    private static boolean enabledOnTestMode() {
+        return $.bool(System.getProperty(SYS_PROP_ENABLE_API_MANAGER_ON_TEST_MODE));
+    }
 }

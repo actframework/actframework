@@ -3,6 +3,7 @@
 **1.9.2** 
 * Add act version info into API doc page and test report page #1380
 * URL Path parameter binding failure #1379
+* Incorrect Chinese characters found in `@Configuration` variable injected from properties file encoded with UTF-8 #1377
 
 **1.9.1** 02/Jan/2021
 * Shutdown app gracefully in Runtime shutdown hook

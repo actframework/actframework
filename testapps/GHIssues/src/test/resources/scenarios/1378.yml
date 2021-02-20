@@ -1,0 +1,16 @@
+Scenario(1378):
+  ignore: We don't have fix or workaround for this issue at the moment.
+  fixtures:
+    - 1378.yml
+  description: "$.merge ebean entity can not save data successful #1378"
+  interactions:
+  - description: put the new name
+    request:
+      put: 1378/1
+      params:
+        name: Joe
+  - description: get the category and check if new name has been applied
+    request:
+      get: 1378/1
+    response:
+      name: Joe

@@ -67,6 +67,16 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>
+      <version>1.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-ebean</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-sql-common</artifactId>
+      <version>1.6.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
