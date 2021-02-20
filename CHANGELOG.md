@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.9.2** 
+* Add act version info into API doc page and test report page #1380
 * URL Path parameter binding failure #1379
 
 **1.9.1** 02/Jan/2021
