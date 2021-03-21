@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
-**1.9.2** 
+**1.9.2**
+* Response content type get overridden - case 2 #1387
+* Response content type get overridden #1386
 * Add act version info into API doc page and test report page #1380
 * URL Path parameter binding failure #1379
 * Incorrect Chinese characters found in `@Configuration` variable injected from properties file encoded with UTF-8 #1377

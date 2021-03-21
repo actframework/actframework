@@ -71,8 +71,8 @@
     <osgl-tool.version>1.26.2</osgl-tool.version>
     <osgl-cache.version>1.8.1</osgl-cache.version>
     <osgl-genie.version>1.13.2</osgl-genie.version>
-    <osgl-http.version>1.13.2</osgl-http.version>
-    <osgl-mvc.version>1.13.2</osgl-mvc.version>
+    <osgl-http.version>1.13.4</osgl-http.version>
+    <osgl-mvc.version>1.13.3</osgl-mvc.version>
     <osgl-storage.version>1.11.1</osgl-storage.version>
     <osgl-tool-ext.version>1.5.1</osgl-tool-ext.version>
     <patcha.version>0.0.1</patcha.version>

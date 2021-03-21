@@ -30,6 +30,7 @@ import org.osgl.mvc.result.Redirect;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.net.URL;
@@ -185,7 +186,11 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
 
     @Override
     protected void _setContentType(String type) {
+        if (S.eq(this.contentType, type)) {
+            return;
+        }
         this.contentType = type;
+        this.fmt = H.Format.resolve(type);
     }
 
     protected String _getContentType() {
