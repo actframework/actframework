@@ -31,6 +31,7 @@ import org.osgl.util.S;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public abstract class DateTimeVerifier extends Verifier {
 
@@ -112,12 +113,12 @@ public abstract class DateTimeVerifier extends Verifier {
         if (null != l) {
             return l;
         }
-        l = tryWithFormat(s, DateTimeFormat.forPattern(pattern));
+        l = tryWithFormat(s, DateTimeFormat.forPattern(pattern).withLocale(Locale.ENGLISH));
         if (null != l) {
             return l;
         }
         for (String op : otherPatterns) {
-            l = tryWithFormat(s, DateTimeFormat.forPattern(op));
+            l = tryWithFormat(s, DateTimeFormat.forPattern(op).withLocale(Locale.ENGLISH));
             if (null != l) {
                 return l;
             }
