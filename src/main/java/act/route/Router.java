@@ -620,7 +620,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         }
     }
 
-    private String ensureUrlContext(String path) {
+    public String ensureUrlContext(String path) {
         String urlContext = appConfig.urlContext();
         if (null == urlContext || path.startsWith(urlContext)) {
             if ("/".equals(path)) {
