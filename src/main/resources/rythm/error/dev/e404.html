@@ -53,10 +53,10 @@
 @def tr(RouteInfo r, String parity) {
   <tr class="route @parity">
     <td class="m">@r.method()</td>
-    <td class="p" title="@r.path()">
-      @{
-        String path = _action.router().ensureUrlContext(r.path());
-      }
+    @{
+      String path = _action.router().ensureUrlContext(r.path());
+    }
+    <td class="p" title="@path">
       @if (r.method() == "GET") {
         <a href="@path">@path</a>
       } else {
