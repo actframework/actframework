@@ -53,11 +53,14 @@
 @def tr(RouteInfo r, String parity) {
   <tr class="route @parity">
     <td class="m">@r.method()</td>
-    <td class="p" title="@r.path()">
+    @{
+      String path = _action.router().ensureUrlContext(r.path());
+    }
+    <td class="p" title="@path">
       @if (r.method() == "GET") {
-        <a href="@r.path()">@r.path()</a>
+        <a href="@path">@path</a>
       } else {
-        @r.path()
+        @path
       }
     </td>
     <td class="h" title="@r.handler()">@r.compactHandler()</td>
