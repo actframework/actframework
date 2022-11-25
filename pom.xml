@@ -64,7 +64,7 @@
     <jline.version>2.14.6</jline.version>
     <jpa.version>1.0.0.Final</jpa.version>
     <joda-time.version>2.10.6</joda-time.version>
-    <jsoup.version>1.14.2</jsoup.version>
+    <jsoup.version>1.15.3</jsoup.version>
 
     <okhttp.version>4.7.2</okhttp.version>
 
