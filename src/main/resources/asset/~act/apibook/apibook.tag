@@ -9,7 +9,7 @@
         }
     </style>
     <div class="header">
-        <h1>API Book - { sysInfo.appName }</h1>
+        <h1>API Book - { sysInfo.appName }</h1><span id="act-version">actframework-{ sysInfo.actVersion }</span>
         <input type="text" id="search-box-container" placeholder="filter" oninput={filterUpdate}>
     </div>
     <div class="content">
@@ -17,6 +17,7 @@
         <endpoint-list></endpoint-list>
         <toc></toc>
     </div>
+
     <style>
         .header {
             position: fixed;
@@ -43,6 +44,13 @@
         }
         @media print {
             .header {display: none;}
+        }
+        #act-version {
+          position:fixed;
+          bottom:0;
+          right:15px;
+          font-size: 11pt;
+          padding: 5px 10px;
         }
     </style>
     <script>

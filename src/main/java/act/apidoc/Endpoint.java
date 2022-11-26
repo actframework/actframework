@@ -467,7 +467,7 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
         } catch (Exception e) {
             // so we don't have an overwritten method, that's fine, just ignore the exception
         }
-        Map<String, Class> typeParamLookup = C.Map();
+        Map<String, Class> typeParamLookup = C.newMap();
         if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(controllerClass);
         }
@@ -528,9 +528,13 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
                 }
                 if (H.Method.GET == this.httpMethod) {
-                    String query = generateSampleQuery(info.beanSpec.withoutName(), typeParamLookup, info.bindName, new HashSet<Type>(), C.<String>newList());
-                    if (S.notBlank(query)) {
-                        sampleQuery.add(query);
+                    try {
+                        String query = generateSampleQuery(info.beanSpec.withoutName(), typeParamLookup, info.bindName, new HashSet<Type>(), C.<String>newList());
+                        if (S.notBlank(query)) {
+                            sampleQuery.add(query);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("error generating sample query for method: %s", info.beanSpec);
                     }
                 } else {
                     sampleData.put(info.bindName, sample);
@@ -642,6 +646,8 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
 
     private String generateSampleQuery(BeanSpec spec, Map<String, Class> typeParamLookup, String bindName, Set<Type> typeChain, List<String> nameChain) {
         Class<?> type = spec.rawType();
+        typeParamLookup = new HashMap<>(typeParamLookup);
+        Generics.buildTypeParamImplLookup(type, typeParamLookup);
         String specName = spec.name();
         if (S.notBlank(specName)) {
             nameChain.add(specName);
@@ -776,6 +782,12 @@ public class Endpoint implements Comparable<Endpoint>, EndpointIdProvider {
             return o;
         }
         Class<?> classType = spec.rawType();
+        if (type instanceof ParameterizedType) {
+            ParameterizedType ptype = (ParameterizedType) type;
+            Type[] actualTypeArguments = ptype.getActualTypeArguments();
+            TypeVariable[] typeVariables = classType.getTypeParameters();
+            Generics.buildTypeParamImplLookup("", actualTypeArguments, typeVariables, typeParamLookup);
+        }
         SampleDataProviderManager sampleDataProviderManager = Act.getInstance(SampleDataProviderManager.class);
         SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
         SampleDataCategory category = null != anno ? anno.value() : null;

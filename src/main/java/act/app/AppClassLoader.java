@@ -51,7 +51,6 @@ import org.osgl.util.*;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.net.*;
-import java.nio.file.Files;
 import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -515,7 +514,7 @@ public class AppClassLoader
                 }
                 return c;
             } catch (VerifyError e) {
-                File f = Files.createTempFile(name, ".class").toFile();
+                File f = java.nio.file.Files.createTempFile(name, ".class").toFile();
                 IO.write(baNew, f);
                 throw e;
             }

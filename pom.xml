@@ -21,7 +21,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.9.2-SNAPSHOT</version>
+  <version>1.9.3-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -68,11 +68,11 @@
 
     <okhttp.version>4.7.2</okhttp.version>
 
-    <osgl-tool.version>1.26.2</osgl-tool.version>
-    <osgl-cache.version>1.8.1</osgl-cache.version>
+    <osgl-tool.version>1.30.0</osgl-tool.version>
+    <osgl-cache.version>1.8.2</osgl-cache.version>
     <osgl-genie.version>1.13.2</osgl-genie.version>
-    <osgl-http.version>1.13.2</osgl-http.version>
-    <osgl-mvc.version>1.13.2</osgl-mvc.version>
+    <osgl-http.version>1.13.4</osgl-http.version>
+    <osgl-mvc.version>1.13.3</osgl-mvc.version>
     <osgl-storage.version>1.11.1</osgl-storage.version>
     <osgl-tool-ext.version>1.5.1</osgl-tool-ext.version>
     <patcha.version>0.0.1</patcha.version>
@@ -97,50 +97,6 @@
 
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>**/*.version</include>
-          <include>**/*.api-book</include>
-          <include>**/*.properties</include>
-          <include>**/*.css</include>
-          <include>**/*.csv</include>
-          <include>**/*.html</include>
-          <include>**/*.js</include>
-          <include>**/*.json</include>
-          <include>**/*.list</include>
-          <include>**/*.tag</include>
-          <include>**/*.txt</include>
-          <include>**/*.xml</include>
-          <include>**/*.yml</include>
-          <include>**/*.yaml</include>
-          <include>**/*.tag</include>
-          <include>**/*.svg</include>
-          <include>rythm/**</include>
-          <include>*.flf</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>**/*.gif</include>
-          <include>**/*.png</include>
-          <include>**/*.jpg</include>
-          <include>**/*.jpeg</include>
-          <include>**/*.doc</include>
-          <include>**/*.docx</include>
-          <include>**/*.xls</include>
-          <include>**/*.xlsx</include>
-          <include>**/*.ppt</include>
-          <include>**/*.pptx</include>
-          <include>**/*.pdf</include>
-          <include>**/*.ico</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
 
   <dependencies>

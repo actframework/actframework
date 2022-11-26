@@ -22,6 +22,7 @@ package act.controller.meta;
 
 import act.Constants;
 import act.handler.builtin.controller.Handler;
+import org.osgl.mvc.annotation.Before;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -35,7 +36,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     private Set<String> whiteList = C.newSet();
     private Set<String> blackList = C.newSet();
-    private Integer priority;
+    private int priority = 0;
 
     protected InterceptorMethodMetaInfo(InterceptorMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
         super(copy, clsInfo);
@@ -119,7 +120,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
     @Override
     protected S.Buffer toStrBuffer(S.Buffer sb) {
         S.Buffer prependix = S.newBuffer();
-        if (null != priority) {
+        if (0 != priority) {
             prependix.append("p[")
                     .append(priority).append("] ");
         }

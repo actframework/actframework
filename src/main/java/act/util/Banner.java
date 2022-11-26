@@ -106,7 +106,7 @@ public class Banner {
         sb.append("\n      OS: ").append(OS.get());
         sb.append("\n     jdk: ").append(VM.INFO).append(" ").append(VM.SPEC_VERSION);
         sb.append("\n");
-        sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
+        sb.append("\n     zen: ").append(Zen.wordsOfTheDay(true));
         sb.append("\n");
 
         return sb.toString();

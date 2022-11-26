@@ -385,7 +385,7 @@ public class SysUtilAdmin {
 
     @Command(value = "act.zen", help = "give me the zen words")
     public static String zen() {
-        return Zen.wordsOfTheDay();
+        return Zen.wordsOfTheDay(false);
     }
 
 

@@ -150,4 +150,31 @@ public class UndertowCookieAdaptor implements Cookie {
         hc.comment(comment);
         return this;
     }
+
+    // TODO - remove this method when we moved to Java 8
+    @Override
+    public int compareTo(final Object other) {
+        final Cookie o = (Cookie) other;
+        int retVal = 0;
+
+        // compare names
+        if (getName() == null && o.getName() != null) return -1;
+        if (getName() != null && o.getName() == null) return 1;
+        retVal = (getName() == null && o.getName() == null) ? 0 : getName().compareTo(o.getName());
+        if (retVal != 0) return retVal;
+
+        // compare paths
+        if (getPath() == null && o.getPath() != null) return -1;
+        if (getPath() != null && o.getPath() == null) return 1;
+        retVal = (getPath() == null && o.getPath() == null) ? 0 : getPath().compareTo(o.getPath());
+        if (retVal != 0) return retVal;
+
+        // compare domains
+        if (getDomain() == null && o.getDomain() != null) return -1;
+        if (getDomain() != null && o.getDomain() == null) return 1;
+        retVal = (getDomain() == null && o.getDomain() == null) ? 0 : getDomain().compareTo(o.getDomain());
+        if (retVal != 0) return retVal;
+
+        return 0; // equal
+    }
 }

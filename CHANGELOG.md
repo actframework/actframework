@@ -1,5 +1,30 @@
 # ActFramework Change Log
 
+**1.9.2**
+* Act-test: It shall not prepend url context when specified url starts from `http` #1427 
+* 716a67d0 2020-10-13 | Bump junit from 4.11 to 4.13.1 in /legacy-testapp [dependabot[bot]]
+* 3231c87e 2021-05-11 | update title of td to make all the paths are consistent [benstone]
+* 3745329d 2021-05-10 | fix bug of url.context not show in e404 page [Benstone Zhang]
+* ce255015 2021-05-10 | fix #1392: GetTimeTest failed for non-english locale [Benstone Zhang]
+* 1b50ebd4 2022-06-17 | Bump fastjson from 1.2.75 to 1.2.83 [dependabot[bot]]
+* b922637a 2022-11-25 | Bump undertow-core from 2.1.6.Final to 2.2.19.Final [dependabot[bot]]
+* 8d51b646 2022-09-01 | Bump jsoup from 1.14.2 to 1.15.3 [dependabot[bot]]
+* 92001dda 2022-09-15 | Bump snakeyaml from 1.26 to 1.31 in /legacy-testapp [dependabot[bot]]
+* 686e89ea 2022-09-15 | Bump snakeyaml from 1.26 to 1.31 [dependabot[bot]]
+* 0fbe8fc7 2022-11-19 | vuln-fix: Temporary File Information Disclosure [Jonathan Leitschuh]
+* 40e0127e 2021-06-04 | Bump snakeyaml from 1.17 to 1.26 in /legacy-testapp [dependabot[bot]]
+* 032d4efe 2021-08-24 | Bump undertow-core from 2.1.3.Final to 2.1.6.Final [dependabot[bot]]
+* 2581faa1 2021-06-28 | fix index error when process string substitution [benstone]
+* f0704ecb 2021-08-23 | Bump jsoup from 1.12.1 to 1.14.2 [dependabot[bot]]
+* packaging project stuck when ehcache has been added into project dependency #1399
+* @Before priority BUG #1407
+* Add "The Wall of Coding Wisdoms" into default Zen list #1388
+* Response content type get overridden - case 2 #1387
+* Response content type get overridden #1386
+* Add act version info into API doc page and test report page #1380
+* URL Path parameter binding failure #1379
+* Incorrect Chinese characters found in `@Configuration` variable injected from properties file encoded with UTF-8 #1377
+
 **1.9.1** 02/Jan/2021
 * Shutdown app gracefully in Runtime shutdown hook
 * Act-Test - support sending request with file array #1375

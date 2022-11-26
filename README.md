@@ -17,7 +17,7 @@ Add `act-starter-parent` into into your pom.xml file
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
     <version>1.9.1.0</version>
-  </parent>
+  </parent>A
 ```
 
 Or use maven archetype to start a new project:
@@ -135,7 +135,7 @@ mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId
 
 - **[Powerful view architecture with multiple render engine support](http://actframework.org/doc/templating.md)**
 
-- **[An unbelievable automate testing framework that never presented in any other MVC frameworks](https://thinking.studio/blog/declarative-testing-with-act-framework/)**
+- **[An unbelievable automate testing framework that never presented in any other MVC frameworks](https://www.youtube.com/watch?v=_UyfsdY4pSU&t=783s)**
 
 - **Commonly used tools**
 

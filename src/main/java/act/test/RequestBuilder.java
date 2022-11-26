@@ -100,7 +100,7 @@ class RequestBuilder {
         }
         String reqUrl = requestSpec.url;
         if (null != session) {
-            if (S.notBlank(session.scenario().urlContext) && !reqUrl.startsWith("/")) {
+            if (S.notBlank(session.scenario().urlContext) && !reqUrl.startsWith("/") && !reqUrl.startsWith("http")) {
                 reqUrl = S.pathConcat(session.scenario().urlContext, '/', reqUrl);
             }
         }

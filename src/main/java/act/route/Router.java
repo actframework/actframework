@@ -1165,7 +1165,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                         }
                     }
                     if (MATCH_ALL == targetNode.patternTrait) {
-                        context.urlPathParam(targetNode.varNames.get(varIdCounter.get().getAndIncrement()), name);
+                        context.urlPathParam(targetNode.varNames.get(varIdCounter.get().get()), name);
                         return targetNode;
                     }
                     Pattern pattern = targetNode.pattern;

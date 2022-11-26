@@ -1,5 +1,5 @@
 #!/bin/sh
-mvn2 clean package
+mvn -Dmaven.test.skip=true clean package
 cd target/dist
 unzip *.zip
 ./start &
