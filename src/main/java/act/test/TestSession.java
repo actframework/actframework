@@ -312,9 +312,8 @@ public class TestSession extends LogSupport {
                 buf.append(getVal(key, payload));
             }
             n = s.indexOf("${", a);
-            a++;
             if (n < 0) {
-                buf.append(s.substring(a));
+                buf.append(s.substring(a + 1));
                 return buf.toString();
             }
             z = n;

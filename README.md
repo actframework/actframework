@@ -10,14 +10,14 @@
 
 ## Install
 
-Add `act-starter-parent` into into your pom.xml file
+Add `act-starter-parent` into your pom.xml file
 
 ```xml
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
     <version>1.9.1.0</version>
-  </parent>A
+  </parent>
 ```
 
 Or use maven archetype to start a new project:
