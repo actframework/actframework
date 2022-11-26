@@ -29,6 +29,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +55,6 @@ public class ApacheMultipartParser extends RequestBodyParser {
             FileItemIteratorImpl iter = new FileItemIteratorImpl(body, request.header("content-type"), request.characterEncoding());
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
-                ISObject sobj = UploadFileStorageService.store(item, context.app());
                 String fieldName = item.getFieldName();
                 if (item.isFormField()) {
                     // must resolve encoding
@@ -66,8 +66,10 @@ public class ApacheMultipartParser extends RequestBodyParser {
                             _encoding = contentTypeEncoding.encoding;
                         }
                     }
-                    mergeValueInMap(result, fieldName, sobj.asString(Charset.forName(_encoding)));
+                    String val = IO.read(item.openStream()).encoding(Charset.forName(_encoding)).toString();
+                    mergeValueInMap(result, fieldName, val);
                 } else {
+                    ISObject sobj = UploadFileStorageService.store(item, context.app());
                     context.addUpload(item.getFieldName(), sobj);
                     mergeValueInMap(result, fieldName, fieldName);
                 }

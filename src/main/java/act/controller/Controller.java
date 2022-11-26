@@ -1811,7 +1811,7 @@ public @interface Controller {
                 if (H.Format.UNKNOWN.isSameTypeWith(fmt)) {
                     actionContext.resp().contentType("application/octet-stream");
                 }
-                return new RenderBinary((byte[]) v);
+                return new RenderBinary((byte[]) v).contentType(fmt);
             } else {
                 H.Format fmt = actionContext.accept();
                 String fmtName = fmt.name();
@@ -1975,6 +1975,13 @@ public @interface Controller {
                 return inferToTemplate(v, context);
             }
 
+            H.Format appSpecifiedContentType = H.Format.UNKNOWN;
+            if ($.not(context.paramVal("_accept"))) {
+                appSpecifiedContentType = context.resp().lastContentType();
+            }
+            if (null != appSpecifiedContentType && H.Format.UNKNOWN != appSpecifiedContentType) {
+                context.accept(appSpecifiedContentType);
+            }
             H.Format accept = context.accept();
             boolean requireJSON = accept.isSameTypeWithAny(H.Format.JSON, H.Format.UNKNOWN);
             boolean requireXML = !requireJSON && accept.isSameTypeWith(H.Format.XML);

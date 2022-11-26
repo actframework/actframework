@@ -7,10 +7,17 @@
 -act.conf.CsrfConfAdmin
 -act.session.ShortLifeTokenGenerator
 
-# The following endpoints are only public on dev mode
+# The following endpoints are public on dev mode
 [dev]-act.apidoc.
 [dev]-act.Info
 [dev]-act.i18n.
 [dev]-act.job.
 [dev]-act.test.
 [dev]-act.controller.builtin.HelpPage
+
+# The following endpoints are public on test mode
+[test]-act.apidoc.
+[test]-act.Info
+[test]-act.i18n.
+[test]-act.job.
+[test]-act.test.

@@ -119,6 +119,13 @@
             font-weight: bold;
             margin-top: 4px;
         }
+        #act-version {
+          position:fixed;
+          bottom:0;
+          right:0;
+          font-size: 11pt;
+          padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
@@ -139,6 +146,7 @@
     <div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
     <div id="scenario-list" style="margin-top: 30px"></div>
 </div>
+<a id="act-version" href="https://github.com/actframework/actframework">actframework-@act.Act.VERSION.getVersion()</a>
 <script type="text/x-jsrender" id="scenario-template">
 {{if error}}
 <div id="error">

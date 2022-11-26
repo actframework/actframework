@@ -355,18 +355,13 @@ public class Job extends DestroyableBase implements Runnable {
             }
             progress.fail(msg);
             if (isFatal) {
-                if (Act.isDev()) {
-                    app.setBlockIssue(t);
-                } else {
-                    LOGGER.fatal(cause, "Fatal error executing job[%s]", id());
-                    Act.shutdown(App.instance());
-                    destroy();
-                    if (App.instance().isMainThread()) {
-                        if (cause instanceof RuntimeException) {
-                            throw (RuntimeException) cause;
-                        }
-                        throw E.unexpected(t);
+                app.handleBlockIssue(t);
+                destroy();
+                if (App.instance().isMainThread()) {
+                    if (cause instanceof RuntimeException) {
+                        throw (RuntimeException) cause;
                     }
+                    throw E.unexpected(t);
                 }
                 return;
             }

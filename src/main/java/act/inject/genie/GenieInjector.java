@@ -45,7 +45,7 @@ import javax.inject.*;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
-    private static final Module SCOPE_MODULE = new Module() {
+    private static final org.osgl.inject.Module SCOPE_MODULE = new org.osgl.inject.Module() {
         @Override
         protected void configure() {
             bind(ScopeCache.SessionScope.class).to(new SessionScope());
@@ -238,7 +238,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_INITIALIZED)
-    public static void foundModule(Class<? extends Module> moduleClass) {
+    public static void foundModule(Class<? extends org.osgl.inject.Module> moduleClass) {
         addModuleClass(moduleClass);
     }
 

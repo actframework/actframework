@@ -254,6 +254,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (context.resp().isClosed()) {
                 logger.error(e, "Error committing result");
             } else {
+                logger.error(e, "Error handling request: " + context.req().url());
                 if (null == result) {
                     if (e instanceof IllegalArgumentException) {
                         String errorMsg = e.getLocalizedMessage();
@@ -262,9 +263,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                     } else {
                         H.Request req = context.req();
                         result = ActErrorResult.of(e);
-                        if (result.status().isServerError()) {
-                            logger.error(e, "Server error encountered on handling request: " + req);
-                        }
                     }
                 }
                 try {
@@ -369,7 +367,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         if (null == actionHandler) {
             synchronized (this) {
                 if (null == actionHandler) {
-                    generateHandlers();
+                    try {
+                        generateHandlers();
+                    } catch (RuntimeException e) {
+                        app.handleBlockIssue(e);
+                    }
                 }
             }
         }

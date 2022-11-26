@@ -73,6 +73,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private static final Logger LOGGER = LogManager.get(ActionContext.class);
 
     public static final String ATTR_EXCEPTION = "__exception__";
+    // used along with CollectionLoader to load multi-file uploads
     public static final String ATTR_CURRENT_FILE_INDEX = "__file_id__";
     public static final String REQ_BODY = "_body";
 

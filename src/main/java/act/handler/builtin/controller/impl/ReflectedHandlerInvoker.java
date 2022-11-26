@@ -378,7 +378,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         // ResponseContentType takes priority of JsonView
         ResponseContentType contentType = controllerClass.getAnnotation(ResponseContentType.class);
         if (null != contentType) {
-            forceResponseContentType = contentType.value().format();
+            String s = contentType.contentType();
+            if (S.notBlank(s)) {
+                forceResponseContentType = H.Format.resolve(s);
+            }
+            if (null == forceResponseContentType || forceResponseContentType == H.Format.UNKNOWN) {
+                forceResponseContentType = contentType.mediaType().format();
+            }
+            if (null == forceResponseContentType || forceResponseContentType == H.Format.UNKNOWN) {
+                forceResponseContentType = contentType.value().format();
+            }
         }
 
         DownloadFilename downloadFilename = ReflectedInvokerHelper.getAnnotation(DownloadFilename.class, method);
@@ -395,7 +404,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         contentType = ReflectedInvokerHelper.getAnnotation(ResponseContentType.class, method);
         if (null != contentType) {
-            forceResponseContentType = contentType.value().format();
+            forceResponseContentType = null;
+            String s = contentType.contentType();
+            if (S.notBlank(s)) {
+                forceResponseContentType = H.Format.resolve(s);
+            }
+            if (null == forceResponseContentType || forceResponseContentType == H.Format.UNKNOWN) {
+                forceResponseContentType = contentType.mediaType().format();
+            }
+            if (null == forceResponseContentType || forceResponseContentType == H.Format.UNKNOWN) {
+                forceResponseContentType = contentType.value().format();
+            }
         }
 
         ResponseStatus status = ReflectedInvokerHelper.getAnnotation(ResponseStatus.class, method);
@@ -1167,7 +1186,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             invoker.checkTemplate(context);
             return result;
         }
-        HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
+        final HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
         final boolean hasReturn = handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult();
         if (null == retVal && hasReturn) {
             // ActFramework respond 404 Not Found when

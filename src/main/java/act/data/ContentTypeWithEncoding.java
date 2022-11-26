@@ -33,7 +33,7 @@ class ContentTypeWithEncoding {
 
     public static ContentTypeWithEncoding parse(String contentType) {
         if( contentType == null ) {
-            return new ContentTypeWithEncoding("text/html".intern(), null);
+            return new ContentTypeWithEncoding("text/html", null);
         } else {
             String[] contentTypeParts = contentType.split(";");
             String _contentType = contentTypeParts[0].trim().toLowerCase();

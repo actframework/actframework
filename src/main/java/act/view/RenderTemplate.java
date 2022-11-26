@@ -75,14 +75,18 @@ public class RenderTemplate extends RenderAny {
         applyStatus(context.resp());
         H.Request req = context.req();
         H.Response resp = context.prepareRespForResultEvaluation();
-        setContentType(req, resp);
+        setContentType(req, resp, t);
         applyBeforeCommitHandler(req, resp);
         t.merge(context);
         applyAfterCommitHandler(req, resp);
     }
 
-    protected void setContentType(H.Request req, H.Response resp) {
-        String s = req.accept().contentType();
+    protected void setContentType(H.Request req, H.Response resp, Template template) {
+        H.Format fmt = req.accept();
+        if (fmt == H.Format.UNKNOWN) {
+            fmt = H.Format.HTML;
+        }
+        String s = fmt.contentType();
         String encoding = resp.characterEncoding();
         if(S.notBlank(encoding)) {
             s = S.concat(s, "; charset=", encoding);

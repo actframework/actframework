@@ -127,6 +127,7 @@ public class RythmView extends View {
         p.put(ENGINE_CLASS_LOADER_PARENT_IMPL.getKey(), app.classLoader());
         p.put(HOME_TMP.getKey(), createTempHome(app));
         p.put(I18N_LOCALE.getKey(), config.locale());
+        p.put(RESOURCE_BUNDLE_ENCODING.getKey(), config.resourceBundleEncoding());
 
         Map map = config.rawConfiguration();
         for (Object k : map.keySet()) {

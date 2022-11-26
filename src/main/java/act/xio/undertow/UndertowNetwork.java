@@ -21,6 +21,7 @@ package act.xio.undertow;
  */
 
 import act.Act;
+import act.conf.AppConfig;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.ws.WebSocketConnectionManager;
 import act.xio.Network;
@@ -33,6 +34,7 @@ import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
+import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -45,6 +47,7 @@ import org.xnio.ssl.XnioSsl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -95,6 +98,10 @@ public class UndertowNetwork extends NetworkBase {
         openListener.setRootHandler(handler);
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
+        if (Act.isTest()) {
+            debug("Try clearing random server socket: " + port);
+            AppConfig.clearRandomServerSocket(port);
+        }
         if (!secure) {
             AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(port), acceptListener, socketOptions);
             server.resumeAccepts();
@@ -146,7 +153,8 @@ public class UndertowNetwork extends NetworkBase {
                 .set(Options.CONNECTION_LOW_WATER, 1000000)
                 .set(Options.TCP_NODELAY, true)
                 .set(Options.CORK, true)
-                .getMap());
+                .getMap()
+        );
     }
 
     private OptionMap createSocketOptions() {

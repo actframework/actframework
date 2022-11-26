@@ -18,6 +18,8 @@
 ********************************************
 *            version history
 ********************************************
+1.9.0
+  - update to ActFramework 1.9.x
 1.8.0
   - update to ActFramework 1.8.x
 
@@ -59,7 +61,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>testapp</artifactId>
   <packaging>jar</packaging>
-  <version>1.8</version>
+  <version>1.9</version>
 
   <name>ACT TEST APP</name>
   <description>Test ActFramework</description>
@@ -73,9 +75,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <act.version>1.8.32-SNAPSHOT</act.version>
-    <act.storage.version>[0.13.0, 2.0.0)</act.storage.version>
-    <act.morphia.version>1.8.1-SNAPSHOT</act.morphia.version>
+    <act.version>1.9.2-SNAPSHOT</act.version>
+    <act.storage.version>[0.16.0, 2.0.0)</act.storage.version>
+    <act.morphia.version>1.10.0</act.morphia.version>
     <app.entry>testapp.TestApp</app.entry>
   </properties>
 
@@ -176,7 +178,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -208,7 +210,7 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.17</version>
+      <version>1.31</version>
     </dependency>
 
     <dependency>

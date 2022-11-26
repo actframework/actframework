@@ -98,7 +98,8 @@ public class I18n {
             if (null != app && null != app.classLoader()) {
                 classLoader = app.classLoader();
             }
-            bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), classLoader);
+            logger.debug("loading resource bundle[%s] with classLoader[%s]", bundleName, classLoader);
+            bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), classLoader, app.config().resourceBundleControl());
         } catch (MissingResourceException e) {
             if (!ignoreError) {
                 logger.warn("Cannot find bundle: %s", bundleName);

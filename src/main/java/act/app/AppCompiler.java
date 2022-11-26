@@ -72,6 +72,7 @@ class AppCompiler extends LogSupportedDestroyableBase {
 
     private void configureCompilerOptions() {
         Map<String, String> map = new HashMap<>();
+        map.putAll((Map)System.getProperties());
         opt(map, OPTION_ReportMissingSerialVersion, IGNORE);
         opt(map, OPTION_LineNumberAttribute, GENERATE);
         opt(map, OPTION_SourceFileAttribute, GENERATE);

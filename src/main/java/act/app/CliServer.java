@@ -23,6 +23,7 @@ package act.app;
 import act.Act;
 import act.Destroyable;
 import act.cli.CliSession;
+import act.conf.AppConfig;
 import act.exception.PortOccupiedException;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.UnexpectedException;
@@ -127,6 +128,9 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
             return;
         }
         try {
+            if (Act.isTest()) {
+                AppConfig.clearRandomServerSocket(port);
+            }
             serverSocket = new ServerSocket(port);
             running.set(true);
             // start server thread

@@ -132,7 +132,7 @@ public class RouteTableRouterBuilder implements RouterBuilder {
                     app.jobManager().on(SysEventId.PRE_START, "RouteTableRouterBuilder:setAppBlockIssue-" + jobIdCounter.getAndIncrement(), new Runnable() {
                         @Override
                         public void run() {
-                            app.setBlockIssue(e);
+                            app.handleBlockIssue(e);
                         }
                     });
                 } else {

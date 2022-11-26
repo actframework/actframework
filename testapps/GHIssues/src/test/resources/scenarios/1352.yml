@@ -1,0 +1,17 @@
+Scenario(1352):
+  description: "Wrong file object inject from form field into the controller param"
+  interactions:
+  - description: Test
+    request:
+      post: 1352
+      parts:
+        selectValues:
+          - abc
+          - xyz
+        file: test.txt
+        files:
+          - test.txt
+          - test.txt
+    response:
+      json:
+        result: true

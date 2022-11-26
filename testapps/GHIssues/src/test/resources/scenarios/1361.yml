@@ -1,0 +1,11 @@
+Scenario(1361):
+  description: "act-test: number verification logic error"
+  interactions:
+  - description: Test
+    request:
+      get: 1361
+    response:
+      shOrderDetailList:
+        0:
+          staffAProfitPrice:
+            - ne: 27478

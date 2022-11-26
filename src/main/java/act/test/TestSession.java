@@ -66,7 +66,7 @@ import static act.test.util.ErrorMessage.errorIfNot;
  */
 public class TestSession extends LogSupport {
 
-    private static final ThreadLocal<TestSession> current = new ThreadLocal<>();
+    private final static ThreadLocal<TestSession> current = new ThreadLocal<>();
 
     static TestSession current() {
         return current.get();
@@ -332,11 +332,16 @@ public class TestSession extends LogSupport {
             String paramStr = S.cut(funcExpr).afterFirst("(");
             paramStr = S.cut(paramStr).beforeLast(")");
             if (S.notBlank(paramStr)) {
-                vals = C.newList(S.fastSplit(paramStr, ","));
-                for (int i = 0; i < vals.size(); ++i) {
-                    String val = S.ensure(vals.get(i).trim()).strippedOff(S.DOUBLE_QUOTES);
-                    val = processStringSubstitution(val);
-                    vals.set(i, val);
+                if (S.is(paramStr).wrappedWith(S.DOUBLE_QUOTES) || S.is(paramStr).wrappedWith(S.SINGLE_QUOTES)) {
+                    paramStr = paramStr.substring(1, paramStr.length() - 1);
+                    vals = C.list(paramStr);
+                } else {
+                    vals = C.newList(S.fastSplit(paramStr, ","));
+                    for (int i = 0; i < vals.size(); ++i) {
+                        String val = S.ensure(vals.get(i).trim()).strippedOff(S.DOUBLE_QUOTES);
+                        val = processStringSubstitution(val);
+                        vals.set(i, val);
+                    }
                 }
             }
         }
@@ -600,6 +605,9 @@ public class TestSession extends LogSupport {
                 String varName = s.substring(0, s.length() - 1);
 
                 Object val = $.getProperty(obj, varName);
+                if (val instanceof CharSequence) {
+                    val = S.wrap(val).with(S.DOUBLE_QUOTES);
+                }
                 val = evalFunc(funcName + "(" + val + ")");
                 verifyValue(key, val, entry.getValue());
             } else {
@@ -640,6 +648,30 @@ public class TestSession extends LogSupport {
                     }
                     verifyValue(name, value, test);
                 }
+            } else if (value instanceof Long) {
+                Long lng = (Long) value;
+                Long expected = null;
+                if (test instanceof Long) {
+                    expected = (Long) test;
+                } else {
+                    String s = S.string(test);
+                    s = S.isIntOrLong(s) ? s : processStringSubstitution(s);
+                    ErrorMessage.errorIfNot(S.isIntOrLong(s), "Cannot verify %s value [%s] against test", name, value, test);
+                    expected = $.convert(s).toLong();
+                }
+                ErrorMessage.errorIfNot(lng.equals(expected), "Cannot verify %s value [%s] against test [%s]", name, value, test);
+            } else if (value instanceof Integer) {
+                Integer integer = (Integer) value;
+                Integer expected = null;
+                if (test instanceof Integer) {
+                    expected = (Integer) test;
+                } else {
+                    String s = S.string(test);
+                    s = S.isInt(s) ? s : processStringSubstitution(s);
+                    ErrorMessage.errorIfNot(S.isInt(s), "Cannot verify %s value [%s] against test", name, value, test);
+                    expected = $.convert(s).toInteger();
+                }
+                ErrorMessage.errorIfNot(integer.equals(expected), "Cannot verify %s value [%s] against test [%s]", name, value, test);
             } else if (value instanceof Number) {
                 Number found = (Number) value;
                 Number expected = null;
@@ -648,11 +680,8 @@ public class TestSession extends LogSupport {
                 } else {
                     String s = S.string(test);
                     s = S.isNumeric(s) ? s : processStringSubstitution(s);
-                    if (S.isNumeric(S.string(s))) {
-                        expected = $.convert(s).to(Double.class);
-                    } else {
-                        ErrorMessage.error("Cannot verify %s value [%s] against test [%s]", name, value, test);
-                    }
+                    ErrorMessage.errorIfNot(S.isNumeric(S.string(s)), "Cannot verify %s value [%s] against test [%s]", name, value, test);
+                    expected = $.convert(s).to(Double.class);
                 }
                 double delta = Math.abs(expected.doubleValue() - found.doubleValue());
                 if ((delta / found.doubleValue()) > 0.001) {

@@ -324,7 +324,7 @@ public class AppClassLoader
                     logger.error(e, "Error scanning bytecode at %s", e.context());
                     ActErrorResult error = ActErrorResult.scanningError(e);
                     if (Act.isDev()) {
-                        app.setBlockIssue(error);
+                        app.handleBlockIssue(error);
                     } else {
                         throw error;
                     }
@@ -514,7 +514,7 @@ public class AppClassLoader
                 }
                 return c;
             } catch (VerifyError e) {
-                File f = File.createTempFile(name, ".class");
+                File f = java.nio.file.Files.createTempFile(name, ".class").toFile();
                 IO.write(baNew, f);
                 throw e;
             }

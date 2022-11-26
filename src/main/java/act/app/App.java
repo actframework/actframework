@@ -84,6 +84,7 @@ import act.ws.*;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.cache.CacheService;
+import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -576,23 +577,27 @@ public class App extends LogSupportedDestroyableBase {
         refresh();
     }
 
-    public synchronized void setBlockIssue(Throwable e) {
+    public synchronized void handleBlockIssue(Throwable e) {
         fatal(e, "Block issue encountered");
-        if (null != blockIssue || null != blockIssueCause) {
-            // do not overwrite previous block issue
-            return;
-        }
-        if (e instanceof ActErrorResult) {
-            blockIssue = (ActErrorResult) e;
-        } else {
-            if (null != classLoader()) {
-                blockIssue = ActErrorResult.of(e);
-                blockIssueCause = null;
-            } else {
-                blockIssueCause = e;
+        if (Act.isDev()) {
+            if (null != blockIssue || null != blockIssueCause) {
+                // do not overwrite previous block issue
+                return;
             }
+            if (e instanceof ActErrorResult) {
+                blockIssue = (ActErrorResult) e;
+            } else {
+                if (null != classLoader()) {
+                    blockIssue = ActErrorResult.of(e);
+                    blockIssueCause = null;
+                } else {
+                    blockIssueCause = e;
+                }
+            }
+            throw BlockIssueSignal.INSTANCE;
+        } else {
+            Act.shutdown(App.instance());
         }
-        throw BlockIssueSignal.INSTANCE;
     }
 
     /**
@@ -656,16 +661,19 @@ public class App extends LogSupportedDestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        info("App shutting down ....");
+        info("Shutting down app [%s]....", name());
         if (Act.isDev()) {
             for (HotReloadListener listener : hotReloadListeners) {
                 listener.preHotReload();
             }
             if (null != classLoader && config().i18nEnabled()) {
+                debug("clearing resource bundle with classLoader: %s", classLoader);
+                ResourceBundle.clearCache(App.class.getClassLoader());
                 // clear resource bundle cache for Act I18n
                 ResourceBundle.clearCache(classLoader);
                 // clear resource bundle cache for Rythm I18n
                 ResourceBundle.clearCache(I18N.class.getClassLoader());
+                I18N.clearBundleCache();
             }
         }
 
@@ -835,7 +843,7 @@ public class App extends LogSupportedDestroyableBase {
                     @Override
                     public void run() {
                         if (null != blockIssueCause) {
-                            setBlockIssue(blockIssueCause);
+                            handleBlockIssue(blockIssueCause);
                         }
                         emit(PRE_START);
                         emit(STATELESS_PROVISIONED);
@@ -1234,7 +1242,7 @@ public class App extends LogSupportedDestroyableBase {
                 } else {
                     logger.error("Bad enhanced class: " + className);
                 }
-                setBlockIssue(error);
+                handleBlockIssue(error);
             } else {
                 logger.fatal(error, "Bad enhanced class found: " + className);
                 shutdown(-1);
@@ -1612,6 +1620,7 @@ public class App extends LogSupportedDestroyableBase {
 
     private void initCache() {
         if (isDev()) {
+            CacheServiceProvider.Impl.setClassLoader(this.classLoader);
             config().cacheServiceProvider().reset();
         }
         cache = cache(config().cacheName());

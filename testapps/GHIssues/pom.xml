@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>act-ghissues</artifactId>
-  <version>1.8.33.0-SNAPSHOT</version>
+  <version>1.10.0-SNAPSHOT</version>
 
   <name>ActFramework Github Issue Reproduce App</name>
 
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.32.0</version>
+    <version>1.9.2.0</version>
   </parent>
 
   <properties>
@@ -25,15 +25,15 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>1.8.33-SNAPSHOT</version>
+      <version>1.10.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
-      <artifactId>act-excel-java7</artifactId>
+      <artifactId>act-excel</artifactId>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP-java7</artifactId>
+      <artifactId>HikariCP</artifactId>
     </dependency>
     <!--<dependency>-->
       <!--<groupId>org.actframework</groupId>-->
@@ -52,13 +52,49 @@
     <dependency>
       <groupId>cn.hutool</groupId>
       <artifactId>hutool-all</artifactId>
-      <version>[4.1.12,)</version>
+      <version>5.5.4</version>
     </dependency>
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-aaa</artifactId>
-      <version>1.7.2-SNAPSHOT</version>
+      <version>1.10.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-ebean</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-sql-common</artifactId>
+      <version>1.6.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.warrenstrange</groupId>
+      <artifactId>googleauth</artifactId>
+      <version>1.5.0</version>
+    </dependency>
+
+    <!-- uncomment when running on JVM 9+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+    -->
+
   </dependencies>
 
 </project>

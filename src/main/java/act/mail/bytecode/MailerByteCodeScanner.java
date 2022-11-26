@@ -20,6 +20,7 @@ package act.mail.bytecode;
  * #L%
  */
 
+import act.Act;
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
@@ -41,6 +42,7 @@ import org.osgl.logging.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Mailer scanner implementation
@@ -176,6 +178,12 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 this.methodName = methodName;
                 this.desc = desc;
                 this.signature = signature;
+                Act.app().jobManager().delay(new Runnable() {
+                    @Override
+                    public void run() {
+                        // cancel the order;
+                    }
+                }, 30, TimeUnit.SECONDS);
             }
 
             @Override

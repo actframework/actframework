@@ -4,7 +4,4 @@ Scenario(1151):
     - request:
         get: /asset/1151.json
       response:
-        json:
-          buildNumber:
-            - exists: true
-          cliPort: 15461
+        buildNumber: 1151

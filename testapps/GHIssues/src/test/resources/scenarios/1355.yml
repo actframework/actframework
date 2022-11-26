@@ -1,0 +1,13 @@
+Scenario(1355):
+  description: "Parameter binding failure with POST request on PROD #1335"
+  interactions:
+  - description: test
+    request:
+      post: 1355
+      json:
+        com_id: 137
+        data:
+          name: xyz
+    response:
+      _id: 137
+      name: xyz

@@ -40,6 +40,7 @@ import org.osgl.util.E;
 import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
+import javax.inject.Inject;
 import java.util.*;
 
 /**
@@ -60,6 +61,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private Router cmdRouter;
     private Router defRouter;
 
+    @Inject
     public CliDispatcher(App app) {
         super(app);
         cmdRouter = app.cliOverHttpRouter();

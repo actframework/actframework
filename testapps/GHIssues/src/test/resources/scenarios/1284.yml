@@ -1,0 +1,13 @@
+Scenario(1284):
+  description: API doc - URL path variable in POST endpoint info is incorrect #1284
+  interactions:
+  - description: Test
+    request:
+      get: ~/apibook/endpoints?id=ghissues.Gh1284.testPost
+    response:
+      id: ghissues.Gh1284.testPost
+      params:
+        <any>:
+          bindName: id
+          name: id[U]
+

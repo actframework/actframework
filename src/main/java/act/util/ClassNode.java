@@ -84,6 +84,10 @@ public class ClassNode {
         return Modifier.isPublic(modifiers);
     }
 
+    public boolean isInterface() {
+        return Modifier.isInterface(modifiers);
+    }
+
     public boolean isAbstract() {
         return Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers);
     }

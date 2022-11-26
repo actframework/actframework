@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class StringUtils {
+public class StringUtils {
 
     static $.Transformer<String, String> evaluator = new $.Transformer<String, String>() {
         @Override
@@ -44,10 +44,18 @@ class StringUtils {
 
 
     public static String processStringSubstitution(String s) {
-        return processStringSubstitution(s, evaluator);
+        return processStringSubstitution(s, evaluator, false);
+    }
+
+    public static String processStringSubstitution(String s, boolean ignoreError) {
+        return processStringSubstitution(s, evaluator, ignoreError);
     }
 
     public static String processStringSubstitution(String s, $.Func1<String, String> evaluator) {
+        return processStringSubstitution(s, evaluator, false);
+    }
+
+    public static String processStringSubstitution(String s, $.Func1<String, String> evaluator, boolean ignoreError) {
         if (S.blank(s)) {
             return "";
         }
@@ -59,11 +67,22 @@ class StringUtils {
         int z = n;
         StringBuilder buf = S.builder();
         while (true) {
-            buf.append(s.substring(a, z));
+            buf.append(s, a, z);
             n = s.indexOf("}", z);
             a = n + 1;
             String key = s.substring(z + 2, a - 1);
-            buf.append(evaluator.apply(key));
+            if (S.notEmpty(key)) {
+                String val = key;
+                try {
+                    val = evaluator.apply(key);
+                } catch (RuntimeException e) {
+                    if (!ignoreError) throw e;
+                    buf.append("${").append(key).append("}");
+                }
+                buf.append(val);
+            } else {
+                buf.append("${}");
+            }
             n = s.indexOf("${", a);
             if (n < 0) {
                 buf.append(s.substring(a));

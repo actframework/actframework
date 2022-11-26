@@ -97,20 +97,19 @@ class CollectionLoader extends ParamValueLoader.JsonBodySupported {
             List<ParamTreeNode> nodes = node.list();
             if (nodes.size() > 0) {
                 String value = nodes.get(0).value();
-                //if (S.notBlank(value)) {
-                    for (int i = 0; i < nodes.size(); ++i) {
-                        ParamTreeNode elementNode = nodes.get(i);
-                        if (!elementNode.isLeaf()) {
-                            throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
-                        }
-                        context.attribute(ActionContext.ATTR_CURRENT_FILE_INDEX, i);
-                        if (null != binder) {
-                            collection.add(binder.resolve(null, elementNode.value(), context));
-                        } else {
-                            collection.add(resolver.resolve(elementNode.value()));
-                        }
+                for (int i = 0; i < nodes.size(); ++i) {
+                    ParamTreeNode elementNode = nodes.get(i);
+                    if (!elementNode.isLeaf()) {
+                        throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
                     }
-                //}
+                    context.attribute(ActionContext.ATTR_CURRENT_FILE_INDEX, i);
+                    if (null != binder) {
+                        collection.add(binder.resolve(null, elementNode.value(), context));
+                    } else {
+                        collection.add(resolver.resolve(elementNode.value()));
+                    }
+                }
+                context.removeAttribute(ActionContext.ATTR_CURRENT_FILE_INDEX);
             }
         } else if (node.isMap()) {
             Set<String> childrenKeys = node.mapKeys();

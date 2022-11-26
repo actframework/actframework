@@ -5,6 +5,5 @@ Scenario(797):
     request:
       get: 797
     response:
-      json:
-        ${sizeOf(date)}:
-          - gt: 15
+      ${sizeOf(date)}:
+        - gt: 15

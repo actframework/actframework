@@ -117,6 +117,11 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                 // important as app.checkUpdates(boolean) might trigger
                 // an app hotreload, which might refer to ActionContext.current()
                 ctx.saveLocal();
+                RequestHandler blockIssueHandler = app.blockIssueHandler();
+                if (null != blockIssueHandler) {
+                    blockIssueHandler.handle(ctx);
+                    return;
+                }
                 if (app.isLoading()) {
                     HotReloadingHandler.INSTANCE.handle(ctx);
                     return;

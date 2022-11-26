@@ -80,7 +80,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
          * @param handler
          *         the handler
          */
-        void visit(H.Method method, String path, RouteSource source, List<String> varNames, RequestHandler handler);
+        void visit(H.Method method, String path, RouteSource source, Set<String> varNames, RequestHandler handler);
     }
 
     public static final String IGNORE_NOTATION = "...";
@@ -231,7 +231,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             if (handler instanceof ContextualHandler) {
                 handler = ((ContextualHandler) handler).realHandler();
             }
-            visitor.visit(method, node.path(), node.routeSource, node.varNames, handler);
+            visitor.visit(method, node.path(), node.routeSource, node.allVarNames(), handler);
         }
         for (TreeNode child : node.children()) {
             visit((Node)child, method, visitor);
@@ -620,7 +620,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         }
     }
 
-    private String ensureUrlContext(String path) {
+    public String ensureUrlContext(String path) {
         String urlContext = appConfig.urlContext();
         if (null == urlContext || path.startsWith(urlContext)) {
             if ("/".equals(path)) {
@@ -640,13 +640,14 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
         return S.concat(urlContext, path);
     }
 
-    public String fullUrl(String path, Object... args) {
-        path = S.fmt(path, args);
+    public String fullUrl(final String pathTemplate, Object... args) {
+        String path = S.fmt(pathTemplate, args);
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
         }
-        if (path.contains(".") || path.contains("(")) {
-            path = reverseRoute(path);
+        if (!path.contains("/") && (path.contains(".") || path.contains("("))) {
+            String reversedPath = reverseRoute(path);
+            path = null != reversedPath ? reversedPath : path;
         }
         S.Buffer sb = S.newBuffer(urlBase());
         path = ensureUrlContext(path);
@@ -1018,7 +1019,6 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = keyword.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
-            this.varNames.addAll(parent.varNames);
         }
 
         Node(String name, Node parent) {
@@ -1027,7 +1027,6 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             this.id = name.hashCode();
             this.root = parent.root;
             this.macroLookup = parent.macroLookup;
-            this.varNames.addAll(parent.varNames);
             parseDynaName(name);
         }
 
@@ -1166,7 +1165,7 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
                         }
                     }
                     if (MATCH_ALL == targetNode.patternTrait) {
-                        context.urlPathParam(targetNode.varNames.get(varIdCounter.get().getAndIncrement()), name);
+                        context.urlPathParam(targetNode.varNames.get(varIdCounter.get().get()), name);
                         return targetNode;
                     }
                     Pattern pattern = targetNode.pattern;
@@ -1224,6 +1223,20 @@ public class Router extends AppHolderBase<Router> implements TreeNode {
             Destroyable.Util.destroyAll(dynamicChildren, ApplicationScoped.class);
             Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
+        }
+
+        /**
+         * Returns all URL path variable names including var name of parent/ancestors.
+         * @return all URL path variable names as described above
+         */
+        public Set<String> allVarNames() {
+            Set<String> set = new HashSet<>(varNames);
+            Node cur = parent;
+            while (cur != root && cur != null) {
+                set.addAll(cur.varNames);
+                cur = cur.parent;
+            }
+            return set;
         }
 
         Node childByMetaInfoExactMatching(String name) {
