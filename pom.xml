@@ -68,8 +68,8 @@
 
     <okhttp.version>4.7.2</okhttp.version>
 
-    <osgl-tool.version>1.26.2</osgl-tool.version>
-    <osgl-cache.version>1.8.1</osgl-cache.version>
+    <osgl-tool.version>1.30.0</osgl-tool.version>
+    <osgl-cache.version>1.8.2</osgl-cache.version>
     <osgl-genie.version>1.13.2</osgl-genie.version>
     <osgl-http.version>1.13.4</osgl-http.version>
     <osgl-mvc.version>1.13.3</osgl-mvc.version>

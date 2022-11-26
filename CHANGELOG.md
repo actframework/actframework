@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.9.2**
+* Act-test: It shall not prepend url context when specified url starts from `http` #1427 
+* packaging project stuck when ehcache has been added into project dependency #1399
+* @Before priority BUG #1407
 * Add "The Wall of Coding Wisdoms" into default Zen list #1388
 * Response content type get overridden - case 2 #1387
 * Response content type get overridden #1386

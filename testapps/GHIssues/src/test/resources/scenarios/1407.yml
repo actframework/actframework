@@ -1,0 +1,8 @@
+Scenario(1407):
+  description: "@Before priority BUG"
+  interactions:
+  - description: test
+    request:
+      get: 1407
+    response:
+      result: before1

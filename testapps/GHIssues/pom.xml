@@ -23,16 +23,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.osgl</groupId>
-      <artifactId>osgl-tool</artifactId>
-      <version>1.26.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.osgl</groupId>
-      <artifactId>aaa-core</artifactId>
-      <version>1.10.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
       <version>1.9.2-SNAPSHOT</version>
