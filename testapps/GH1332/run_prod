@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ ! -f target/dist/start ]; then
+    echo building ...
+    mvn -q clean package
+    cd target/dist
+    tar xzf *.tar.gz
+else
+    cd target/dist
+fi
+# we want to disable session secure as this is running
+# in the local host, we don't expect there are SSL
+# certificate enabled.
+./run -Dsession.secure=false $*

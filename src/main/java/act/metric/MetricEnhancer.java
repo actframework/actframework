@@ -81,7 +81,7 @@ public class MetricEnhancer extends AppByteCodeEnhancer<MetricEnhancer> {
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
                 if (DESC_MEASURE_TIME.equals(desc)) {
-                    timeLabel = methodName;
+                    timeLabel = metricsLabel();
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
@@ -92,7 +92,7 @@ public class MetricEnhancer extends AppByteCodeEnhancer<MetricEnhancer> {
                         }
                     };
                 } else if (DESC_MEASURE_COUNT.equals(desc)) {
-                    countLabel = methodName;
+                    countLabel = metricsLabel();
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
@@ -161,6 +161,10 @@ public class MetricEnhancer extends AppByteCodeEnhancer<MetricEnhancer> {
             private void onFinally(int opcode) {
                 mv.visitVarInsn(ALOAD, posTimer);
                 mv.visitMethodInsn(INVOKEINTERFACE, "act/metric/Timer", "close", "()V", true);
+            }
+
+            private String metricsLabel() {
+                return S.pathConcat(className, '.', methodName);
             }
         };
     }
