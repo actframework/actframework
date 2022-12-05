@@ -1,0 +1,8 @@
+Scenario(1429):
+  description: "Test sceanrio yaml file shall be able to refer values defined in app config properties file"
+  interactions:
+  - description: test
+    request:
+      get: 1429?message=${gh1429.message}
+    response:
+      result: ${gh1429.message}

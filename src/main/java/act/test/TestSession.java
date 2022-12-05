@@ -432,8 +432,20 @@ public class TestSession extends LogSupport {
             return evalFunc(key);
         } catch (Exception e) {
             try {
-                return getLastVal(key);
+                o = getLastVal(key);
+                if (null == o) {
+                    o = App.instance().config().get(key);
+                    if (null != o) {
+                        return o;
+                    }
+                    throw E.unexpected("Unable to get value by key: %s", key);
+                }
+                return o;
             } catch (Exception e1) {
+                o = App.instance().config().get(key);
+                if (null != o) {
+                    return o;
+                }
                 throw E.unexpected("Unable to get value by key: %s", key);
             }
         }
