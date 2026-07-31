@@ -177,8 +177,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         OkHttpClient http = new OkHttpClient.Builder().build();
         String url = S.concat(confServerEndpoint, "?id=", confId);
         Request req = new Request.Builder().url(url).get().addHeader("Accept", "application/json").build();
-        try {
-            Response resp = http.newCall(req).execute();
+        try (Response resp = http.newCall(req).execute()) {
             if (!resp.isSuccessful()) {
                 warn("Error fetching configuration from conf-server. Response code: %s; Respond body: %s", resp.code(), resp.body().string());
             } else {
